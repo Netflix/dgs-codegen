@@ -1,0 +1,603 @@
+package com.netflix.graphql.dgs.codegen
+
+import com.squareup.kotlinpoet.ParameterizedTypeName
+import com.squareup.kotlinpoet.TypeSpec
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+
+@ExperimentalStdlibApi
+class KotlinClientApiGenTest {
+
+    val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
+
+    @Test
+    fun generateQueryType() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
+        val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.name).isEqualTo("PeopleGraphQLQuery")
+    }
+
+    @Test
+    fun generateMutationType() {
+
+        val schema = """
+            type Mutation {
+                updateMovie(movieId: ID, title: String): Movie
+            }
+            
+            type Movie {
+                movieId: ID
+                title: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
+        val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+    }
+
+    @Test
+    fun generateMutationTypeWithInput() {
+
+        val schema = """
+            type Mutation {
+                updateMovie(movie: MovieDescription): Movie
+            }
+            
+            input MovieDescription {
+                movieId: ID
+                title: String
+                actors: [String]
+            }
+            
+            type Movie {
+                movieId: ID
+                lastname: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
+        val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+    }
+
+    @Test
+    fun interfaceReturnTypes() {
+
+        val schema = """
+            type Query {
+                search(title: String): [Show]
+            }
+            
+            interface Show {
+                title: String
+            }
+            
+            type Movie implements Show {
+                title: String
+                duration: Int
+            }
+            
+            type Series implements Show {
+                title: String
+                episodes: Int
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
+        val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.name).isEqualTo("SearchGraphQLQuery")
+        assertThat(codeGenResult.clientProjections[0].name).isEqualTo("SearchProjectionRoot")
+        val projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionType.funSpecs[0].name).isEqualTo("title")
+        val movieProjectionType = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(movieProjectionType.name).isEqualTo("SearchMovieProjection")
+        val seriesProjectionType = codeGenResult.clientProjections[2].members[0] as TypeSpec
+        assertThat(seriesProjectionType.name).isEqualTo("SearchSeriesProjection")
+    }
+
+    @Test
+    fun interfaceFragments() {
+
+        val schema = """
+            type Query {
+                search(title: String): [Show]
+            }
+            
+            interface Show {
+                title: String
+            }
+            
+            type Movie implements Show {
+                title: String
+                duration: Int
+            }
+            
+            type Series implements Show {
+                title: String
+                episodes: Int
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
+        var projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchProjectionRoot")
+        assertThat(projectionType.funSpecs[0].name).isEqualTo("title")
+        projectionType = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchMovieProjection")
+        assertThat(projectionType.funSpecs).extracting("name").containsExactly("duration", "toString")
+        projectionType = codeGenResult.clientProjections[2].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchSeriesProjection")
+        assertThat(projectionType.funSpecs).extracting("name").containsExactly("episodes", "toString")
+    }
+
+    @Test
+    fun interfaceFragmentOnSubType() {
+
+        val schema = """
+            type Query {
+                search(title: String): [Result]
+            }
+            
+            type Result {
+                show: Show
+            }
+            
+            interface Show {
+                title: String
+            }
+            
+            type Movie implements Show {
+                title: String
+                duration: Int
+            }
+            
+            type Series implements Show {
+                title: String
+                episodes: Int
+            }
+            
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        var projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchProjectionRoot")
+        projectionType = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchShowProjection")
+        projectionType = codeGenResult.clientProjections[2].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchShowMovieProjection")
+        projectionType = codeGenResult.clientProjections[3].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchShowSeriesProjection")
+
+        val superclass = projectionType.superclass as ParameterizedTypeName
+        assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun unionFragment() {
+        val schema = """
+            type Query {
+                search: [Result]
+            }
+            
+            union Result = Movie | Actor
+
+            type Movie {
+                title: String
+            }
+
+            type Actor {
+                name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
+        val projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchProjectionRoot")
+        assertThat(projectionType.funSpecs).extracting("name").contains("onMovie")
+        assertThat(projectionType.funSpecs).extracting("name").contains("onActor")
+
+        val movieProjectionType = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(movieProjectionType.name).isEqualTo("SearchMovieProjection")
+        assertThat(movieProjectionType.funSpecs).extracting("name").contains("title")
+        assertThat(movieProjectionType.funSpecs).extracting("name").doesNotContain("name")
+
+        val actorProjectionType = codeGenResult.clientProjections[2].members[0] as TypeSpec
+        assertThat(actorProjectionType.name).isEqualTo("SearchActorProjection")
+        assertThat(actorProjectionType.funSpecs).extracting("name").contains("name")
+        assertThat(actorProjectionType.funSpecs).extracting("name").doesNotContain("title")
+    }
+
+    @Test
+    fun unionFragmentOnSubType() {
+        val schema = """
+            type Query {
+                search(title: String): [Result]
+            }
+            
+            type Result {
+                result: SearchResult
+            }
+            
+            union SearchResult = Movie | Actor
+
+            type Movie {
+                title: String
+            }
+
+            type Actor {
+                name: String
+            }
+            
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
+        val projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionType.name).isEqualTo("SearchProjectionRoot")
+        val searchResultProjectionType = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(searchResultProjectionType.name).isEqualTo("SearchResultProjection")
+        assertThat(searchResultProjectionType.funSpecs).extracting("name").contains("onMovie")
+        assertThat(searchResultProjectionType.funSpecs).extracting("name").contains("onActor")
+        val movieProjectionType = codeGenResult.clientProjections[2].members[0] as TypeSpec
+        assertThat(movieProjectionType.name).isEqualTo("SearchResultMovieProjection")
+        assertThat(movieProjectionType.funSpecs).extracting("name").contains("title")
+        assertThat(movieProjectionType.funSpecs).extracting("name").doesNotContain("name")
+        val actorProjectionType = codeGenResult.clientProjections[3].members[0] as TypeSpec
+        assertThat(actorProjectionType.name).isEqualTo("SearchResultActorProjection")
+        assertThat(actorProjectionType.funSpecs).extracting("name").contains("name")
+        assertThat(actorProjectionType.funSpecs).extracting("name").doesNotContain("title")
+
+        val superclass = actorProjectionType.superclass as ParameterizedTypeName
+        assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
+    }
+
+    @Test
+    fun skipCodegenOnQuery() {
+
+        val schema = """
+            type Query {
+                people: [Person] @skipcodegen
+                personSearch(name: String): [Person]
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
+        val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.name).isEqualTo("PersonSearchGraphQLQuery")
+    }
+
+    @Test
+    fun skipCodegenField() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                firstname: String @skipcodegen
+                lastname: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        val typeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(typeSpec.funSpecs.size).isEqualTo(1)
+        assertThat(typeSpec.funSpecs[0].name).isEqualTo("lastname")
+    }
+
+    @Test
+    fun generateProjectionRoot() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
+        assertThat(projectionTypeSpec.name).isEqualTo("PeopleProjectionRoot")
+    }
+
+    @Test
+    fun generateSubProjection() {
+
+        val schema = """
+            type Query {
+                movies: [Movie]
+            }
+            
+            type Movie {
+                title: String
+                actors: [Actor]
+            }
+            
+            type Actor {
+                name: String
+                age: Integer
+            }
+
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        val projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("MoviesProjectionRoot")
+        val actorTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(actorTypeSpec.name).isEqualTo("MoviesActorsProjection")
+
+    }
+
+    @Test
+    fun generateProjectionRootTestWithCycles() {
+
+        val schema = """
+            type Query @extends {
+                persons: [Person]
+            }
+
+            type Person {
+             name: String
+             friends: [Person]
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        var projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("PersonsProjectionRoot")
+        projectionTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("PersonsFriendsProjection")
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun generateSubProjectionsWithDifferentRootTypes() {
+
+        val schema = """
+            type Query @extends {
+                persons: [Person]
+                friends: [Person]
+            }
+
+            type Person {
+             name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        var projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("PersonsProjectionRoot")
+        projectionTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("FriendsProjectionRoot")
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun generateSubProjectionsWithDifferentParentTypes() {
+
+        val schema = """
+            type Query @extends {
+                persons: [Person]
+                details(name: String): Details
+            }
+
+            type Person {
+               details: Details
+            }
+            
+            type Details {
+                name: String
+                age: Integer
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        var projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("PersonsProjectionRoot")
+        projectionTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("PersonsDetailsProjection")
+        projectionTypeSpec = codeGenResult.clientProjections[2].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("DetailsProjectionRoot")
+    }
+
+    @Test
+    fun generateArgumentsForSimpleTypes() {
+
+        val schema = """
+            type Query {
+                personSearch(lastname: String): [Person]
+            }
+
+            type Person {
+                firstname: String
+                lastname: String
+            }
+
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.propertySpecs[0].name).isEqualTo("lastname")
+        assertThat(codeGenResult.queryTypes[0].toString()).doesNotContain("import com.netflix.graphql.dgs.codegen.tests.generated.types")
+
+    }
+
+    @Test
+    fun generateArgumentsForEnum() {
+
+        val schema = """
+            type Query {
+                personSearch(index: SearchIndex): [Person]
+            }
+
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            
+            enum SearchIndex {
+                TEST, PROD
+            }
+
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.propertySpecs[0].name).isEqualTo("index")
+        assertThat(codeGenResult.queryTypes[0].toString()).contains("import com.netflix.graphql.dgs.codegen.tests.generated.types.SearchIndex\n")
+    }
+
+    @Test
+    fun generateArgumentsForObjectType() {
+
+        val schema = """
+            type Query {
+                personSearch(index: SearchIndex): [Person]
+            }
+
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            
+            type SearchIndex {
+                name: String
+            }
+
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.propertySpecs[0].name).isEqualTo("index")
+        assertThat(codeGenResult.queryTypes[0].toString()).contains("import com.netflix.graphql.dgs.codegen.tests.generated.types.SearchIndex\n")
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun testScalarsDontGenerateProjections() {
+        val schema = """
+          type Query {
+              movieCountry: MovieCountry
+          }
+          
+          type MovieCountry {
+            country: String
+            movieId: Long
+          }
+          scalar Long
+
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName,
+                generateClientApi = true, typeMapping = mapOf(Pair("Long", "java.lang.Long")), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val projections = codeGenResult.clientProjections
+        assertThat(projections.size).isEqualTo(1)
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun testExtendRootProjection() {
+        val schema = """
+          type Query {
+              people: [Person]
+          }
+          
+          type Person {
+            name: String
+          }
+          
+          extend type Person {
+            email: String
+          }
+
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName,
+                generateClientApi = true, typeMapping = mapOf(Pair("Long", "java.lang.Long")), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val projections = codeGenResult.clientProjections
+        assertThat(projections.size).isEqualTo(1)
+        assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").contains("name", "email")
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun testExtendSubProjection() {
+        val schema = """
+          type Query {
+            search: [SearchResult]
+          }
+          
+          type SearchResult {
+            movie: Movie
+          }
+          
+          type Movie {
+            title: String
+          }
+          
+          extend type Movie {
+            director: String
+          }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName,
+                generateClientApi = true, typeMapping = mapOf(Pair("Long", "java.lang.Long")), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val projections = codeGenResult.clientProjections
+        assertThat(projections.size).isEqualTo(2)
+        assertThat((projections[1].members[0] as TypeSpec).funSpecs).extracting("name").contains("title", "director")
+    }
+
+
+}

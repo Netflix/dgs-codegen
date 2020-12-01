@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal().with {
+            content {
+                // injected by Gradle Runner through test configuration, see CodegenGradlePluginTest
+                excludeGroup 'com.netflix.graphql.dgs.codegen'
+            }
+        }
+    }
+}
+
+rootProject.name = 'test-project'

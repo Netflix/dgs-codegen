@@ -1,0 +1,12 @@
+extend type Query {
+    actors: [Person]
+}
+
+extend type Person {
+    movies: [Movie]
+}
+
+type Movie {
+    title: String
+
+}

@@ -1,0 +1,14 @@
+# Ignore Gradle project-specific cache directory
+.gradle/
+
+# Ignore Gradle build output directory
+build/
+
+# Ignore IDE directory
+.idea/
+out/
+
+graphql-dgs-codegen-core/out/
+
+graphql-dgs-codegen-core/compiled-sources/
+

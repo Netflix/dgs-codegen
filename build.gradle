@@ -1,0 +1,8 @@
+allprojects {
+    apply plugin: 'netflix.nebula'
+    apply plugin: 'maven'
+    apply plugin: 'nebula.release'
+}
+
+group = 'com.netflix.graphql.dgs.codegen'
+description = 'Netflix GraphQL DGS Code Generation'

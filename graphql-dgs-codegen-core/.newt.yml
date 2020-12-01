@@ -1,0 +1,6 @@
+app-type: docker-image
+custom-info-responses:
+  ServerDir: graphql-mocking-spring-example
+name: domain-graph-service-java
+org: px
+team-email: pbakker@netflix.com

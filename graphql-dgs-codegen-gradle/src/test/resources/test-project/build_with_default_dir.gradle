@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'codegen-gradle-plugin'
+}
+
+configurations {
+    // injected by Gradle Runner through test configuration, see CodegenGradlePluginTest
+    CodeGenConfiguration.exclude group: "netflix", module: "graphql-dgs-codegen-core"
+}
+
+generateJava {
+    schemaPaths = ["${projectDir}/src/main/resources/schema"]
+    packageName = 'com.netflix.testproject.graphql'
+    typeMapping = [Date:"java.time.LocalDateTime"]
+    // no generated sources dir specified
+}
