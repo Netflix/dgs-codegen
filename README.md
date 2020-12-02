@@ -1,4 +1,6 @@
-# Netflix GraphQL DGS Code Generation Plugin
+[![Apache 2.0](https://img.shields.io/github/license/nebula-plugins/gradle-netflixoss-project-plugin.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+
+# DGS Code Generation Plugin
 
 The DGS Code Generation plugin generates code for basic types and example data fetchers based on the your Domain Graph Service's graphql schema file during the project's build process.
 The plugin requires the path to schema files and the package name to use to generate the file. If no schema path is specified, 
