@@ -25,10 +25,10 @@ plugins {
 sourceCompatibility = 1.8
 
 dependencies {
-    implementation("com.netflix.graphql.dgs:graphql-dgs:latest.release") {
+    implementation("com.netflix.graphql.dgs:graphql-dgs:0.0.1-rc.9") {
         transitive = false
     }
-    implementation "com.netflix.graphql.dgs:graphql-dgs-client:latest.release"
+    implementation "com.netflix.graphql.dgs:graphql-dgs-client:0.0.1-rc.9"
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
     implementation "com.squareup:javapoet:1.13.+"
     implementation "com.squareup:kotlinpoet:1.7.+"

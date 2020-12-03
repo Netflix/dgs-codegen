@@ -16,8 +16,17 @@
  *
  */
 
+plugins {
+    id 'nebula.plugin-plugin' version '14.5.0'
+    id 'java-gradle-plugin'
+}
+
 allprojects {
-    apply plugin: 'netflix.nebula'
+    repositories {
+        mavenCentral()
+        jcenter()
+        maven { url "https://dl.bintray.com/netflixoss/oss-candidate" }
+    }
     apply plugin: 'maven'
     apply plugin: 'nebula.release'
 }
