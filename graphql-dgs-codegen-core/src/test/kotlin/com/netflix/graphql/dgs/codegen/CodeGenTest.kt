@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen
 
 import com.google.common.truth.Truth
+import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
@@ -330,15 +331,19 @@ internal class CodeGenTest {
 
         val (dataTypes, interfaces) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
 
-        //Check data class
         assertThat(dataTypes.size).isEqualTo(1)
-        assertThat(dataTypes[0].typeSpec.name).isEqualTo("Employee")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(3)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
+        val employee = dataTypes.single().typeSpec
+        //Check data class
+        assertThat(employee.name).isEqualTo("Employee")
+        assertThat(employee.fieldSpecs.size).isEqualTo(3)
+        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
+
+        val annotation = employee.annotations.single()
+        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
 
         val person = interfaces[0]
         Truth.assertThat(person.toString()).isEqualTo(
-                """
+               """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
                |import com.fasterxml.jackson.annotation.JsonSubTypes;

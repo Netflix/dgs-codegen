@@ -27,6 +27,25 @@ fun jsonTypeInfoAnnotation(): AnnotationSpec {
 }
 
 /**
+ * Generate a [JsonTypeInfo] annotation, to explicitly disable
+ * polymorphic type handling. This is mostly useful as a workaround
+ * for cases where a user attempts to deserialize to a concrete type
+ * from JSON that does not include the type id.
+ *
+ * **See also:** [Jackson issue](https://github.com/FasterXML/jackson-databind/issues/2968)
+ *
+ * Example generated annotation:
+ * ```
+ * @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+ * ```
+ */
+fun disableJsonTypeInfoAnnotation(): AnnotationSpec {
+    return AnnotationSpec.builder(JsonTypeInfo::class.java)
+            .addMember("use", "\$T.\$L", JsonTypeInfo.Id::class.java, JsonTypeInfo.Id.NONE.name)
+            .build()
+}
+
+/**
  * Generate a [JsonSubTypes] annotation for the supplied class names.
  *
  * Example generated annotation:

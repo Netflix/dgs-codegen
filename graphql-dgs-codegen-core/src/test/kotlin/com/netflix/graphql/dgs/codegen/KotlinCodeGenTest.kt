@@ -308,6 +308,25 @@ internal class KotlinCodeGenTest {
                 |  public val lastname: String?
                 |}
                 |""".trimMargin())
+
+        Truth.assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonProperty
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import kotlin.String
+                |
+                |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+                |public data class Employee(
+                |  @JsonProperty("firstname")
+                |  public override val firstname: String? = null,
+                |  @JsonProperty("lastname")
+                |  public override val lastname: String? = null,
+                |  @JsonProperty("company")
+                |  public val company: String? = null
+                |) : Person
+                |""".trimMargin())
     }
 
     @Test

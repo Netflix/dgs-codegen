@@ -22,12 +22,8 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.shouldSkip
-import com.squareup.javapoet.FieldSpec
-import com.squareup.javapoet.MethodSpec
 import com.squareup.kotlinpoet.*
 import graphql.language.*
-import javax.lang.model.element.Modifier
-import javax.print.DocFlavor
 
 @ExperimentalStdlibApi
 class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config) {
@@ -78,10 +74,15 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
         val kotlinType = TypeSpec.classBuilder(name).addModifiers(KModifier.DATA)
         val constructorBuilder = FunSpec.constructorBuilder()
 
+        val interfaceTypes = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+        if (interfaceTypes.isNotEmpty()) {
+            kotlinType.addAnnotation(disableJsonTypeInfoAnnotation())
+        }
+
         fields.forEach { field ->
             val returnType = if(field.nullable) field.type.copy(nullable = true) else field.type
-            val annotationSpec = AnnotationSpec.builder(ClassName("com.fasterxml.jackson.annotation", "JsonProperty")).addMember("%S", field.name) .build()
-            val parameterSpec = ParameterSpec.builder(field.name, returnType).addAnnotation(annotationSpec)
+            val parameterSpec = ParameterSpec.builder(field.name, returnType)
+                    .addAnnotation(jsonPropertyAnnotation(field.name))
             when (returnType) {
                 STRING -> if(field.nullable) parameterSpec.defaultValue("null")
                 INT -> if(field.nullable) parameterSpec.defaultValue("null")
@@ -91,12 +92,12 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
                 else -> if(field.nullable) parameterSpec.defaultValue("null")
             }
 
-            val interfaceTypes = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+
             val interfaceNames = interfaces.map { it as NamedNode<*> }.map { it.name }.toSet()
             val implementedInterfaces = interfaceTypes.filter { interfaceNames.contains(it.name) }
             val interfaceFields = implementedInterfaces.flatMap { it.fieldDefinitions }.map { it.name }.toSet()
 
-            if(interfaceFields.contains(field.name)) {
+            if (interfaceFields.contains(field.name)) {
                 parameterSpec.addModifiers(KModifier.OVERRIDE)
             }
 
