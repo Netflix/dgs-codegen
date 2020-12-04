@@ -59,7 +59,7 @@ class EntitiesClientApiGenTest {
         assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
         assertThat(representations[0].typeSpec.fieldSpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movieId")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
 
@@ -97,7 +97,7 @@ class EntitiesClientApiGenTest {
         assertThat(representations[0].typeSpec.fieldSpecs[1]).extracting("type")
                 .toString().contains("java.util.List<com.netflix.graphql.dgs.codegen.tests.generated.client.ActorRepresentation>")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
     @ExperimentalStdlibApi
@@ -146,7 +146,7 @@ class EntitiesClientApiGenTest {
         assertThat(representations[2].typeSpec.name).isEqualTo("MovieCastRepresentation")
         assertThat(representations[2].typeSpec.fieldSpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movie", "actor")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
     @ExperimentalStdlibApi
@@ -186,7 +186,7 @@ class EntitiesClientApiGenTest {
         assertThat(representations[1].typeSpec.name).isEqualTo("MovieActorRepresentation")
         assertThat(representations[1].typeSpec.fieldSpecs).extracting("name").containsExactlyInAnyOrder("__typename", "name")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
     @ExperimentalStdlibApi
@@ -224,7 +224,7 @@ class EntitiesClientApiGenTest {
         assertThat(representations[1].typeSpec.name).isEqualTo("PersonRepresentation")
         assertThat(representations[1].typeSpec.fieldSpecs).extracting("name").containsExactlyInAnyOrder("__typename", "name", "age")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
     @ExperimentalStdlibApi
@@ -248,6 +248,6 @@ class EntitiesClientApiGenTest {
         assertThat(representations.size).isEqualTo(1)
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(3)
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 }

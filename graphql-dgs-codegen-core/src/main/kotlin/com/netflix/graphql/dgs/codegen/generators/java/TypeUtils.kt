@@ -19,7 +19,6 @@
 package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.types.core.resolvers.PresignedUrlResponse
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import graphql.language.*
@@ -98,8 +97,8 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "DateTime" -> ClassName.get(OffsetDateTime::class.java)
             "RelayPageInfo" -> ClassName.get(PageInfo::class.java)
             "PageInfo" -> ClassName.get(PageInfo::class.java)
-            "PresignedUrlResponse" -> ClassName.get(PresignedUrlResponse::class.java)
-            "Header" -> ClassName.get(PresignedUrlResponse.Header::class.java)
+            "PresignedUrlResponse" -> ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse")
+            "Header" -> ClassName.get("", "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header")
             else -> ClassName.get(packageName, name)
         }
     }

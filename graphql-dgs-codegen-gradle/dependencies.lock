@@ -131,7 +131,8 @@
             "locked": "2.11.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson.module:jackson-module-kotlin"
+                "com.fasterxml.jackson.module:jackson-module-kotlin",
+                "netflix:graphql-dgs-codegen-core"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
@@ -485,7 +486,8 @@
             "locked": "2.11.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson.module:jackson-module-kotlin"
+                "com.fasterxml.jackson.module:jackson-module-kotlin",
+                "netflix:graphql-dgs-codegen-core"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
@@ -739,7 +741,8 @@
             "locked": "2.11.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson.module:jackson-module-kotlin"
+                "com.fasterxml.jackson.module:jackson-module-kotlin",
+                "netflix:graphql-dgs-codegen-core"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {

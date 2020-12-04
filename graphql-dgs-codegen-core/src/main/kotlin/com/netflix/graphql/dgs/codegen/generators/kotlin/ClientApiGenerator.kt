@@ -24,6 +24,7 @@ import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.*
 
 
@@ -248,6 +249,10 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         val subProjection = createSubProjectionType(type, parent, root, prefix) ?: return KotlinCodeGenResult()
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
+
+        javaType.addInitializerBlock(CodeBlock.builder()
+                .addStatement("fields[%S] = null", TypeNameMetaFieldDef.name)
+                .build())
 
         javaType.addFunction(FunSpec.builder("toString")
                 .returns(STRING)

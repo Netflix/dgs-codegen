@@ -20,18 +20,23 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
+import graphql.language.Document
 import graphql.language.FieldDefinition
 import graphql.language.InterfaceTypeDefinition
+import graphql.language.ObjectTypeDefinition
 import graphql.language.TypeName
 import javax.lang.model.element.Modifier
 
-class InterfaceGenerator(private val config: CodeGenConfig) {
-    private val typeUtils = TypeUtils(getPackageName(), config)
+class InterfaceGenerator(config: CodeGenConfig) {
 
-    fun generate(definition: InterfaceTypeDefinition): CodeGenResult {
+    private val packageName = config.packageName + ".types"
+    private val typeUtils = TypeUtils(packageName, config)
+
+    fun generate(definition: InterfaceTypeDefinition, document: Document): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(definition.name)
                 .addModifiers(Modifier.PUBLIC)
 
@@ -39,7 +44,17 @@ class InterfaceGenerator(private val config: CodeGenConfig) {
             addInterfaceMethod(it, javaType)
         }
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
+                .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
+                .map { node -> ClassName.get(packageName, node.name) }
+                .toList()
+
+        if (implementations.isNotEmpty()) {
+            javaType.addAnnotation(jsonTypeInfoAnnotation())
+            javaType.addAnnotation(jsonSubTypeAnnotation(implementations))
+        }
+
+        val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
         return CodeGenResult(interfaces = listOf(javaFile))
     }
@@ -48,15 +63,16 @@ class InterfaceGenerator(private val config: CodeGenConfig) {
         if (fieldDefinition.type is TypeName) {
             val returnType = typeUtils.findReturnType(fieldDefinition.type)
 
-            val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
-            javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC).returns(returnType).build())
+            val fieldName = fieldDefinition.name
+            javaType.addMethod(MethodSpec.methodBuilder("get${fieldName.capitalize()}")
+                    .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                    .returns(returnType)
+                    .build())
 
-            val setterName = "set${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
-            javaType.addMethod(MethodSpec.methodBuilder(setterName).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC).addParameter(returnType, setterName).build())
+            javaType.addMethod(MethodSpec.methodBuilder("set${fieldName.capitalize()}")
+                    .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                    .addParameter(returnType, fieldName)
+                    .build())
         }
-    }
-
-    fun getPackageName(): String {
-        return config.packageName + ".types"
     }
 }

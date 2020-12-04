@@ -23,6 +23,7 @@ import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
 import com.squareup.javapoet.*
+import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.*
 import javax.lang.model.element.Modifier
 
@@ -244,6 +245,10 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val subProjection = createSubProjectionType(type, parent, root, prefix) ?: return CodeGenResult()
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
+
+        javaType.addInitializerBlock(CodeBlock.builder()
+                .addStatement("getFields().put(\$S, null)", TypeNameMetaFieldDef.name)
+                .build())
 
         javaType.addMethod(MethodSpec.methodBuilder("toString")
                 .returns(ClassName.get(String::class.java))

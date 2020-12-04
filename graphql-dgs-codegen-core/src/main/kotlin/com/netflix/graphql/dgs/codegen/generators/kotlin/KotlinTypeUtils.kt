@@ -91,6 +91,8 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             "DateTime" -> typeNameOf<OffsetDateTime>()
             "RelayPageInfo" -> typeNameOf<PageInfo>()
             "PageInfo" -> typeNameOf<PageInfo>()
+            "PresignedUrlResponse" -> ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse")
+            "Header" -> ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header")
             else ->  ClassName.bestGuess("${packageName}.${name}")
         }
     }
