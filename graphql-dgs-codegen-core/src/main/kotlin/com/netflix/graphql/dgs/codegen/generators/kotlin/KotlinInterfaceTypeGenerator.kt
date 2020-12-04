@@ -20,32 +20,39 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
+import graphql.language.Document
 import graphql.language.InterfaceTypeDefinition
+import graphql.language.ObjectTypeDefinition
+import graphql.language.TypeName
 
-class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
-    private val typeUtils = KotlinTypeUtils(getPackageName(), config)
+class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
+
+    private val packageName = config.packageName + ".types"
+    private val typeUtils = KotlinTypeUtils(packageName, config)
 
     @ExperimentalStdlibApi
-    fun generate(definition: InterfaceTypeDefinition): KotlinCodeGenResult {
+    fun generate(definition: InterfaceTypeDefinition, document: Document): KotlinCodeGenResult {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
 
         definition.fieldDefinitions.forEach { field ->
             val returnType = typeUtils.findReturnType(field.type)
-
-            if(typeUtils.isNullable(field.type)) {
-                val nullableReturnType = returnType.copy(nullable = true)
-                interfaceBuilder.addProperty(field.name, nullableReturnType)
-            } else {
-                interfaceBuilder.addProperty(field.name, returnType)
-            }
+            interfaceBuilder.addProperty(field.name, returnType)
         }
 
-        val typeSpec = interfaceBuilder.build()
-        val fileSpec = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
+        val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
+                .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
+                .map { node -> ClassName(packageName, node.name) }
+                .toList()
+
+        if (implementations.isNotEmpty()) {
+            interfaceBuilder.addAnnotation(jsonTypeInfoAnnotation())
+            interfaceBuilder.addAnnotation(jsonSubTypesAnnotation(implementations))
+        }
+
+        val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
         return KotlinCodeGenResult(interfaces =  listOf(fileSpec))
     }
-
-    fun getPackageName(): String = config.packageName + ".types"
 }

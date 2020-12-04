@@ -20,8 +20,10 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
+import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 import javax.lang.model.element.Modifier
 
@@ -30,11 +32,19 @@ class UnionTypeGenerator(private val config: CodeGenConfig) {
         val javaType = TypeSpec.interfaceBuilder(definition.name)
                 .addModifiers(Modifier.PUBLIC)
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val memberTypes = definition.memberTypes.asSequence()
+                .filterIsInstance<TypeName>()
+                .map { member -> ClassName.get(packageName, member.name) }
+                .toList()
+
+        if (memberTypes.isNotEmpty()) {
+            javaType.addAnnotation(jsonTypeInfoAnnotation())
+            javaType.addAnnotation(jsonSubTypeAnnotation(memberTypes))
+        }
+
+        val javaFile = JavaFile.builder(packageName, javaType.build()).build()
         return CodeGenResult(interfaces = listOf(javaFile))
     }
 
-    fun getPackageName(): String {
-        return config.packageName + ".types"
-    }
+    val packageName = config.packageName + ".types"
 }

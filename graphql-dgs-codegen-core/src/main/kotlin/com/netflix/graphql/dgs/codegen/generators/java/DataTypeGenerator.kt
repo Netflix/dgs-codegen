@@ -72,6 +72,10 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
             addInterface(it, javaType)
         }
 
+        if (interfaces.isNotEmpty()) {
+            javaType.addAnnotation(disableJsonTypeInfoAnnotation())
+        }
+
         fields.forEach {
             addField(it, javaType)
         }

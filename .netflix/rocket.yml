@@ -1,5 +1,0 @@
-scm:
-  checkout:
-    prBuildMerge: true
-jenkins:
-  label: bionic_classic && ec2.region:us-west-1 && executors:4

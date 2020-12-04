@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.google.common.truth.Truth
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
@@ -284,8 +285,48 @@ internal class KotlinCodeGenTest {
         //Check interface
         assertThat(interfaces.size).isEqualTo(1)
         val interfaceType = interfaces[0].members[0] as TypeSpec
-        assertThat(interfaceType.name).isEqualTo("Person")
-        assertThat(interfaceType.propertySpecs.size).isEqualTo(2)
+
+        Truth.assertThat(FileSpec.get("$basePackageName.types", interfaceType).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import kotlin.String
+                |
+                |@JsonTypeInfo(
+                |  use = JsonTypeInfo.Id.NAME,
+                |  include = JsonTypeInfo.As.PROPERTY,
+                |  property = "__typename"
+                |)
+                |@JsonSubTypes(value = [
+                |  JsonSubTypes.Type(value = Employee::class, name = "Employee")
+                |])
+                |public interface Person {
+                |  public val firstname: String?
+                |
+                |  public val lastname: String?
+                |}
+                |""".trimMargin())
+
+        Truth.assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonProperty
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import kotlin.String
+                |
+                |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+                |public data class Employee(
+                |  @JsonProperty("firstname")
+                |  public override val firstname: String? = null,
+                |  @JsonProperty("lastname")
+                |  public override val lastname: String? = null,
+                |  @JsonProperty("company")
+                |  public val company: String? = null
+                |) : Person
+                |""".trimMargin())
     }
 
     @Test

@@ -18,17 +18,12 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.google.common.truth.Truth
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.Test
-import java.nio.file.Files
-import java.nio.file.Paths
-import javax.tools.DiagnosticCollector
-import javax.tools.JavaCompiler
-import javax.tools.JavaFileObject
-import javax.tools.ToolProvider
+
 
 class ClientApiGenTest {
 
@@ -54,7 +49,8 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("PeopleGraphQLQuery")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
     @ExperimentalStdlibApi
@@ -77,7 +73,8 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
     @ExperimentalStdlibApi
@@ -106,7 +103,8 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
     @ExperimentalStdlibApi
@@ -129,6 +127,8 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PeopleProjectionRoot")
+
+        assertCompiles(codeGenResult.clientProjections)
     }
 
     @ExperimentalStdlibApi
@@ -151,7 +151,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("PersonsFriendsProjection")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
     @ExperimentalStdlibApi
@@ -187,7 +187,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("SearchMovieDetailsShowProjection")
         assertThat(codeGenResult.clientProjections[4].typeSpec.name).isEqualTo("SearchMovieDetailsShowMovieProjection")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
 
@@ -209,7 +209,8 @@ class ClientApiGenTest {
         val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("FriendsProjectionRoot")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
     @ExperimentalStdlibApi
@@ -236,7 +237,8 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("PersonsDetailsProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("DetailsProjectionRoot")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
     @ExperimentalStdlibApi
@@ -265,7 +267,8 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MoviesActorsProjection")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
 
@@ -288,7 +291,8 @@ class ClientApiGenTest {
 
         val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
         assertThat(codeGenResult.queryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("lastname")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
     @ExperimentalStdlibApi
@@ -315,7 +319,8 @@ class ClientApiGenTest {
         val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("index")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes))
     }
 
     @ExperimentalStdlibApi
@@ -342,7 +347,8 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("PersonSearchGraphQLQuery")
         assertThat(codeGenResult.queryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("index")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes))
     }
 
     @ExperimentalStdlibApi
@@ -370,7 +376,8 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("PersonsGraphQLQuery")
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes))
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes))
     }
 
     @ExperimentalStdlibApi
@@ -409,7 +416,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SearchSeriesProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[1].name).isEqualTo("episodes")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
     @ExperimentalStdlibApi
@@ -450,7 +457,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("duration")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
     @ExperimentalStdlibApi
@@ -499,7 +506,7 @@ class ClientApiGenTest {
         val superclass = codeGenResult.clientProjections[3].typeSpec.superclass as ParameterizedTypeName
         assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
     @ExperimentalStdlibApi
@@ -534,7 +541,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("name")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
     @ExperimentalStdlibApi
@@ -577,10 +584,35 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("name")
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
 
+        assertThat(codeGenResult.clientProjections[2].typeSpec.initializerBlock.isEmpty).isFalse()
+        assertThat(codeGenResult.clientProjections[3].typeSpec.initializerBlock.isEmpty).isFalse()
+
         val superclass = codeGenResult.clientProjections[3].typeSpec.superclass as ParameterizedTypeName
         assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
+        val searchResult = codeGenResult.interfaces[0].typeSpec
+
+        Truth.assertThat(JavaFile.builder("$basePackageName.types", searchResult).build().toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonSubTypes;
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NAME,
+                |    include = JsonTypeInfo.As.PROPERTY,
+                |    property = "__typename"
+                |)
+                |@JsonSubTypes({
+                |    @JsonSubTypes.Type(value = Movie.class, name = "Movie"),
+                |    @JsonSubTypes.Type(value = Actor.class, name = "Actor")
+                |})
+                |public interface SearchResult {
+                |}
+                |""".trimMargin())
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
 
@@ -603,7 +635,7 @@ class ClientApiGenTest {
         val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf(Pair("Long", "java.lang.Long")))).generate() as CodeGenResult
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
     }
 
     @ExperimentalStdlibApi
@@ -631,7 +663,7 @@ class ClientApiGenTest {
         assertThat(projections[0].typeSpec.methodSpecs.size).isEqualTo(2)
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("name", "email")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
     }
 
     @ExperimentalStdlibApi
@@ -662,22 +694,6 @@ class ClientApiGenTest {
         assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
         assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
 
-        compileGeneratedSources(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
-    }
-}
-
-fun compileGeneratedSources(dataTypes: List<JavaFile>) {
-    val compiler: JavaCompiler = ToolProvider.getSystemJavaCompiler()
-    val diagnosticCollector = DiagnosticCollector<JavaFileObject>()
-    val manager = compiler.getStandardFileManager(
-            diagnosticCollector, null, null )
-
-    val generatedFiles = dataTypes.map { it.toJavaFileObject() }
-
-    Files.createDirectories(Paths.get("compiled-sources"))
-    val compilationResult = compiler.getTask(null, manager, diagnosticCollector, listOf("-d", "compiled-sources"), null, generatedFiles).call()
-
-    if (!compilationResult) {
-        fail<Boolean>("Error compiling generated sources: ${diagnosticCollector.diagnostics}")
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
     }
 }

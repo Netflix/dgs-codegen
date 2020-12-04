@@ -18,18 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.google.common.truth.Truth
+import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.Test
-import java.nio.file.Files
-import java.nio.file.Paths
-import javax.tools.DiagnosticCollector
-import javax.tools.JavaCompiler
-import javax.tools.JavaFileObject
-import javax.tools.ToolProvider
+
 
 @ExperimentalStdlibApi
 internal class CodeGenTest {
@@ -64,7 +59,7 @@ internal class CodeGenTest {
         assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname")
         assertThat(typeSpec.methodSpecs).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
         dataTypes[0].writeTo(System.out)
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -139,7 +134,7 @@ internal class CodeGenTest {
         val toString = assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn("name", "toString")
         toString.extracting("code").allMatch {it.toString().contains("return \"Person{")}
 
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -162,8 +157,7 @@ internal class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting ("name").contains("equals")
 
-
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -185,7 +179,7 @@ internal class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting ("name").contains("equals")
 
 
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -212,7 +206,7 @@ internal class CodeGenTest {
         assertThat(builderType.methodSpecs).extracting("name").contains("firstname", "lastname", "build")
         assertThat(builderType.methodSpecs).filteredOn("name", "firstname").extracting("returnType.simpleName").contains("com.netflix.graphql.dgs.codegen.tests.generated.types.Person.Builder")
         assertThat(builderType.methodSpecs).filteredOn("name", "build").extracting("returnType.simpleName").contains("Person")
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -234,7 +228,8 @@ internal class CodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting ("name").contains("hashCode")
-        compileGeneratedSources(dataTypes)
+
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -257,7 +252,7 @@ internal class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].packageName).isEqualTo("com.mypackage.types")
 
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -284,7 +279,7 @@ internal class CodeGenTest {
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
 
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -311,7 +306,7 @@ internal class CodeGenTest {
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
 
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -336,19 +331,43 @@ internal class CodeGenTest {
 
         val (dataTypes, interfaces) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
 
-        //Check data class
         assertThat(dataTypes.size).isEqualTo(1)
-        assertThat(dataTypes[0].typeSpec.name).isEqualTo("Employee")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(3)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
+        val employee = dataTypes.single().typeSpec
+        //Check data class
+        assertThat(employee.name).isEqualTo("Employee")
+        assertThat(employee.fieldSpecs.size).isEqualTo(3)
+        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
 
-        //Check interface
-        assertThat(interfaces.size).isEqualTo(1)
-        assertThat(interfaces[0].typeSpec.name).isEqualTo("Person")
-        assertThat(interfaces[0].typeSpec.methodSpecs.size).isEqualTo(4)
-        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").contains("getFirstname", "setFirstname", "getLastname", "setLastname")
+        val annotation = employee.annotations.single()
+        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
 
-        compileGeneratedSources(dataTypes + interfaces)
+        val person = interfaces[0]
+        Truth.assertThat(person.toString()).isEqualTo(
+               """
+               |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+               |
+               |import com.fasterxml.jackson.annotation.JsonSubTypes;
+               |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import java.lang.String;
+               |
+               |@JsonTypeInfo(
+               |    use = JsonTypeInfo.Id.NAME,
+               |    include = JsonTypeInfo.As.PROPERTY,
+               |    property = "__typename"
+               |)
+               |@JsonSubTypes(@JsonSubTypes.Type(value = Employee.class, name = "Employee"))
+               |public interface Person {
+               |  String getFirstname();
+               |
+               |  void setFirstname(String firstname);
+               |
+               |  String getLastname();
+               |
+               |  void setLastname(String lastname);
+               |}
+               |""".trimMargin())
+
+        assertCompiles(dataTypes + interfaces)
     }
 
     @Test
@@ -383,7 +402,7 @@ internal class CodeGenTest {
                 .extracting("type", ParameterizedTypeName::class.java)
                 .contains(parameterizedType)
 
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -423,7 +442,7 @@ internal class CodeGenTest {
                 .extracting("type.simpleName")
                 .containsExactly("Performance")
 
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
 
@@ -450,7 +469,7 @@ internal class CodeGenTest {
         assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants.size).isEqualTo(3)
         assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
 
-        compileGeneratedSources(codeGenResult.enumTypes)
+        assertCompiles(codeGenResult.enumTypes)
     }
 
 
@@ -475,7 +494,7 @@ internal class CodeGenTest {
         assertThat(dataFetchers.size).isEqualTo(1)
         assertThat(dataFetchers[0].typeSpec.name).isEqualTo("PeopleDatafetcher")
         assertThat(dataFetchers[0].packageName).isEqualTo(dataFetcherPackageName)
-        compileGeneratedSources(dataFetchers + dataTypes)
+        assertCompiles(dataFetchers + dataTypes)
     }
 
     @Test
@@ -504,36 +523,7 @@ internal class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(3)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "birthDate")
         dataTypes[0].writeTo(System.out)
-        compileGeneratedSources(dataTypes)
-    }
-
-    @Test
-    fun generateDataClassesWithCommonInterfaceTypes() {
-        val schema = """
-            type Query {
-                now: Date
-                upload: PresignedUrlResponse
-            }
-            
-            type UploadImageResponse implements PresignedUrlResponse {
-                url: String
-                headers: [Header]
-                method: String
-                uploadId: ID
-            }
-        """.trimIndent()
-
-
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, typeMapping = mapOf()))
-                .generate() as CodeGenResult
-
-        assertThat(dataTypes.size).isEqualTo(1)
-        assertThat(dataTypes[0].typeSpec.name).isEqualTo("UploadImageResponse")
-        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
-
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("url", "headers", "method", "uploadId")
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -559,7 +549,7 @@ internal class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre")
 
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -586,7 +576,7 @@ internal class CodeGenTest {
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -625,7 +615,7 @@ internal class CodeGenTest {
         """.trimIndent()
         generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "serializeListOfStrings" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
 
@@ -645,12 +635,12 @@ internal class CodeGenTest {
         val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
-        var expectedInputString = """
+        val expectedInputString = """
             return "{" + "genre:" + genre + "" +"}";
         """.trimIndent()
-        var generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -679,7 +669,7 @@ internal class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(2)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "releaseYear")
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -704,7 +694,7 @@ internal class CodeGenTest {
         """.trimIndent()
         val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedString).isEqualTo(generatedString)
-        compileGeneratedSources(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -886,21 +876,5 @@ internal class CodeGenTest {
         val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
-    }
-
-    private fun compileGeneratedSources(dataTypes: List<JavaFile>) {
-        val compiler: JavaCompiler = ToolProvider.getSystemJavaCompiler()
-        val diagnosticCollector = DiagnosticCollector<JavaFileObject>()
-        val manager = compiler.getStandardFileManager(
-                diagnosticCollector, null, null )
-
-        val generatedFiles = dataTypes.map { it.toJavaFileObject() }
-
-        Files.createDirectories(Paths.get("compiled-sources"))
-        val compilationResult = compiler.getTask(null, manager, diagnosticCollector, listOf("-d", "compiled-sources"), null, generatedFiles).call()
-
-        if (!compilationResult) {
-            fail<Boolean>("Error compiling generated souces: ${diagnosticCollector.diagnostics}")
-        }
     }
 }

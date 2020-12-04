@@ -18,10 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.google.common.truth.Truth
+import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.TypeSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+
 
 @ExperimentalStdlibApi
 class KotlinClientApiGenTest {
@@ -217,7 +220,6 @@ class KotlinClientApiGenTest {
         assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun unionFragment() {
         val schema = """
@@ -296,8 +298,32 @@ class KotlinClientApiGenTest {
         assertThat(actorProjectionType.funSpecs).extracting("name").contains("name")
         assertThat(actorProjectionType.funSpecs).extracting("name").doesNotContain("title")
 
+        assertThat(movieProjectionType.initializerBlock.isNotEmpty()).isTrue()
+        assertThat(actorProjectionType.initializerBlock.isNotEmpty()).isTrue()
+
         val superclass = actorProjectionType.superclass as ParameterizedTypeName
         assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
+
+        val searchResult = codeGenResult.interfaces[0].members[0] as TypeSpec
+
+        Truth.assertThat(FileSpec.get("${basePackageName}.types", searchResult).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |
+                |@JsonTypeInfo(
+                |  use = JsonTypeInfo.Id.NAME,
+                |  include = JsonTypeInfo.As.PROPERTY,
+                |  property = "__typename"
+                |)
+                |@JsonSubTypes(value = [
+                |  JsonSubTypes.Type(value = Movie::class, name = "Movie"),
+                |  JsonSubTypes.Type(value = Actor::class, name = "Actor")
+                |])
+                |public interface SearchResult
+                |""".trimMargin())
     }
 
     @Test

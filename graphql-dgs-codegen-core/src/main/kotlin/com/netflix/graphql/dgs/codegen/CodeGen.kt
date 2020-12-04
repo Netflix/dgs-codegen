@@ -78,7 +78,7 @@ class CodeGen(private val config: CodeGenConfig) {
         val inputTypesResult = generateJavaInputType(definitions)
 
         val interfacesResult = definitions.filterIsInstance<InterfaceTypeDefinition>()
-                .map { InterfaceGenerator(config).generate(it) }
+                .map { InterfaceGenerator(config).generate(it, document) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
         val unionsResult = definitions.filterIsInstance<UnionTypeDefinition>()
@@ -162,7 +162,7 @@ class CodeGen(private val config: CodeGenConfig) {
         val inputTypes = generateKotlinInputTypes(definitions, document)
 
         val interfacesResult = definitions.filterIsInstance<InterfaceTypeDefinition>()
-                .map { KotlinInterfaceTypeGenerator(config).generate(it) }
+                .map { KotlinInterfaceTypeGenerator(config).generate(it, document) }
                 .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val unionResult = definitions.filterIsInstance<UnionTypeDefinition>()
