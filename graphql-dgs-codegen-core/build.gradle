@@ -17,10 +17,11 @@
  */
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.3.70'
     id 'java-library'
     id 'application'
 }
+
+apply plugin: 'org.jetbrains.kotlin.jvm'
 
 sourceCompatibility = 1.8
 

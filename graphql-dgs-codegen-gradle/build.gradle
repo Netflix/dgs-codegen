@@ -17,9 +17,10 @@
  */
 
 plugins {
-    id "org.jetbrains.kotlin.jvm" version '1.3.70'
     id 'java-gradle-plugin'
 }
+
+apply plugin: 'org.jetbrains.kotlin.jvm'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
