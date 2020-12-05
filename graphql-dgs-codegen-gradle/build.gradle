@@ -16,10 +16,24 @@
  *
  */
 
-plugins {
-    id "org.jetbrains.kotlin.jvm" version '1.3.70'
-    id 'java-gradle-plugin'
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
+    }
 }
+
+plugins {
+    id 'com.gradle.plugin-publish' version '0.12.0'
+}
+
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'nebula.netflixoss'
+apply plugin: 'license'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
@@ -41,6 +55,12 @@ sourceSets {
 
 description = 'Netflix GraphQL DGS Code Generation Plugin'
 
+pluginBundle {
+    vcsUrl = 'https://github.com/nebula-plugins/gradle-lint-plugin.git'
+    description = 'Gradle plugin for generating Java and Kotlin types from GraphlQL Schema'
+}
+
+
 gradlePlugin {
     // Define the plugin
     plugins {
@@ -49,6 +69,11 @@ gradlePlugin {
             implementationClass = 'com.netflix.graphql.dgs.codegen.gradle.CodegenPlugin'
         }
     }
+}
+
+license {
+    exclude('**/*.bin')
+    exclude('**/test-project/*')
 }
 
 gradlePlugin.testSourceSets(sourceSets.functionalTest)

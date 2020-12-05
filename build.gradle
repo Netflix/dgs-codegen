@@ -18,7 +18,7 @@
 
 plugins {
     id 'nebula.netflixoss' version '8.8.1'
-    id 'java-gradle-plugin'
+    id 'org.jetbrains.kotlin.jvm' version '1.3.70' apply false
 }
 
 allprojects {
@@ -27,8 +27,6 @@ allprojects {
         jcenter()
         maven { url "https://dl.bintray.com/netflixoss/oss-candidate" }
     }
-    apply plugin: 'maven'
-    apply plugin: 'nebula.release'
 }
 
 group = 'com.netflix.graphql.dgs.codegen'
