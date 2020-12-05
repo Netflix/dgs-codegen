@@ -27,7 +27,6 @@ allprojects {
         jcenter()
         maven { url "https://dl.bintray.com/netflixoss/oss-candidate" }
     }
-    apply plugin: 'nebula.netflixoss'
 }
 
 group = 'com.netflix.graphql.dgs.codegen'

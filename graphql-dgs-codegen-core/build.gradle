@@ -21,6 +21,7 @@ plugins {
     id 'application'
 }
 
+apply plugin: 'nebula.netflixoss'
 apply plugin: 'org.jetbrains.kotlin.jvm'
 
 sourceCompatibility = 1.8

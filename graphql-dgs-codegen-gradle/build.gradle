@@ -16,11 +16,10 @@
  *
  */
 
-plugins {
-    id 'java-gradle-plugin'
-}
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'java-gradle-plugin'
+apply plugin: 'nebula.netflixoss'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
