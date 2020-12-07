@@ -16,6 +16,17 @@
  *
  */
 
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
+    }
+}
+
 plugins {
     id 'java-library'
     id 'application'
@@ -23,6 +34,7 @@ plugins {
 
 apply plugin: 'nebula.netflixoss'
 apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'license'
 
 sourceCompatibility = 1.8
 
@@ -44,6 +56,11 @@ dependencies {
 
     testImplementation("org.junit.jupiter:junit-jupiter-api:5.5.1")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:5.5.1")
+}
+
+
+license {
+    exclude('**/*.bin')
 }
 
 test {

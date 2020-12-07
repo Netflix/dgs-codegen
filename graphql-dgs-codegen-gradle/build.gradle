@@ -16,10 +16,20 @@
  *
  */
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
+    }
+}
 
 apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'java-gradle-plugin'
 apply plugin: 'nebula.netflixoss'
+apply plugin: 'license'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
@@ -49,6 +59,11 @@ gradlePlugin {
             implementationClass = 'com.netflix.graphql.dgs.codegen.gradle.CodegenPlugin'
         }
     }
+}
+
+license {
+    exclude('**/*.bin')
+    exclude('**/test-project/*')
 }
 
 gradlePlugin.testSourceSets(sourceSets.functionalTest)
