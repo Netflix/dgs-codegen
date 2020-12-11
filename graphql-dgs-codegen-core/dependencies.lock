@@ -13,12 +13,12 @@
             "requested": "14.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0",
@@ -47,12 +47,12 @@
             "requested": "14.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0",
@@ -92,12 +92,12 @@
             "requested": "14.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0",
@@ -134,12 +134,12 @@
             "requested": "14.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0",
@@ -184,12 +184,12 @@
             "requested": "14.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0",
@@ -234,12 +234,12 @@
             "requested": "14.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "0.0.1-rc.9",
-            "requested": "0.0.1-rc.9"
+            "locked": "3.0.10",
+            "requested": "latest.release"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0",
