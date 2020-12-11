@@ -60,7 +60,7 @@ pluginBundle {
     description = 'Gradle plugin for generating Java and Kotlin types from GraphlQL Schema'
 }
 
-
+group = 'com.netflix.graphql.dgs.codegen'
 gradlePlugin {
     // Define the plugin
     plugins {
