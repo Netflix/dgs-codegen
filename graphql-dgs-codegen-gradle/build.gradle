@@ -105,6 +105,15 @@ task createClasspathManifest {
     }
 }
 
+
+publishPlugins.dependsOn tasks.check
+project.rootProject.tasks.publishPackageToBintray.dependsOn tasks.publishPlugins
+gradle.taskGraph.whenReady { graph ->
+    tasks.publishPlugins.onlyIf {
+        graph.hasTask(':final')
+    }
+}
+
 // Add the classpath file to the test runtime classpath
 dependencies {
     testRuntimeOnly files(createClasspathManifest)
