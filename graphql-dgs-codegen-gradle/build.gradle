@@ -58,6 +58,7 @@ description = 'Netflix GraphQL DGS Code Generation Plugin'
 pluginBundle {
     vcsUrl = 'https://github.com/nebula-plugins/gradle-lint-plugin.git'
     description = 'Gradle plugin for generating Java and Kotlin types from GraphlQL Schema'
+    website = 'https://github.com/Netflix/dgs-codegen.git'
 }
 
 group = 'netflix'
