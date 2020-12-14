@@ -26,6 +26,6 @@ allprojects {
         mavenCentral()
         jcenter()
     }
-    group = 'netflix'
+    group = 'com.netflix.graphql.dgs.codegen'
 }
 description = 'Netflix GraphQL DGS Code Generation'

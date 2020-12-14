@@ -59,27 +59,14 @@ pluginBundle {
     vcsUrl = 'https://github.com/Netflix/dgs-codegen.git'
     description = 'Gradle plugin for generating Java and Kotlin types from GraphlQL Schema'
     website = 'https://github.com/Netflix/dgs-codegen'
-
-    plugins {
-        codegen_public {
-            id = 'netflix.codegen-gradle-plugin'
-            displayName = 'DGS Code Generation Plugin '
-            description = 'Gradle plugin for generating Java and Kotlin types from GraphlQL Schema'
-            tags = ['Codegen']
-        }
-    }
 }
 
-group = 'netflix'
+group = 'com.netflix.graphql.dgs.codegen'
 gradlePlugin {
     // Define the plugin
     plugins {
         codegen {
             id = 'codegen-gradle-plugin'
-            implementationClass = 'com.netflix.graphql.dgs.codegen.gradle.CodegenPlugin'
-        }
-        codegen_public {
-            id = 'netflix.codegen-gradle-plugin'
             implementationClass = 'com.netflix.graphql.dgs.codegen.gradle.CodegenPlugin'
         }
     }
