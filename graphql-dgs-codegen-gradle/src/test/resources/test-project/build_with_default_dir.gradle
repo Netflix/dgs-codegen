@@ -18,7 +18,7 @@
 
 plugins {
     id 'java'
-    id 'dgs.codegen'
+    id 'com.netflix.dgs.codegen'
 }
 
 configurations {
