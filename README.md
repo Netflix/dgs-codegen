@@ -12,11 +12,11 @@ Update your project's build.gradle to apply the plugin:
 ````
 buildscript {
     dependencies{
-        classpath 'com.netflix.graphql.dgs:codegen-gradle-plugin:latest.release'
+        classpath 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:latest.release
     }
 }
 
-apply plugin: 'codegen-gradle-plugin'
+apply plugin: 'com.netflix.dgs.codegen'
 ````
 
 GenerateJava is a gradle task that is run as part of your project's build to generate sources that your project depends on. 
