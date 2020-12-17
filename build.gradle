@@ -29,4 +29,6 @@ allprojects {
     group = 'com.netflix.graphql.dgs.codegen'
 }
 description = 'Netflix GraphQL DGS Code Generation'
-publishPackageToBintray.name = 'dgs-codegen'
+bintray {
+    pkgName = 'dgs-codegen'
+}
