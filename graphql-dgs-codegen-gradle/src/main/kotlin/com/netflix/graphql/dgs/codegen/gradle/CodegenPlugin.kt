@@ -20,8 +20,10 @@ package com.netflix.graphql.dgs.codegen.gradle
 
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
+
 
 @ExperimentalStdlibApi
 class CodegenPlugin : Plugin<Project> {
@@ -34,6 +36,8 @@ class CodegenPlugin : Plugin<Project> {
         project.getTasksByName("compileKotlin", false).forEach {
             it.dependsOn(taskProvider.get())
         }
+
+        project.plugins.apply(JavaPlugin::class.java)
 
         val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
         val sourceSets = javaConvention.sourceSets
