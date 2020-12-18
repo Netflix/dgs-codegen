@@ -9,7 +9,15 @@ it will look under src/resources/schema for any files with .graphqls extension.
 # Quick Start
 
 Update your project's build.gradle to apply the plugin:
+```
+// Using plugins DSL
+plugins {
+	id "com.netflix.dgs.codegen" version "4.0.10"
+}
+```
+or 
 ````
+// Using legacy plugin application
 buildscript {
     dependencies{
         classpath 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:latest.release
