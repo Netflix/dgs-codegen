@@ -187,7 +187,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
                     when (fieldSpecType.simpleName()) {
                         ClassName.get(String::class.java).simpleName() -> {
                             """
-                            "${fieldSpec.name}:\"" + ${fieldSpec.name} + "\"${if (index < fieldDefinitions.size - 1) "," else ""}" +
+                            "${fieldSpec.name}:" + (${fieldSpec.name} != null?"\"":"") + ${fieldSpec.name} + (${fieldSpec.name} != null?"\"":"") + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
                             """.trimIndent()
                         }
                         else -> defaultString(fieldSpec, index, fieldDefinitions)

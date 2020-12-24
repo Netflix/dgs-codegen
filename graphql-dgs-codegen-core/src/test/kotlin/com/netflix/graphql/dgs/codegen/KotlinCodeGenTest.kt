@@ -539,7 +539,7 @@ internal class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:\"" + genre + "\"," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}"
+            return "{" + "genre:" + "${'$'}{if(genre != null) "\"" else ""}" + genre + "${'$'}{if(genre != null) "\"" else ""}" + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
