@@ -572,7 +572,7 @@ internal class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:\"" + genre + "\"," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}";
+            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
