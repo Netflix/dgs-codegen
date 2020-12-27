@@ -32,10 +32,10 @@ Please ensure that your project's sources refer to the generated code using the 
  
 To trigger code generation, add the following parameters for the generateJava task in your build.gradle:
  ````
- generateJava{
-     schemaPaths = ["${projectDir}/src/resources/schemaDir1", "${projectDir}/src/resources/schemaDir2"] // List of directories containing schema files
-     packageName = 'com.example.packagename' // The package name to use to generate sources
- }
+generateJava{
+  schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
+  packageName = 'com.example.packagename' // The package name to use to generate sources
+}
  ````
 
 # Generated Output
