@@ -28,6 +28,7 @@ import org.gradle.api.tasks.SourceSet
 @ExperimentalStdlibApi
 class CodegenPlugin : Plugin<Project> {
     override fun apply(project: Project) {
+        project.plugins.apply(JavaPlugin::class.java)
         val taskProvider = project.tasks.register("generateJava", GenerateJavaTask::class.java)
         project.getTasksByName("compileJava", false).forEach {
             it.dependsOn(taskProvider.get())
@@ -36,8 +37,6 @@ class CodegenPlugin : Plugin<Project> {
         project.getTasksByName("compileKotlin", false).forEach {
             it.dependsOn(taskProvider.get())
         }
-
-        project.plugins.apply(JavaPlugin::class.java)
 
         val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
         val sourceSets = javaConvention.sourceSets
