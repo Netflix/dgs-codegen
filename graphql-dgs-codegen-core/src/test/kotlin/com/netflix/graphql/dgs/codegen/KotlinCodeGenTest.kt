@@ -546,6 +546,33 @@ internal class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateToStringMethodForNonNullableInputTypes() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                genre: String!
+                rating: Int!
+                views: Int
+                stars: Int
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+        val expectedInputString = """
+            return "{" + "genre:" + "\"" + genre + "\"" + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}"
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(expectedInputString).isEqualTo(generatedInputString)
+    }
+
+    @Test
     fun generateToStringMethodForListOfStrings() {
 
         val schema = """

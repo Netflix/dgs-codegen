@@ -153,9 +153,15 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
                 is ClassName -> {
                     when(fieldTypeName.simpleName) {
                         STRING.simpleName -> {
-                            """
+                            if (field.nullable) {
+                                """
                                 "${field.name}:" + "${'$'}{if(${field.name} != null) "\"" else ""}" + ${field.name} + "${'$'}{if(${field.name} != null) "\"" else ""}" + "${if (index < fields.size - 1) "," else ""}" +
                             """.trimIndent()
+                            } else {
+                                """
+                                "${field.name}:" + "\"" + ${field.name} + "\"" + "${if (index < fields.size - 1) "," else ""}" +
+                            """.trimIndent()
+                            }
                         }
                         else -> {
                             defaultString(field, index, fields)
