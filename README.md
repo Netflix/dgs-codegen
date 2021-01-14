@@ -9,14 +9,16 @@ it will look under src/resources/schema for any files with .graphqls extension.
 # Quick Start
 
 Update your project's build.gradle to apply the plugin:
-```
+
+```gradle
 // Using plugins DSL
 plugins {
 	id "com.netflix.dgs.codegen" version "4.0.10"
 }
 ```
 or 
-````
+
+```gradle
 // Using legacy plugin application
 buildscript {
     dependencies{
@@ -25,14 +27,15 @@ buildscript {
 }
 
 apply plugin: 'com.netflix.dgs.codegen'
-````
+```
 
 GenerateJava is a gradle task that is run as part of your project's build to generate sources that your project depends on. 
 Please ensure that your project's sources refer to the generated code using the specified package name.
  
 To trigger code generation, add the following parameters for the generateJava task in your build.gradle:
- ````
-generateJava{
+
+ ````gradle
+generateJava {
   schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
   packageName = 'com.example.packagename' // The package name to use to generate sources
 }
