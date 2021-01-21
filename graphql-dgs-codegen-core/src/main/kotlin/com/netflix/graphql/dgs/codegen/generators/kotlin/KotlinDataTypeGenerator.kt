@@ -191,17 +191,23 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
         val methodBuilder = FunSpec.builder("serializeListOfStrings")
                 .addModifiers(KModifier.PRIVATE)
                 .addParameter(field.name, field.type)
-                .returns(STRING)
+                .returns(STRING.copy(nullable = true))
 
         val toStringBody = StringBuilder("""
-                    val builder = java.lang.StringBuilder()
+                if (${field.name} == null) {
+                    return null
+                }
+                
+                val builder = java.lang.StringBuilder()
                 builder.append("[")
-            
-                val result = ${field.name}?.joinToString() {"\"" + it + "\""}
-                builder.append(result)
+                if (! ${field.name}.isEmpty()) {
+                    val result = ${field.name}.joinToString() {"\"" + it + "\""}
+                    builder.append(result)
+                }
                 builder.append("]")
                 return  builder.toString()
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         methodBuilder.addStatement(toStringBody.toString())
         kotlinType.addFunction(methodBuilder.build())

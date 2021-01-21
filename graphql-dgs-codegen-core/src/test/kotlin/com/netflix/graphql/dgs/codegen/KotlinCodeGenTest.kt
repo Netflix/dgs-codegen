@@ -582,7 +582,7 @@ internal class KotlinCodeGenTest {
             
             input MovieFilter {
                 genre: [String!]
-                actors: [String!]
+                actors: [String]
             }
         """.trimIndent()
 
@@ -599,11 +599,16 @@ internal class KotlinCodeGenTest {
 
         assertThat(type.funSpecs).extracting("name").contains("serializeListOfStrings")
         expectedInputString = """
+            if (genre == null) {
+                    return null
+                }
+
                 val builder = java.lang.StringBuilder()
                 builder.append("[")
-            
-                val result = genre?.joinToString() {"\"" + it + "\""}
-                builder.append(result)
+                if (! genre.isEmpty()) {
+                    val result = genre.joinToString() {"\"" + it + "\""}
+                    builder.append(result)
+                }
                 builder.append("]")
                 return  builder.toString()
         """.trimIndent()

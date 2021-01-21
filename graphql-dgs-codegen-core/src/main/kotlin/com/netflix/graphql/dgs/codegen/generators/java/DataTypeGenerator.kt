@@ -221,12 +221,17 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
                 .returns(String::class.java)
 
         val toStringBody = StringBuilder("""
-                    StringBuilder builder = new java.lang.StringBuilder();
+                if (${field.name} == null) {
+                    return null;
+                }
+                StringBuilder builder = new java.lang.StringBuilder();
                 builder.append("[");
             
-                String result = ${field.name}.stream()
-                        .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
-                builder.append(result);
+                if (! ${field.name}.isEmpty()) {
+                    String result = ${field.name}.stream()
+                            .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
+                    builder.append(result);
+                }
                 builder.append("]");
                 return  builder.toString()
         """.trimIndent())
