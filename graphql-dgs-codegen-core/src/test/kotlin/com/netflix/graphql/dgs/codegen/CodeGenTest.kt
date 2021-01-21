@@ -615,7 +615,7 @@ internal class CodeGenTest {
             }
             
             input MovieFilter {
-                genre: [String]!
+                genre: [String]
                 actors: [String]!
             }
         """.trimIndent()
@@ -631,12 +631,17 @@ internal class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("serializeListOfStrings")
         expectedInputString = """
+            if (genre == null) {
+                    return null;
+                }
                 StringBuilder builder = new java.lang.StringBuilder();
                 builder.append("[");
             
-                String result = genre.stream()
-                        .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
-                builder.append(result);
+                if (! genre.isEmpty()) {
+                    String result = genre.stream()
+                            .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
+                    builder.append(result);
+                }
                 builder.append("]");
                 return  builder.toString();
         """.trimIndent()
