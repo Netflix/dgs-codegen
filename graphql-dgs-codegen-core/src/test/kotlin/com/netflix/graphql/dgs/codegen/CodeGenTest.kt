@@ -562,9 +562,8 @@ internal class CodeGenTest {
             
             input MovieFilter {
                 genre: String
-                rating: Int
-                views: Int
-                stars: Int
+                rating: Int = 3
+                viewed: Boolean = true
             }
         """.trimIndent()
 
@@ -572,7 +571,7 @@ internal class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}";
+            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"viewed:" + viewed + "" +"}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -590,8 +589,6 @@ internal class CodeGenTest {
             input MovieFilter {
                 genre: String!
                 rating: Int!
-                views: Int
-                stars: Int
             }
         """.trimIndent()
 
@@ -599,7 +596,67 @@ internal class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}";
+            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "" +"}";
+        """.trimIndent()
+        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(expectedInputString).isEqualTo(generatedInputString)
+        assertCompiles(dataTypes)
+    }
+
+    @Test
+    fun generateToInputStringMethodForNonNullableInputTypesWithDefaults() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                genre: String! = "horror"
+                rating: Int! = 3
+                average: Float! = 1.2
+                viewed: Boolean! = true
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+        val expectedInputString = """
+            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "" +"}";
+        """.trimIndent()
+        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(expectedInputString).isEqualTo(generatedInputString)
+        assertCompiles(dataTypes)
+    }
+
+    @Test
+    fun generateToInputStringMethodForInputTypesWithDefaults() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            enum Colors {
+                blue
+                red
+                yellow
+            }
+            input MovieFilter {
+                genre: String = "horror"
+                rating: Int = 3
+                average: Float = 1.2
+                viewed: Boolean = true
+                identifier: ID = "jhw"
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+        val expectedInputString = """
+            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "," +"identifier:" + (identifier != null?"\"":"") + identifier + (identifier != null?"\"":"") + "" +"}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -649,8 +706,6 @@ internal class CodeGenTest {
         assertThat(expectedInputString).isEqualTo(generatedInputString)
         assertCompiles(dataTypes)
     }
-
-
 
     @Test
     fun generateToInputStringMethodForListOfIntegers() {

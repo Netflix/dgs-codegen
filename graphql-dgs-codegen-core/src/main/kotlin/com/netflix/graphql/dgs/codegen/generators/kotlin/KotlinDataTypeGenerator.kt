@@ -55,8 +55,22 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
 
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): KotlinCodeGenResult {
 
-        val fields = definition.inputValueDefinitions.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
-                    .plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
+        val fields = definition.inputValueDefinitions.map {
+            var defaultValue: Any
+            if (it.defaultValue != null) {
+                defaultValue = when (it.defaultValue) {
+                    is BooleanValue -> (it.defaultValue as BooleanValue).isValue
+                    is IntValue -> (it.defaultValue as graphql.language.IntValue).value
+                    is StringValue -> (it.defaultValue as graphql.language.StringValue).value
+                    is FloatValue -> (it.defaultValue as graphql.language.FloatValue).value
+                    else -> it.defaultValue
+                }
+
+                Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), defaultValue)
+            } else {
+                Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type))
+            }
+        }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
         val interfaces = emptyList<Type<*>>()
         return generate(definition.name, fields, interfaces, true, document)
     }
@@ -83,13 +97,23 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
             val returnType = if(field.nullable) field.type.copy(nullable = true) else field.type
             val parameterSpec = ParameterSpec.builder(field.name, returnType)
                     .addAnnotation(jsonPropertyAnnotation(field.name))
-            when (returnType) {
-                STRING -> if(field.nullable) parameterSpec.defaultValue("null")
-                INT -> if(field.nullable) parameterSpec.defaultValue("null")
-                FLOAT -> if(field.nullable) parameterSpec.defaultValue("null")
-                DOUBLE -> if(field.nullable) parameterSpec.defaultValue("null")
-                BOOLEAN -> if(field.nullable) parameterSpec.defaultValue("null")
-                else -> if(field.nullable) parameterSpec.defaultValue("null")
+
+            if (field.default != null) {
+                var initializerBlock = if (field.type.toString().contains("String")) {
+                    "\"${field.default}\""
+                } else {
+                    "${field.default}"
+                }
+                parameterSpec.defaultValue(initializerBlock)
+            } else {
+                when (returnType) {
+                    STRING -> if (field.nullable) parameterSpec.defaultValue("null")
+                    INT -> if (field.nullable) parameterSpec.defaultValue("null")
+                    FLOAT -> if (field.nullable) parameterSpec.defaultValue("null")
+                    DOUBLE -> if (field.nullable) parameterSpec.defaultValue("null")
+                    BOOLEAN -> if (field.nullable) parameterSpec.defaultValue("null")
+                    else -> if (field.nullable) parameterSpec.defaultValue("null")
+                }
             }
 
 
@@ -193,11 +217,18 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
                 .addParameter(field.name, field.type)
                 .returns(STRING.copy(nullable = true))
 
-        val toStringBody = StringBuilder("""
+        val toStringBody = StringBuilder()
+        if (field.nullable) {
+            toStringBody.append("""
                 if (${field.name} == null) {
                     return null
                 }
                 
+            """.trimIndent()
+            )
+        }
+        toStringBody.append(
+            """
                 val builder = java.lang.StringBuilder()
                 builder.append("[")
                 if (! ${field.name}.isEmpty()) {
@@ -208,6 +239,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
                 return  builder.toString()
             """.trimIndent()
         )
+
 
         methodBuilder.addStatement(toStringBody.toString())
         kotlinType.addFunction(methodBuilder.build())
