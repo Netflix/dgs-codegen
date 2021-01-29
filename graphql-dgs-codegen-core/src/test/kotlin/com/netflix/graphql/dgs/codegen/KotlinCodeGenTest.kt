@@ -518,6 +518,7 @@ internal class KotlinCodeGenTest {
         assertThat(type.propertySpecs).extracting("name").contains("genre")
     }
 
+
     @Test
     fun generateToStringMethodForInputTypes() {
 
@@ -573,6 +574,66 @@ internal class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateToInputStringMethodForNonNullableInputTypesWithDefaults() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                genre: String! = "horror"
+                rating: Int! = 3
+                average: Float! = 1.2
+                viewed: Boolean! = true
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+        val expectedInputString = """
+            return "{" + "genre:" + "\"" + genre + "\"" + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "" +"}"
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(expectedInputString).isEqualTo(generatedInputString)
+    }
+
+    @Test
+    fun generateToInputStringMethodForInputTypesWithDefaults() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            enum Colors {
+                blue
+                red
+                yellow
+            }
+            input MovieFilter {
+                genre: String = "horror"
+                rating: Int = 3
+                average: Float = 1.2
+                viewed: Boolean = true
+                identifier: ID = "jhw"
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+        val expectedInputString = """
+            return "{" + "genre:" + "${'$'}{if(genre != null) "\"" else ""}" + genre + "${'$'}{if(genre != null) "\"" else ""}" + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "," +"identifier:" + "${'$'}{if(identifier != null) "\"" else ""}" + identifier + "${'$'}{if(identifier != null) "\"" else ""}" + "" +"}"
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(expectedInputString).isEqualTo(generatedInputString)
+    }
+
+    @Test
     fun generateToStringMethodForListOfStrings() {
 
         val schema = """
@@ -602,7 +663,6 @@ internal class KotlinCodeGenTest {
             if (genre == null) {
                     return null
                 }
-
                 val builder = java.lang.StringBuilder()
                 builder.append("[")
                 if (! genre.isEmpty()) {

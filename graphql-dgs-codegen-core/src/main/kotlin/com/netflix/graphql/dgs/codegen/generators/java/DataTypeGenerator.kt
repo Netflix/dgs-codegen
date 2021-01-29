@@ -53,8 +53,22 @@ class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.p
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
         val name = definition.name
 
-        val fieldDefinitions = definition.inputValueDefinitions.map { Field(it.name, typeUtils.findReturnType(it.type)) }
-                .plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
+        val fieldDefinitions = definition.inputValueDefinitions.map {
+            var defaultValue: Any
+            if (it.defaultValue != null) {
+                    defaultValue = when (it.defaultValue) {
+                        is BooleanValue -> (it.defaultValue as BooleanValue).isValue
+                        is IntValue -> (it.defaultValue as graphql.language.IntValue).value
+                        is StringValue -> (it.defaultValue as graphql.language.StringValue).value
+                        is FloatValue -> (it.defaultValue as graphql.language.FloatValue).value
+                        else -> it.defaultValue
+                    }
+                Field(it.name, typeUtils.findReturnType(it.type), defaultValue)
+            } else {
+                Field(it.name, typeUtils.findReturnType(it.type))
+            }
+
+        }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
         return generate(name, emptyList(), fieldDefinitions, true)
     }
 }
@@ -267,9 +281,14 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         if (fieldDefinition.initialValue != null) {
+            var initializerBlock = if (fieldDefinition.type.toString().contains("String")) {
+                "\"${fieldDefinition.initialValue}\""
+            } else {
+                "${fieldDefinition.initialValue}"
+            }
             val field = FieldSpec.builder(fieldDefinition.type, fieldDefinition.name).addModifiers(Modifier.PRIVATE)
-                    .initializer("\"${fieldDefinition.initialValue}\"")
-                    .build()
+                .initializer(initializerBlock)
+                .build()
             javaType.addField(field)
         } else {
             val field = FieldSpec.builder(returnType, fieldDefinition.name).addModifiers(Modifier.PRIVATE).build()
