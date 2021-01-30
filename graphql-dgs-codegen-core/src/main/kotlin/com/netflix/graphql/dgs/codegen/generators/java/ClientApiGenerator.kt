@@ -32,7 +32,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private val processedSchemaTypes = mutableMapOf<Pair<String, String>, Int>()
 
     fun generate(definition: ObjectTypeDefinition): CodeGenResult {
-        return definition.fieldDefinitions.filterSkipped().map {
+        return definition.fieldDefinitions.filterSkipped().filter(isIncludedInConfig(definition)).map {
             val javaFile = createQueryClass(it, definition.name)
 
             val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) } ?: CodeGenResult()
@@ -40,7 +40,17 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         }.fold(CodeGenResult()) { total, current -> total.merge(current) }
     }
 
+    private fun isIncludedInConfig(definition: ObjectTypeDefinition): (FieldDefinition) -> Boolean =
+        {
+            ((definition.name == "Query" && (config.includeQueries.isEmpty() || config.includeQueries.contains(it.name))) ||
+            (definition.name == "Mutation" && (config.includeMutations.isEmpty() || config.includeMutations.contains(it.name))))
+        }
+
     fun generateEntities(definitions: List<ObjectTypeDefinition>): CodeGenResult {
+            if(config.skipEntityQueries) {
+                return CodeGenResult()
+            }
+
             var entitiesRootProjection = CodeGenResult()
             // generate for federation types, if present
             val federatedTypes = definitions.filter { it.getDirective("key") != null }
@@ -69,7 +79,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                         .addModifiers(Modifier.PUBLIC)
                         .returns(ClassName.get("", "${it.name.capitalize()}GraphQLQuery"))
                         .addCode("""
-                                     return new ${it.name.capitalize()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { it.name }});
+                                     return new ${it.name.capitalize()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }});
                                      
                                 """.trimIndent())
                         .build())
@@ -84,19 +94,19 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         it.inputValueDefinitions.forEach { inputValue ->
             val findReturnType = TypeUtils(getDatatypesPackageName(), config).findReturnType(inputValue.type)
             builderClass
-                    .addMethod(MethodSpec.methodBuilder(inputValue.name)
-                            .addParameter(findReturnType, inputValue.name)
+                    .addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name))
+                            .addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
                             .returns(ClassName.get("", "Builder"))
                             .addModifiers(Modifier.PUBLIC)
                             .addCode("""
-                                this.${inputValue.name} = ${inputValue.name};
+                                this.${ReservedKeywordSanitizer.sanitize(inputValue.name)} = ${ReservedKeywordSanitizer.sanitize(inputValue.name)};
                                 return this;
                             """.trimIndent()).build())
-                    .addField(findReturnType, inputValue.name, Modifier.PRIVATE)
+                    .addField(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
 
-            constructorBuilder.addParameter(findReturnType, inputValue.name)
+            constructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
             constructorBuilder.addCode("""
-                getInput().put("${inputValue.name}", ${inputValue.name});
+                getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
                 
             """.trimIndent())
         }
@@ -305,7 +315,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     ! processSchemaTypes(key)
                 }
                 .map {
-                    val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
+                    val projectionName = "${truncatePrefix(prefix)}${it.first.name.capitalize()}Projection"
                     javaType.addMethod(MethodSpec.methodBuilder(it.first.name)
                             .returns(ClassName.get(getPackageName(), projectionName))
                             .addCode("""
@@ -315,7 +325,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     """.trimIndent())
                             .addModifiers(Modifier.PUBLIC)
                             .build())
-                    createSubProjection(it.second!!, javaType.build(), root, "${prefix}${it.first.name.capitalize()}")
+                    createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}${it.first.name.capitalize()}")
                 }.fold(CodeGenResult()) { total, current -> total.merge(current) }
 
 
@@ -323,7 +333,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .forEach {
                     val objectTypeDefinition = it.type.findTypeDefinition(document)
                     if (objectTypeDefinition == null) {
-                        javaType.addMethod(MethodSpec.methodBuilder(it.name)
+                        javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
                                 .returns(ClassName.get(getPackageName(), javaType.build().name))
                                 .addCode("""
                         getFields().put("${it.name}", null);
@@ -338,6 +348,12 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val unionTypesResult = createUnionTypes(type, javaType, root, prefix)
 
         return Pair(javaType, codeGenResult.merge(concreteTypesResult).merge(unionTypesResult))
+    }
+
+    private fun truncatePrefix(prefix: String): String {
+
+
+        return prefix.filter { it.isUpperCase() }
     }
 
     fun processSchemaTypes(key: Pair<String, String>): Boolean {
