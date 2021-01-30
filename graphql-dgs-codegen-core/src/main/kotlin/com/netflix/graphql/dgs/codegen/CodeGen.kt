@@ -50,7 +50,11 @@ class CodeGen(private val config: CodeGenConfig) {
                 codeGenResult.enumTypes.forEach { it.writeTo(config.outputDir) }
                 codeGenResult.dataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
                 codeGenResult.queryTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.clientProjections.forEach { it.writeTo(config.outputDir) }
+                codeGenResult.clientProjections.forEach { try {
+                    it.writeTo(config.outputDir)
+                } catch (ex: Exception) {
+                    println(ex.message)
+                } }
                 codeGenResult.constants.forEach { it.writeTo(config.outputDir) }
             }
 
@@ -238,7 +242,11 @@ data class CodeGenConfig(
         val packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
         val language: Language = Language.JAVA,
         val generateClientApi: Boolean = false,
-        val typeMapping: Map<String, String> = emptyMap())
+        val typeMapping: Map<String, String> = emptyMap(),
+        val includeQueries: Set<String> = emptySet(),
+        val includeMutations: Set<String> = emptySet(),
+        val skipEntityQueries: Boolean = false
+)
 
 enum class Language {
     JAVA,
