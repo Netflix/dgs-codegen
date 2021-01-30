@@ -154,7 +154,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         val toStringBody = StringBuilder("return \"${javaType.build().name}{\" + ")
         fieldDefinitions.forEachIndexed { index, field ->
             toStringBody.append("""
-                "${field.name}='" + ${field.name} + "'${if (index < fieldDefinitions.size - 1) "," else ""}" +
+                "${field.name}='" + ${ReservedKeywordSanitizer.sanitize(field.name)} + "'${if (index < fieldDefinitions.size - 1) "," else ""}" +
             """.trimIndent())
         }
 
@@ -245,9 +245,9 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         val constructorBuilder = MethodSpec.constructorBuilder()
         fieldDefinitions.forEach {
             constructorBuilder
-                    .addParameter(it.type, it.name)
+                    .addParameter(it.type, ReservedKeywordSanitizer.sanitize(it.name))
                     .addModifiers(Modifier.PUBLIC)
-                    .addStatement("this.\$N = \$N", it.name, it.name)
+                    .addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(it.name), ReservedKeywordSanitizer.sanitize(it.name))
         }
 
         javaType.addMethod(constructorBuilder.build())
@@ -267,20 +267,20 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         if (fieldDefinition.initialValue != null) {
-            val field = FieldSpec.builder(fieldDefinition.type, fieldDefinition.name).addModifiers(Modifier.PRIVATE)
+            val field = FieldSpec.builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE)
                     .initializer("\"${fieldDefinition.initialValue}\"")
                     .build()
             javaType.addField(field)
         } else {
-            val field = FieldSpec.builder(returnType, fieldDefinition.name).addModifiers(Modifier.PRIVATE).build()
+            val field = FieldSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE).build()
             javaType.addField(field)
         }
 
         val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
-        javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", fieldDefinition.name).build())
+        javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
 
         val setterName = "set${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
-        javaType.addMethod(MethodSpec.methodBuilder(setterName).addModifiers(Modifier.PUBLIC).addParameter(returnType, fieldDefinition.name).addStatement("this.\$N = \$N", fieldDefinition.name, fieldDefinition.name).build())
+        javaType.addMethod(MethodSpec.methodBuilder(setterName).addModifiers(Modifier.PUBLIC).addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name), ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
     }
 
     private fun addBuilder(javaType: TypeSpec.Builder) {

@@ -98,7 +98,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun addFieldNameConstant(constantsType: TypeSpec.Builder, fieldName: String) {
-        constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), fieldName.capitalize()).addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""$fieldName"""").build())
+        constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), ReservedKeywordSanitizer.sanitize(fieldName.capitalize())).addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""$fieldName"""").build())
     }
 
     private fun findExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
