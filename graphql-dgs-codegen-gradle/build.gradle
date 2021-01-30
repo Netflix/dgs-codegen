@@ -37,7 +37,7 @@ apply plugin: 'license'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
-    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.3.70"
+    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.21"
     testImplementation gradleTestKit()
     testImplementation("org.assertj:assertj-core:3.11.1")
     // Use JUnit test framework for unit tests
