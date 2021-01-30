@@ -40,7 +40,8 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val includeQueries by option("--include-query").multiple().unique()
     private val includeMutations by option("--include-mutation").multiple().unique()
     private val skipEntityQueries by option("--skip-entities").flag()
-    val typeMapping: Map<String, String> by option("--type-mapping").associate()
+    private val typeMapping: Map<String, String> by option("--type-mapping").associate()
+    private val shortProjectionNames by option("--short-projection-names").flag()
 
 
     override fun run() {
@@ -58,9 +59,9 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
 
         val generate = CodeGen(
                 if(packageName != null) {
-                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), packageName = packageName!!, language = Language.valueOf(language.toUpperCase()), generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping)
+                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), packageName = packageName!!, language = Language.valueOf(language.toUpperCase()), generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames)
                 } else {
-                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), language = Language.valueOf(language.toUpperCase()), generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping)
+                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), language = Language.valueOf(language.toUpperCase()), generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames)
                 }
         ).generate()
 

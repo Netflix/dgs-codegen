@@ -351,9 +351,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun truncatePrefix(prefix: String): String {
-
-
-        return prefix.filter { it.isUpperCase() }
+        return if(config.shortProjectionNames) prefix.filter { it.isUpperCase() } else prefix
     }
 
     fun processSchemaTypes(key: Pair<String, String>): Boolean {
