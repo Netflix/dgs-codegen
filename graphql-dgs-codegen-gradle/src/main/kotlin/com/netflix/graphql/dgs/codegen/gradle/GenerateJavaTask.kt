@@ -71,6 +71,18 @@ open class GenerateJavaTask : DefaultTask() {
         return Paths.get("${generatedSourcesDir}/generated-examples").toFile()
     }
 
+    @Input
+    var includeQueries = mutableListOf<String>()
+
+    @Input
+    var includeMutations = mutableListOf<String>()
+
+    @Input
+    var skipEntityQueries = false
+
+    @Input
+    var shortProjectionNames = false
+
     @TaskAction
     fun generate() {
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.toSet()
@@ -87,7 +99,12 @@ open class GenerateJavaTask : DefaultTask() {
                 packageName = packageName,
                 language = Language.valueOf(language.toUpperCase()),
                 generateClientApi = generateClient,
-                typeMapping = typeMapping)
+                typeMapping = typeMapping,
+                includeQueries = includeQueries.toSet(),
+                includeMutations = includeMutations.toSet(),
+                skipEntityQueries = skipEntityQueries,
+                shortProjectionNames = shortProjectionNames
+        )
 
         LOGGER.info("Codegen config: {}", config)
 
