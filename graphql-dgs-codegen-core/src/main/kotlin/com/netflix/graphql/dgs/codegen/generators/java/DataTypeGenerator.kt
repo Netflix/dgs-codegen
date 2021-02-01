@@ -25,6 +25,10 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
 import graphql.language.TypeName
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
 import javax.lang.model.element.Modifier
 
 class DataTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageName + ".types", config) {
@@ -200,9 +204,19 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
                 is ClassName -> {
                     when (fieldSpecType.simpleName()) {
                         ClassName.get(String::class.java).simpleName() -> {
-                            """
-                            "${fieldSpec.name}:" + (${fieldSpec.name} != null?"\"":"") + ${fieldSpec.name} + (${fieldSpec.name} != null?"\"":"") + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-                            """.trimIndent()
+                            quotedString(fieldSpec, index, fieldDefinitions)
+                        }
+                        ClassName.get(LocalDateTime::class.java).simpleName() -> {
+                            quotedString(fieldSpec, index, fieldDefinitions)
+                        }
+                        ClassName.get(LocalDate::class.java).simpleName() -> {
+                            quotedString(fieldSpec, index, fieldDefinitions)
+                        }
+                        ClassName.get(LocalTime::class.java).simpleName() -> {
+                            quotedString(fieldSpec, index, fieldDefinitions)
+                        }
+                        ClassName.get(OffsetDateTime::class.java).simpleName() -> {
+                            quotedString(fieldSpec, index, fieldDefinitions)
                         }
                         else -> defaultString(fieldSpec, index, fieldDefinitions)
                     }
@@ -223,6 +237,12 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
     private fun defaultString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
         return """
             "${fieldSpec.name}:" + ${fieldSpec.name} + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
+            """.trimIndent()
+    }
+
+    private fun quotedString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
+        return """
+            "${fieldSpec.name}:" + (${fieldSpec.name} != null?"\"":"") + ${fieldSpec.name} + (${fieldSpec.name} != null?"\"":"") + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
             """.trimIndent()
     }
 

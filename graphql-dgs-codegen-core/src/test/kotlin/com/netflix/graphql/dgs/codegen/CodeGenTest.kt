@@ -729,6 +729,34 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateToInputStringMethodForDate() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                localDateTime: LocalDateTime
+                localDate: LocalDate
+                localTime: LocalTime
+                dateTime: DateTime
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+
+        val expectedInputString = """
+            return "{" + "localDateTime:" + (localDateTime != null?"\"":"") + localDateTime + (localDateTime != null?"\"":"") + "," +"localDate:" + (localDate != null?"\"":"") + localDate + (localDate != null?"\"":"") + "," +"localTime:" + (localTime != null?"\"":"") + localTime + (localTime != null?"\"":"") + "," +"dateTime:" + (dateTime != null?"\"":"") + dateTime + (dateTime != null?"\"":"") + "" +"}";
+        """.trimIndent()
+        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(expectedInputString).isEqualTo(generatedInputString)
+        assertCompiles(dataTypes)
+    }
+
+
+
+    @Test
     fun generateExtendedInputTypes() {
 
         val schema = """
