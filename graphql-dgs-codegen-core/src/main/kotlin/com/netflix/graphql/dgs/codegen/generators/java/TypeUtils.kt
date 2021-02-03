@@ -29,6 +29,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
+import java.util.*
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig) {
     fun findReturnType(fieldType: Type<*>): com.squareup.javapoet.TypeName {
@@ -86,15 +87,21 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
 
         return when (name) {
             "String" -> ClassName.get(String::class.java)
+            "StringValue" -> ClassName.get(String::class.java)
             "Int" -> com.squareup.javapoet.TypeName.INT
+            "IntValue" -> com.squareup.javapoet.TypeName.INT
             "Float" -> com.squareup.javapoet.TypeName.DOUBLE
+            "FloatValue" -> com.squareup.javapoet.TypeName.DOUBLE
             "Boolean" -> com.squareup.javapoet.TypeName.BOOLEAN
+            "BooleanValue" -> com.squareup.javapoet.TypeName.BOOLEAN
             "ID" -> ClassName.get(String::class.java)
+            "IDValue" -> ClassName.get(String::class.java)
             "LocalTime" -> ClassName.get(LocalTime::class.java)
             "LocalDate" -> ClassName.get(LocalDate::class.java)
             "LocalDateTime" -> ClassName.get(LocalDateTime::class.java)
             "TimeZone" -> ClassName.get(String::class.java)
             "DateTime" -> ClassName.get(OffsetDateTime::class.java)
+            "Currency" -> ClassName.get(Currency::class.java)
             "RelayPageInfo" -> ClassName.get(PageInfo::class.java)
             "PageInfo" -> ClassName.get(PageInfo::class.java)
             "PresignedUrlResponse" -> ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse")

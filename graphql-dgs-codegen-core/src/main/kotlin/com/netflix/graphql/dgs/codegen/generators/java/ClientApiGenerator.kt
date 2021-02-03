@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.client.codegen.BaseProjectionNode
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.generators.shared.ClassnameShortener
 import com.squareup.javapoet.*
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.*
@@ -32,19 +33,13 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private val processedSchemaTypes = mutableMapOf<Pair<String, String>, Int>()
 
     fun generate(definition: ObjectTypeDefinition): CodeGenResult {
-        return definition.fieldDefinitions.filterSkipped().filter(isIncludedInConfig(definition)).map {
+        return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
             val javaFile = createQueryClass(it, definition.name)
 
             val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) } ?: CodeGenResult()
             CodeGenResult(queryTypes = listOf(javaFile)).merge(rootProjection)
         }.fold(CodeGenResult()) { total, current -> total.merge(current) }
     }
-
-    private fun isIncludedInConfig(definition: ObjectTypeDefinition): (FieldDefinition) -> Boolean =
-        {
-            ((definition.name == "Query" && (config.includeQueries.isEmpty() || config.includeQueries.contains(it.name))) ||
-            (definition.name == "Mutation" && (config.includeMutations.isEmpty() || config.includeMutations.contains(it.name))))
-        }
 
     fun generateEntities(definitions: List<ObjectTypeDefinition>): CodeGenResult {
             if(config.skipEntityQueries) {
@@ -341,6 +336,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     """.trimIndent())
                                 .addModifiers(Modifier.PUBLIC)
                                 .build())
+
+
                     }
                 }
 

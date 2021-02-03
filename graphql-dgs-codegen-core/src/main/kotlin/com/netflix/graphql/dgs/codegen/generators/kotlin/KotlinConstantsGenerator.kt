@@ -38,7 +38,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
             constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
 
-            fields.forEach { field ->
+            fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                 addFieldName(constantsType, field.name)
             }
 
@@ -51,7 +51,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
             val extensions = findInputExtensions(it.name, document.definitions)
             val fields = it.inputValueDefinitions.plus(extensions.flatMap { it.inputValueDefinitions })
             constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
-            fields.forEach { field ->
+            fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                 addFieldName(constantsType, field.name)
             }
 
@@ -62,7 +62,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
             val constantsType = TypeSpec.objectBuilder((it.name.toUpperCase()))
             constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
 
-            it.fieldDefinitions.forEach { field ->
+            it.fieldDefinitions.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                 addFieldName(constantsType, field.name)
             }
 
@@ -99,5 +99,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
     private fun findInputExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
             definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
+
+
 
 }

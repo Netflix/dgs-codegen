@@ -16,20 +16,10 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.generators.java
+package com.netflix.graphql.dgs.codegen.generators.kotlin
 
-class ReservedKeywordSanitizer {
+import graphql.language.NamedNode
 
-    companion object {
-        private val reservedKeywords = setOf("import", "_")
-        private const val prefix = "_"
-
-        fun sanitize(originalName: String): String {
-            return if (reservedKeywords.contains(originalName)) {
-                "$prefix$originalName"
-            } else {
-                originalName
-            }
-        }
-    }
+object ReservedKeywordFilter {
+    val filterInvalidNames : (NamedNode<*>) -> Boolean = { it.name != "_"}
 }

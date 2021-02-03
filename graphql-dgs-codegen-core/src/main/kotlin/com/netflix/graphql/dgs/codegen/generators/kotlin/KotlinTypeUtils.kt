@@ -38,10 +38,8 @@ import graphql.language.TypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
+import java.time.*
+import java.util.*
 
 class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig) {
     @ExperimentalStdlibApi
@@ -80,19 +78,27 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
 
         return when (name) {
             "String" -> STRING
+            "StringValue" -> STRING
             "Int" -> INT
+            "IntValue" -> INT
             "Float" -> DOUBLE
+            "FloatValue" -> DOUBLE
             "Boolean" -> BOOLEAN
+            "BooleanValue" -> BOOLEAN
             "ID" -> STRING
+            "IDValue" -> STRING
             "LocalTime" -> typeNameOf<LocalTime>()
             "LocalDate" -> typeNameOf<LocalDate>()
             "LocalDateTime" -> typeNameOf<LocalDateTime>()
             "TimeZone" -> STRING
             "DateTime" -> typeNameOf<OffsetDateTime>()
+            "Instant" -> typeNameOf<Instant>()
+            "Currency" -> typeNameOf<Currency>()
             "RelayPageInfo" -> typeNameOf<PageInfo>()
             "PageInfo" -> typeNameOf<PageInfo>()
             "PresignedUrlResponse" -> ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse")
             "Header" -> ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header")
+
             else ->  ClassName.bestGuess("${packageName}.${name}")
         }
     }

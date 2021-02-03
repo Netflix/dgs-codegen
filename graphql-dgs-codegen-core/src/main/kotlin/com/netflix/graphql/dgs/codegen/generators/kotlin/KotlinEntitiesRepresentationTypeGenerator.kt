@@ -60,7 +60,7 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
                     val type = findType(it.type, document)
                     val fieldType = typeUtils.findReturnType(it.type)
                     if (type != null && type is ObjectTypeDefinition) {
-                        val representationType = fieldType.toString().replace(type.name, "${type.name}Representation")
+                        val representationType = fieldType.toString().replace(type.name, "${type.name}Representation").removeSuffix("?")
                         if (! generatedRepresentations.containsKey(name)) {
                             result = generateRepresentations(type, document, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
                         }

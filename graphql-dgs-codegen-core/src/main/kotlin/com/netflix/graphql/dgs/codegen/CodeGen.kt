@@ -287,6 +287,30 @@ fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
     return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
 }
 
+fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
+    return when (definitionName) {
+        "Query" -> {
+            if(config.includeQueries.isNullOrEmpty()) {
+                this
+            } else {
+                this.filter {
+                    config.includeQueries.contains(it.name)
+                }
+            }
+        }
+        "Mutation" -> {
+            if(config.includeMutations.isNullOrEmpty()) {
+                this
+            } else {
+                this.filter {
+                    config.includeMutations.contains(it.name)
+                }
+            }
+        }
+        else -> this
+    }
+}
+
 fun ObjectTypeDefinition.shouldSkip(): Boolean {
     return this.directives.any { it.name == "skipcodegen" }
 }

@@ -16,7 +16,7 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.generators.java
+package com.netflix.graphql.dgs.codegen.generators.shared
 
 class ClassnameShortener {
     companion object {

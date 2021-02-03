@@ -36,7 +36,8 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
 
         val fields = definition.fieldDefinitions
                 .filterSkipped()
-                        .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
+                .filter(ReservedKeywordFilter.filterInvalidNames)
+            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
                 .plus(extensions.flatMap { it.fieldDefinitions }
                         .filterSkipped()
                         .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
@@ -55,7 +56,9 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
 
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): KotlinCodeGenResult {
 
-        val fields = definition.inputValueDefinitions.map {
+        val fields = definition.inputValueDefinitions
+            .filter(ReservedKeywordFilter.filterInvalidNames)
+            .map {
             var defaultValue: Any
             if (it.defaultValue != null) {
                 defaultValue = when (it.defaultValue) {
@@ -85,7 +88,12 @@ internal data class Field(val name: String, val type: com.squareup.kotlinpoet.Ty
 abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig) {
 
     internal fun generate(name: String, fields: List<Field>, interfaces: List<Type<*>>, isInputType: Boolean, document: Document): KotlinCodeGenResult {
-        val kotlinType = TypeSpec.classBuilder(name).addModifiers(KModifier.DATA)
+        val kotlinType = TypeSpec.classBuilder(name)
+
+        if(fields.isNotEmpty()) {
+            kotlinType.addModifiers(KModifier.DATA)
+        }
+
         val constructorBuilder = FunSpec.constructorBuilder()
 
         val interfaceTypes = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
@@ -162,8 +170,8 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
         fields.mapIndexed { index, field ->
             when (val fieldTypeName = field.type) {
                 is ParameterizedTypeName -> {
-                    when ((fieldTypeName.typeArguments[0] as ClassName).simpleName) {
-                        STRING.simpleName -> {
+                    when (fieldTypeName.typeArguments[0]) {
+                        STRING -> {
                             addToStringForListOfStrings(field, kotlinType)
                             """
                                 "${field.name}:" + serializeListOfStrings(${field.name}) + "${if (index < fields.size - 1)"," else ""}" +
