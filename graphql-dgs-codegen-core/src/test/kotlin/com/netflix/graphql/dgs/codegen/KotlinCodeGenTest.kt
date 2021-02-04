@@ -673,7 +673,7 @@ internal class KotlinCodeGenTest {
                 return  builder.toString()
         """.trimIndent()
         generatedInputString = type.funSpecs.single { it.name == "serializeListOfStrings" }.body.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
     }
 
     @Test
@@ -693,10 +693,10 @@ internal class KotlinCodeGenTest {
 
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
-        var expectedInputString = """
+        val expectedInputString = """
             return "{" + "genre:" + genre + "" +"}"
         """.trimIndent()
-        var generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
     }
 
