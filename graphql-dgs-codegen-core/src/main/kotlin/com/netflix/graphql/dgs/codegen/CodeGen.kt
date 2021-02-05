@@ -50,7 +50,11 @@ class CodeGen(private val config: CodeGenConfig) {
                 codeGenResult.enumTypes.forEach { it.writeTo(config.outputDir) }
                 codeGenResult.dataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
                 codeGenResult.queryTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.clientProjections.forEach { it.writeTo(config.outputDir) }
+                codeGenResult.clientProjections.forEach { try {
+                    it.writeTo(config.outputDir)
+                } catch (ex: Exception) {
+                    println(ex.message)
+                } }
                 codeGenResult.constants.forEach { it.writeTo(config.outputDir) }
             }
 
@@ -238,7 +242,13 @@ data class CodeGenConfig(
         val packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
         val language: Language = Language.JAVA,
         val generateClientApi: Boolean = false,
-        val typeMapping: Map<String, String> = emptyMap())
+        val typeMapping: Map<String, String> = emptyMap(),
+        val includeQueries: Set<String> = emptySet(),
+        val includeMutations: Set<String> = emptySet(),
+        val skipEntityQueries: Boolean = false,
+        val shortProjectionNames: Boolean = false,
+
+)
 
 enum class Language {
     JAVA,
@@ -275,6 +285,30 @@ data class KotlinCodeGenResult(val dataTypes: List<FileSpec> = listOf(), val int
 
 fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
     return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
+}
+
+fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
+    return when (definitionName) {
+        "Query" -> {
+            if(config.includeQueries.isNullOrEmpty()) {
+                this
+            } else {
+                this.filter {
+                    config.includeQueries.contains(it.name)
+                }
+            }
+        }
+        "Mutation" -> {
+            if(config.includeMutations.isNullOrEmpty()) {
+                this
+            } else {
+                this.filter {
+                    config.includeMutations.contains(it.name)
+                }
+            }
+        }
+        else -> this
+    }
 }
 
 fun ObjectTypeDefinition.shouldSkip(): Boolean {

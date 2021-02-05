@@ -35,7 +35,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
     @ExperimentalStdlibApi
     fun generate(definition: ObjectTypeDefinition): KotlinCodeGenResult {
 
-        return definition.fieldDefinitions.filterSkipped().map {
+        return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
             val javaFile = createQueryClass(it, definition.name)
 
             val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) }
@@ -46,6 +46,10 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
 
     @ExperimentalStdlibApi
     fun generateEntities(definitions: List<ObjectTypeDefinition>): KotlinCodeGenResult {
+        if(config.skipEntityQueries) {
+            return KotlinCodeGenResult()
+        }
+
         var entitiesRootProjection = KotlinCodeGenResult()
         // generate for federation types, if present
         val federatedTypes = definitions.filter { it.getDirective("key") != null }
@@ -59,8 +63,12 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
     @ExperimentalStdlibApi
     private fun createQueryClass(it: FieldDefinition, operation: String): FileSpec {
         val javaType = TypeSpec.classBuilder("${it.name.capitalize()}GraphQLQuery")
-                .addModifiers(KModifier.DATA).superclass(typeNameOf<GraphQLQuery>())
+                .superclass(typeNameOf<GraphQLQuery>())
                 .addSuperclassConstructorParameter("%S", "${operation.toLowerCase()}")
+
+        if(it.inputValueDefinitions.isNotEmpty()) {
+            javaType.addModifiers(KModifier.DATA)
+        }
 
         javaType.addFunction(
                 FunSpec.builder("getOperationName")

@@ -25,6 +25,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 
+@ExperimentalStdlibApi
 class ClientApiGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
@@ -267,6 +268,38 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MoviesActorsProjection")
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun generateSubProjectionTypesWithShortNames() {
+
+        val schema = """
+            type Query {
+                movies: [Movie]
+            }
+            
+            type Movie {
+                title: String
+                actors: [Actor]
+            }
+            
+            type Actor {
+                name: String
+                age: Integer
+                movies: [Movie]
+            }
+
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, shortProjectionNames = true)).generate() as CodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MoviesActorsProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MoAcMoviesProjection")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
@@ -695,5 +728,104 @@ class ClientApiGenTest {
         assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun includeQueryConfig() {
+
+        val schema = """
+            type Query {
+                movieTitles: [String]
+                actorNames: [String]
+            }           
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeQueries = setOf("movieTitles"))).generate() as CodeGenResult
+
+        assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("MovieTitlesGraphQLQuery")
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun includeMutationConfig() {
+
+        val schema = """
+            type Mutation {
+                updateMovieTitle: String
+                addActorName: Boolean
+            }           
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeMutations = setOf("updateMovieTitle"))).generate() as CodeGenResult
+
+        assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("UpdateMovieTitleGraphQLQuery")
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun generateProjectionRootWithReservedNames() {
+
+        val schema = """
+            type Query {
+                weirdType: WeirdType
+            }
+            
+            type WeirdType {
+                _: String
+                root: String
+                parent: String
+                import: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly("__", "_root", "_parent", "_import")
+
+        assertCompiles(codeGenResult.clientProjections)
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun generateSubProjectionWithReservedNames() {
+
+        val schema = """
+            type Query {
+                normalType: NormalType
+            }
+            
+            type NormalType {
+                weirdType: WeirdType
+            }
+            
+            type WeirdType {
+                _: String
+                root: String
+                parent: String
+                import: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        val weirdType = codeGenResult.clientProjections.find { it.typeSpec.name == "NormalTypeWeirdTypeProjection" }
+
+        assertThat(weirdType?.typeSpec?.methodSpecs).extracting("name").contains("__", "_root", "_parent", "_import")
+
+        assertCompiles(codeGenResult.clientProjections)
     }
 }

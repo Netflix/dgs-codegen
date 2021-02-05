@@ -16,19 +16,20 @@
  *
  */
 
-plugins {
-    id 'nebula.netflixoss' version '8.9.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.30' apply false
-}
+package com.netflix.graphql.dgs.codegen.generators.java
 
-allprojects {
-    repositories {
-        mavenCentral()
-        jcenter()
+class ReservedKeywordSanitizer {
+
+    companion object {
+        private val reservedKeywords = setOf("import", "_", "root", "parent")
+        private const val prefix = "_"
+
+        fun sanitize(originalName: String): String {
+            return if (reservedKeywords.contains(originalName)) {
+                "$prefix$originalName"
+            } else {
+                originalName
+            }
+        }
     }
-    group = 'com.netflix.graphql.dgs.codegen'
-}
-description = 'Netflix GraphQL DGS Code Generation'
-bintray {
-    pkgName = 'dgs-codegen'
 }

@@ -16,19 +16,10 @@
  *
  */
 
-plugins {
-    id 'nebula.netflixoss' version '8.9.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.30' apply false
-}
+package com.netflix.graphql.dgs.codegen.generators.kotlin
 
-allprojects {
-    repositories {
-        mavenCentral()
-        jcenter()
-    }
-    group = 'com.netflix.graphql.dgs.codegen'
-}
-description = 'Netflix GraphQL DGS Code Generation'
-bintray {
-    pkgName = 'dgs-codegen'
+import graphql.language.NamedNode
+
+object ReservedKeywordFilter {
+    val filterInvalidNames : (NamedNode<*>) -> Boolean = { it.name != "_"}
 }

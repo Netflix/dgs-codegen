@@ -250,4 +250,30 @@ class EntitiesClientApiGenTest {
         assertThat(projections.size).isEqualTo(3)
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun skipEntities() {
+        val schema = """
+            type Query {
+                search: Movie
+            }
+
+            type Movie @key(fields: "movieId") {
+                movieId: ID! @external
+                title: String
+                actor: Actor
+            }
+
+            type Actor {
+                name: String
+                friends: Actor
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, skipEntityQueries = true)).generate() as CodeGenResult
+
+        val projections = codeGenResult.clientProjections.filter {it.typeSpec.name.contains("Entities")}
+        assertThat(projections).isEmpty()
+    }
 }

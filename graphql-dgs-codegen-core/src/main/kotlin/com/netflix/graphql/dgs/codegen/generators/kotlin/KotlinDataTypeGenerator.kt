@@ -36,7 +36,8 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
 
         val fields = definition.fieldDefinitions
                 .filterSkipped()
-                        .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
+                .filter(ReservedKeywordFilter.filterInvalidNames)
+            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
                 .plus(extensions.flatMap { it.fieldDefinitions }
                         .filterSkipped()
                         .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
@@ -55,14 +56,16 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
 
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): KotlinCodeGenResult {
 
-        val fields = definition.inputValueDefinitions.map {
-            var defaultValue: Any
+        val fields = definition.inputValueDefinitions
+            .filter(ReservedKeywordFilter.filterInvalidNames)
+            .map {
+            val defaultValue: Any
             if (it.defaultValue != null) {
                 defaultValue = when (it.defaultValue) {
                     is BooleanValue -> (it.defaultValue as BooleanValue).isValue
-                    is IntValue -> (it.defaultValue as graphql.language.IntValue).value
-                    is StringValue -> (it.defaultValue as graphql.language.StringValue).value
-                    is FloatValue -> (it.defaultValue as graphql.language.FloatValue).value
+                    is IntValue -> (it.defaultValue as IntValue).value
+                    is StringValue -> (it.defaultValue as StringValue).value
+                    is FloatValue -> (it.defaultValue as FloatValue).value
                     else -> it.defaultValue
                 }
 
@@ -85,7 +88,12 @@ internal data class Field(val name: String, val type: com.squareup.kotlinpoet.Ty
 abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig) {
 
     internal fun generate(name: String, fields: List<Field>, interfaces: List<Type<*>>, isInputType: Boolean, document: Document): KotlinCodeGenResult {
-        val kotlinType = TypeSpec.classBuilder(name).addModifiers(KModifier.DATA)
+        val kotlinType = TypeSpec.classBuilder(name)
+
+        if(fields.isNotEmpty()) {
+            kotlinType.addModifiers(KModifier.DATA)
+        }
+
         val constructorBuilder = FunSpec.constructorBuilder()
 
         val interfaceTypes = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
@@ -99,7 +107,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
                     .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.default != null) {
-                var initializerBlock = if (field.type.toString().contains("String")) {
+                val initializerBlock = if (field.type.toString().contains("String")) {
                     "\"${field.default}\""
                 } else {
                     "${field.default}"
@@ -162,18 +170,16 @@ abstract class AbstractKotlinDataTypeGenerator(private val config: CodeGenConfig
         fields.mapIndexed { index, field ->
             when (val fieldTypeName = field.type) {
                 is ParameterizedTypeName -> {
-                    when ((fieldTypeName.typeArguments[0] as ClassName).simpleName) {
-                        STRING.simpleName -> {
-                            addToStringForListOfStrings(field, kotlinType)
-                            """
-                                "${field.name}:" + serializeListOfStrings(${field.name}) + "${if (index < fields.size - 1)"," else ""}" +
-                            """.trimIndent()
-                        }
-                        else -> {
-                            defaultString(field, index, fields)
-                        }
+                    if (fieldTypeName.typeArguments[0] is ClassName && (fieldTypeName.typeArguments[0] as ClassName).simpleName == STRING.simpleName) {
+                        addToStringForListOfStrings(field, kotlinType)
+                        """
+                            "${field.name}:" + serializeListOfStrings(${field.name}) + "${if (index < fields.size - 1) "," else ""}" +
+                        """.trimIndent()
+                    } else {
+                        defaultString(field, index, fields)
                     }
                 }
+
                 is ClassName -> {
                     when(fieldTypeName.simpleName) {
                         STRING.simpleName -> {
