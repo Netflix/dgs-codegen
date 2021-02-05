@@ -140,7 +140,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .filter { ! processSchemaTypes(Pair(it.second!!.name, type.name)) }
                 .map {
                     val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
-                    javaType.addMethod(MethodSpec.methodBuilder(it.first.name)
+                    javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
                             .returns(ClassName.get(getPackageName(), projectionName))
                             .addCode("""
                         $projectionName projection = new $projectionName(this, this);    
@@ -157,7 +157,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
             val objectTypeDefinition = it.type.findTypeDefinition(document)
             if (objectTypeDefinition == null) {
-                javaType.addMethod(MethodSpec.methodBuilder(it.name)
+                javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
                         .returns(ClassName.get(getPackageName(), javaType.build().name))
                         .addCode("""
                         getFields().put("${it.name}", null);

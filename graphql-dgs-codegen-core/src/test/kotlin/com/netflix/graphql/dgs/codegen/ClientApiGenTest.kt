@@ -769,4 +769,63 @@ class ClientApiGenTest {
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun generateProjectionRootWithReservedNames() {
+
+        val schema = """
+            type Query {
+                weirdType: WeirdType
+            }
+            
+            type WeirdType {
+                _: String
+                root: String
+                parent: String
+                import: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly("__", "_root", "_parent", "_import")
+
+        assertCompiles(codeGenResult.clientProjections)
+    }
+
+    @ExperimentalStdlibApi
+    @Test
+    fun generateSubProjectionWithReservedNames() {
+
+        val schema = """
+            type Query {
+                normalType: NormalType
+            }
+            
+            type NormalType {
+                weirdType: WeirdType
+            }
+            
+            type WeirdType {
+                _: String
+                root: String
+                parent: String
+                import: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, writeToFiles = true)).generate() as CodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        val weirdType = codeGenResult.clientProjections.find { it.typeSpec.name == "NormalTypeWeirdTypeProjection" }
+
+        assertThat(weirdType?.typeSpec?.methodSpecs).extracting("name").contains("__", "_root", "_parent", "_import")
+
+        assertCompiles(codeGenResult.clientProjections)
+    }
 }
