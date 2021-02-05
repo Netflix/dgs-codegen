@@ -311,7 +311,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 }
                 .map {
                     val projectionName = "${truncatePrefix(prefix)}${it.first.name.capitalize()}Projection"
-                    javaType.addMethod(MethodSpec.methodBuilder(it.first.name)
+                    javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
                             .returns(ClassName.get(getPackageName(), projectionName))
                             .addCode("""
                         $projectionName projection = new $projectionName(this, getRoot());    
