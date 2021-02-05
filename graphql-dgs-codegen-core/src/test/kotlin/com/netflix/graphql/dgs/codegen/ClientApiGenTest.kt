@@ -819,7 +819,7 @@ class ClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, writeToFiles = true)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         val weirdType = codeGenResult.clientProjections.find { it.typeSpec.name == "NormalTypeWeirdTypeProjection" }
