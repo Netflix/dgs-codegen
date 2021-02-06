@@ -21,16 +21,18 @@
  */
 package com.netflix.graphql.dgs;
 
-import org.gradle.internal.impldep.com.google.common.io.Resources;
+import com.google.common.io.Resources;
 import org.gradle.testkit.runner.BuildResult;
 import org.gradle.testkit.runner.GradleRunner;
-import org.junit.Before;
-import org.junit.Test;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
+
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -46,7 +48,7 @@ public class CodegenGradlePluginTest {
     public static final String EXPECTED_DEFAULT_PATH = "src/test/resources/test-project/build/generated/com/netflix/testproject/graphql/types/";
     private List<File> pluginClasspath;
 
-    @Before
+    @BeforeEach
     public void before() throws IOException {
         pluginClasspath = Resources.readLines(Resources.getResource("plugin-classpath.txt"), UTF_8)
                 .stream()
@@ -101,6 +103,5 @@ public class CodegenGradlePluginTest {
         assertThat(result.task(":build").getOutcome()).isEqualTo(SUCCESS);
         // Verify that POJOs are generated in the configured directory
         assertThat(new File(EXPECTED_DEFAULT_PATH +"Result.java").exists()).isTrue();
-
     }
 }

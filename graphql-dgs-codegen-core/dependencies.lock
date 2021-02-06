@@ -6,10 +6,13 @@
     },
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
+        },
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -35,10 +38,13 @@
     },
     "implementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
+        },
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -79,10 +85,13 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
+        },
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -108,10 +117,13 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
+        },
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -143,19 +155,25 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.5.1"
+        "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.7.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.5.1"
+            "locked": "5.7.1"
+        },
+        "org.junit:junit-bom": {
+            "locked": "5.7.1"
         }
     },
     "testImplementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
+        },
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -187,19 +205,25 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.5.1"
+        "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.7.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.5.1"
+            "locked": "5.7.1"
+        },
+        "org.junit:junit-bom": {
+            "locked": "5.7.1"
         }
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
         },
         "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.11.4"
+            "locked": "2.12.1"
+        },
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -231,19 +255,14 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         },
-        "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.5.1"
-        },
-        "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.5.1"
+        "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.7.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.5.1"
-        }
-    },
-    "testRuntimeOnlyDependenciesMetadata": {
-        "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.5.1"
+            "locked": "5.7.1"
+        },
+        "org.junit:junit-bom": {
+            "locked": "5.7.1"
         }
     }
 }
