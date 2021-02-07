@@ -21,7 +21,14 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
-import graphql.language.*
+import com.squareup.javapoet.TypeName as JavaTypeName
+import graphql.language.ListType
+import graphql.language.Node
+import graphql.language.NodeTraverser
+import graphql.language.NodeVisitorStub
+import graphql.language.NonNullType
+import graphql.language.Type
+import graphql.language.TypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
@@ -29,10 +36,10 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
-import java.util.*
+import java.util.Currency
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig) {
-    fun findReturnType(fieldType: Type<*>): com.squareup.javapoet.TypeName {
+    fun findReturnType(fieldType: Type<*>): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = node.toJavaTypeName()
@@ -41,14 +48,14 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 return TraversalControl.CONTINUE
             }
             override fun visitListType(node: ListType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
-                val typeName = context.getCurrentAccumulate<com.squareup.javapoet.TypeName>()
+                val typeName = context.getCurrentAccumulate<JavaTypeName>()
                 val boxed = boxType(typeName)
                 val parameterizedTypeName = ParameterizedTypeName.get(ClassName.get(List::class.java), boxed)
                 context.setAccumulate(parameterizedTypeName)
                 return TraversalControl.CONTINUE
             }
             override fun visitNonNullType(node: NonNullType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
-                val typeName = context.getCurrentAccumulate<com.squareup.javapoet.TypeName>()
+                val typeName = context.getCurrentAccumulate<JavaTypeName>()
                 val unboxed = unboxType(typeName)
                 context.setAccumulate(unboxed)
                 return TraversalControl.CONTINUE
@@ -57,43 +64,41 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 throw AssertionError("Unknown field type: $node")
             }
         }
-        return NodeTraverser().postOrder(visitor, fieldType) as com.squareup.javapoet.TypeName
+        return NodeTraverser().postOrder(visitor, fieldType) as JavaTypeName
     }
 
-    private fun unboxType(typeName: com.squareup.javapoet.TypeName?): com.squareup.javapoet.TypeName? {
-        return when (typeName) {
-            com.squareup.javapoet.TypeName.INT.box() -> com.squareup.javapoet.TypeName.INT
-            com.squareup.javapoet.TypeName.DOUBLE.box() -> com.squareup.javapoet.TypeName.DOUBLE
-            com.squareup.javapoet.TypeName.BOOLEAN.box() -> com.squareup.javapoet.TypeName.BOOLEAN
-            else -> typeName
+    private fun unboxType(typeName: JavaTypeName): JavaTypeName {
+        return if (typeName.isBoxedPrimitive) {
+            typeName.unbox()
+        } else {
+            typeName
         }
     }
 
-    private fun boxType(typeName: com.squareup.javapoet.TypeName): com.squareup.javapoet.TypeName? {
-        return when (typeName) {
-            com.squareup.javapoet.TypeName.INT -> com.squareup.javapoet.TypeName.INT.box()
-            com.squareup.javapoet.TypeName.DOUBLE -> com.squareup.javapoet.TypeName.DOUBLE.box()
-            com.squareup.javapoet.TypeName.BOOLEAN -> com.squareup.javapoet.TypeName.BOOLEAN.box()
-            else -> typeName
+    private fun boxType(typeName: JavaTypeName): JavaTypeName {
+        return if (typeName.isPrimitive) {
+            typeName.box()
+        } else {
+            typeName
         }
     }
 
-    private fun TypeName.toJavaTypeName(): com.squareup.javapoet.TypeName {
-        if(config.typeMapping.containsKey(name)) {
+    private fun TypeName.toJavaTypeName(): JavaTypeName {
+        if (name in config.typeMapping) {
             println("Found mapping for type: $name")
-            val mappedType = config.typeMapping[name]
-            return ClassName.get(mappedType?.substringBeforeLast("."), mappedType?.substringAfterLast("."))
+            val mappedType = config.typeMapping.getValue(name)
+            return ClassName.bestGuess(mappedType)
         }
 
         return when (name) {
             "String" -> ClassName.get(String::class.java)
             "StringValue" -> ClassName.get(String::class.java)
-            "Int" -> com.squareup.javapoet.TypeName.INT
-            "IntValue" -> com.squareup.javapoet.TypeName.INT
-            "Float" -> com.squareup.javapoet.TypeName.DOUBLE
-            "FloatValue" -> com.squareup.javapoet.TypeName.DOUBLE
-            "Boolean" -> com.squareup.javapoet.TypeName.BOOLEAN
-            "BooleanValue" -> com.squareup.javapoet.TypeName.BOOLEAN
+            "Int" -> JavaTypeName.INT
+            "IntValue" -> JavaTypeName.INT
+            "Float" -> JavaTypeName.DOUBLE
+            "FloatValue" -> JavaTypeName.DOUBLE
+            "Boolean" -> JavaTypeName.BOOLEAN
+            "BooleanValue" -> JavaTypeName.BOOLEAN
             "ID" -> ClassName.get(String::class.java)
             "IDValue" -> ClassName.get(String::class.java)
             "LocalTime" -> ClassName.get(LocalTime::class.java)
@@ -105,7 +110,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "RelayPageInfo" -> ClassName.get(PageInfo::class.java)
             "PageInfo" -> ClassName.get(PageInfo::class.java)
             "PresignedUrlResponse" -> ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse")
-            "Header" -> ClassName.get("", "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header")
+            "Header" -> ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header")
             else -> ClassName.get(packageName, name)
         }
     }
