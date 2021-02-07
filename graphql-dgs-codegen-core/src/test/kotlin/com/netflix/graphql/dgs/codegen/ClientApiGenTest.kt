@@ -24,13 +24,10 @@ import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-
-@ExperimentalStdlibApi
 class ClientApiGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
 
-    @ExperimentalStdlibApi
     @Test
     fun generateQueryType() {
 
@@ -54,7 +51,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateMutationType() {
 
@@ -78,7 +74,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateMutationWithInputType() {
 
@@ -108,7 +103,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateProjectionRoot() {
 
@@ -132,7 +126,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections)
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateProjectionRootTestWithCycles() {
 
@@ -155,7 +148,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateInterfaceProjectionsWithCycles() {
         val schema = """
@@ -191,8 +183,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
-
-    @ExperimentalStdlibApi
     @Test
     fun generateSubProjectionsWithDifferentRootTypes() {
 
@@ -214,7 +204,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateSubProjectionsWithDifferentParentTypes() {
 
@@ -242,7 +231,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateSubProjectionTypes() {
 
@@ -272,7 +260,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateSubProjectionTypesWithShortNames() {
 
@@ -304,8 +291,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-
-    @ExperimentalStdlibApi
     @Test
     fun generateArgumentsForSimpleTypes() {
 
@@ -328,7 +313,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateArgumentsForEnum() {
 
@@ -356,7 +340,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateArgumentsForObjectType() {
 
@@ -384,7 +367,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun skipCodegen() {
 
@@ -413,7 +395,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun interfaceReturnTypes() {
         val schema = """
@@ -452,7 +433,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun interfaceFragment() {
         val schema = """
@@ -493,7 +473,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun interfaceFragmentOnSubType() {
         val schema = """
@@ -542,7 +521,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun unionFragment() {
         val schema = """
@@ -577,7 +555,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun unionFragmentOnSubType() {
         val schema = """
@@ -648,8 +625,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
 
-
-    @ExperimentalStdlibApi
     @Test
     fun testScalarsDontGenerateProjections() {
         val schema = """
@@ -671,7 +646,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun testExtendRootProjection() {
         val schema = """
@@ -699,7 +673,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun testExtendSubProjection() {
         val schema = """
@@ -730,7 +703,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun includeQueryConfig() {
 
@@ -750,7 +722,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun includeMutationConfig() {
 
@@ -770,7 +741,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateProjectionRootWithReservedNames() {
 
@@ -797,7 +767,6 @@ class ClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections)
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateSubProjectionWithReservedNames() {
 

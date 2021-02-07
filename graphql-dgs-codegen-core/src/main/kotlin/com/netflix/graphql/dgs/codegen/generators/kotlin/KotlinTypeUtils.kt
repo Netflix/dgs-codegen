@@ -25,9 +25,9 @@ import com.squareup.kotlinpoet.DOUBLE
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.TypeName as KtTypeName
 import com.squareup.kotlinpoet.STRING
-import com.squareup.kotlinpoet.typeNameOf
+import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.TypeName as KtTypeName
 import graphql.language.ListType
 import graphql.language.Node
 import graphql.language.NodeTraverser
@@ -38,11 +38,14 @@ import graphql.language.TypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-import java.time.*
-import java.util.*
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.util.Currency
 
 class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig) {
-    @ExperimentalStdlibApi
     fun findReturnType(fieldType: Type<*>): KtTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
@@ -70,7 +73,6 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
         return fieldType !is NonNullType
     }
 
-    @ExperimentalStdlibApi
     private fun TypeName.toKtTypeName(): KtTypeName {
         if (name in config.typeMapping) {
             return ClassName.bestGuess(config.typeMapping.getValue(name))
@@ -87,15 +89,15 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             "BooleanValue" -> BOOLEAN
             "ID" -> STRING
             "IDValue" -> STRING
-            "LocalTime" -> typeNameOf<LocalTime>()
-            "LocalDate" -> typeNameOf<LocalDate>()
-            "LocalDateTime" -> typeNameOf<LocalDateTime>()
+            "LocalTime" -> LocalTime::class.asTypeName()
+            "LocalDate" -> LocalDate::class.asTypeName()
+            "LocalDateTime" -> LocalDateTime::class.asTypeName()
             "TimeZone" -> STRING
-            "DateTime" -> typeNameOf<OffsetDateTime>()
-            "Instant" -> typeNameOf<Instant>()
-            "Currency" -> typeNameOf<Currency>()
-            "RelayPageInfo" -> typeNameOf<PageInfo>()
-            "PageInfo" -> typeNameOf<PageInfo>()
+            "DateTime" -> OffsetDateTime::class.asTypeName()
+            "Instant" -> Instant::class.asTypeName()
+            "Currency" -> Currency::class.asTypeName()
+            "RelayPageInfo" -> PageInfo::class.asTypeName()
+            "PageInfo" -> PageInfo::class.asTypeName()
             "PresignedUrlResponse" -> ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse")
             "Header" -> ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header")
 

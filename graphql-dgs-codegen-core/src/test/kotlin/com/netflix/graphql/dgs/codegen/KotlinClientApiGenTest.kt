@@ -25,8 +25,6 @@ import com.squareup.kotlinpoet.TypeSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-
-@ExperimentalStdlibApi
 class KotlinClientApiGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
@@ -442,7 +440,6 @@ class KotlinClientApiGenTest {
         assertThat(projectionTypeSpec.name).isEqualTo("PersonsFriendsProjection")
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateSubProjectionsWithDifferentRootTypes() {
 
@@ -464,7 +461,6 @@ class KotlinClientApiGenTest {
         assertThat(projectionTypeSpec.name).isEqualTo("FriendsProjectionRoot")
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateSubProjectionsWithDifferentParentTypes() {
 
@@ -568,7 +564,6 @@ class KotlinClientApiGenTest {
         assertThat(codeGenResult.queryTypes[0].toString()).contains("import com.netflix.graphql.dgs.codegen.tests.generated.types.SearchIndex\n")
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun testScalarsDontGenerateProjections() {
         val schema = """
@@ -590,7 +585,6 @@ class KotlinClientApiGenTest {
         assertThat(projections.size).isEqualTo(1)
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun testExtendRootProjection() {
         val schema = """
@@ -615,7 +609,6 @@ class KotlinClientApiGenTest {
         assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").contains("name", "email")
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun testExtendSubProjection() {
         val schema = """
@@ -642,6 +635,4 @@ class KotlinClientApiGenTest {
         assertThat(projections.size).isEqualTo(2)
         assertThat((projections[1].members[0] as TypeSpec).funSpecs).extracting("name").contains("title", "director")
     }
-
-
 }

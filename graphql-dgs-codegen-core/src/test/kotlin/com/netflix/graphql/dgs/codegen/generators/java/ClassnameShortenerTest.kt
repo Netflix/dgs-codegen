@@ -25,7 +25,7 @@ import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
-internal class ClassnameShortenerTest {
+class ClassnameShortenerTest {
     @ParameterizedTest
     @MethodSource("inputAndExpectedProvider")
     fun shorten(input: String, expected: String) {

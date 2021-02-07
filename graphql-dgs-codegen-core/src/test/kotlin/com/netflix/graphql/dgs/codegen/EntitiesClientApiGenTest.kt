@@ -25,7 +25,6 @@ class EntitiesClientApiGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
 
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntities() {
         val schema = """
@@ -62,8 +61,6 @@ class EntitiesClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
-
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntitiesWithArraysAndNestedKeys() {
         val schema = """
@@ -100,7 +97,6 @@ class EntitiesClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntitiesWithNestedKeys() {
         val schema = """
@@ -149,7 +145,6 @@ class EntitiesClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntitiesWithMultipleKeyEntities() {
         val schema = """
@@ -189,7 +184,6 @@ class EntitiesClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntitiesWithNestedComplexKeys() {
         val schema = """
@@ -227,7 +221,6 @@ class EntitiesClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun testScalarsInEntities() {
         val schema = """
@@ -251,7 +244,6 @@ class EntitiesClientApiGenTest {
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun skipEntities() {
         val schema = """

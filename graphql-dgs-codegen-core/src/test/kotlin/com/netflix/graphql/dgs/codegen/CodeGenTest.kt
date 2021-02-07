@@ -25,9 +25,7 @@ import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-
-@ExperimentalStdlibApi
-internal class CodeGenTest {
+class CodeGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
     val typesPackageName = "$basePackageName.types"

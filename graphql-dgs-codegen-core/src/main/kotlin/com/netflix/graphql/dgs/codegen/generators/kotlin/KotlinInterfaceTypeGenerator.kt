@@ -33,7 +33,6 @@ class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
     private val packageName = config.packageName + ".types"
     private val typeUtils = KotlinTypeUtils(packageName, config)
 
-    @ExperimentalStdlibApi
     fun generate(definition: InterfaceTypeDefinition, document: Document): KotlinCodeGenResult {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
 

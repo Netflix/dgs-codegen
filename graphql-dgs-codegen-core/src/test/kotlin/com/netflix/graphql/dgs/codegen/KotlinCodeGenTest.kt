@@ -24,9 +24,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-
-@ExperimentalStdlibApi
-internal class KotlinCodeGenTest {
+class KotlinCodeGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
     val typesPackageName = "$basePackageName.types"
@@ -73,9 +71,9 @@ internal class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
 
         val (countProperty, truthProperty, floatyProperty) = type.propertySpecs
-        assertThat(countProperty.type).isEqualTo(typeNameOf<Int?>())
-        assertThat(truthProperty.type).isEqualTo(typeNameOf<Boolean?>())
-        assertThat(floatyProperty.type).isEqualTo(typeNameOf<Double?>())
+        assertThat(countProperty.type).isEqualTo(Int::class.asTypeName().copy(nullable = true))
+        assertThat(truthProperty.type).isEqualTo(Boolean::class.asTypeName().copy(nullable = true))
+        assertThat(floatyProperty.type).isEqualTo(Double::class.asTypeName().copy(nullable = true))
 
         val constructor = type.primaryConstructor
                 ?: throw AssertionError("No primary constructor found")
@@ -196,8 +194,8 @@ internal class KotlinCodeGenTest {
         assertThat(nameProperty.name).isEqualTo("name")
         assertThat(emailProperty.name).isEqualTo("email")
 
-        assertThat(nameProperty.type).isEqualTo(typeNameOf<String?>())
-        assertThat(emailProperty.type).isEqualTo(typeNameOf<List<String?>?>())
+        assertThat(nameProperty.type).isEqualTo(STRING.copy(nullable = true))
+        assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING.copy(nullable = true)).copy(nullable = true))
     }
 
     @Test
@@ -221,8 +219,8 @@ internal class KotlinCodeGenTest {
         assertThat(type.propertySpecs.size).isEqualTo(2)
 
         val (nameProperty, emailProperty) = type.propertySpecs
-        assertThat(nameProperty.type).isEqualTo(typeNameOf<String>())
-        assertThat(emailProperty.type).isEqualTo(typeNameOf<List<String>>())
+        assertThat(nameProperty.type).isEqualTo(STRING)
+        assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING))
     }
 
     @Test
@@ -247,8 +245,8 @@ internal class KotlinCodeGenTest {
 
         val (nameProperty, emailProperty) = type.propertySpecs
 
-        assertThat(nameProperty.type).isEqualTo(typeNameOf<String>())
-        assertThat(emailProperty.type).isEqualTo(typeNameOf<List<String?>>())
+        assertThat(nameProperty.type).isEqualTo(STRING)
+        assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING.copy(nullable = true)))
     }
 
     @Test
@@ -400,8 +398,8 @@ internal class KotlinCodeGenTest {
 
         val (firstName, lastName, friends) = type.propertySpecs
 
-        assertThat(firstName.type).isEqualTo(typeNameOf<String?>())
-        assertThat(lastName.type).isEqualTo(typeNameOf<String?>())
+        assertThat(firstName.type).isEqualTo(STRING.copy(nullable = true))
+        assertThat(lastName.type).isEqualTo(STRING.copy(nullable = true))
         val personClass = ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.Person")
         val friendsType = LIST.parameterizedBy(personClass.copy(nullable = true)).copy(nullable = true)
         assertThat(friends.type).isEqualTo(friendsType)
@@ -439,7 +437,6 @@ internal class KotlinCodeGenTest {
         val nestedType = dataTypes[1].members[0] as TypeSpec
         assertThat(nestedType.name).isEqualTo("Engine")
         assertThat(nestedType.propertySpecs).filteredOn("name", "performance").extracting("type.simpleName").containsExactly("Performance")
-
     }
 
     @Test
@@ -518,10 +515,8 @@ internal class KotlinCodeGenTest {
         assertThat(type.propertySpecs).extracting("name").contains("genre")
     }
 
-
     @Test
     fun generateToStringMethodForInputTypes() {
-
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
