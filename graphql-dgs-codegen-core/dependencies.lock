@@ -8,12 +8,6 @@
         "com.fasterxml.jackson.core:jackson-annotations": {
             "locked": "2.12.1"
         },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.12.1"
-        },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
         },
@@ -38,12 +32,6 @@
     },
     "implementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
             "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
@@ -87,12 +75,6 @@
         "com.fasterxml.jackson.core:jackson-annotations": {
             "locked": "2.12.1"
         },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.12.1"
-        },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
         },
@@ -117,12 +99,6 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
             "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
@@ -169,12 +145,6 @@
         "com.fasterxml.jackson.core:jackson-annotations": {
             "locked": "2.12.1"
         },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.12.1"
-        },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
         },
@@ -217,12 +187,6 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
             "locked": "2.12.1"
         },
         "com.github.ajalt.clikt:clikt": {
