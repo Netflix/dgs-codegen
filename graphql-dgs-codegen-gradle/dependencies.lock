@@ -94,18 +94,6 @@
             ],
             "locked": "2.12.1"
         },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "firstLevelTransitive": [
-                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
-            ],
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
-            "firstLevelTransitive": [
-                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
-            ],
-            "locked": "2.12.1"
-        },
         "com.github.ajalt.clikt:clikt": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
@@ -198,18 +186,6 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "firstLevelTransitive": [
-                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
-            ],
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "firstLevelTransitive": [
-                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
-            ],
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
@@ -318,18 +294,6 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "firstLevelTransitive": [
-                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
-            ],
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson.module:jackson-module-kotlin": {
-            "firstLevelTransitive": [
-                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
-            ],
-            "locked": "2.12.1"
-        },
-        "com.fasterxml.jackson:jackson-bom": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
