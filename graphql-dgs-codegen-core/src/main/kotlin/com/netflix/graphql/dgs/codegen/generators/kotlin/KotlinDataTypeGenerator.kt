@@ -25,7 +25,6 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
 import graphql.language.*
 
-@ExperimentalStdlibApi
 class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config) {
     private val typeUtils = KotlinTypeUtils(getPackageName(), config)
 
@@ -50,7 +49,6 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
     }
 }
 
-@ExperimentalStdlibApi
 class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config) {
     private val typeUtils = KotlinTypeUtils(getPackageName(), config)
 

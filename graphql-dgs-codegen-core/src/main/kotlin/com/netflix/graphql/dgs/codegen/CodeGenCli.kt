@@ -28,7 +28,6 @@ import com.github.ajalt.clikt.parameters.types.file
 import java.io.File
 import java.nio.file.Paths
 
-@ExperimentalStdlibApi
 class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
 
     private val schemas by argument().file(mustExist = true).multiple()
@@ -76,8 +75,6 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     }
 }
 
-
-@ExperimentalStdlibApi
 fun main(args: Array<String>) {
     CodeGenCli().main(args)
 }

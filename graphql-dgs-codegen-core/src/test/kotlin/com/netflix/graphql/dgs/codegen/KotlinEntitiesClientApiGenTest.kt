@@ -26,7 +26,6 @@ class KotlinEntitiesClientApiGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
 
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntities() {
         val schema = """
@@ -61,8 +60,6 @@ class KotlinEntitiesClientApiGenTest {
         assertThat((representations[0].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movieId")
     }
 
-
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntitiesWithArraysAndNestedKeys() {
         val schema = """
@@ -97,7 +94,6 @@ class KotlinEntitiesClientApiGenTest {
                 .toString().contains("List<com.netflix.graphql.dgs.codegen.tests.generated.client.ActorRepresentation>")
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntitiesWithNestedKeys() {
         val schema = """
@@ -145,7 +141,6 @@ class KotlinEntitiesClientApiGenTest {
         assertThat((representations[2].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movie", "actor")
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun generateForEntitiesWithMultipleKeyEntities() {
         val schema = """
@@ -183,7 +178,6 @@ class KotlinEntitiesClientApiGenTest {
         assertThat((representations[1].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "name")
     }
 
-        @ExperimentalStdlibApi
     @Test
     fun generateForEntitiesWithNestedComplexKeys() {
         val schema = """
@@ -219,7 +213,6 @@ class KotlinEntitiesClientApiGenTest {
         assertThat((representations[1].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "name", "age")
     }
 
-    @ExperimentalStdlibApi
     @Test
     fun testScalarsInEntities() {
         val schema = """
