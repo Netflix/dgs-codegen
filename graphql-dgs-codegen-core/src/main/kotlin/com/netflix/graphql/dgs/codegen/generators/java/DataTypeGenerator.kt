@@ -25,6 +25,10 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
 import graphql.language.TypeName
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
 import javax.lang.model.element.Modifier
 
 class DataTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageName + ".types", config) {
@@ -187,24 +191,23 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         fieldSpecs.mapIndexed { index, fieldSpec ->
             when (val fieldSpecType = fieldSpec.type) {
                 is ParameterizedTypeName -> {
-                    when (fieldSpecType.typeArguments[0]) {
-                        ClassName.get(String::class.java) -> {
-                            addToStringForListOfStrings(fieldSpec, javaType)
-                            """
-                            "${fieldSpec.name}:" + serializeListOfStrings(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-                            """.trimIndent()
-                        }
-                        else -> defaultString(fieldSpec, index, fieldDefinitions)
+                    if (typeUtils.isStringInput(fieldSpecType.typeArguments[0])) {
+                        var name: String = if (fieldSpecType.typeArguments[0] is ClassName) {
+                            "serializeListOf" + (fieldSpecType.typeArguments[0] as ClassName).simpleName()
+                        } else "serializeListOf" + fieldSpecType.typeArguments[0].toString()
+                        addToStringForListOfStrings(name, fieldSpec, javaType)
+                        """
+                        "${fieldSpec.name}:" + ${name}(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
+                        """.trimIndent()
+                    } else {
+                        defaultString(fieldSpec, index, fieldDefinitions)
                     }
                 }
                 is ClassName -> {
-                    when (fieldSpecType.simpleName()) {
-                        ClassName.get(String::class.java).simpleName() -> {
-                            """
-                            "${fieldSpec.name}:" + (${fieldSpec.name} != null?"\"":"") + ${fieldSpec.name} + (${fieldSpec.name} != null?"\"":"") + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-                            """.trimIndent()
-                        }
-                        else -> defaultString(fieldSpec, index, fieldDefinitions)
+                    if (typeUtils.isStringInput(fieldSpecType)) {
+                        quotedString(fieldSpec, index, fieldDefinitions)
+                    } else {
+                        defaultString(fieldSpec, index, fieldDefinitions)
                     }
                 }
                 else -> defaultString(fieldSpec, index, fieldDefinitions)
@@ -226,23 +229,30 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
             """.trimIndent()
     }
 
-    private fun addToStringForListOfStrings(field: FieldSpec, javaType: TypeSpec.Builder) {
-        if(javaType.methodSpecs.any { it.name == "serializeListOfStrings" }) return
+    private fun quotedString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
+        return """
+            "${fieldSpec.name}:" + (${fieldSpec.name} != null?"\"":"") + ${fieldSpec.name} + (${fieldSpec.name} != null?"\"":"") + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
+            """.trimIndent()
+    }
 
-        val methodBuilder = MethodSpec.methodBuilder("serializeListOfStrings")
+    private fun addToStringForListOfStrings(name: String, field: FieldSpec, javaType: TypeSpec.Builder) {
+        if(javaType.methodSpecs.any { it.name == name }) return
+
+        val methodBuilder = MethodSpec.methodBuilder(name)
                 .addModifiers(Modifier.PRIVATE)
-                .addParameter(field.type, field.name)
+                .addParameter(field.type, "inputList")
                 .returns(String::class.java)
 
         val toStringBody = StringBuilder("""
-                if (${field.name} == null) {
+                if (inputList == null) {
                     return null;
                 }
                 StringBuilder builder = new java.lang.StringBuilder();
                 builder.append("[");
             
-                if (! ${field.name}.isEmpty()) {
-                    String result = ${field.name}.stream()
+                if (! inputList.isEmpty()) {
+                    String result = inputList.stream()
+                            .map( iter -> iter.toString() )
                             .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
                     builder.append(result);
                 }
