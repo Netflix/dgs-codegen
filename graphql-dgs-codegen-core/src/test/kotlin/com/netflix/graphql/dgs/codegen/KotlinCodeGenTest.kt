@@ -647,27 +647,27 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         var expectedInputString = """
-            return "{" + "genre:" + serializeListOfStrings(genre) + "," +"actors:" + serializeListOfStrings(actors) + "" +"}"
+            return "{" + "genre:" + serializeListOfString(genre) + "," +"actors:" + serializeListOfString(actors) + "" +"}"
         """.trimIndent()
         var generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
 
 
-        assertThat(type.funSpecs).extracting("name").contains("serializeListOfStrings")
+        assertThat(type.funSpecs).extracting("name").contains("serializeListOfString")
         expectedInputString = """
-            if (genre == null) {
+            if (inputList == null) {
                     return null
                 }
                 val builder = java.lang.StringBuilder()
                 builder.append("[")
-                if (! genre.isEmpty()) {
-                    val result = genre.joinToString() {"\"" + it + "\""}
+                if (! inputList.isEmpty()) {
+                    val result = inputList.joinToString() {"\"" + it + "\""}
                     builder.append(result)
                 }
                 builder.append("]")
                 return  builder.toString()
         """.trimIndent()
-        generatedInputString = type.funSpecs.single { it.name == "serializeListOfStrings" }.body.toString().trimIndent()
+        generatedInputString = type.funSpecs.single { it.name == "serializeListOfString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
     }
 
@@ -720,7 +720,7 @@ class KotlinCodeGenTest {
     }
 
     @Test
-    fun generateToInputStringMethodForDate() {
+    fun generateToInputStringMethodForDateTypes() {
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
@@ -742,8 +742,59 @@ class KotlinCodeGenTest {
            return "{" + "localDateTime:" + "${'$'}{if(localDateTime != null) "\"" else ""}" + localDateTime + "${'$'}{if(localDateTime != null) "\"" else ""}" + "," +"localDate:" + "${'$'}{if(localDate != null) "\"" else ""}" + localDate + "${'$'}{if(localDate != null) "\"" else ""}" + "," +"localTime:" + "${'$'}{if(localTime != null) "\"" else ""}" + localTime + "${'$'}{if(localTime != null) "\"" else ""}" + "," +"dateTime:" + "${'$'}{if(dateTime != null) "\"" else ""}" + dateTime + "${'$'}{if(dateTime != null) "\"" else ""}" + "" +"}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
     }
+
+    @Test
+    fun generateToInputStringMethodForListOfDate() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                names: [String]
+                localDateTime: [LocalDateTime]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+
+        val expectedInputString = """
+            return "{" + "names:" + serializeListOfString(names) + "," +"localDateTime:" + serializeListOfLocalDateTime(localDateTime) + "" +"}"
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
+    }
+
+    @Test
+    fun generateToInputStringMethodForTypeMappedTypes() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                time: LocalTime
+                date: LocalDate
+                
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN,
+            typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer")))).generate() as KotlinCodeGenResult
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+
+        val expectedInputString = """
+            return "{" + "time:" + "${'$'}{if(time != null) "\"" else ""}" + time + "${'$'}{if(time != null) "\"" else ""}" + "," +"date:" + date + "" +"}"
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
+    }
+
 
     @Test
     fun generateExtendedInputTypes() {

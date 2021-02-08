@@ -191,34 +191,21 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         fieldSpecs.mapIndexed { index, fieldSpec ->
             when (val fieldSpecType = fieldSpec.type) {
                 is ParameterizedTypeName -> {
-                    when (fieldSpecType.typeArguments[0]) {
-                        ClassName.get(String::class.java) -> {
-                            addToStringForListOfStrings(fieldSpec, javaType)
+                    if (typeUtils.isStringInput(fieldSpecType.typeArguments[0])) {
+                            val name = "serializeListOf" + (fieldSpecType.typeArguments[0] as ClassName).simpleName()
+                            addToStringForListOfStrings(name, fieldSpec, javaType)
                             """
-                            "${fieldSpec.name}:" + serializeListOfStrings(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
+                            "${fieldSpec.name}:" + ${name}(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
                             """.trimIndent()
-                        }
-                        else -> defaultString(fieldSpec, index, fieldDefinitions)
+                    } else {
+                        defaultString(fieldSpec, index, fieldDefinitions)
                     }
                 }
                 is ClassName -> {
-                    when (fieldSpecType.simpleName()) {
-                        ClassName.get(String::class.java).simpleName() -> {
-                            quotedString(fieldSpec, index, fieldDefinitions)
-                        }
-                        ClassName.get(LocalDateTime::class.java).simpleName() -> {
-                            quotedString(fieldSpec, index, fieldDefinitions)
-                        }
-                        ClassName.get(LocalDate::class.java).simpleName() -> {
-                            quotedString(fieldSpec, index, fieldDefinitions)
-                        }
-                        ClassName.get(LocalTime::class.java).simpleName() -> {
-                            quotedString(fieldSpec, index, fieldDefinitions)
-                        }
-                        ClassName.get(OffsetDateTime::class.java).simpleName() -> {
-                            quotedString(fieldSpec, index, fieldDefinitions)
-                        }
-                        else -> defaultString(fieldSpec, index, fieldDefinitions)
+                    if (typeUtils.isStringInput(fieldSpecType)) {
+                        quotedString(fieldSpec, index, fieldDefinitions)
+                    } else {
+                        defaultString(fieldSpec, index, fieldDefinitions)
                     }
                 }
                 else -> defaultString(fieldSpec, index, fieldDefinitions)
@@ -246,23 +233,24 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
             """.trimIndent()
     }
 
-    private fun addToStringForListOfStrings(field: FieldSpec, javaType: TypeSpec.Builder) {
-        if(javaType.methodSpecs.any { it.name == "serializeListOfStrings" }) return
+    private fun addToStringForListOfStrings(name: String, field: FieldSpec, javaType: TypeSpec.Builder) {
+        if(javaType.methodSpecs.any { it.name == name }) return
 
-        val methodBuilder = MethodSpec.methodBuilder("serializeListOfStrings")
+        val methodBuilder = MethodSpec.methodBuilder(name)
                 .addModifiers(Modifier.PRIVATE)
-                .addParameter(field.type, field.name)
+                .addParameter(field.type, "inputList")
                 .returns(String::class.java)
 
         val toStringBody = StringBuilder("""
-                if (${field.name} == null) {
+                if (inputList == null) {
                     return null;
                 }
                 StringBuilder builder = new java.lang.StringBuilder();
                 builder.append("[");
             
-                if (! ${field.name}.isEmpty()) {
-                    String result = ${field.name}.stream()
+                if (! inputList.isEmpty()) {
+                    String result = inputList.stream()
+                            .map( iter -> iter.toString() )
                             .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
                     builder.append(result);
                 }

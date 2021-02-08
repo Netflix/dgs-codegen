@@ -32,13 +32,24 @@ import graphql.language.TypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.util.Currency
+
+import java.time.*
+import java.util.*
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig) {
+    private val commonScalars =  mutableMapOf<String, com.squareup.javapoet.TypeName>(
+        "LocalTime" to ClassName.get(LocalTime::class.java),
+        "LocalDate" to ClassName.get(LocalDate::class.java),
+        "LocalDateTime" to ClassName.get(LocalDateTime::class.java),
+        "TimeZone" to ClassName.get(String::class.java),
+        "DateTime" to ClassName.get(OffsetDateTime::class.java),
+        "Currency" to ClassName.get(Currency::class.java),
+        "Instant" to ClassName.get(Instant::class.java),
+        "RelayPageInfo" to ClassName.get(PageInfo::class.java),
+        "PageInfo" to ClassName.get(PageInfo::class.java),
+        "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
+        "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"))
+
     fun findReturnType(fieldType: Type<*>): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
@@ -90,6 +101,10 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             return ClassName.bestGuess(mappedType)
         }
 
+        if(commonScalars.containsKey(name)) {
+            return commonScalars[name]!!
+        }
+
         return when (name) {
             "String" -> ClassName.get(String::class.java)
             "StringValue" -> ClassName.get(String::class.java)
@@ -101,17 +116,22 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "BooleanValue" -> JavaTypeName.BOOLEAN
             "ID" -> ClassName.get(String::class.java)
             "IDValue" -> ClassName.get(String::class.java)
-            "LocalTime" -> ClassName.get(LocalTime::class.java)
-            "LocalDate" -> ClassName.get(LocalDate::class.java)
-            "LocalDateTime" -> ClassName.get(LocalDateTime::class.java)
-            "TimeZone" -> ClassName.get(String::class.java)
-            "DateTime" -> ClassName.get(OffsetDateTime::class.java)
-            "Currency" -> ClassName.get(Currency::class.java)
-            "RelayPageInfo" -> ClassName.get(PageInfo::class.java)
-            "PageInfo" -> ClassName.get(PageInfo::class.java)
-            "PresignedUrlResponse" -> ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse")
-            "Header" -> ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header")
             else -> ClassName.get(packageName, name)
         }
+    }
+
+    fun isStringInput(name: com.squareup.javapoet.TypeName): Boolean {
+        if (config.typeMapping.containsValue(name.toString())) {
+            return when(name) {
+                com.squareup.javapoet.TypeName.INT -> false
+                com.squareup.javapoet.TypeName.DOUBLE -> false
+                com.squareup.javapoet.TypeName.BOOLEAN -> false
+                com.squareup.javapoet.TypeName.INT.box() -> false
+                com.squareup.javapoet.TypeName.DOUBLE.box() -> false
+                com.squareup.javapoet.TypeName.BOOLEAN.box() -> false
+                else -> true
+            }
+        }
+        return  (name == ClassName.get(String::class.java) || commonScalars.containsValue(name))
     }
 }

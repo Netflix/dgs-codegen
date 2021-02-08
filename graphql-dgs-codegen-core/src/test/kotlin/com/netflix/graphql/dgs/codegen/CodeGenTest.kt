@@ -679,28 +679,29 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
         var expectedInputString = """
-            return "{" + "genre:" + serializeListOfStrings(genre) + "," +"actors:" + serializeListOfStrings(actors) + "" +"}";
+            return "{" + "genre:" + serializeListOfString(genre) + "," +"actors:" + serializeListOfString(actors) + "" +"}";
         """.trimIndent()
         var generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
 
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("serializeListOfStrings")
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("serializeListOfString")
         expectedInputString = """
-            if (genre == null) {
+            if (inputList == null) {
                     return null;
                 }
                 StringBuilder builder = new java.lang.StringBuilder();
                 builder.append("[");
             
-                if (! genre.isEmpty()) {
-                    String result = genre.stream()
+                if (! inputList.isEmpty()) {
+                    String result = inputList.stream()
+                            .map( iter -> iter.toString() )
                             .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
                     builder.append(result);
                 }
                 builder.append("]");
                 return  builder.toString();
         """.trimIndent()
-        generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "serializeListOfStrings" }.code.toString().trimIndent()
+        generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "serializeListOfString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
         assertCompiles(dataTypes)
     }
@@ -729,7 +730,7 @@ class CodeGenTest {
     }
 
     @Test
-    fun generateToInputStringMethodForDate() {
+    fun generateToInputStringMethodForDateTypes() {
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
@@ -751,6 +752,56 @@ class CodeGenTest {
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
+        assertCompiles(dataTypes)
+    }
+
+    @Test
+    fun generateToInputStringMethodForTypeMappedTypes() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                time: LocalTime
+                date: LocalDate
+                
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName,
+                typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer")))).generate() as CodeGenResult
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+
+        val expectedInputString = """
+            return "{" + "time:" + (time != null?"\"":"") + time + (time != null?"\"":"") + "," +"date:" + date + "" +"}";
+        """.trimIndent()
+        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
+        assertCompiles(dataTypes)
+    }
+
+    @Test
+    fun generateToInputStringMethodForListOfDate() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                names: [String]
+                localDateTime: [LocalDateTime]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+
+        val expectedInputString = """
+            return "{" + "names:" + serializeListOfString(names) + "," +"localDateTime:" + serializeListOfLocalDateTime(localDateTime) + "" +"}";
+        """.trimIndent()
+        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
         assertCompiles(dataTypes)
     }
 
