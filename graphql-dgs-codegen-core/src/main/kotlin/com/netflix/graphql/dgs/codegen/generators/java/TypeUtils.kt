@@ -123,12 +123,12 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
     fun isStringInput(name: com.squareup.javapoet.TypeName): Boolean {
         if (config.typeMapping.containsValue(name.toString())) {
             return when(name) {
-                com.squareup.javapoet.TypeName.INT -> false
-                com.squareup.javapoet.TypeName.DOUBLE -> false
-                com.squareup.javapoet.TypeName.BOOLEAN -> false
-                com.squareup.javapoet.TypeName.INT.box() -> false
-                com.squareup.javapoet.TypeName.DOUBLE.box() -> false
-                com.squareup.javapoet.TypeName.BOOLEAN.box() -> false
+                JavaTypeName.INT -> false
+                JavaTypeName.DOUBLE -> false
+                JavaTypeName.BOOLEAN -> false
+                JavaTypeName.INT.box() -> false
+                JavaTypeName.DOUBLE.box() -> false
+                JavaTypeName.BOOLEAN.box() -> false
                 else -> true
             }
         }

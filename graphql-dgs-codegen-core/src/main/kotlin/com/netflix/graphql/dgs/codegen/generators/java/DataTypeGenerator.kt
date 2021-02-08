@@ -192,11 +192,13 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
             when (val fieldSpecType = fieldSpec.type) {
                 is ParameterizedTypeName -> {
                     if (typeUtils.isStringInput(fieldSpecType.typeArguments[0])) {
-                            val name = "serializeListOf" + (fieldSpecType.typeArguments[0] as ClassName).simpleName()
-                            addToStringForListOfStrings(name, fieldSpec, javaType)
-                            """
-                            "${fieldSpec.name}:" + ${name}(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-                            """.trimIndent()
+                        var name: String = if (fieldSpecType.typeArguments[0] is ClassName) {
+                            "serializeListOf" + (fieldSpecType.typeArguments[0] as ClassName).simpleName()
+                        } else "serializeListOf" + fieldSpecType.typeArguments[0].toString()
+                        addToStringForListOfStrings(name, fieldSpec, javaType)
+                        """
+                        "${fieldSpec.name}:" + ${name}(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
+                        """.trimIndent()
                     } else {
                         defaultString(fieldSpec, index, fieldDefinitions)
                     }

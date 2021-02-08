@@ -166,9 +166,13 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
         fields.mapIndexed { index, field ->
             when (val fieldTypeName = field.type) {
                 is ParameterizedTypeName -> {
-                    val innerType = fieldTypeName.typeArguments[0] as ClassName
+                    val innerType = fieldTypeName.typeArguments[0]
                     if (typeUtils.isStringInput(innerType)) {
-                        val name = "serializeListOf" + innerType.simpleName
+                        val name = if (innerType is ClassName ) {
+                            "serializeListOf" + innerType.simpleName
+                        } else {
+                            "serializeListOf$innerType"
+                        }
                         addToStringForListOfStrings(name,field, kotlinType)
                         """
                             "${field.name}:" + ${name}(${field.name}) + "${if (index < fields.size - 1) "," else ""}" +
