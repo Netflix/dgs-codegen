@@ -24,9 +24,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-
-@ExperimentalStdlibApi
-internal class KotlinCodeGenTest {
+class KotlinCodeGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
     val typesPackageName = "$basePackageName.types"
@@ -73,9 +71,9 @@ internal class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
 
         val (countProperty, truthProperty, floatyProperty) = type.propertySpecs
-        assertThat(countProperty.type).isEqualTo(typeNameOf<Int?>())
-        assertThat(truthProperty.type).isEqualTo(typeNameOf<Boolean?>())
-        assertThat(floatyProperty.type).isEqualTo(typeNameOf<Double?>())
+        assertThat(countProperty.type).isEqualTo(Int::class.asTypeName().copy(nullable = true))
+        assertThat(truthProperty.type).isEqualTo(Boolean::class.asTypeName().copy(nullable = true))
+        assertThat(floatyProperty.type).isEqualTo(Double::class.asTypeName().copy(nullable = true))
 
         val constructor = type.primaryConstructor
                 ?: throw AssertionError("No primary constructor found")
@@ -196,8 +194,8 @@ internal class KotlinCodeGenTest {
         assertThat(nameProperty.name).isEqualTo("name")
         assertThat(emailProperty.name).isEqualTo("email")
 
-        assertThat(nameProperty.type).isEqualTo(typeNameOf<String?>())
-        assertThat(emailProperty.type).isEqualTo(typeNameOf<List<String?>?>())
+        assertThat(nameProperty.type).isEqualTo(STRING.copy(nullable = true))
+        assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING.copy(nullable = true)).copy(nullable = true))
     }
 
     @Test
@@ -221,8 +219,8 @@ internal class KotlinCodeGenTest {
         assertThat(type.propertySpecs.size).isEqualTo(2)
 
         val (nameProperty, emailProperty) = type.propertySpecs
-        assertThat(nameProperty.type).isEqualTo(typeNameOf<String>())
-        assertThat(emailProperty.type).isEqualTo(typeNameOf<List<String>>())
+        assertThat(nameProperty.type).isEqualTo(STRING)
+        assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING))
     }
 
     @Test
@@ -247,8 +245,8 @@ internal class KotlinCodeGenTest {
 
         val (nameProperty, emailProperty) = type.propertySpecs
 
-        assertThat(nameProperty.type).isEqualTo(typeNameOf<String>())
-        assertThat(emailProperty.type).isEqualTo(typeNameOf<List<String?>>())
+        assertThat(nameProperty.type).isEqualTo(STRING)
+        assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING.copy(nullable = true)))
     }
 
     @Test
@@ -400,8 +398,8 @@ internal class KotlinCodeGenTest {
 
         val (firstName, lastName, friends) = type.propertySpecs
 
-        assertThat(firstName.type).isEqualTo(typeNameOf<String?>())
-        assertThat(lastName.type).isEqualTo(typeNameOf<String?>())
+        assertThat(firstName.type).isEqualTo(STRING.copy(nullable = true))
+        assertThat(lastName.type).isEqualTo(STRING.copy(nullable = true))
         val personClass = ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.Person")
         val friendsType = LIST.parameterizedBy(personClass.copy(nullable = true)).copy(nullable = true)
         assertThat(friends.type).isEqualTo(friendsType)
@@ -439,7 +437,6 @@ internal class KotlinCodeGenTest {
         val nestedType = dataTypes[1].members[0] as TypeSpec
         assertThat(nestedType.name).isEqualTo("Engine")
         assertThat(nestedType.propertySpecs).filteredOn("name", "performance").extracting("type.simpleName").containsExactly("Performance")
-
     }
 
     @Test
@@ -518,10 +515,8 @@ internal class KotlinCodeGenTest {
         assertThat(type.propertySpecs).extracting("name").contains("genre")
     }
 
-
     @Test
     fun generateToStringMethodForInputTypes() {
-
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
@@ -652,27 +647,27 @@ internal class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         var expectedInputString = """
-            return "{" + "genre:" + serializeListOfStrings(genre) + "," +"actors:" + serializeListOfStrings(actors) + "" +"}"
+            return "{" + "genre:" + serializeListOfString(genre) + "," +"actors:" + serializeListOfString(actors) + "" +"}"
         """.trimIndent()
         var generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
 
 
-        assertThat(type.funSpecs).extracting("name").contains("serializeListOfStrings")
+        assertThat(type.funSpecs).extracting("name").contains("serializeListOfString")
         expectedInputString = """
-            if (genre == null) {
+            if (inputList == null) {
                     return null
                 }
                 val builder = java.lang.StringBuilder()
                 builder.append("[")
-                if (! genre.isEmpty()) {
-                    val result = genre.joinToString() {"\"" + it + "\""}
+                if (! inputList.isEmpty()) {
+                    val result = inputList.joinToString() {"\"" + it + "\""}
                     builder.append(result)
                 }
                 builder.append("]")
                 return  builder.toString()
         """.trimIndent()
-        generatedInputString = type.funSpecs.single { it.name == "serializeListOfStrings" }.body.toString().trimIndent()
+        generatedInputString = type.funSpecs.single { it.name == "serializeListOfString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
     }
 
@@ -723,6 +718,83 @@ internal class KotlinCodeGenTest {
         val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedString).isEqualTo(generatedString)
     }
+
+    @Test
+    fun generateToInputStringMethodForDateTypes() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                localDateTime: LocalDateTime
+                localDate: LocalDate
+                localTime: LocalTime
+                dateTime: DateTime
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+
+        val expectedInputString = """
+           return "{" + "localDateTime:" + "${'$'}{if(localDateTime != null) "\"" else ""}" + localDateTime + "${'$'}{if(localDateTime != null) "\"" else ""}" + "," +"localDate:" + "${'$'}{if(localDate != null) "\"" else ""}" + localDate + "${'$'}{if(localDate != null) "\"" else ""}" + "," +"localTime:" + "${'$'}{if(localTime != null) "\"" else ""}" + localTime + "${'$'}{if(localTime != null) "\"" else ""}" + "," +"dateTime:" + "${'$'}{if(dateTime != null) "\"" else ""}" + dateTime + "${'$'}{if(dateTime != null) "\"" else ""}" + "" +"}"
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
+    }
+
+    @Test
+    fun generateToInputStringMethodForListOfDate() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                names: [String]
+                localDateTime: [LocalDateTime]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+
+        val expectedInputString = """
+            return "{" + "names:" + serializeListOfString(names) + "," +"localDateTime:" + serializeListOfLocalDateTime(localDateTime) + "" +"}"
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
+    }
+
+    @Test
+    fun generateToInputStringMethodForTypeMappedTypes() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                time: LocalTime
+                date: LocalDate
+                
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN,
+            typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer")))).generate() as KotlinCodeGenResult
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+
+        val expectedInputString = """
+            return "{" + "time:" + "${'$'}{if(time != null) "\"" else ""}" + time + "${'$'}{if(time != null) "\"" else ""}" + "," +"date:" + date + "" +"}"
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(generatedInputString).isEqualTo(expectedInputString)
+    }
+
 
     @Test
     fun generateExtendedInputTypes() {

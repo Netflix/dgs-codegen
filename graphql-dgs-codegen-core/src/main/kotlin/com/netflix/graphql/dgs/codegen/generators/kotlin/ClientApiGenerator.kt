@@ -27,12 +27,10 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.*
 
-
 class KotlinClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
     private val generatedClasses = mutableSetOf<String>()
     private val processedSchemaTypes = mutableMapOf<Pair<String, String>, Int>()
 
-    @ExperimentalStdlibApi
     fun generate(definition: ObjectTypeDefinition): KotlinCodeGenResult {
 
         return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
@@ -44,7 +42,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
     }
 
-    @ExperimentalStdlibApi
     fun generateEntities(definitions: List<ObjectTypeDefinition>): KotlinCodeGenResult {
         if(config.skipEntityQueries) {
             return KotlinCodeGenResult()
@@ -60,13 +57,12 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return KotlinCodeGenResult().merge(entitiesRootProjection)
     }
 
-    @ExperimentalStdlibApi
     private fun createQueryClass(it: FieldDefinition, operation: String): FileSpec {
         val javaType = TypeSpec.classBuilder("${it.name.capitalize()}GraphQLQuery")
-                .superclass(typeNameOf<GraphQLQuery>())
-                .addSuperclassConstructorParameter("%S", "${operation.toLowerCase()}")
+                .superclass(GraphQLQuery::class.asTypeName())
+                .addSuperclassConstructorParameter("%S", operation.toLowerCase())
 
-        if(it.inputValueDefinitions.isNotEmpty()) {
+        if (it.inputValueDefinitions.isNotEmpty()) {
             javaType.addModifiers(KModifier.DATA)
         }
 
@@ -131,7 +127,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         }
     }
 
-    @ExperimentalStdlibApi
     private fun createRootProjection(type: TypeDefinition<*>, prefix: String): KotlinCodeGenResult {
 
         val clazzName = "${prefix}ProjectionRoot"
@@ -140,7 +135,8 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         processedSchemaTypes[Pair(type.name, "")] = 1
 
         val javaType = TypeSpec.classBuilder(clazzName)
-                .addModifiers(KModifier.PUBLIC).superclass(typeNameOf<BaseProjectionNode>())
+                .addModifiers(KModifier.PUBLIC)
+                .superclass(BaseProjectionNode::class.asTypeName())
 
         val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
         val codeGenResult = fieldDefinitions.filterSkipped()
@@ -182,11 +178,12 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return KotlinCodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
     }
 
-    @ExperimentalStdlibApi
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): KotlinCodeGenResult {
         val clazzName = "EntitiesProjectionRoot"
+
         val javaType = TypeSpec.classBuilder(clazzName)
-                .addModifiers(KModifier.PUBLIC).superclass(typeNameOf<BaseProjectionNode>())
+                .addModifiers(KModifier.PUBLIC)
+                .superclass(BaseProjectionNode::class.asTypeName())
 
         if(generatedClasses.contains(clazzName)) return KotlinCodeGenResult() else generatedClasses.add(clazzName)
         processedSchemaTypes.clear()
@@ -213,7 +210,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return KotlinCodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    @ExperimentalStdlibApi
     private fun createConcreteTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String): KotlinCodeGenResult {
         return if (type is InterfaceTypeDefinition) {
             val concreteTypes = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).filter { it.implements.filterIsInstance<NamedNode<*>>().find { iface -> iface.name == type.name } != null }
@@ -232,7 +228,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         } else KotlinCodeGenResult()
     }
 
-    @ExperimentalStdlibApi
     private fun createUnionTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String): KotlinCodeGenResult {
         return if (type is UnionTypeDefinition) {
             val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document) }
@@ -252,7 +247,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         } else KotlinCodeGenResult()
     }
 
-    @ExperimentalStdlibApi
     private fun createFragment(type: ObjectTypeDefinition, parent: TypeSpec, root: TypeSpec, prefix: String): KotlinCodeGenResult {
         val subProjection = createSubProjectionType(type, parent, root, prefix) ?: return KotlinCodeGenResult()
         val javaType = subProjection.first
@@ -285,7 +279,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return KotlinCodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    @ExperimentalStdlibApi
     private fun createSubProjection(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String): KotlinCodeGenResult {
         val (javaType, codeGenResult) = createSubProjectionType(type, parent, root, prefix) ?: return KotlinCodeGenResult()
 
@@ -294,7 +287,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return KotlinCodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    @ExperimentalStdlibApi
     private fun createSubProjectionType(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String) : Pair<TypeSpec.Builder, KotlinCodeGenResult>? {
         val className = ClassName(BaseSubProjectionNode::class.java.`package`.name, BaseSubProjectionNode::class.java.simpleName)
         val clazzName = "${prefix}Projection"

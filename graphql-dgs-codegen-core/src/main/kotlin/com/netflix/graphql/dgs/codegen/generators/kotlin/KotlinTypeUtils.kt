@@ -25,9 +25,9 @@ import com.squareup.kotlinpoet.DOUBLE
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.TypeName as KtTypeName
 import com.squareup.kotlinpoet.STRING
-import com.squareup.kotlinpoet.typeNameOf
+import com.squareup.kotlinpoet.asTypeName
+import com.squareup.kotlinpoet.TypeName as KtTypeName
 import graphql.language.ListType
 import graphql.language.Node
 import graphql.language.NodeTraverser
@@ -38,11 +38,29 @@ import graphql.language.TypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-import java.time.*
-import java.util.*
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.util.Currency
 
 class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig) {
-    @ExperimentalStdlibApi
+
+    private val commonScalars =  mutableMapOf<String, KtTypeName>(
+        "LocalTime" to LocalTime::class.asTypeName(),
+        "LocalDate" to LocalDate::class.asTypeName(),
+        "LocalDateTime" to LocalDateTime::class.asTypeName(),
+        "TimeZone" to STRING,
+        "Currency" to Currency::class.asTypeName(),
+        "Instant" to Instant::class.asTypeName(),
+        "DateTime" to OffsetDateTime::class.asTypeName(),
+        "RelayPageInfo" to PageInfo::class.asTypeName(),
+        "PageInfo" to PageInfo::class.asTypeName(),
+        "PresignedUrlResponse" to ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse"),
+        "Header" to ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header"))
+
+
     fun findReturnType(fieldType: Type<*>): KtTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
@@ -70,10 +88,13 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
         return fieldType !is NonNullType
     }
 
-    @ExperimentalStdlibApi
     private fun TypeName.toKtTypeName(): KtTypeName {
         if (name in config.typeMapping) {
             return ClassName.bestGuess(config.typeMapping.getValue(name))
+        }
+
+        if(commonScalars.containsKey(name)) {
+            return commonScalars[name]!!
         }
 
         return when (name) {
@@ -87,19 +108,16 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             "BooleanValue" -> BOOLEAN
             "ID" -> STRING
             "IDValue" -> STRING
-            "LocalTime" -> typeNameOf<LocalTime>()
-            "LocalDate" -> typeNameOf<LocalDate>()
-            "LocalDateTime" -> typeNameOf<LocalDateTime>()
-            "TimeZone" -> STRING
-            "DateTime" -> typeNameOf<OffsetDateTime>()
-            "Instant" -> typeNameOf<Instant>()
-            "Currency" -> typeNameOf<Currency>()
-            "RelayPageInfo" -> typeNameOf<PageInfo>()
-            "PageInfo" -> typeNameOf<PageInfo>()
-            "PresignedUrlResponse" -> ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse")
-            "Header" -> ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header")
-
-            else ->  ClassName.bestGuess("${packageName}.${name}")
+            else -> ClassName.bestGuess("${packageName}.${name}")
         }
+    }
+    fun isStringInput(name: com.squareup.kotlinpoet.TypeName): Boolean {
+        if (config.typeMapping.containsValue(name.toString())) return when(name.copy(false)) {
+            INT -> false
+            DOUBLE -> false
+            BOOLEAN -> false
+            else -> true
+        }
+        return  name.copy(false) == STRING || commonScalars.containsValue(name.copy(false))
     }
 }

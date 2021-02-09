@@ -28,7 +28,6 @@ import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
 
-@ExperimentalStdlibApi
 class CodeGen(private val config: CodeGenConfig) {
     fun generate(): Any {
         if (config.writeToFiles) {

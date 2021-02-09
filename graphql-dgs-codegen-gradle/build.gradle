@@ -37,14 +37,14 @@ apply plugin: 'license'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
-    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.21"
+    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.30"
+
     testImplementation gradleTestKit()
-    testImplementation("org.assertj:assertj-core:3.11.1")
-    // Use JUnit test framework for unit tests
-    testImplementation 'junit:junit:4.12'
+    testImplementation("com.google.guava:guava:30.1-jre")
+    testImplementation("org.assertj:assertj-core:3.11.+")
+    testImplementation(platform("org.junit:junit-bom:5.7.+"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
 }
-
-
 
 // Add a source set for the functional test suite
 sourceSets {
@@ -100,7 +100,9 @@ check {
     dependsOn(tasks.functionalTest)
 }
 
-
+test {
+    useJUnitPlatform()
+}
 
 task createClasspathManifest {
     File outputDir = file("$buildDir/$name")
