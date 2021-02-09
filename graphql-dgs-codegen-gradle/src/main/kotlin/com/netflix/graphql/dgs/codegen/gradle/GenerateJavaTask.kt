@@ -31,7 +31,6 @@ import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Paths
 
-@ExperimentalStdlibApi
 open class GenerateJavaTask : DefaultTask() {
 
     private val LOGGER = LoggerFactory.getLogger("DgsCodegenPlugin")

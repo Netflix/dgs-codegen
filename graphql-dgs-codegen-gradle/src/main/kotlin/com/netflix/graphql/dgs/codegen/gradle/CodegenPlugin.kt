@@ -24,8 +24,6 @@ import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
 
-
-@ExperimentalStdlibApi
 class CodegenPlugin : Plugin<Project> {
     override fun apply(project: Project) {
         project.plugins.apply(JavaPlugin::class.java)
