@@ -797,4 +797,41 @@ class ClientApiGenTest {
 
         assertCompiles(codeGenResult.clientProjections)
     }
+
+    @Test
+    fun nestedCycle() {
+        val schema = """
+            type Query {
+                workshop: Workshop
+            }
+            
+            type Workshop {
+                reviews: ReviewConnection
+                assets: Asset
+            }
+            
+            type ReviewConnection {
+                edges: [ReviewEdge]
+            }
+            
+            type ReviewEdge {
+                node: String
+            }
+            
+            type Asset {
+                reviews: ReviewConnection          
+            }                     
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, writeToFiles = true)).generate() as CodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(5)
+        val workshopAssetsReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "WorkshopAssetsReviewsProjection" }!!
+        val workshopReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "WorkshopReviewsProjection" }!!
+
+        //Both projection should have the edges field. Currently that doesn't happen!
+        assertThat(workshopReviewsProjection.typeSpec.methodSpecs).extracting("name").contains("edges")
+        assertThat(workshopAssetsReviewsProjection.typeSpec.methodSpecs).extracting("name").contains("edges")
+
+    }
 }
