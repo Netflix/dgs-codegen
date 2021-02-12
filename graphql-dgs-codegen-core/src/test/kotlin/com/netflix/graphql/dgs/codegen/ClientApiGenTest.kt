@@ -825,7 +825,7 @@ class ClientApiGenTest {
 
         val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, writeToFiles = true)).generate() as CodeGenResult
 
-        assertThat(codeGenResult.clientProjections.size).isEqualTo(5)
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(6)
         val workshopAssetsReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "WorkshopAssetsReviewsProjection" }!!
         val workshopReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "WorkshopReviewsProjection" }!!
 
