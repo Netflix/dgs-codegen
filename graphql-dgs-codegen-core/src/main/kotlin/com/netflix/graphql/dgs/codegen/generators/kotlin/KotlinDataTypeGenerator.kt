@@ -61,7 +61,7 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
                             is BooleanValue -> CodeBlock.of("%L", defVal.isValue)
                             is IntValue -> CodeBlock.of("%L", defVal.value)
                             is StringValue -> CodeBlock.of("%S", defVal.value)
-                            is FloatValue -> CodeBlock.of("%L", defVal.value)
+                            is FloatValue -> CodeBlock.of("%Lf", defVal.value)
                             is EnumValue -> CodeBlock.of("%M", MemberName(type as ClassName, defVal.name))
                             else -> CodeBlock.of("%L", defVal)
                         }
@@ -77,7 +77,7 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.kotlinpoet.TypeName, val nullable: Boolean, val default: CodeBlock? = null)
+internal data class Field(val name: String, val type: com.squareup.kotlinpoet.TypeName, val nullable: Boolean, val default: Any? = null)
 
 abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, private val config: CodeGenConfig) {
     protected val typeUtils = KotlinTypeUtils(packageName, config)
@@ -102,7 +102,12 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
                     .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.default != null) {
-                parameterSpec.defaultValue(field.default)
+                val initializerBlock = if (field.type.toString().contains("String")) {
+                    "\"${field.default}\""
+                } else {
+                    "${field.default}"
+                }
+                parameterSpec.defaultValue(initializerBlock)
             } else {
                 when (returnType) {
                     STRING -> if (field.nullable) parameterSpec.defaultValue("null")
