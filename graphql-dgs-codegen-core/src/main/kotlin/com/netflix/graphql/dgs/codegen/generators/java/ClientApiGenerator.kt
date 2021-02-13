@@ -166,8 +166,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             }
         }
 
-        val concreteTypesResult = createConcreteTypes(type, javaType.build(), javaType, prefix)
-        val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), prefix)
+        val concreteTypesResult = createConcreteTypes(type, javaType.build(), javaType, prefix, mutableMapOf<Pair<String, String>, Int>())
+        val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), prefix, mutableMapOf<Pair<String, String>, Int>())
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
@@ -198,13 +198,12 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    private fun createConcreteTypes(type: TypeDefinition<*>, root: TypeSpec, javaType: TypeSpec.Builder, prefix: String): CodeGenResult {
+    private fun createConcreteTypes(type: TypeDefinition<*>, root: TypeSpec, javaType: TypeSpec.Builder, prefix: String, processedEdges: Map<Pair<String, String>, Int>): CodeGenResult {
         return if (type is InterfaceTypeDefinition) {
 
             val concreteTypes = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).filter {
                 it.implements.filterIsInstance<NamedNode<*>>().find { iface -> iface.name == type.name } != null }
             concreteTypes.map {
-                val processedEdges = mutableMapOf<Pair<String, String>, Int>()
                 addFragmentProjectionMethod(javaType, root, prefix, it, processedEdges)
             }.fold(CodeGenResult()) { total, current -> total.merge(current) }
         } else {
@@ -212,11 +211,10 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         }
     }
 
-    private fun createUnionTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String): CodeGenResult {
+    private fun createUnionTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String, processedEdges: Map<Pair<String, String>, Int>): CodeGenResult {
         return if (type is UnionTypeDefinition) {
             val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document) }.toList()
             memberTypes.map {
-                val processedEdges = mutableMapOf<Pair<String, String>, Int>()
                 addFragmentProjectionMethod(javaType, rootType, prefix, it, processedEdges)
             }.fold(CodeGenResult()) { total, current -> total.merge(current) }
         } else {
@@ -317,7 +315,11 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .addModifiers(Modifier.PUBLIC)
                             .build())
                     val updatedProcessedEdges = processedEdges.toMutableMap()
-                    updatedProcessedEdges.putIfAbsent(Pair(it.second!!.name, type.name), 1)
+                    if (updatedProcessedEdges.containsKey(Pair(it.second!!.name, type.name))) {
+                        updatedProcessedEdges[Pair(it.second!!.name, type.name)]!!.inc()
+                    } else {
+                        updatedProcessedEdges.putIfAbsent(Pair(it.second!!.name, type.name), 1)
+                    }
                     createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}${it.first.name.capitalize()}", updatedProcessedEdges)
                 }.fold(CodeGenResult()) { total, current -> total.merge(current) }
 
@@ -339,8 +341,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     }
                 }
 
-        val concreteTypesResult = createConcreteTypes(type, root, javaType, prefix)
-        val unionTypesResult = createUnionTypes(type, javaType, root, prefix)
+        val concreteTypesResult = createConcreteTypes(type, root, javaType, prefix, processedEdges)
+        val unionTypesResult = createUnionTypes(type, javaType, root, prefix, processedEdges)
 
         return Pair(javaType, codeGenResult.merge(concreteTypesResult).merge(unionTypesResult))
     }
