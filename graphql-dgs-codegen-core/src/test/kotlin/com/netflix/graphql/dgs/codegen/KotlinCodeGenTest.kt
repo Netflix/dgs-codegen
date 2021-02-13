@@ -516,6 +516,41 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateInputWithDefaultValueForEnum() {
+        val schema = """
+            enum Color {
+                red
+            }
+            
+            input ColorFilter {
+                color: Color = red
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("ColorFilter")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("color")
+        assertThat(colorParam.type.toString()).isEqualTo("$typesPackageName.Color?")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("$typesPackageName.Color.red")
+    }
+
+    @Test
     fun generateToStringMethodForInputTypes() {
         val schema = """
             type Query {
