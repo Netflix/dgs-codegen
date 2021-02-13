@@ -53,23 +53,21 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): KotlinCodeGenResult {
 
         val fields = definition.inputValueDefinitions
-            .filter(ReservedKeywordFilter.filterInvalidNames)
-            .map {
-            val defaultValue: Any
-            if (it.defaultValue != null) {
-                defaultValue = when (it.defaultValue) {
-                    is BooleanValue -> (it.defaultValue as BooleanValue).isValue
-                    is IntValue -> (it.defaultValue as IntValue).value
-                    is StringValue -> (it.defaultValue as StringValue).value
-                    is FloatValue -> (it.defaultValue as FloatValue).value
-                    else -> it.defaultValue
-                }
-
-                Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), defaultValue)
-            } else {
-                Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type))
-            }
-        }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
+                .filter(ReservedKeywordFilter.filterInvalidNames)
+                .map {
+                    val type = typeUtils.findReturnType(it.type)
+                    val defaultValue = it.defaultValue?.let { defVal ->
+                        when (defVal) {
+                            is BooleanValue -> CodeBlock.of("%L", defVal.isValue)
+                            is IntValue -> CodeBlock.of("%L", defVal.value)
+                            is StringValue -> CodeBlock.of("%S", defVal.value)
+                            is FloatValue -> CodeBlock.of("%L", defVal.value)
+                            is EnumValue -> CodeBlock.of("%M", MemberName(type as ClassName, defVal.name))
+                            else -> CodeBlock.of("%L", defVal)
+                        }
+                    }
+                    Field(it.name, type, typeUtils.isNullable(it.type), defaultValue)
+                }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
         val interfaces = emptyList<Type<*>>()
         return generate(definition.name, fields, interfaces, true, document)
     }
@@ -79,7 +77,7 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.kotlinpoet.TypeName, val nullable: Boolean, val default: Any? = null)
+internal data class Field(val name: String, val type: com.squareup.kotlinpoet.TypeName, val nullable: Boolean, val default: CodeBlock? = null)
 
 abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, private val config: CodeGenConfig) {
     protected val typeUtils = KotlinTypeUtils(packageName, config)
@@ -104,12 +102,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
                     .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.default != null) {
-                val initializerBlock = if (field.type.toString().contains("String")) {
-                    "\"${field.default}\""
-                } else {
-                    "${field.default}"
-                }
-                parameterSpec.defaultValue(initializerBlock)
+                parameterSpec.defaultValue(field.default)
             } else {
                 when (returnType) {
                     STRING -> if (field.nullable) parameterSpec.defaultValue("null")
