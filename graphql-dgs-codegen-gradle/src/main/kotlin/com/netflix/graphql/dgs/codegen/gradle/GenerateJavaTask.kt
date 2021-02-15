@@ -60,6 +60,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var generateClient = false
 
+    @Input
+    var generateInterfaces = false
+
     @OutputDirectory
     fun getOutputDir(): File {
         return Paths.get("${generatedSourcesDir}/generated").toFile()
@@ -98,6 +101,7 @@ open class GenerateJavaTask : DefaultTask() {
                 packageName = packageName,
                 language = Language.valueOf(language.toUpperCase()),
                 generateClientApi = generateClient,
+                generateInterfaces = generateInterfaces,
                 typeMapping = typeMapping,
                 includeQueries = includeQueries.toSet(),
                 includeMutations = includeMutations.toSet(),

@@ -22,6 +22,7 @@ import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.TypeSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -1040,5 +1041,47 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
+    }
+
+    @Test
+    fun generateObjectTypeInterface() {
+        val schema = """
+            type Person {
+                name: String
+                email: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateInterfaces = true)).generate() as CodeGenResult
+        assertThat(dataTypes.size).isEqualTo(2)
+        assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name", "email")
+        assertThat(dataTypes[1].typeSpec.name).isEqualTo("IPerson")
+        assertThat(dataTypes[1].typeSpec.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
+        assertThat(dataTypes[1].typeSpec.methodSpecs).extracting("name").containsExactly("getName", "getEmail")
+        assertCompiles(dataTypes)
+    }
+
+    @Test
+    fun generateInputTypeInterface() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                genre: String!
+                rating: Int!
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateInterfaces = true)).generate() as CodeGenResult
+        assertThat(dataTypes.size).isEqualTo(2)
+        assertThat(dataTypes[0].typeSpec.name).isEqualTo("MovieFilter")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("genre", "rating")
+        assertThat(dataTypes[1].typeSpec.name).isEqualTo("IMovieFilter")
+        assertThat(dataTypes[1].typeSpec.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
+        assertThat(dataTypes[1].typeSpec.methodSpecs).extracting("name").containsExactly("getGenre", "getRating")
+        assertCompiles(dataTypes)
     }
 }

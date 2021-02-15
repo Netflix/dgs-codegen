@@ -241,6 +241,7 @@ data class CodeGenConfig(
         val packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
         val language: Language = Language.JAVA,
         val generateClientApi: Boolean = false,
+        val generateInterfaces: Boolean = false,
         val typeMapping: Map<String, String> = emptyMap(),
         val includeQueries: Set<String> = emptySet(),
         val includeMutations: Set<String> = emptySet(),
