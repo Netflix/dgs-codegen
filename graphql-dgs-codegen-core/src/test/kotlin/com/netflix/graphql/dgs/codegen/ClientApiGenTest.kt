@@ -144,6 +144,9 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("PersonsFriendsProjection")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("name")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("friends")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("name")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }
@@ -179,6 +182,45 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SearchMovieDetailsProjection")
         assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("SearchMovieDetailsShowProjection")
         assertThat(codeGenResult.clientProjections[4].typeSpec.name).isEqualTo("SearchMovieDetailsShowMovieProjection")
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
+    }
+
+    @Test
+    fun generateUnionProjectionsWithCycles() {
+        val schema = """
+            type Query {
+                search(title: String): [Video]
+            }
+            
+            union Video = Show | Movie
+            
+            type Show {
+                title: String
+            }
+            
+            type Movie {
+                title: String
+                duration: Int
+                related: Related
+            }
+            
+            type Related {
+                 video: Video
+            }
+            
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(7)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("SearchShowProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SearchMovieProjection")
+        assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("SearchMovieRelatedProjection")
+        assertThat(codeGenResult.clientProjections[4].typeSpec.name).isEqualTo("SearchMovieRelatedVideoProjection")
+        assertThat(codeGenResult.clientProjections[5].typeSpec.name).isEqualTo("SearchMovieRelatedVideoShowProjection")
+        assertThat(codeGenResult.clientProjections[6].typeSpec.name).isEqualTo("SearchMovieRelatedVideoMovieProjection")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
@@ -799,7 +841,7 @@ class ClientApiGenTest {
     }
 
     @Test
-    fun nestedCycle() {
+    fun generateProjectionsForSameTypeInSameQueryWithDifferentPaths() {
         val schema = """
             type Query {
                 workshop: Workshop
@@ -829,9 +871,7 @@ class ClientApiGenTest {
         val workshopAssetsReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "WorkshopAssetsReviewsProjection" }!!
         val workshopReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "WorkshopReviewsProjection" }!!
 
-        //Both projection should have the edges field. Currently that doesn't happen!
         assertThat(workshopReviewsProjection.typeSpec.methodSpecs).extracting("name").contains("edges")
         assertThat(workshopAssetsReviewsProjection.typeSpec.methodSpecs).extracting("name").contains("edges")
-
     }
 }
