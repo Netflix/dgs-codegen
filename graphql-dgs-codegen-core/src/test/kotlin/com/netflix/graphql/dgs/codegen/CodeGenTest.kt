@@ -985,6 +985,28 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateNoDuplicateConstantNames() {
+        val schema = """
+            type Query {
+                movies: [Movie]
+                movie(id: ID): Movie
+                movie(title: String): Movie
+            }
+            
+            type Movie {
+                id: ID
+                title: String
+            }
+        """.trimIndent()
+
+
+        val result = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        val type = result.constants[0].typeSpec
+        // fieldSpecs should only contain 1 "Movie" field name
+        assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Movies", "Movie")
+    }
+
+    @Test
     fun generateUnion() {
         val schema = """
             type Query {

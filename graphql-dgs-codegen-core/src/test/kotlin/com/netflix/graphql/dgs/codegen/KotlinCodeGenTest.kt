@@ -945,6 +945,28 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateNoDuplicateConstantNames() {
+        val schema = """
+            type Query {
+                movies: [Movie]
+                movie(id: ID): Movie
+                movie(title: String): Movie
+            }
+            
+            type Movie {
+                id: ID
+                title: String
+            }
+        """.trimIndent()
+
+
+        val result = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val type = result.constants[0].members[0] as TypeSpec
+        // propertySpecs should only contain 1 "Movie" property name
+        assertThat(type.typeSpecs[0].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Movies", "Movie")
+    }
+
+    @Test
     fun generateUnion() {
         val schema = """
             type Query {
