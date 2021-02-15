@@ -361,10 +361,10 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     fun getPackageName(): String {
-        return config.packageName + ".client"
+        return config.packageName + config.subPackageNameClient
     }
 
     private fun getDatatypesPackageName(): String {
-        return config.packageName + ".types"
+        return config.packageName + config.subPackageNameTypes
     }
 }

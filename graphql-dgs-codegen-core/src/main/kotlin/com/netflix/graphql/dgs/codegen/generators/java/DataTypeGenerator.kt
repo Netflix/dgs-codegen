@@ -31,7 +31,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import javax.lang.model.element.Modifier
 
-class DataTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageName + ".types", config) {
+class DataTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageName + config.subPackageNameTypes, config) {
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>, document: Document): CodeGenResult {
         if (definition.shouldSkip()) {
             return CodeGenResult()
@@ -53,7 +53,7 @@ class DataTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.pa
     }
 }
 
-class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageName + ".types", config) {
+class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageName + config.subPackageNameTypes, config) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
         val name = definition.name
 

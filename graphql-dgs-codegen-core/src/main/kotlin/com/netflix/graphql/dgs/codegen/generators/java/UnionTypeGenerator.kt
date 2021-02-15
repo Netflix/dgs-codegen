@@ -46,5 +46,5 @@ class UnionTypeGenerator(private val config: CodeGenConfig) {
         return CodeGenResult(interfaces = listOf(javaFile))
     }
 
-    val packageName = config.packageName + ".types"
+    val packageName = config.packageName + config.subPackageNameTypes
 }

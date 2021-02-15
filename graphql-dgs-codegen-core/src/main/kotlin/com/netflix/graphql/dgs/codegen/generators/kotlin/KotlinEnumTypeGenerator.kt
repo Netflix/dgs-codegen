@@ -39,6 +39,6 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
     }
 
     fun getPackageName(): String {
-        return config.packageName + ".types"
+        return config.packageName + config.subPackageNameTypes
     }
 }

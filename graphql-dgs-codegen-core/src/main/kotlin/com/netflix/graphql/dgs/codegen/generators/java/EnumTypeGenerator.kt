@@ -42,6 +42,6 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
 
     private fun addEnum(enumVal: EnumValueDefinition, javaType: TypeSpec.Builder) { javaType.addEnumConstant(enumVal.name); }
     fun getPackageName(): String {
-        return config.packageName + ".types"
+        return config.packageName + config.subPackageNameTypes
     }
 }

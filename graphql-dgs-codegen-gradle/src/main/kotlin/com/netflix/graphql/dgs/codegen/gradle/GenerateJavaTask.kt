@@ -44,6 +44,15 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var packageName = ""
 
+    @Input
+    var subPackageNameClient = ".client"
+
+    @Input
+    var subPackageNameDatafetchers = ".datafetchers"
+
+    @Input
+    var subPackageNameTypes = ".types"
+
     private val hasKotlinPluginWrapperClass = try {
         this.javaClass.classLoader.loadClass("org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper")
         true
@@ -96,6 +105,9 @@ open class GenerateJavaTask : DefaultTask() {
                 examplesOutputDir = getExampleOutputDir().toPath(),
                 writeToFiles = true,
                 packageName = packageName,
+                subPackageNameClient = subPackageNameClient,
+                subPackageNameDatafetchers = subPackageNameDatafetchers,
+                subPackageNameTypes = subPackageNameTypes,
                 language = Language.valueOf(language.toUpperCase()),
                 generateClientApi = generateClient,
                 typeMapping = typeMapping,
