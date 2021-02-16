@@ -240,12 +240,14 @@ data class CodeGenConfig(
         val writeToFiles: Boolean = false,
         val packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
         val language: Language = Language.JAVA,
+        val generateBoxedTypes: Boolean = false,
         val generateClientApi: Boolean = false,
         val typeMapping: Map<String, String> = emptyMap(),
         val includeQueries: Set<String> = emptySet(),
         val includeMutations: Set<String> = emptySet(),
         val skipEntityQueries: Boolean = false,
         val shortProjectionNames: Boolean = false,
+
 
 )
 
