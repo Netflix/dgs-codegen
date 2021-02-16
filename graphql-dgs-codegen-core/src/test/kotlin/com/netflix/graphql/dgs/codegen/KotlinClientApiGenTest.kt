@@ -635,4 +635,77 @@ class KotlinClientApiGenTest {
         assertThat(projections.size).isEqualTo(2)
         assertThat((projections[1].members[0] as TypeSpec).funSpecs).extracting("name").contains("title", "director")
     }
+
+    @Test
+    fun generateProjectionsForSameTypeInSameQueryWithDifferentPaths() {
+        val schema = """
+            type Query {
+                workshop: Workshop
+            }
+            
+            type Workshop {
+                reviews: ReviewConnection
+                assets: Asset
+            }
+            
+            type ReviewConnection {
+                edges: [ReviewEdge]
+            }
+            
+            type ReviewEdge {
+                node: String
+            }
+            
+            type Asset {
+                reviews: ReviewConnection          
+            }                     
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(6)
+
+        val workshopAssetsReviewsProjection = codeGenResult.clientProjections.find { (it.members[0] as TypeSpec).name == "WorkshopAssetsReviewsProjection" }!!
+        val workshopReviewsProjection = codeGenResult.clientProjections.find { (it.members[0] as TypeSpec).name == "WorkshopReviewsProjection" }!!
+
+        assertThat((workshopReviewsProjection.members[0] as TypeSpec).funSpecs).extracting("name").contains("edges")
+        assertThat((workshopAssetsReviewsProjection.members[0] as TypeSpec).funSpecs).extracting("name").contains("edges")
+    }
+
+    @Test
+    fun generateUnionProjectionsWithCycles() {
+        val schema = """
+            type Query {
+                search(title: String): [Video]
+            }
+            
+            union Video = Show | Movie
+            
+            type Show {
+                title: String
+            }
+            
+            type Movie {
+                title: String
+                duration: Int
+                related: Related
+            }
+            
+            type Related {
+                 video: Video
+            }
+            
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(7)
+        assertThat((codeGenResult.clientProjections[0].members[0] as TypeSpec).name).isEqualTo("SearchProjectionRoot")
+        assertThat((codeGenResult.clientProjections[1].members[0] as TypeSpec).name).isEqualTo("SearchShowProjection")
+        assertThat((codeGenResult.clientProjections[2].members[0] as TypeSpec).name).isEqualTo("SearchMovieProjection")
+        assertThat((codeGenResult.clientProjections[3].members[0] as TypeSpec).name).isEqualTo("SearchMovieRelatedProjection")
+        assertThat((codeGenResult.clientProjections[4].members[0] as TypeSpec).name).isEqualTo("SearchMovieRelatedVideoProjection")
+        assertThat((codeGenResult.clientProjections[5].members[0] as TypeSpec).name).isEqualTo("SearchMovieRelatedVideoShowProjection")
+        assertThat((codeGenResult.clientProjections[6].members[0] as TypeSpec).name).isEqualTo("SearchMovieRelatedVideoMovieProjection")
+    }
 }

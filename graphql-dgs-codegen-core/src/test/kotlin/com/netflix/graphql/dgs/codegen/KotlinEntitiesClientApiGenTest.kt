@@ -129,7 +129,8 @@ class KotlinEntitiesClientApiGenTest {
         assertThat(projections[3].name).isEqualTo("EntitiesPersonKeyProjection")
         assertThat(projections[4].name).isEqualTo("EntitiesMovieCastKeyProjection")
         assertThat(projections[5].name).isEqualTo("EntitiesMovieCastKeyMovieProjection")
-        assertThat(projections[6].name).isEqualTo("EntitiesMovieCastKeyActorProjection")
+        assertThat(projections[6].name).isEqualTo("EntitiesMovieCastKeyMovieActorProjection")
+        assertThat(projections[7].name).isEqualTo("EntitiesMovieCastKeyActorProjection")
 
         val representations = codeGenResult.dataTypes.filter {it.name.contains("Representation")}
         assertThat(representations.size).isEqualTo(3)
