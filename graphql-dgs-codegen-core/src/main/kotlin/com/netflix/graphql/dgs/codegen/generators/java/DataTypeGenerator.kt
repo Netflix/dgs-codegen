@@ -43,13 +43,20 @@ class DataTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenerat
             union.memberTypes.map { it as TypeName }.map { it.name }.contains(name)
         }.map { it.name }
 
-        val implements = definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
+        var implements = definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
         val fieldDefinitions = definition.fieldDefinitions
                 .filterSkipped()
                 .map { Field(it.name, typeUtils.findReturnType(it.type)) }
                 .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type)) })
 
-        return generate(name, unionTypes.plus(implements), fieldDefinitions, false, config.generateInterfaces)
+        val interfaceCodeGenResult = if (config.generateInterfaces) {
+            val interfaceName = "I${name}"
+            implements = listOf(interfaceName) + implements
+            generateInterface(interfaceName, fieldDefinitions)
+        } else CodeGenResult()
+
+        return generate(name, unionTypes.plus(implements), fieldDefinitions, false)
+                .merge(interfaceCodeGenResult)
     }
 }
 
@@ -73,7 +80,7 @@ class InputTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenera
             }
 
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
-        return generate(name, emptyList(), fieldDefinitions, true, config.generateInterfaces)
+        return generate(name, emptyList(), fieldDefinitions, true)
     }
 }
 
@@ -82,25 +89,9 @@ internal data class Field(val name: String, val type: com.squareup.javapoet.Type
 abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig) {
     internal val typeUtils = TypeUtils(packageName, config)
 
-    internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean, generateInterface: Boolean): CodeGenResult {
+    internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
                 .addModifiers(Modifier.PUBLIC)
-
-        var interfaceFile: JavaFile? = null
-        if (generateInterface) {
-
-            val interfaceName = "I${name}"
-            val interfaceType = TypeSpec.interfaceBuilder(interfaceName)
-                    .addModifiers(Modifier.PUBLIC)
-
-            fields.forEach {
-                addGetter(it.type, it, interfaceType, true)
-            }
-
-            interfaceFile = JavaFile.builder(packageName, interfaceType.build()).build()
-
-            addInterface(interfaceName, javaType)
-        }
 
         interfaces.forEach {
             addInterface(it, javaType)
@@ -132,20 +123,20 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
-        return CodeGenResult(dataTypes = listOfNotNull(javaFile, interfaceFile))
+        return CodeGenResult(dataTypes = listOf(javaFile))
     }
 
     internal fun generateInterface(name: String, fields: List<Field>): CodeGenResult {
-        val javaType = TypeSpec.interfaceBuilder("I${name}")
+        val javaType = TypeSpec.interfaceBuilder(name)
                 .addModifiers(Modifier.PUBLIC)
 
         fields.forEach {
-            addGetter(it.type, it, javaType)
+            addAbstractGetter(it.type, it, javaType)
         }
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
-        return CodeGenResult(dataTypes = listOf(javaFile))
+        return CodeGenResult(interfaces = listOf(javaFile))
     }
 
     private fun addHashcode(javaType: TypeSpec.Builder) {
@@ -333,24 +324,17 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
             val field = FieldSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE).build()
             javaType.addField(field)
         }
-        addGetter(fieldDefinition.type, fieldDefinition, javaType)
-        addSetter(fieldDefinition.type, fieldDefinition, javaType)
-    }
 
-    private fun addGetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder, abstract: Boolean = false) {
         val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
-        val methodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType)
-        if (abstract) {
-            methodBuilder.addModifiers(Modifier.ABSTRACT)
-        } else {
-            methodBuilder.addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
-        }
-        javaType.addMethod(methodBuilder.build())
-    }
+        javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
 
-    private fun addSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         val setterName = "set${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
         javaType.addMethod(MethodSpec.methodBuilder(setterName).addModifiers(Modifier.PUBLIC).addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name), ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
+    }
+
+    private fun addAbstractGetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
+        val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
+        javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT).returns(returnType).build())
     }
 
     private fun addBuilder(javaType: TypeSpec.Builder) {

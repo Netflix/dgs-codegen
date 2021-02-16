@@ -66,7 +66,7 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig): BaseDataTy
                         Field(it.name, typeUtils.findReturnType(it.type))
                     }
                 }
-        return generate(name, emptyList(), fieldDefinitions.plus(typeName), true, false).merge(result)
+        return generate(name, emptyList(), fieldDefinitions.plus(typeName), true).merge(result)
     }
 
     private fun findType(typeName: Type<*>, document: Document): TypeDefinition<*>? {
