@@ -1041,4 +1041,23 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
     }
+
+    @Test
+    fun generateWithCustomSubPackageName() {
+
+        val schema = """
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, subPackageNameTypes = "mytypes")).generate() as CodeGenResult
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Person")
+        assertThat(dataTypes[0].packageName).isEqualTo("$basePackageName.mytypes")
+        assertCompiles(dataTypes)
+    }
 }
