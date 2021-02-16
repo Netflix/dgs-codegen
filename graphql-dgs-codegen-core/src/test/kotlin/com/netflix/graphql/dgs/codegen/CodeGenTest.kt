@@ -95,6 +95,23 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateBoxedDataClassWithNonNullablePrimitive() {
+        val schema = """
+            type MyType {
+                count: Int!
+                truth: Boolean!
+                floaty: Float!
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateBoxedTypes = true)).generate() as CodeGenResult
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.fieldSpecs[0].type.toString()).isEqualTo("java.lang.Integer")
+        assertThat(typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.lang.Boolean")
+        assertThat(typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Double")
+    }
+
+    @Test
     fun generateDataClassWithNonNullablePrimitiveInList() {
         val schema = """
             type MyType {

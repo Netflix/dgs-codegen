@@ -67,6 +67,9 @@ open class GenerateJavaTask : DefaultTask() {
     var typeMapping = mutableMapOf<String, String>()
 
     @Input
+    var generateBoxedTypes = false
+
+    @Input
     var generateClient = false
 
     @OutputDirectory
@@ -109,6 +112,7 @@ open class GenerateJavaTask : DefaultTask() {
                 subPackageNameDatafetchers = subPackageNameDatafetchers,
                 subPackageNameTypes = subPackageNameTypes,
                 language = Language.valueOf(language.toUpperCase()),
+                generateBoxedTypes = generateBoxedTypes,
                 generateClientApi = generateClient,
                 typeMapping = typeMapping,
                 includeQueries = includeQueries.toSet(),

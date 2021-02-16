@@ -131,7 +131,8 @@ class EntitiesClientApiGenTest {
         assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieKeyActorProjection")
         assertThat(projections[3].typeSpec.name).isEqualTo("EntitiesMovieCastKeyProjection")
         assertThat(projections[4].typeSpec.name).isEqualTo("EntitiesMovieCastKeyMovieProjection")
-        assertThat(projections[5].typeSpec.name).isEqualTo("EntitiesMovieCastKeyActorProjection")
+        assertThat(projections[5].typeSpec.name).isEqualTo("EntitiesMovieCastKeyMovieActorProjection")
+        assertThat(projections[6].typeSpec.name).isEqualTo("EntitiesMovieCastKeyActorProjection")
 
         val representations = codeGenResult.dataTypes.filter {it.typeSpec.name.contains("Representation")}
         assertThat(representations.size).isEqualTo(3)

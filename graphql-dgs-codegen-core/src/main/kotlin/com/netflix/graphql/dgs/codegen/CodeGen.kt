@@ -243,12 +243,14 @@ data class CodeGenConfig(
         private val subPackageNameDatafetchers: String = "datafetchers",
         private val subPackageNameTypes: String = "types",
         val language: Language = Language.JAVA,
+        val generateBoxedTypes: Boolean = false,
         val generateClientApi: Boolean = false,
         val typeMapping: Map<String, String> = emptyMap(),
         val includeQueries: Set<String> = emptySet(),
         val includeMutations: Set<String> = emptySet(),
         val skipEntityQueries: Boolean = false,
         val shortProjectionNames: Boolean = false,
+
 
 ) {
     val packageNameClient: String

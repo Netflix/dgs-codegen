@@ -29,7 +29,6 @@ import graphql.language.*
 
 class KotlinClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
     private val generatedClasses = mutableSetOf<String>()
-    private val processedSchemaTypes = mutableMapOf<Pair<String, String>, Int>()
 
     fun generate(definition: ObjectTypeDefinition): KotlinCodeGenResult {
 
@@ -131,8 +130,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
 
         val clazzName = "${prefix}ProjectionRoot"
         if(generatedClasses.contains(clazzName)) return KotlinCodeGenResult() else generatedClasses.add(clazzName)
-        processedSchemaTypes.clear()
-        processedSchemaTypes[Pair(type.name, "")] = 1
 
         val javaType = TypeSpec.classBuilder(clazzName)
                 .addModifiers(KModifier.PUBLIC)
@@ -141,7 +138,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
         val codeGenResult = fieldDefinitions.filterSkipped()
                 .mapNotNull { if (it.type.findTypeDefinition(document) != null ) Pair(it, it.type.findTypeDefinition(document)) else null }
-                .filter { ! processSchemaTypes(Pair(it.second!!.name, type.name)) }
                 .map {
                     val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
                     javaType.addFunction(FunSpec.builder(it.first.name)
@@ -153,7 +149,9 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                     """.trimIndent())
                             .addModifiers(KModifier.PUBLIC)
                             .build())
-                    createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}${it.first.name.capitalize()}")
+                    val processedEdges = mutableSetOf<Pair<String, String>>()
+                    processedEdges.add(Pair(it.second!!.name, type.name))
+                    createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}${it.first.name.capitalize()}", processedEdges)
                 }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
 
         fieldDefinitions.filterSkipped().forEach {
@@ -170,8 +168,8 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
             }
         }
 
-        val concreteTypesResult = createConcreteTypes(type, javaType, javaType.build(), prefix)
-        val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), prefix)
+        val concreteTypesResult = createConcreteTypes(type, javaType, javaType.build(), prefix, mutableSetOf<Pair<String, String>>())
+        val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), prefix, mutableSetOf<Pair<String, String>>())
 
         val typeSpec = javaType.build()
         val javaFile = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
@@ -186,11 +184,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                 .superclass(BaseProjectionNode::class.asTypeName())
 
         if(generatedClasses.contains(clazzName)) return KotlinCodeGenResult() else generatedClasses.add(clazzName)
-        processedSchemaTypes.clear()
-        processedSchemaTypes[Pair("EntitiesRootProjection", "")] = 1
-
         val codeGenResult = federatedTypes
-                .filter { ! processSchemaTypes(Pair(it.name, "EntitiesRootProjection")) }
                 .map {
                     javaType.addFunction(FunSpec.builder("on${it.name}")
                             .addModifiers(KModifier.PUBLIC)
@@ -201,8 +195,8 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                                 return fragment
                             """.trimIndent())
                             .build())
-
-                    createFragment(it, javaType.build(), javaType.build(), "Entities${it.name.capitalize()}Key")
+                    val processedEdges = mutableSetOf<Pair<String, String>>()
+                    createFragment(it, javaType.build(), javaType.build(), "Entities${it.name.capitalize()}Key", processedEdges)
                 }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
 
         val typeSpec = javaType.build()
@@ -210,7 +204,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return KotlinCodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    private fun createConcreteTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String): KotlinCodeGenResult {
+    private fun createConcreteTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>): KotlinCodeGenResult {
         return if (type is InterfaceTypeDefinition) {
             val concreteTypes = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).filter { it.implements.filterIsInstance<NamedNode<*>>().find { iface -> iface.name == type.name } != null }
             concreteTypes.map {
@@ -223,12 +217,12 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                             """.trimIndent())
                         .build())
 
-                createFragment(it, javaType.build(), rootType, "${prefix}${it.name.capitalize()}")
+                createFragment(it, javaType.build(), rootType, "${prefix}${it.name.capitalize()}", processedEdges)
             }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
         } else KotlinCodeGenResult()
     }
 
-    private fun createUnionTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String): KotlinCodeGenResult {
+    private fun createUnionTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>): KotlinCodeGenResult {
         return if (type is UnionTypeDefinition) {
             val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document) }
 
@@ -242,13 +236,13 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                             """.trimIndent())
                         .build())
 
-                createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}${it.name.capitalize()}")
+                createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}${it.name.capitalize()}", processedEdges)
             }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
         } else KotlinCodeGenResult()
     }
 
-    private fun createFragment(type: ObjectTypeDefinition, parent: TypeSpec, root: TypeSpec, prefix: String): KotlinCodeGenResult {
-        val subProjection = createSubProjectionType(type, parent, root, prefix) ?: return KotlinCodeGenResult()
+    private fun createFragment(type: ObjectTypeDefinition, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>): KotlinCodeGenResult {
+        val subProjection = createSubProjectionType(type, parent, root, prefix, processedEdges) ?: return KotlinCodeGenResult()
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
 
@@ -279,15 +273,15 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return KotlinCodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    private fun createSubProjection(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String): KotlinCodeGenResult {
-        val (javaType, codeGenResult) = createSubProjectionType(type, parent, root, prefix) ?: return KotlinCodeGenResult()
+    private fun createSubProjection(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>): KotlinCodeGenResult {
+        val (javaType, codeGenResult) = createSubProjectionType(type, parent, root, prefix, processedEdges) ?: return KotlinCodeGenResult()
 
         val typeSpec = javaType.build()
         val javaFile = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
         return KotlinCodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    private fun createSubProjectionType(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String) : Pair<TypeSpec.Builder, KotlinCodeGenResult>? {
+    private fun createSubProjectionType(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>) : Pair<TypeSpec.Builder, KotlinCodeGenResult>? {
         val className = ClassName(BaseSubProjectionNode::class.java.`package`.name, BaseSubProjectionNode::class.java.simpleName)
         val clazzName = "${prefix}Projection"
 
@@ -307,10 +301,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         val fieldDefinitions = type.filterInterfaceFields(document) + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
         val codeGenResult = fieldDefinitions.filterSkipped()
                 .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
-                .filter {
-                    val key = Pair(it.second!!.name, type.name)
-                    ! processSchemaTypes(key)
-                }
+                .filter { ! processedEdges.contains(Pair(it.second!!.name, type.name)) }
                 .map {
                     val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
                     javaType.addFunction(FunSpec.builder(it.first.name)
@@ -322,7 +313,9 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                     """.trimIndent())
                             .addModifiers(KModifier.PUBLIC)
                             .build())
-                    createSubProjection(it.second!!, javaType.build(), root, "${prefix}${it.first.name.capitalize()}")
+                    val updatedProcessedEdges = processedEdges.toMutableSet()
+                    updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
+                    createSubProjection(it.second!!, javaType.build(), root, "${prefix}${it.first.name.capitalize()}", updatedProcessedEdges)
                 }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
 
         fieldDefinitions.filterSkipped().forEach {
@@ -340,19 +333,10 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
             }
         }
 
-        val concreteTypesResult = createConcreteTypes(type, javaType, root, prefix)
-        val unionTypesResult = createUnionTypes(type, javaType, root, prefix)
+        val concreteTypesResult = createConcreteTypes(type, javaType, root, prefix, processedEdges)
+        val unionTypesResult = createUnionTypes(type, javaType, root, prefix, processedEdges)
 
         return Pair(javaType, codeGenResult.merge(concreteTypesResult).merge(unionTypesResult))
-    }
-
-    private fun processSchemaTypes(key: Pair<String, String>): Boolean {
-        // Add an entry for type, parentType
-        processedSchemaTypes.putIfAbsent(key, 0)
-        processedSchemaTypes[key] = processedSchemaTypes[key]!!.inc()
-
-        // If we have more than one cycle, stop processing
-        return processedSchemaTypes[key]!! > 1
     }
 
     fun getPackageName(): String {
