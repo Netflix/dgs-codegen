@@ -41,7 +41,7 @@ class DatafetcherGenerator(private val config: CodeGenConfig) {
         val fieldName = field.name.substring(0, 1).toUpperCase() + field.name.substring(1)
         val clazzName = fieldName + "Datafetcher"
 
-        val returnType = TypeUtils(config.packageName + config.subPackageNameTypes, config).findReturnType(field.type)
+        val returnType = TypeUtils(config.packageNameTypes, config).findReturnType(field.type)
 
         val returnValue: Any = when (returnType.toString()) {
             "java.lang.String" -> "\"\""
@@ -70,6 +70,6 @@ class DatafetcherGenerator(private val config: CodeGenConfig) {
     }
 
     fun getPackageName(): String {
-        return config.packageName + config.subPackageNameDatafetchers
+        return config.packageNameDatafetchers
     }
 }

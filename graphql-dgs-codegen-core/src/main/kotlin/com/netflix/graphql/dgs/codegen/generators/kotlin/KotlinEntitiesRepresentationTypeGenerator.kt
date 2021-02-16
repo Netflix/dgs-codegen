@@ -26,7 +26,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import graphql.language.*
 
-class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig): AbstractKotlinDataTypeGenerator(config.packageName + config.subPackageNameClient, config) {
+class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig): AbstractKotlinDataTypeGenerator(config.packageNameClient, config) {
 
     fun generate(definition: ObjectTypeDefinition, document: Document, generatedRepresentations: MutableMap<String, Any>): KotlinCodeGenResult {
         val name = "${definition.name}Representation"
@@ -75,7 +75,7 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
     }
 
     override fun getPackageName(): String {
-        return config.packageName + config.subPackageNameClient
+        return config.packageNameClient
     }
 
 

@@ -33,7 +33,7 @@ import javax.lang.model.element.Modifier
 
 class InterfaceGenerator(config: CodeGenConfig) {
 
-    private val packageName = config.packageName + config.subPackageNameTypes
+    private val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config)
 
     fun generate(definition: InterfaceTypeDefinition, document: Document): CodeGenResult {

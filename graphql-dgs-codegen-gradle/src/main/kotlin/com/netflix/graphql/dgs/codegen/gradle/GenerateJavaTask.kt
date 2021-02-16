@@ -45,13 +45,13 @@ open class GenerateJavaTask : DefaultTask() {
     var packageName = ""
 
     @Input
-    var subPackageNameClient = ".client"
+    var subPackageNameClient = "client"
 
     @Input
-    var subPackageNameDatafetchers = ".datafetchers"
+    var subPackageNameDatafetchers = "datafetchers"
 
     @Input
-    var subPackageNameTypes = ".types"
+    var subPackageNameTypes = "types"
 
     private val hasKotlinPluginWrapperClass = try {
         this.javaClass.classLoader.loadClass("org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper")

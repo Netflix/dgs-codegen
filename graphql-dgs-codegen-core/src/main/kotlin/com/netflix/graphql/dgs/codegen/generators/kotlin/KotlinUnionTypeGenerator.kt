@@ -29,7 +29,7 @@ import graphql.language.UnionTypeDefinition
 
 class KotlinUnionTypeGenerator(config: CodeGenConfig) {
 
-    private val packageName = config.packageName + config.subPackageNameTypes
+    private val packageName = config.packageNameTypes
 
     fun generate(definition: UnionTypeDefinition): KotlinCodeGenResult {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)

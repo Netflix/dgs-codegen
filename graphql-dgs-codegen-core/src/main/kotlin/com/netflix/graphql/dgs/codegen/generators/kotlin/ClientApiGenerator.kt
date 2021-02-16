@@ -356,10 +356,10 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
     }
 
     fun getPackageName(): String {
-        return config.packageName + config.subPackageNameClient
+        return config.packageNameClient
     }
 
     private fun getTypesPackageName(): String {
-        return config.packageName + config.subPackageNameTypes
+        return config.packageNameTypes
     }
 }

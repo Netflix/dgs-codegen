@@ -26,7 +26,7 @@ import com.squareup.kotlinpoet.*
 import graphql.language.*
 
 
-class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config.packageName + config.subPackageNameTypes, config) {
+class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): KotlinCodeGenResult {
         if(definition.shouldSkip()) {
             return KotlinCodeGenResult()
@@ -44,12 +44,12 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
     }
 
     override fun getPackageName(): String {
-        return config.packageName + config.subPackageNameTypes
+        return config.packageNameTypes
     }
 }
 
 
-class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config.packageName + config.subPackageNameTypes, config) {
+class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): KotlinCodeGenResult {
 
         val fields = definition.inputValueDefinitions
@@ -75,7 +75,7 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
     }
 
     override fun getPackageName(): String {
-        return config.packageName + config.subPackageNameTypes
+        return config.packageNameTypes
     }
 }
 
