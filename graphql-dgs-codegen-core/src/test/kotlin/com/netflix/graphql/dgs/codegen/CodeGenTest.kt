@@ -600,6 +600,33 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInputWithDefaultValueForArray() {
+        val schema = """
+            input SomeType {
+                names: [String] = []
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("names")
+        assertThat(colorField.initializer.toString()).isEqualTo("java.util.Collections.emptyList()")
+
+         assertCompiles(dataTypes)
+    }
+
+    @Test
     fun generateToInputStringMethodForInputTypes() {
 
         val schema = """

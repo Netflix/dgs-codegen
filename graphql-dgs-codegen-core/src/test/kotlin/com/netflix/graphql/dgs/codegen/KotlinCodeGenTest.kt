@@ -551,6 +551,196 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateInputWithEmptyDefaultValueForArray() {
+        val schema = """
+            input SomeType {
+                names: [String!]! = []
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("names")
+        assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<kotlin.String>")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("emptyList()")
+    }
+
+    @Test
+    fun generateInputWithDefaultValueForStringArray() {
+        val schema = """
+            input SomeType {
+                names: [String!]! = ["DGS"]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("names")
+        assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<kotlin.String>")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf("DGS")""")
+    }
+
+    @Test
+    fun generateInputWithDefaultValueForNullableStringArray() {
+        val schema = """
+            input SomeType {
+                names: [String]! = ["DGS"]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("names")
+        assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<kotlin.String?>")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf("DGS")""")
+    }
+
+    @Test
+    fun generateInputWithDefaultValueForIntArray() {
+        val schema = """
+            input SomeType {
+                names: [Int!]! = [1,2,3]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("names")
+        assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<kotlin.Int>")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf(1, 2, 3)""")
+    }
+
+    @Test
+    fun generateInputWithDefaultValueForEnumArray() {
+        val schema = """
+            input SomeType {
+                colors: [Color!]! = [red]
+            }
+            
+            enum Color {
+                red,
+                blue
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("colors")
+        assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<com.netflix.graphql.dgs.codegen.tests.generated.types.Color>")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf(com.netflix.graphql.dgs.codegen.tests.generated.types.Color.red)""")
+    }
+
+    @Test
+    fun generateInputWithDefaultValueForBooleanArray() {
+        val schema = """
+            input SomeType {
+                booleans: [Bool!]! = [true]
+            }          
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("booleans")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf(true)""")
+    }
+
+    @Test
     fun generateToStringMethodForInputTypes() {
         val schema = """
             type Query {
