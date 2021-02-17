@@ -25,10 +25,6 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
 import graphql.language.TypeName
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
 import javax.lang.model.element.Modifier
 
 class DataTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageNameTypes, config) {
@@ -58,26 +54,33 @@ class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.p
         val name = definition.name
 
         val fieldDefinitions = definition.inputValueDefinitions.map {
-            var defaultValue: Any
-            if (it.defaultValue != null) {
-                    defaultValue = when (it.defaultValue) {
-                        is BooleanValue -> (it.defaultValue as BooleanValue).isValue
-                        is IntValue -> (it.defaultValue as graphql.language.IntValue).value
-                        is StringValue -> (it.defaultValue as graphql.language.StringValue).value
-                        is FloatValue -> (it.defaultValue as graphql.language.FloatValue).value
-                        else -> it.defaultValue
-                    }
-                Field(it.name, typeUtils.findReturnType(it.type), defaultValue)
-            } else {
-                Field(it.name, typeUtils.findReturnType(it.type))
+            val defaultValue = it.defaultValue?.let { defVal ->
+                when (defVal) {
+                    is BooleanValue -> CodeBlock.of("\$L", defVal.isValue)
+                    is IntValue -> CodeBlock.of("\$L", defVal.value)
+                    is StringValue -> CodeBlock.of("\$S", defVal.value)
+                    is FloatValue -> CodeBlock.of("\$L", defVal.value)
+                    is EnumValue -> CodeBlock.of("\$T.\$N", typeUtils.findReturnType(it.type), defVal.name)
+                    is ArrayValue -> if(defVal.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()") else CodeBlock.of("java.util.Arrays.asList(\$L)", defVal.values.map { v ->
+                        when(v) {
+                            is BooleanValue -> CodeBlock.of("\$L", v.isValue)
+                            is IntValue -> CodeBlock.of("\$L", v.value)
+                            is StringValue -> CodeBlock.of("\$S", v.value)
+                            is FloatValue -> CodeBlock.of("\$L", v.value)
+                            is EnumValue -> CodeBlock.of("\$L.\$N", ((it.type as ListType).type as TypeName).name, v.name)
+                            else -> ""
+                        }
+                    }.joinToString())
+                    else -> CodeBlock.of("\$L", defVal)
+                }
             }
-
+            Field(it.name, typeUtils.findReturnType(it.type), defaultValue)
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
         return generate(name, emptyList(), fieldDefinitions, true)
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: Any? = null)
+internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null)
 
 abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig) {
     internal val typeUtils = TypeUtils(packageName, config)
@@ -290,20 +293,12 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
     }
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
-        if (fieldDefinition.initialValue != null) {
-            var initializerBlock = if (fieldDefinition.type.toString().contains("String")) {
-                "\"${fieldDefinition.initialValue}\""
-            } else {
-                "${fieldDefinition.initialValue}"
-            }
-            val field = FieldSpec.builder(fieldDefinition.type, fieldDefinition.name).addModifiers(Modifier.PRIVATE)
-                .initializer(initializerBlock)
-                .build()
-            javaType.addField(field)
+        val field = if (fieldDefinition.initialValue != null) {
+            FieldSpec.builder(fieldDefinition.type, fieldDefinition.name).addModifiers(Modifier.PRIVATE).initializer(fieldDefinition.initialValue).build()
         } else {
-            val field = FieldSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE).build()
-            javaType.addField(field)
+            FieldSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE).build()
         }
+        javaType.addField(field)
 
         val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
         javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
