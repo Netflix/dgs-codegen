@@ -23,8 +23,8 @@ import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.TypeName
 import graphql.language.*
-
 
 class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): KotlinCodeGenResult {
@@ -56,31 +56,32 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
                 .filter(ReservedKeywordFilter.filterInvalidNames)
                 .map {
                     val type = typeUtils.findReturnType(it.type)
-                    val defaultValue = it.defaultValue?.let { defVal ->
-                        when (defVal) {
-                            is BooleanValue -> CodeBlock.of("%L", defVal.isValue)
-                            is IntValue -> CodeBlock.of("%L", defVal.value)
-                            is StringValue -> CodeBlock.of("%S", defVal.value)
-                            is FloatValue -> CodeBlock.of("%L", defVal.value)
-                            is EnumValue -> CodeBlock.of("%M", MemberName(type as ClassName, defVal.name))
-                            is ArrayValue -> if(defVal.values.isEmpty()) CodeBlock.of("emptyList()") else CodeBlock.of("listOf(%L)", defVal.values.map { v ->
-                                when(v) {
-                                    is BooleanValue -> CodeBlock.of("%L", v.isValue)
-                                    is IntValue -> CodeBlock.of("%L", v.value)
-                                    is StringValue -> CodeBlock.of("%S", v.value)
-                                    is FloatValue -> CodeBlock.of("%L", v.value)
-                                    is EnumValue -> CodeBlock.of("%M", MemberName((type as ParameterizedTypeName).typeArguments[0] as ClassName, v.name))
-                                    else -> ""
-                                }
-                            }.joinToString())
-                            else -> CodeBlock.of("%L", defVal)
-                        }
-                    }
+                    val defaultValue = it.defaultValue?.let { value -> generateCode(value, type) }
                     Field(it.name, type, typeUtils.isNullable(it.type), defaultValue)
                 }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
         val interfaces = emptyList<Type<*>>()
         return generate(definition.name, fields, interfaces, true, document)
     }
+
+    private fun generateCode(value: Value<Value<*>>, type: TypeName): CodeBlock =
+        when (value) {
+            is BooleanValue -> CodeBlock.of("%L", value.isValue)
+            is IntValue -> CodeBlock.of("%L", value.value)
+            is StringValue -> CodeBlock.of("%S", value.value)
+            is FloatValue -> CodeBlock.of("%L", value.value)
+            is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
+            is ArrayValue ->
+                if (value.values.isEmpty()) CodeBlock.of("emptyList()")
+                else CodeBlock.of("listOf(%L)", value.values.joinToString { v -> generateCode(v, type).toString() })
+            else -> CodeBlock.of("%L", value)
+        }
+
+    private val TypeName.className: ClassName
+        get() = when (this) {
+            is ClassName -> this
+            is ParameterizedTypeName -> typeArguments[0].className
+            else -> TODO()
+        }
 
     override fun getPackageName(): String {
         return config.packageNameTypes
