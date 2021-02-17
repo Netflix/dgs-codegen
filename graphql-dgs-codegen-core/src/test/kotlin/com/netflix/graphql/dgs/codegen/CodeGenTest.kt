@@ -1046,20 +1046,52 @@ class CodeGenTest {
     @Test
     fun generateObjectTypeInterface() {
         val schema = """
+            type Query {
+                person: Person
+                people: [Person]
+            }
+
             type Person {
                 firstname: String
                 lastname: String
+                address: Address
+            }
+            
+            type Address {
+                street: String
             }
         """.trimIndent()
 
-        val (dataTypes, interfaces) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateInterfaces = true)).generate() as CodeGenResult
-        assertThat(dataTypes.size).isEqualTo(1)
+        val result = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateInterfaces = true)).generate() as CodeGenResult
+
+        val dataFetchers = result.dataFetchers
+        assertThat(dataFetchers.size).isEqualTo(2)
+        assertThat(dataFetchers[0].typeSpec.name).isEqualTo("PersonDatafetcher")
+        assertThat(dataFetchers[0].typeSpec.methodSpecs).extracting("name").containsExactly("getPerson")
+        assertThat(dataFetchers[0].typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("IPerson")
+        assertThat(dataFetchers[1].typeSpec.name).isEqualTo("PeopleDatafetcher")
+        assertThat(dataFetchers[1].typeSpec.methodSpecs).extracting("name").containsExactly("getPeople")
+        val parameterizedTypeName = dataFetchers[1].typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IPerson")
+
+        val dataTypes = result.dataTypes
+        assertThat(dataTypes.size).isEqualTo(2)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IPerson")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("firstname", "lastname")
-        assertThat(interfaces.size).isEqualTo(1)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("firstname", "lastname", "address")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("IAddress")
+        assertThat(dataTypes[1].typeSpec.name).isEqualTo("Address")
+        assertThat(dataTypes[1].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IAddress")
+        assertThat(dataTypes[1].typeSpec.fieldSpecs).extracting("name").containsExactly("street")
+
+        val interfaces = result.interfaces
+        assertThat(interfaces.size).isEqualTo(2)
         assertThat(interfaces[0].typeSpec.name).isEqualTo("IPerson")
-        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getFirstname", "getLastname")
+        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getFirstname", "getLastname", "getAddress")
+        assertThat(interfaces[1].typeSpec.name).isEqualTo("IAddress")
+        assertThat(interfaces[1].typeSpec.methodSpecs).extracting("name").containsExactly("getStreet")
+
         assertCompiles(dataTypes.plus(interfaces))
     }
 }
