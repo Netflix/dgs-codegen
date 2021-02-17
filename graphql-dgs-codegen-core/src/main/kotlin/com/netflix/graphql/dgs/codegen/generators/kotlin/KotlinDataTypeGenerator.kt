@@ -63,6 +63,16 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
                             is StringValue -> CodeBlock.of("%S", defVal.value)
                             is FloatValue -> CodeBlock.of("%L", defVal.value)
                             is EnumValue -> CodeBlock.of("%M", MemberName(type as ClassName, defVal.name))
+                            is ArrayValue -> if(defVal.values.isEmpty()) CodeBlock.of("emptyList()") else CodeBlock.of("listOf(%L)", defVal.values.map { v ->
+                                when(v) {
+                                    is BooleanValue -> CodeBlock.of("%L", v.isValue)
+                                    is IntValue -> CodeBlock.of("%L", v.value)
+                                    is StringValue -> CodeBlock.of("%S", v.value)
+                                    is FloatValue -> CodeBlock.of("%L", v.value)
+                                    is EnumValue -> CodeBlock.of("%M", MemberName((type as ParameterizedTypeName).typeArguments[0] as ClassName, v.name))
+                                    else -> ""
+                                }
+                            }.joinToString())
                             else -> CodeBlock.of("%L", defVal)
                         }
                     }
