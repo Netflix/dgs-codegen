@@ -1002,4 +1002,21 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.propertySpecs).extracting("name").containsExactly("name")
     }
+
+    @Test
+    fun generateWithCustomSubPackageName() {
+
+        val schema = """
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, subPackageNameTypes = "mytypes", language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+        assertThat(dataTypes[0].packageName).isEqualTo("$basePackageName.mytypes")
+    }
 }

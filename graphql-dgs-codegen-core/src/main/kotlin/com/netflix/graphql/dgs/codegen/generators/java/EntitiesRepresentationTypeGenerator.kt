@@ -25,7 +25,7 @@ import graphql.language.*
 
 
 @Suppress("UNCHECKED_CAST")
-class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig): BaseDataTypeGenerator(config.packageName + ".client", config) {
+class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig): BaseDataTypeGenerator(config.packageNameClient, config) {
     fun generate(definition: ObjectTypeDefinition, document: Document, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
         if(config.skipEntityQueries) {
             return CodeGenResult()

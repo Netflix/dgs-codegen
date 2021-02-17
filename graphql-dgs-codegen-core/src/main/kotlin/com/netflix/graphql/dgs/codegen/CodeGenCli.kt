@@ -33,6 +33,9 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val schemas by argument().file(mustExist = true).multiple()
     private val output by option("--output-dir", "-o", help = "Output directory").file(canBeFile = false, canBeDir = true).default(File("generated"))
     private val packageName by option("--package-name", "-p", help = "Package name for generated types")
+    private val subPackageNameClient by option("--sub-package-name-client", help = "Sub package name for generated client").default("client")
+    private val subPackageNameDatafetchers by option("--sub-package-name-datafetchers", help = "Sub package name for generated datafetchers").default("datafetchers")
+    private val subPackageNameTypes by option("--sub-package-name-types", help = "Sub package name for generated types").default("types")
     private val writeFiles by option("--write-to-disk", "-w", help = "Write files to disk").flag("--console-output", default = true)
     private val language by option("--language", "-l", help = "Output language").choice("java", "kotlin").default("java")
     private val generateBoxedTypes by option("--generate-boxed-types", "-b", help = "Genereate boxed types").flag(default = false)
@@ -60,9 +63,9 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
 
         val generate = CodeGen(
                 if(packageName != null) {
-                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), packageName = packageName!!, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, generateInterfaces = generateInterfaces, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames)
+                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), packageName = packageName!!, subPackageNameClient = subPackageNameClient, subPackageNameDatafetchers = subPackageNameDatafetchers, subPackageNameTypes = subPackageNameTypes, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, generateInterfaces = generateInterfaces, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames)
                 } else {
-                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, generateInterfaces = generateInterfaces, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames)
+                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), subPackageNameClient = subPackageNameClient, subPackageNameDatafetchers = subPackageNameDatafetchers, subPackageNameTypes = subPackageNameTypes, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, generateInterfaces = generateInterfaces, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames)
                 }
         ).generate()
 

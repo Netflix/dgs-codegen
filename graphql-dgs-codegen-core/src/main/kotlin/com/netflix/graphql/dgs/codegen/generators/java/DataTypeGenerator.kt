@@ -25,13 +25,9 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
 import graphql.language.TypeName
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
 import javax.lang.model.element.Modifier
 
-class DataTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenerator(config.packageName + ".types", config) {
+class DataTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>, document: Document): CodeGenResult {
         if (definition.shouldSkip()) {
             return CodeGenResult()
@@ -60,7 +56,7 @@ class DataTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenerat
     }
 }
 
-class InputTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenerator(config.packageName + ".types", config) {
+class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
         val name = definition.name
 
