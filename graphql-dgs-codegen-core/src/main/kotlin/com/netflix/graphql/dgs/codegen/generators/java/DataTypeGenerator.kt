@@ -61,7 +61,16 @@ class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.p
                     is StringValue -> CodeBlock.of("\$S", defVal.value)
                     is FloatValue -> CodeBlock.of("\$L", defVal.value)
                     is EnumValue -> CodeBlock.of("\$T.\$N", typeUtils.findReturnType(it.type), defVal.name)
-                    is ArrayValue -> CodeBlock.of("java.util.Collections.emptyList()")
+                    is ArrayValue -> if(defVal.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()") else CodeBlock.of("java.util.Arrays.asList(\$L)", defVal.values.map { v ->
+                        when(v) {
+                            is BooleanValue -> CodeBlock.of("\$L", v.isValue)
+                            is IntValue -> CodeBlock.of("\$L", v.value)
+                            is StringValue -> CodeBlock.of("\$S", v.value)
+                            is FloatValue -> CodeBlock.of("\$L", v.value)
+                            is EnumValue -> CodeBlock.of("\$L.\$N", ((it.type as ListType).type as TypeName).name, v.name)
+                            else -> ""
+                        }
+                    }.joinToString())
                     else -> CodeBlock.of("\$L", defVal)
                 }
             }
