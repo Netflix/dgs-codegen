@@ -30,7 +30,7 @@ import graphql.language.TypeName
 
 class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
 
-    private val packageName = config.packageName + ".types"
+    private val packageName = config.packageNameTypes
     private val typeUtils = KotlinTypeUtils(packageName, config)
 
     fun generate(definition: InterfaceTypeDefinition, document: Document): KotlinCodeGenResult {

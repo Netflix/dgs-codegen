@@ -239,6 +239,9 @@ data class CodeGenConfig(
         val examplesOutputDir: Path = Paths.get("generated-examples"),
         val writeToFiles: Boolean = false,
         val packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
+        private val subPackageNameClient: String = "client",
+        private val subPackageNameDatafetchers: String = "datafetchers",
+        private val subPackageNameTypes: String = "types",
         val language: Language = Language.JAVA,
         val generateBoxedTypes: Boolean = false,
         val generateClientApi: Boolean = false,
@@ -249,7 +252,16 @@ data class CodeGenConfig(
         val shortProjectionNames: Boolean = false,
 
 
-)
+) {
+    val packageNameClient: String
+        get() = "${packageName}.${subPackageNameClient}"
+
+    val packageNameDatafetchers: String
+        get() = "${packageName}.${subPackageNameDatafetchers}"
+
+    val packageNameTypes: String
+        get() = "${packageName}.${subPackageNameTypes}"
+}
 
 enum class Language {
     JAVA,
