@@ -58,6 +58,9 @@ open class GenerateJavaTask : DefaultTask() {
     var typeMapping = mutableMapOf<String, String>()
 
     @Input
+    var generateBoxedTypes = false
+
+    @Input
     var generateClient = false
 
     @Input
@@ -100,6 +103,7 @@ open class GenerateJavaTask : DefaultTask() {
                 writeToFiles = true,
                 packageName = packageName,
                 language = Language.valueOf(language.toUpperCase()),
+                generateBoxedTypes = generateBoxedTypes,
                 generateClientApi = generateClient,
                 generateInterfaces = generateInterfaces,
                 typeMapping = typeMapping,

@@ -67,8 +67,12 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             }
             override fun visitNonNullType(node: NonNullType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = context.getCurrentAccumulate<JavaTypeName>()
-                val unboxed = unboxType(typeName)
-                context.setAccumulate(unboxed)
+                val accumulate = if (config.generateBoxedTypes) {
+                    boxType(typeName)
+                } else {
+                    unboxType(typeName)
+                }
+                context.setAccumulate(accumulate)
                 return TraversalControl.CONTINUE
             }
             override fun visitNode(node: Node<*>, context: TraverserContext<Node<Node<*>>>): TraversalControl {
