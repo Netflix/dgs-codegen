@@ -23,8 +23,8 @@ import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.TypeName
 import graphql.language.*
-
 
 class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): KotlinCodeGenResult {
@@ -53,33 +53,42 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): KotlinCodeGenResult {
 
         val fields = definition.inputValueDefinitions
-            .filter(ReservedKeywordFilter.filterInvalidNames)
-            .map {
-            val defaultValue: Any
-            if (it.defaultValue != null) {
-                defaultValue = when (it.defaultValue) {
-                    is BooleanValue -> (it.defaultValue as BooleanValue).isValue
-                    is IntValue -> (it.defaultValue as IntValue).value
-                    is StringValue -> (it.defaultValue as StringValue).value
-                    is FloatValue -> (it.defaultValue as FloatValue).value
-                    else -> it.defaultValue
-                }
-
-                Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), defaultValue)
-            } else {
-                Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type))
-            }
-        }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
+                .filter(ReservedKeywordFilter.filterInvalidNames)
+                .map {
+                    val type = typeUtils.findReturnType(it.type)
+                    val defaultValue = it.defaultValue?.let { value -> generateCode(value, type) }
+                    Field(it.name, type, typeUtils.isNullable(it.type), defaultValue)
+                }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
         val interfaces = emptyList<Type<*>>()
         return generate(definition.name, fields, interfaces, true, document)
     }
+
+    private fun generateCode(value: Value<Value<*>>, type: TypeName): CodeBlock =
+        when (value) {
+            is BooleanValue -> CodeBlock.of("%L", value.isValue)
+            is IntValue -> CodeBlock.of("%L", value.value)
+            is StringValue -> CodeBlock.of("%S", value.value)
+            is FloatValue -> CodeBlock.of("%L", value.value)
+            is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
+            is ArrayValue ->
+                if (value.values.isEmpty()) CodeBlock.of("emptyList()")
+                else CodeBlock.of("listOf(%L)", value.values.joinToString { v -> generateCode(v, type).toString() })
+            else -> CodeBlock.of("%L", value)
+        }
+
+    private val TypeName.className: ClassName
+        get() = when (this) {
+            is ClassName -> this
+            is ParameterizedTypeName -> typeArguments[0].className
+            else -> TODO()
+        }
 
     override fun getPackageName(): String {
         return config.packageNameTypes
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.kotlinpoet.TypeName, val nullable: Boolean, val default: Any? = null)
+internal data class Field(val name: String, val type: com.squareup.kotlinpoet.TypeName, val nullable: Boolean, val default: CodeBlock? = null)
 
 abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, private val config: CodeGenConfig) {
     protected val typeUtils = KotlinTypeUtils(packageName, config)
@@ -104,12 +113,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
                     .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.default != null) {
-                val initializerBlock = if (field.type.toString().contains("String")) {
-                    "\"${field.default}\""
-                } else {
-                    "${field.default}"
-                }
-                parameterSpec.defaultValue(initializerBlock)
+                parameterSpec.defaultValue(field.default)
             } else {
                 when (returnType) {
                     STRING -> if (field.nullable) parameterSpec.defaultValue("null")

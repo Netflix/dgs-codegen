@@ -569,6 +569,151 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInputWithDefaultValueForEnum() {
+        val schema = """
+            enum Color {
+                red
+            }
+            
+            input ColorFilter {
+                color: Color = red
+            }
+        """.trimIndent()
+
+        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("ColorFilter")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("color")
+        assertThat(colorField.type.toString()).isEqualTo("$typesPackageName.Color")
+        assertThat(colorField.initializer.toString()).isEqualTo("$typesPackageName.Color.red")
+
+         assertCompiles(enumTypes + dataTypes)
+    }
+
+    @Test
+    fun generateInputWithDefaultValueForArray() {
+        val schema = """
+            input SomeType {
+                names: [String] = []
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("names")
+        assertThat(colorField.initializer.toString()).isEqualTo("java.util.Collections.emptyList()")
+
+         assertCompiles(dataTypes)
+    }
+
+    @Test
+    fun generateInputWithDefaultStringValueForArray() {
+        val schema = """
+            input SomeType {
+                names: [String] = ["A", "B"]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("names")
+        assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList("A", "B")""")
+
+         assertCompiles(dataTypes)
+    }
+
+    @Test
+    fun generateInputWithDefaultIntValueForArray() {
+        val schema = """
+            input SomeType {
+                numbers: [Int] = [1, 2, 3]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("numbers")
+        assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(1, 2, 3)""")
+
+         assertCompiles(dataTypes)
+    }
+
+    @Test
+    fun generateInputWithDefaultEnumValueForArray() {
+        val schema = """
+            input SomeType {
+                colors: [Color] = [red]
+            }
+            
+            enum Color {
+                red,
+                blue
+            }
+        """.trimIndent()
+
+        val (dataTypes,_, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, writeToFiles = true)).generate() as CodeGenResult
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("colors")
+        assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(Color.red)""")
+
+         assertCompiles(dataTypes + enumTypes)
+    }
+
+    @Test
     fun generateToInputStringMethodForInputTypes() {
 
         val schema = """

@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
@@ -47,7 +48,7 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
 
         var result = KotlinCodeGenResult()
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
-        val typeName = Field("__typename", STRING, false, definition.name)
+        val typeName = Field("__typename", STRING, false, CodeBlock.of("%S", definition.name))
         val fieldDefinitions= definition.fieldDefinitions
                 .filter {
                     keyFields.containsKey(it.name)

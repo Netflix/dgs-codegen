@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.CodeBlock
 import graphql.language.*
 
 
@@ -48,7 +49,7 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig): BaseDataTy
         }
         var result = CodeGenResult()
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
-        val typeName = Field("__typename", ClassName.get(String::class.java), definition.name)
+        val typeName = Field("__typename", ClassName.get(String::class.java), CodeBlock.of("\$S", definition.name))
         val fieldDefinitions = definition.fieldDefinitions
                 .filter {
                     keyFields.containsKey(it.name)
