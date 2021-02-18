@@ -22,7 +22,6 @@ import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

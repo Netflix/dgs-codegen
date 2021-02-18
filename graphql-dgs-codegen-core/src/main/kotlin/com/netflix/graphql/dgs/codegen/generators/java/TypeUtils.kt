@@ -121,11 +121,8 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "ID" -> ClassName.get(String::class.java)
             "IDValue" -> ClassName.get(String::class.java)
             else -> {
-                if (useInterfaceType) {
-                    ClassName.get(packageName, "I${name}")
-                } else {
-                    ClassName.get(packageName, name)
-                }
+                var simpleName = if (useInterfaceType) "I${name}" else name
+                ClassName.get(packageName, simpleName)
             }
         }
     }
