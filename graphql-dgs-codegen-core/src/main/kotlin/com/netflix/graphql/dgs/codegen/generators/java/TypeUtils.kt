@@ -50,10 +50,10 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
         "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"))
 
-    fun findReturnType(fieldType: Type<*>): JavaTypeName {
+    fun findReturnType(fieldType: Type<*>, useInterfaceType: Boolean = false): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
-                val typeName = node.toJavaTypeName()
+                val typeName = node.toJavaTypeName(useInterfaceType)
                 val boxed = boxType(typeName)
                 context.setAccumulate(boxed)
                 return TraversalControl.CONTINUE
@@ -98,7 +98,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         }
     }
 
-    private fun TypeName.toJavaTypeName(): JavaTypeName {
+    private fun TypeName.toJavaTypeName(useInterfaceType: Boolean): JavaTypeName {
         if (name in config.typeMapping) {
             println("Found mapping for type: $name")
             val mappedType = config.typeMapping.getValue(name)
@@ -120,7 +120,13 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "BooleanValue" -> JavaTypeName.BOOLEAN
             "ID" -> ClassName.get(String::class.java)
             "IDValue" -> ClassName.get(String::class.java)
-            else -> ClassName.get(packageName, name)
+            else -> {
+                if (useInterfaceType) {
+                    ClassName.get(packageName, "I${name}")
+                } else {
+                    ClassName.get(packageName, name)
+                }
+            }
         }
     }
 

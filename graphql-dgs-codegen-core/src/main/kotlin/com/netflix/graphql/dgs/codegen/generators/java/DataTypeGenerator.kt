@@ -40,16 +40,23 @@ class DataTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenerat
         }.map { it.name }
 
         var implements = definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
-        val fieldDefinitions = definition.fieldDefinitions
+        var fieldDefinitions = definition.fieldDefinitions
                 .filterSkipped()
-                .map { Field(it.name, typeUtils.findReturnType(it.type)) }
-                .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type)) })
+                .map { Field(it.name, typeUtils.findReturnType(it.type, config.generateInterfaces)) }
+                .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, true)) })
 
         val interfaceCodeGenResult = if (config.generateInterfaces) {
             val interfaceName = "I${name}"
             implements = listOf(interfaceName) + implements
             generateInterface(interfaceName, fieldDefinitions)
         } else CodeGenResult()
+
+        fieldDefinitions = if (config.generateInterfaces) {
+            definition.fieldDefinitions
+                    .filterSkipped()
+                    .map { Field(it.name, typeUtils.findReturnType(it.type, true), isInterfaceType = true) }
+                    .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, true)) })
+        } else fieldDefinitions
 
         return generate(name, unionTypes.plus(implements), fieldDefinitions, false)
                 .merge(interfaceCodeGenResult)
@@ -87,7 +94,7 @@ class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.p
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null)
+internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val isInterfaceType: Boolean = false)
 
 abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig) {
     internal val typeUtils = TypeUtils(packageName, config)
@@ -321,7 +328,11 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         javaType.addField(field)
 
         val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
-        javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
+        val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+        if (fieldDefinition.isInterfaceType) {
+            getterMethodBuilder.addAnnotation(Override::class.java)
+        }
+        javaType.addMethod(getterMethodBuilder.build())
 
         val setterName = "set${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
         javaType.addMethod(MethodSpec.methodBuilder(setterName).addModifiers(Modifier.PUBLIC).addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name), ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())

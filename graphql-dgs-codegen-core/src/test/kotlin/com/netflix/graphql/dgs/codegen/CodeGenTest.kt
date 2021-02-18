@@ -1231,7 +1231,7 @@ class CodeGenTest {
                 movie(id: ID): Movie
                 movies(filter: MovieFilter): MoviePage
             }
-            
+
             input MovieFilter {
                 title: String
                 genre: Genre
@@ -1242,11 +1242,11 @@ class CodeGenTest {
                 title: String
                 genre: Genre
             }
-            
+
             type MoviePage {
                 items: [Movie]
             }
-            
+
             type Genre {
                 name: String
             }
@@ -1286,7 +1286,9 @@ class CodeGenTest {
         assertThat(dataTypes[1].typeSpec.name).isEqualTo("MoviePage")
         assertThat(dataTypes[1].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMoviePage") // Object types should implement an interface
         assertThat(dataTypes[1].typeSpec.fieldSpecs).extracting("name").containsExactly("items")
-        assertThat(dataTypes[1].typeSpec.fieldSpecs[0]).extracting("simpleName").containsExactly("IMovie") // Object type type fields should be an interface
+        var parameterizedTypeName = dataTypes[1].typeSpec.fieldSpecs[0].type as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IMovie") // Parameterized object type fields should return an interface
 
         // Genre object type
         assertThat(dataTypes[2].typeSpec.name).isEqualTo("Genre")
@@ -1310,7 +1312,7 @@ class CodeGenTest {
         // IMoviePage interface
         assertThat(interfaces[1].typeSpec.name).isEqualTo("IMoviePage")
         assertThat(interfaces[1].typeSpec.methodSpecs).extracting("name").containsExactly("getItems")
-        val parameterizedTypeName = interfaces[1].typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
+        parameterizedTypeName = interfaces[1].typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IMovie") // Parameterized interface methods should return an interface
 
