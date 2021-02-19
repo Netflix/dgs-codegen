@@ -48,7 +48,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
 
         var entitiesRootProjection = KotlinCodeGenResult()
         // generate for federation types, if present
-        val federatedTypes = definitions.filter { it.getDirective("key") != null }
+        val federatedTypes = definitions.filter { it.hasDirective("key") }
         if (federatedTypes.isNotEmpty()) {
             // create entities root projection
             entitiesRootProjection = createEntitiesRootProjection(federatedTypes)

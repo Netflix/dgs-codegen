@@ -1,6 +1,6 @@
 {
     "apiDependenciesMetadata": {
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "1.4.30"
         }
     },
@@ -12,13 +12,13 @@
             "locked": "3.1.0"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "14.0"
+            "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -26,7 +26,7 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.7.2"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "1.4.30"
         }
     },
@@ -38,13 +38,13 @@
             "locked": "3.1.0"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "14.0"
+            "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -52,7 +52,7 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.7.2"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "1.4.30"
         }
     },
@@ -79,13 +79,13 @@
             "locked": "3.1.0"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "14.0"
+            "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -93,7 +93,7 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.7.2"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "1.4.30"
         }
     },
@@ -111,13 +111,13 @@
             "locked": "1.1.2"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "14.0"
+            "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -128,7 +128,7 @@
         "org.assertj:assertj-core": {
             "locked": "3.11.1"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "1.4.30"
         },
         "org.junit.jupiter:junit-jupiter": {
@@ -155,13 +155,13 @@
             "locked": "1.1.2"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "14.0"
+            "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -172,7 +172,7 @@
         "org.assertj:assertj-core": {
             "locked": "3.11.1"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "1.4.30"
         },
         "org.junit.jupiter:junit-jupiter": {
@@ -199,13 +199,13 @@
             "locked": "1.1.2"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "14.0"
+            "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.3.0"
+            "locked": "3.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -216,7 +216,7 @@
         "org.assertj:assertj-core": {
             "locked": "3.11.1"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "1.4.30"
         },
         "org.junit.jupiter:junit-jupiter": {
