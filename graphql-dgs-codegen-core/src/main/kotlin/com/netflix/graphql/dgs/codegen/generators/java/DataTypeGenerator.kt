@@ -54,8 +54,8 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
         fieldDefinitions = if (config.generateInterfaces) {
             definition.fieldDefinitions
                     .filterSkipped()
-                    .map { Field(it.name, typeUtils.findReturnType(it.type, true), isInterfaceType = true) }
-                    .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, true)) })
+                    .map { Field(it.name, typeUtils.findReturnType(it.type, true), overrideGetter = true) }
+                    .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, true), overrideGetter = true) })
         } else fieldDefinitions
 
         return generate(name, unionTypes.plus(implements), fieldDefinitions, false)
@@ -94,7 +94,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val isInterfaceType: Boolean = false)
+internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false)
 
 abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig, document: Document) {
     internal val typeUtils = TypeUtils(packageName, config, document)
@@ -329,7 +329,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
         val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
         val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
-        if (fieldDefinition.isInterfaceType) {
+        if (fieldDefinition.overrideGetter) {
             getterMethodBuilder.addAnnotation(Override::class.java)
         }
         javaType.addMethod(getterMethodBuilder.build())
