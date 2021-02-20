@@ -58,6 +58,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun createQueryClass(it: FieldDefinition, operation: String): JavaFile {
         val javaType = TypeSpec.classBuilder("${it.name.capitalize()}GraphQLQuery")
                 .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(GraphQLQuery::class.java))
+        println("Generating ${it.name.capitalize()}GraphQLQuery")
         javaType.addMethod(
                 MethodSpec.methodBuilder("getOperationName")
                         .addModifiers(Modifier.PUBLIC)
@@ -124,10 +125,10 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun createRootProjection(type: TypeDefinition<*>, prefix: String): CodeGenResult {
-
         val clazzName = "${prefix}ProjectionRoot"
         val javaType = TypeSpec.classBuilder(clazzName)
                 .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
+        println("Generating ${prefix}ProjectionRoot")
 
         if(generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
 
@@ -284,6 +285,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun createSubProjectionType(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>): Pair<TypeSpec.Builder, CodeGenResult>? {
         val className = ClassName.get(BaseSubProjectionNode::class.java)
         val clazzName = "${prefix}Projection"
+        println("generating: ${clazzName}")
         if(generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
         val javaType = TypeSpec.classBuilder(clazzName)
                 .addModifiers(Modifier.PUBLIC).superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), parent.name), ClassName.get(getPackageName(), root.name)))
