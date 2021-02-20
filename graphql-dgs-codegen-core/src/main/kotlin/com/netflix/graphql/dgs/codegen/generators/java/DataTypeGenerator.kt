@@ -27,8 +27,8 @@ import graphql.language.*
 import graphql.language.TypeName
 import javax.lang.model.element.Modifier
 
-class DataTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenerator(config.packageNameTypes, config) {
-    fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>, document: Document): CodeGenResult {
+class DataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+    fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip()) {
             return CodeGenResult()
         }
@@ -63,7 +63,7 @@ class DataTypeGenerator(private val config: CodeGenConfig) : BaseDataTypeGenerat
     }
 }
 
-class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageNameTypes, config) {
+class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
         val name = definition.name
 
@@ -96,8 +96,8 @@ class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.p
 
 internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val isInterfaceType: Boolean = false)
 
-abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig) {
-    internal val typeUtils = TypeUtils(packageName, config)
+abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig, document: Document) {
+    internal val typeUtils = TypeUtils(packageName, config, document)
 
     internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)

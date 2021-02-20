@@ -21,14 +21,8 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
+import graphql.language.*
 import com.squareup.javapoet.TypeName as JavaTypeName
-import graphql.language.ListType
-import graphql.language.Node
-import graphql.language.NodeTraverser
-import graphql.language.NodeVisitorStub
-import graphql.language.NonNullType
-import graphql.language.Type
-import graphql.language.TypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
@@ -36,7 +30,7 @@ import graphql.util.TraverserContext
 import java.time.*
 import java.util.*
 
-class TypeUtils(private val packageName: String, private val config: CodeGenConfig) {
+class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
     private val commonScalars =  mutableMapOf<String, com.squareup.javapoet.TypeName>(
         "LocalTime" to ClassName.get(LocalTime::class.java),
         "LocalDate" to ClassName.get(LocalDate::class.java),
@@ -121,7 +115,16 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "ID" -> ClassName.get(String::class.java)
             "IDValue" -> ClassName.get(String::class.java)
             else -> {
-                var simpleName = if (useInterfaceType) "I${name}" else name
+                var simpleName = name
+                if (useInterfaceType) {
+                    val isEnum = document.definitions
+                        .filterIsInstance<EnumTypeDefinition>()
+                        .filter { e -> e.name == name }
+                        .isNotEmpty()
+                    if (!isEnum) {
+                        simpleName = "I${name}"
+                    }
+                }
                 ClassName.get(packageName, simpleName)
             }
         }

@@ -1234,12 +1234,14 @@ class CodeGenTest {
             input MovieFilter {
                 title: String
                 genre: Genre
+                language: Language
             }
 
             type Movie {
                 id: ID
                 title: String
                 genre: Genre
+                language: Language
             }
 
             type MoviePage {
@@ -1252,6 +1254,10 @@ class CodeGenTest {
             
             type Rating {
                 name: String
+            }
+            
+            enum Language {
+                ENGLISH
             }
             
             extend input MovieFilter {
@@ -1290,9 +1296,10 @@ class CodeGenTest {
         // Movie object type
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Movie")
         assertThat(dataTypes[0].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMovie")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "rating")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("IGenre") // Object type type fields should be an interface
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[3].type).extracting("simpleName").containsExactly("IRating") // Object type type fields should be an interface
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "language", "rating")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("IGenre") // Object type fields should be an interface
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[3].type).extracting("simpleName").containsExactly("Language") // Object enum fields should not be an interface
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[4].type).extracting("simpleName").containsExactly("IRating") // Object type fields should be an interface
 
         // MoviePage object type
         assertThat(dataTypes[1].typeSpec.name).isEqualTo("MoviePage")
@@ -1315,25 +1322,27 @@ class CodeGenTest {
         // MovieFilter input type
         assertThat(dataTypes[4].typeSpec.name).isEqualTo("MovieFilter")
         assertThat(dataTypes[4].typeSpec.superinterfaces.size).isEqualTo(0) // Input types should not implement an interface
-        assertThat(dataTypes[4].typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "rating")
-        assertThat(dataTypes[4].typeSpec.fieldSpecs[1].type).extracting("simpleName").containsExactly("Genre") // Input type fields should not return an interface
-        assertThat(dataTypes[4].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("Rating") // Input type fields should not return an interface
+        assertThat(dataTypes[4].typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "rating")
+        assertThat(dataTypes[4].typeSpec.fieldSpecs[1].type).extracting("simpleName").containsExactly("Genre") // Input type fields should be an interface
+        assertThat(dataTypes[4].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("Language") // Input enum fields should not be an interface
+        assertThat(dataTypes[4].typeSpec.fieldSpecs[3].type).extracting("simpleName").containsExactly("Rating") // Input type fields should not be an interface
 
         val interfaces = result.interfaces
         assertThat(interfaces.size).isEqualTo(4)
 
         // IMovie interface
         assertThat(interfaces[0].typeSpec.name).isEqualTo("IMovie")
-        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getId", "getTitle", "getGenre", "getRating")
-        assertThat(interfaces[0].typeSpec.methodSpecs[2].returnType).extracting("simpleName").containsExactly("IGenre") // Interface methods should return an interface
-        assertThat(interfaces[0].typeSpec.methodSpecs[3].returnType).extracting("simpleName").containsExactly("IRating") // Interface methods should return an interface
+        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getId", "getTitle", "getGenre", "getLanguage", "getRating")
+        assertThat(interfaces[0].typeSpec.methodSpecs[2].returnType).extracting("simpleName").containsExactly("IGenre") // Interface methods for types should return an interface
+        assertThat(interfaces[0].typeSpec.methodSpecs[3].returnType).extracting("simpleName").containsExactly("Language") // Interface methods for enums should not return an interface
+        assertThat(interfaces[0].typeSpec.methodSpecs[4].returnType).extracting("simpleName").containsExactly("IRating") // Interface methods for types should return an interface
 
         // IMoviePage interface
         assertThat(interfaces[1].typeSpec.name).isEqualTo("IMoviePage")
         assertThat(interfaces[1].typeSpec.methodSpecs).extracting("name").containsExactly("getItems")
         parameterizedTypeName = interfaces[1].typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IMovie") // Parameterized interface methods should return an interface
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IMovie") // Parameterized interface methods for types should return an interface
 
         // IGenre interface
         assertThat(interfaces[2].typeSpec.name).isEqualTo("IGenre")
@@ -1343,6 +1352,6 @@ class CodeGenTest {
         assertThat(interfaces[3].typeSpec.name).isEqualTo("IRating")
         assertThat(interfaces[3].typeSpec.methodSpecs).extracting("name").containsExactly("getName")
 
-        assertCompiles(dataTypes.plus(interfaces))
+        assertCompiles(dataTypes.plus(interfaces).plus(result.enumTypes))
     }
 }

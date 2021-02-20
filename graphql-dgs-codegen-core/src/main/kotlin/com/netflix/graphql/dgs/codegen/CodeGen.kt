@@ -78,10 +78,10 @@ class CodeGen(private val config: CodeGenConfig) {
         val document: Document = Parser().parseDocument(schema)
         val definitions = document.definitions
         val dataTypesResult = generateJavaDataType(definitions, document)
-        val inputTypesResult = generateJavaInputType(definitions)
+        val inputTypesResult = generateJavaInputType(definitions, document)
 
         val interfacesResult = definitions.filterIsInstance<InterfaceTypeDefinition>()
-                .map { InterfaceGenerator(config).generate(it, document) }
+                .map { InterfaceGenerator(config, document).generate(it) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
         val unionsResult = definitions.filterIsInstance<UnionTypeDefinition>()
@@ -92,7 +92,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .map { EnumTypeGenerator(config).generate(it) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
-        val dataFetchersResult = generateJavaDataFetchers(definitions)
+        val dataFetchersResult = generateJavaDataFetchers(definitions, document)
         val client = generateJavaClientApi(definitions, document)
         val entitiesClient = generateJavaClientEntitiesApi(definitions, document)
         val entitiesRepresentationsTypes = generateJavaClientEntitiesRepresentations(definitions, document)
@@ -123,15 +123,15 @@ class CodeGen(private val config: CodeGenConfig) {
             return definitions.filterIsInstance<ObjectTypeDefinition>()
                     .filter { it.getDirective("key") != null }
                     .map { d ->
-                        EntitiesRepresentationTypeGenerator(config).generate(d, document, generatedRepresentations)
+                        EntitiesRepresentationTypeGenerator(config, document).generate(d, generatedRepresentations)
                     }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
     }
 
-    private fun generateJavaDataFetchers(definitions: List<Definition<Definition<*>>>): CodeGenResult {
+    private fun generateJavaDataFetchers(definitions: List<Definition<Definition<*>>>, document: Document): CodeGenResult {
         return definitions.filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.name == "Query" }
-                .map { DatafetcherGenerator(config).generate(it) }
+                .map { DatafetcherGenerator(config, document).generate(it) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
@@ -139,15 +139,15 @@ class CodeGen(private val config: CodeGenConfig) {
         return definitions.filterIsInstance<ObjectTypeDefinition>()
                 .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
                 .map {
-                    DataTypeGenerator(config).generate(it, findExtensions(it.name, definitions), document)
+                    DataTypeGenerator(config, document).generate(it, findExtensions(it.name, definitions))
                 }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
-    private fun generateJavaInputType(definitions: List<Definition<Definition<*>>>): CodeGenResult {
+    private fun generateJavaInputType(definitions: List<Definition<Definition<*>>>, document: Document): CodeGenResult {
         return definitions.filterIsInstance<InputObjectTypeDefinition>()
                 .filter { it !is InputObjectTypeExtensionDefinition }
                 .map { d ->
-                    InputTypeGenerator(config).generate(d, findInputExtensions(d.name, definitions))
+                    InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions))
                 }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 

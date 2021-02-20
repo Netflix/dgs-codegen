@@ -23,13 +23,14 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.squareup.javapoet.*
+import graphql.language.Document
 import graphql.language.FieldDefinition
 import graphql.language.ObjectTypeDefinition
 import graphql.schema.DataFetchingEnvironment
 import javax.lang.model.element.Modifier
 
 
-class DatafetcherGenerator(private val config: CodeGenConfig) {
+class DatafetcherGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(query: ObjectTypeDefinition): CodeGenResult {
 
         return query.fieldDefinitions.map { field ->
@@ -41,7 +42,7 @@ class DatafetcherGenerator(private val config: CodeGenConfig) {
         val fieldName = field.name.substring(0, 1).toUpperCase() + field.name.substring(1)
         val clazzName = fieldName + "Datafetcher"
 
-        val returnType = TypeUtils(config.packageNameTypes, config).findReturnType(field.type)
+        val returnType = TypeUtils(config.packageNameTypes, config, document).findReturnType(field.type)
 
         val returnValue: Any = when (returnType.toString()) {
             "java.lang.String" -> "\"\""
