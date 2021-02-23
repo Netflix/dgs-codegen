@@ -22,6 +22,7 @@ import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.WildcardTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -1235,6 +1236,7 @@ class CodeGenTest {
                 title: String
                 genre: Genre
                 language: Language
+                tags: [String]
             }
 
             type Movie {
@@ -1242,6 +1244,7 @@ class CodeGenTest {
                 title: String
                 genre: Genre
                 language: Language
+                tags: [String]
             }
 
             type MoviePage {
@@ -1283,66 +1286,35 @@ class CodeGenTest {
         // Movie datafetcher
         assertThat(dataFetchers[0].typeSpec.name).isEqualTo("MovieDatafetcher")
         assertThat(dataFetchers[0].typeSpec.methodSpecs).extracting("name").containsExactly("getMovie")
-        assertThat(dataFetchers[0].typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("Movie") // Datafetchers should not return an interface
+        assertThat(dataFetchers[0].typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("Movie")
 
         // Movies datafetcher
         assertThat(dataFetchers[1].typeSpec.name).isEqualTo("MoviesDatafetcher")
         assertThat(dataFetchers[1].typeSpec.methodSpecs).extracting("name").containsExactly("getMovies")
-        assertThat(dataFetchers[1].typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("MoviePage") // Datafetchers should not return an interface
-
-        val dataTypes = result.dataTypes
-        assertThat(dataTypes.size).isEqualTo(5)
-
-        // Movie object type
-        assertThat(dataTypes[0].typeSpec.name).isEqualTo("Movie")
-        assertThat(dataTypes[0].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMovie")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "language", "rating")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("IGenre") // Object type fields should be an interface
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[3].type).extracting("simpleName").containsExactly("Language") // Object enum fields should not be an interface
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[4].type).extracting("simpleName").containsExactly("IRating") // Object type fields should be an interface
-
-        // MoviePage object type
-        assertThat(dataTypes[1].typeSpec.name).isEqualTo("MoviePage")
-        assertThat(dataTypes[1].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMoviePage") // Object types should implement an interface
-        assertThat(dataTypes[1].typeSpec.fieldSpecs).extracting("name").containsExactly("items")
-        var parameterizedTypeName = dataTypes[1].typeSpec.fieldSpecs[0].type as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IMovie") // Parameterized object type fields should return an interface
-
-        // Genre object type
-        assertThat(dataTypes[2].typeSpec.name).isEqualTo("Genre")
-        assertThat(dataTypes[2].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IGenre") // Object types should implement an interface
-        assertThat(dataTypes[2].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
-
-        // Rating object type
-        assertThat(dataTypes[3].typeSpec.name).isEqualTo("Rating")
-        assertThat(dataTypes[3].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IRating") // Object types should implement an interface
-        assertThat(dataTypes[3].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
-
-        // MovieFilter input type
-        assertThat(dataTypes[4].typeSpec.name).isEqualTo("MovieFilter")
-        assertThat(dataTypes[4].typeSpec.superinterfaces.size).isEqualTo(0) // Input types should not implement an interface
-        assertThat(dataTypes[4].typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "rating")
-        assertThat(dataTypes[4].typeSpec.fieldSpecs[1].type).extracting("simpleName").containsExactly("Genre") // Input type fields should be an interface
-        assertThat(dataTypes[4].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("Language") // Input enum fields should not be an interface
-        assertThat(dataTypes[4].typeSpec.fieldSpecs[3].type).extracting("simpleName").containsExactly("Rating") // Input type fields should not be an interface
+        assertThat(dataFetchers[1].typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("MoviePage")
 
         val interfaces = result.interfaces
         assertThat(interfaces.size).isEqualTo(4)
 
         // IMovie interface
         assertThat(interfaces[0].typeSpec.name).isEqualTo("IMovie")
-        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getId", "getTitle", "getGenre", "getLanguage", "getRating")
-        assertThat(interfaces[0].typeSpec.methodSpecs[2].returnType).extracting("simpleName").containsExactly("IGenre") // Interface methods for types should return an interface
-        assertThat(interfaces[0].typeSpec.methodSpecs[3].returnType).extracting("simpleName").containsExactly("Language") // Interface methods for enums should not return an interface
-        assertThat(interfaces[0].typeSpec.methodSpecs[4].returnType).extracting("simpleName").containsExactly("IRating") // Interface methods for types should return an interface
+        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getId", "getTitle", "getGenre", "getLanguage", "getTags", "getRating")
+        assertThat(interfaces[0].typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("String")
+        assertThat(interfaces[0].typeSpec.methodSpecs[1].returnType).extracting("simpleName").containsExactly("String")
+        assertThat(interfaces[0].typeSpec.methodSpecs[2].returnType).extracting("simpleName").containsExactly("IGenre")
+        assertThat(interfaces[0].typeSpec.methodSpecs[3].returnType).extracting("simpleName").containsExactly("Language")
+        var parameterizedTypeName = interfaces[0].typeSpec.methodSpecs[4].returnType as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
+        assertThat(interfaces[0].typeSpec.methodSpecs[5].returnType).extracting("simpleName").containsExactly("IRating")
 
         // IMoviePage interface
         assertThat(interfaces[1].typeSpec.name).isEqualTo("IMoviePage")
         assertThat(interfaces[1].typeSpec.methodSpecs).extracting("name").containsExactly("getItems")
         parameterizedTypeName = interfaces[1].typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IMovie") // Parameterized interface methods for types should return an interface
+        val wildcardTypeName = parameterizedTypeName.typeArguments[0] as WildcardTypeName
+        assertThat(wildcardTypeName.upperBounds[0]).extracting("simpleName").containsExactly("IMovie")
 
         // IGenre interface
         assertThat(interfaces[2].typeSpec.name).isEqualTo("IGenre")
@@ -1351,6 +1323,52 @@ class CodeGenTest {
         // IRating interface
         assertThat(interfaces[3].typeSpec.name).isEqualTo("IRating")
         assertThat(interfaces[3].typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+
+        val dataTypes = result.dataTypes
+        assertThat(dataTypes.size).isEqualTo(5)
+
+        // Movie object type
+        assertThat(dataTypes[0].typeSpec.name).isEqualTo("Movie")
+        assertThat(dataTypes[0].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMovie")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "language", "tags", "rating")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].type).extracting("simpleName").containsExactly("String")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type).extracting("simpleName").containsExactly("String")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("IGenre")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[3].type).extracting("simpleName").containsExactly("Language")
+        parameterizedTypeName = dataTypes[0].typeSpec.fieldSpecs[4].type as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[5].type).extracting("simpleName").containsExactly("IRating")
+
+        // MoviePage object type
+        assertThat(dataTypes[1].typeSpec.name).isEqualTo("MoviePage")
+        assertThat(dataTypes[1].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMoviePage")
+        assertThat(dataTypes[1].typeSpec.fieldSpecs).extracting("name").containsExactly("items")
+        parameterizedTypeName = dataTypes[1].typeSpec.fieldSpecs[0].type as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IMovie")
+
+        // Genre object type
+        assertThat(dataTypes[2].typeSpec.name).isEqualTo("Genre")
+        assertThat(dataTypes[2].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IGenre")
+        assertThat(dataTypes[2].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
+
+        // Rating object type
+        assertThat(dataTypes[3].typeSpec.name).isEqualTo("Rating")
+        assertThat(dataTypes[3].typeSpec.superinterfaces).extracting("simpleName").containsExactly("IRating")
+        assertThat(dataTypes[3].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
+
+        // MovieFilter input type
+        assertThat(dataTypes[4].typeSpec.name).isEqualTo("MovieFilter")
+        assertThat(dataTypes[4].typeSpec.superinterfaces.size).isEqualTo(0)
+        assertThat(dataTypes[4].typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating")
+        assertThat(dataTypes[4].typeSpec.fieldSpecs[0].type).extracting("simpleName").containsExactly("String")
+        assertThat(dataTypes[4].typeSpec.fieldSpecs[1].type).extracting("simpleName").containsExactly("Genre")
+        assertThat(dataTypes[4].typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("Language")
+        parameterizedTypeName = dataTypes[4].typeSpec.fieldSpecs[3].type as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
+        assertThat(dataTypes[4].typeSpec.fieldSpecs[4].type).extracting("simpleName").containsExactly("Rating")
 
         assertCompiles(dataTypes.plus(interfaces).plus(result.enumTypes))
     }

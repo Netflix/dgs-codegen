@@ -40,23 +40,27 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
         }.map { it.name }
 
         var implements = definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
-        var fieldDefinitions = definition.fieldDefinitions
-                .filterSkipped()
-                .map { Field(it.name, typeUtils.findReturnType(it.type, config.generateInterfaces)) }
-                .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, true)) })
 
-        val interfaceCodeGenResult = if (config.generateInterfaces) {
+        var useInterfaceType = false
+        var overrideGetter = false
+        var interfaceCodeGenResult = CodeGenResult()
+
+        if (config.generateInterfaces) {
+            useInterfaceType = true
+            overrideGetter = true
+            val fieldDefinitions = definition.fieldDefinitions
+                .filterSkipped()
+                .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) }
+                .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) })
             val interfaceName = "I${name}"
             implements = listOf(interfaceName) + implements
-            generateInterface(interfaceName, fieldDefinitions)
-        } else CodeGenResult()
+            interfaceCodeGenResult = generateInterface(interfaceName, fieldDefinitions)
+        }
 
-        fieldDefinitions = if (config.generateInterfaces) {
-            definition.fieldDefinitions
-                    .filterSkipped()
-                    .map { Field(it.name, typeUtils.findReturnType(it.type, true), overrideGetter = true) }
-                    .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, true), overrideGetter = true) })
-        } else fieldDefinitions
+        val fieldDefinitions = definition.fieldDefinitions
+            .filterSkipped()
+            .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter) }
+            .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter) })
 
         return generate(name, unionTypes.plus(implements), fieldDefinitions, false)
                 .merge(interfaceCodeGenResult)

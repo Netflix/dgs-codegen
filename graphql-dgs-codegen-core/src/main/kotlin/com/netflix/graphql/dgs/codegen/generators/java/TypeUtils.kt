@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.WildcardTypeName
 import graphql.language.*
 import com.squareup.javapoet.TypeName as JavaTypeName
 import graphql.relay.PageInfo
@@ -44,7 +45,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
         "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"))
 
-    fun findReturnType(fieldType: Type<*>, useInterfaceType: Boolean = false): JavaTypeName {
+    fun findReturnType(fieldType: Type<*>, useInterfaceType: Boolean = false, useWildcardType: Boolean = false): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = node.toJavaTypeName(useInterfaceType)
@@ -55,7 +56,22 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             override fun visitListType(node: ListType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = context.getCurrentAccumulate<JavaTypeName>()
                 val boxed = boxType(typeName)
-                val parameterizedTypeName = ParameterizedTypeName.get(ClassName.get(List::class.java), boxed)
+
+                var canUseWildcardType = false
+                if (useWildcardType) {
+                    if (typeName is ClassName) {
+                        if (document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> "I${e.name}" == typeName.simpleName() }) {
+                            canUseWildcardType = true
+                        }
+                    }
+                }
+
+                val parameterizedTypeName = if (canUseWildcardType) {
+                    val wildcardTypeName: WildcardTypeName = WildcardTypeName.subtypeOf(boxed)
+                    ParameterizedTypeName.get(ClassName.get(List::class.java), wildcardTypeName)
+                } else {
+                    ParameterizedTypeName.get(ClassName.get(List::class.java), boxed)
+                }
                 context.setAccumulate(parameterizedTypeName)
                 return TraversalControl.CONTINUE
             }
@@ -116,14 +132,8 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "IDValue" -> ClassName.get(String::class.java)
             else -> {
                 var simpleName = name
-                if (useInterfaceType) {
-                    val isEnum = document.definitions
-                        .filterIsInstance<EnumTypeDefinition>()
-                        .filter { e -> e.name == name }
-                        .isNotEmpty()
-                    if (!isEnum) {
-                        simpleName = "I${name}"
-                    }
+                if (useInterfaceType && !document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name }) {
+                    simpleName = "I${name}"
                 }
                 ClassName.get(packageName, simpleName)
             }
