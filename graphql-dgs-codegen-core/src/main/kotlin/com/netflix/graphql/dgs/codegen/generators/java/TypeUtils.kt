@@ -101,7 +101,6 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
 
     private fun TypeName.toJavaTypeName(): JavaTypeName {
         if (name in config.typeMapping) {
-            println("Found mapping for type: $name")
             val mappedType = config.typeMapping.getValue(name)
             return ClassName.bestGuess(mappedType)
         }
