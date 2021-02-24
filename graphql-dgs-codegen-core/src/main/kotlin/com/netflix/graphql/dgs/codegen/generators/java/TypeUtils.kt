@@ -42,6 +42,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "LocalDate" to ClassName.get(LocalDate::class.java),
         "LocalDateTime" to ClassName.get(LocalDateTime::class.java),
         "TimeZone" to ClassName.get(String::class.java),
+        "Date" to ClassName.get(LocalDate::class.java),
         "DateTime" to ClassName.get(OffsetDateTime::class.java),
         "Currency" to ClassName.get(Currency::class.java),
         "Instant" to ClassName.get(Instant::class.java),
