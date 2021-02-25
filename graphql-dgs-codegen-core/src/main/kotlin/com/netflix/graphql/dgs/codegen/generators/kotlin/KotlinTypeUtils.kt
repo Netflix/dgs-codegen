@@ -129,10 +129,12 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             val joinedSchema = inputSchemas.joinToString("\n")
             val document = Parser().parseDocument(joinedSchema)
 
-            return document.definitions.filterIsInstance<ScalarTypeDefinition>().filter {
-                it.getDirective("javaType") != null
+            return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
+                it.getDirectives("javaType").isNullOrEmpty()
             }.map {
-                val value = it.getDirective("javaType")!!.argumentsByName["name"]?.value
+                val javaType = it.getDirectives("javaType").singleOrNull()
+                        ?: throw IllegalArgumentException("multiple @javaType directives are defined")
+                val value = javaType.argumentsByName["name"]?.value
                         ?: throw IllegalArgumentException("@javaType directive must contains name argument")
                 it.name to (value as StringValue).value
             }.toMap()
