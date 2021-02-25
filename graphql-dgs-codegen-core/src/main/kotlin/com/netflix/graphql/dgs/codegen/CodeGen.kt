@@ -112,7 +112,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateJavaClientEntitiesApi(definitions: MutableList<Definition<Definition<*>>>, document: Document): CodeGenResult {
         return if (config.generateClientApi) {
-            val federatedDefinitions = definitions.filterIsInstance<ObjectTypeDefinition>().filter { it.getDirective("key") != null }
+            val federatedDefinitions = definitions.filterIsInstance<ObjectTypeDefinition>().filter { it.hasDirective("key") }
             ClientApiGenerator(config, document).generateEntities(federatedDefinitions)
         } else CodeGenResult()
     }
@@ -121,7 +121,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.getDirective("key") != null }
+                    .filter { it.hasDirective("key") }
                     .map { d ->
                         EntitiesRepresentationTypeGenerator(config).generate(d, document, generatedRepresentations)
                     }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
@@ -195,7 +195,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateKotlinClientEntitiesApi(definitions: MutableList<Definition<Definition<*>>>, document: Document): KotlinCodeGenResult {
         return if (config.generateClientApi) {
-            val federatedDefinitions = definitions.filterIsInstance<ObjectTypeDefinition>().filter { it.getDirective("key") != null }
+            val federatedDefinitions = definitions.filterIsInstance<ObjectTypeDefinition>().filter { it.hasDirective("key") }
             KotlinClientApiGenerator(config, document).generateEntities(federatedDefinitions)
         } else KotlinCodeGenResult()
     }
@@ -204,7 +204,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.getDirective("key") != null }
+                    .filter { it.hasDirective("key") }
                     .map { d ->
                         KotlinEntitiesRepresentationTypeGenerator(config).generate(d, document, generatedRepresentations)
                     }.fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }

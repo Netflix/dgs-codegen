@@ -142,7 +142,7 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName,  language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
         assertThat(dataTypes.size).isEqualTo(1)
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.name).isEqualTo("Person")
@@ -162,7 +162,7 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = "com.mypackage",  language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = "com.mypackage", language = Language.KOTLIN)).generate() as KotlinCodeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
@@ -1009,7 +1009,7 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN,
-            typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer")))).generate() as KotlinCodeGenResult
+                typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer")))).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
 
@@ -1244,6 +1244,120 @@ class KotlinCodeGenTest {
         assertThat(dataTypes[0].name).isEqualTo("Person")
         assertThat(dataTypes[0].packageName).isEqualTo("$basePackageName.mytypes")
     }
+
+    @Test
+    fun generateDataClassWithInterfaceInheritance() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            interface Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+
+            type Talent implements Employee {
+                firstname: String
+                lastname: String
+                company: String
+                imdbProfile: String
+            }
+
+        """.trimIndent()
+
+        val (dataTypes, interfaces) =
+                CodeGen(CodeGenConfig(
+                        schemas = setOf(schema),
+                        packageName = basePackageName,
+                        language = Language.KOTLIN)
+                ).generate() as KotlinCodeGenResult
+
+        val type = dataTypes[0].members[0] as TypeSpec
+
+        //Check data class
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(type.name).isEqualTo("Talent")
+        assertThat(type.propertySpecs.size).isEqualTo(4)
+        assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname", "company", "imdbProfile")
+        assertThat(type.primaryConstructor?.parameters?.get(0)?.modifiers).contains(KModifier.OVERRIDE)
+        assertThat(type.superinterfaces.keys)
+                .contains(ClassName
+                        .bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.Employee"))
+
+
+        //Check interface
+        assertThat(interfaces.size).isEqualTo(2)
+
+        val personInterfaceType = interfaces[0].members[0] as TypeSpec
+        Truth.assertThat(FileSpec.get("$basePackageName.types", personInterfaceType).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import kotlin.String
+                |
+                |public interface Person {
+                |  public val firstname: String?
+                |
+                |  public val lastname: String?
+                |}
+                |""".trimMargin())
+
+        val employeeInterfaceType = interfaces[1].members[0] as TypeSpec
+        Truth.assertThat(FileSpec.get("$basePackageName.types", employeeInterfaceType).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import kotlin.String
+                |
+                |@JsonTypeInfo(
+                |  use = JsonTypeInfo.Id.NAME,
+                |  include = JsonTypeInfo.As.PROPERTY,
+                |  property = "__typename"
+                |)
+                |@JsonSubTypes(value = [
+                |  JsonSubTypes.Type(value = Talent::class, name = "Talent")
+                |])
+                |public interface Employee {
+                |  public val firstname: String?
+                |
+                |  public val lastname: String?
+                |
+                |  public val company: String?
+                |}
+                |""".trimMargin())
+
+        Truth.assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonProperty
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import kotlin.String
+                |
+                |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+                |public data class Talent(
+                |  @JsonProperty("firstname")
+                |  public override val firstname: String? = null,
+                |  @JsonProperty("lastname")
+                |  public override val lastname: String? = null,
+                |  @JsonProperty("company")
+                |  public override val company: String? = null,
+                |  @JsonProperty("imdbProfile")
+                |  public val imdbProfile: String? = null
+                |) : Employee
+                |""".trimMargin())
+    }
+
 
     @Test
     fun generateWithJavaTypeDirective() {

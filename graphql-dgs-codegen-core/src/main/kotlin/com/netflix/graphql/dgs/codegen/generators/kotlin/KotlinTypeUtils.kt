@@ -49,6 +49,7 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
         "TimeZone" to STRING,
         "Currency" to Currency::class.asTypeName(),
         "Instant" to Instant::class.asTypeName(),
+        "Date" to LocalDate::class.asTypeName(),
         "DateTime" to OffsetDateTime::class.asTypeName(),
         "RelayPageInfo" to PageInfo::class.asTypeName(),
         "PageInfo" to PageInfo::class.asTypeName(),
