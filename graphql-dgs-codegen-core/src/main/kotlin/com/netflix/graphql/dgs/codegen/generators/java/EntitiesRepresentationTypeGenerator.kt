@@ -28,7 +28,7 @@ import graphql.language.*
 @Suppress("UNCHECKED_CAST")
 class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val document: Document): BaseDataTypeGenerator(config.packageNameClient, config, document) {
     fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
-        if(config.skipEntityQueries) {
+        if (config.skipEntityQueries) {
             return CodeGenResult()
         }
 
@@ -36,7 +36,7 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
         if (generatedRepresentations.containsKey(name)) {
             return CodeGenResult()
         }
-        val directiveArg = (definition.getDirective("key").argumentsByName["fields"]?.value as StringValue).value
+        val directiveArg = definition.getDirectives("key").map { it.argumentsByName["fields"]?.value as StringValue }.map { it.value }
         val keyFields = parseKeyDirectiveValue(directiveArg)
         return generateRepresentations(definition, generatedRepresentations, keyFields)
     }
@@ -58,7 +58,7 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
                     val type = findType(it.type, document)
                     if (type != null && type is ObjectTypeDefinition) {
                         val representationType = typeUtils.findReturnType(it.type).toString().replace(type.name, "${type.name}Representation")
-                        if (! generatedRepresentations.containsKey(name)) {
+                        if (!generatedRepresentations.containsKey(name)) {
                             result = generateRepresentations(type, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
                         }
                         generatedRepresentations["${type.name}Representation"] = representationType
@@ -82,10 +82,14 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
         }
     }
 
-    private fun parseKeyDirectiveValue(keyDirective: String): Map<String, Any> {
-        data class Node (val key: String, val map: MutableMap<String, Any>, val parent: Node?)
-        val sanitizedKeys =  keyDirective.map { if (it == '{' || it == '}') " $it "  else "$it" }
-        val keys = sanitizedKeys.joinToString("", "", "").split(" ")
+    private fun parseKeyDirectiveValue(keyDirective: List<String>): Map<String, Any> {
+        data class Node(val key: String, val map: MutableMap<String, Any>, val parent: Node?)
+
+        val keys = keyDirective.map { ds ->
+            ds.map { if (it == '{' || it == '}') " $it " else "$it" }
+                    .joinToString("", "", "")
+                    .split(" ")
+        }.flatten()
 
         // handle simple keys and nested keys by constructing the path to each  key
         // e.g. type Movie @key(fields: "movieId") or type MovieCast @key(fields: movie { movieId } actors { name } }

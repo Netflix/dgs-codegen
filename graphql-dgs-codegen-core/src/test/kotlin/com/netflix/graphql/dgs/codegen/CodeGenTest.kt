@@ -23,6 +23,7 @@ import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnota
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.WildcardTypeName
+import com.squareup.javapoet.JavaFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -597,7 +598,7 @@ class CodeGenTest {
         assertThat(colorField.type.toString()).isEqualTo("$typesPackageName.Color")
         assertThat(colorField.initializer.toString()).isEqualTo("$typesPackageName.Color.red")
 
-         assertCompiles(enumTypes + dataTypes)
+        assertCompiles(enumTypes + dataTypes)
     }
 
     @Test
@@ -624,7 +625,7 @@ class CodeGenTest {
         assertThat(colorField.name).isEqualTo("names")
         assertThat(colorField.initializer.toString()).isEqualTo("java.util.Collections.emptyList()")
 
-         assertCompiles(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -651,7 +652,7 @@ class CodeGenTest {
         assertThat(colorField.name).isEqualTo("names")
         assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList("A", "B")""")
 
-         assertCompiles(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -678,7 +679,7 @@ class CodeGenTest {
         assertThat(colorField.name).isEqualTo("numbers")
         assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(1, 2, 3)""")
 
-         assertCompiles(dataTypes)
+        assertCompiles(dataTypes)
     }
 
     @Test
@@ -694,7 +695,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes,_, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, writeToFiles = true)).generate() as CodeGenResult
+        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, writeToFiles = true)).generate() as CodeGenResult
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -710,7 +711,7 @@ class CodeGenTest {
         assertThat(colorField.name).isEqualTo("colors")
         assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(Color.red)""")
 
-         assertCompiles(dataTypes + enumTypes)
+        assertCompiles(dataTypes + enumTypes)
     }
 
     @Test
@@ -1030,7 +1031,7 @@ class CodeGenTest {
             type Query {
                 people: [Person]
             }
-            
+
             type Person {
                 firstname: String
                 lastname: String
@@ -1224,6 +1225,239 @@ class CodeGenTest {
         assertCompiles(dataTypes)
     }
 
+
+    @Test
+    fun generateDataClassWithInterfaceInheritance() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            interface Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+
+            type Talent implements Employee {
+                firstname: String
+                lastname: String
+                company: String
+                imdbProfile: String
+            }
+
+        """.trimIndent()
+
+        val (dataTypes, interfaces) =
+                CodeGen(CodeGenConfig(
+                        schemas = setOf(schema),
+                        packageName = basePackageName)
+                ).generate() as CodeGenResult
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val talent = dataTypes.single().typeSpec
+        //Check data class
+        assertThat(talent.name).isEqualTo("Talent")
+        assertThat(talent.fieldSpecs.size).isEqualTo(4)
+        assertThat(talent.fieldSpecs)
+                .extracting("name")
+                .contains("firstname", "lastname", "company", "imdbProfile")
+
+        val annotation = talent.annotations.single()
+        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+
+        assertThat(interfaces).hasSize(2)
+
+        val person = interfaces[0]
+        Truth.assertThat(person.toString()).isEqualTo(
+                """
+               |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+               |
+               |import java.lang.String;
+               |
+               |public interface Person {
+               |  String getFirstname();
+               |
+               |  void setFirstname(String firstname);
+               |
+               |  String getLastname();
+               |
+               |  void setLastname(String lastname);
+               |}
+               |""".trimMargin())
+
+        val employee = interfaces[1]
+        Truth.assertThat(employee.toString()).isEqualTo(
+                """
+               |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+               |
+               |import com.fasterxml.jackson.annotation.JsonSubTypes;
+               |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import java.lang.String;
+               |
+               |@JsonTypeInfo(
+               |    use = JsonTypeInfo.Id.NAME,
+               |    include = JsonTypeInfo.As.PROPERTY,
+               |    property = "__typename"
+               |)
+               |@JsonSubTypes(@JsonSubTypes.Type(value = Talent.class, name = "Talent"))
+               |public interface Employee {
+               |  String getFirstname();
+               |
+               |  void setFirstname(String firstname);
+               |
+               |  String getLastname();
+               |
+               |  void setLastname(String lastname);
+               |
+               |  String getCompany();
+               |
+               |  void setCompany(String company);
+               |}
+               |""".trimMargin())
+
+        Truth.assertThat(JavaFile.builder("$basePackageName.types", talent).build().toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import java.lang.Object;
+                |import java.lang.Override;
+                |import java.lang.String;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NONE
+                |)
+                |public class Talent implements com.netflix.graphql.dgs.codegen.tests.generated.types.Employee {
+                |  private String firstname;
+                |
+                |  private String lastname;
+                |
+                |  private String company;
+                |
+                |  private String imdbProfile;
+                |
+                |  public Talent() {
+                |  }
+                |
+                |  public Talent(String firstname, String lastname, String company, String imdbProfile) {
+                |    this.firstname = firstname;
+                |    this.lastname = lastname;
+                |    this.company = company;
+                |    this.imdbProfile = imdbProfile;
+                |  }
+                |
+                |  public String getFirstname() {
+                |    return firstname;
+                |  }
+                |
+                |  public void setFirstname(String firstname) {
+                |    this.firstname = firstname;
+                |  }
+                |
+                |  public String getLastname() {
+                |    return lastname;
+                |  }
+                |
+                |  public void setLastname(String lastname) {
+                |    this.lastname = lastname;
+                |  }
+                |
+                |  public String getCompany() {
+                |    return company;
+                |  }
+                |
+                |  public void setCompany(String company) {
+                |    this.company = company;
+                |  }
+                |
+                |  public String getImdbProfile() {
+                |    return imdbProfile;
+                |  }
+                |
+                |  public void setImdbProfile(String imdbProfile) {
+                |    this.imdbProfile = imdbProfile;
+                |  }
+                |
+                |  @Override
+                |  public String toString() {
+                |    return "Talent{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'," +"company='" + company + "'," +"imdbProfile='" + imdbProfile + "'" +"}";
+                |  }
+                |
+                |  @Override
+                |  public boolean equals(Object o) {
+                |    if (this == o) return true;
+                |        if (o == null || getClass() != o.getClass()) return false;
+                |        Talent that = (Talent) o;
+                |        return java.util.Objects.equals(firstname, that.firstname) &&
+                |                            java.util.Objects.equals(lastname, that.lastname) &&
+                |                            java.util.Objects.equals(company, that.company) &&
+                |                            java.util.Objects.equals(imdbProfile, that.imdbProfile);
+                |  }
+                |
+                |  @Override
+                |  public int hashCode() {
+                |    return java.util.Objects.hash(firstname, lastname, company, imdbProfile);
+                |  }
+                |
+                |  public static com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder newBuilder() {
+                |    return new Builder();
+                |  }
+                |
+                |  public static class Builder {
+                |    private String firstname;
+                |
+                |    private String lastname;
+                |
+                |    private String company;
+                |
+                |    private String imdbProfile;
+                |
+                |    public Talent build() {
+                |                  com.netflix.graphql.dgs.codegen.tests.generated.types.Talent result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Talent();
+                |                      result.firstname = this.firstname;
+                |          result.lastname = this.lastname;
+                |          result.company = this.company;
+                |          result.imdbProfile = this.imdbProfile;
+                |                      return result;
+                |    }
+                |
+                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder firstname(
+                |        String firstname) {
+                |      this.firstname = firstname;
+                |      return this;
+                |    }
+                |
+                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder lastname(
+                |        String lastname) {
+                |      this.lastname = lastname;
+                |      return this;
+                |    }
+                |
+                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder company(
+                |        String company) {
+                |      this.company = company;
+                |      return this;
+                |    }
+                |
+                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder imdbProfile(
+                |        String imdbProfile) {
+                |      this.imdbProfile = imdbProfile;
+                |      return this;
+                |    }
+                |  }
+                |}
+                |""".trimMargin())
+
+        assertCompiles(dataTypes + interfaces)
+    }
+
     @Test
     fun generateObjectTypeInterface() {
         val schema = """
@@ -1272,29 +1506,14 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val result = CodeGen(
-            CodeGenConfig(
+        val (dataTypes, interfaces, enumTypes) =
+            CodeGen(CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateInterfaces = true
-            )
-        ).generate() as CodeGenResult
+                generateInterfaces = true)
+            ).generate() as CodeGenResult
 
-        val dataFetchers = result.dataFetchers
-        assertThat(dataFetchers.size).isEqualTo(2)
-
-        // Movie datafetcher
-        assertThat(dataFetchers[0].typeSpec.name).isEqualTo("MovieDatafetcher")
-        assertThat(dataFetchers[0].typeSpec.methodSpecs).extracting("name").containsExactly("getMovie")
-        assertThat(dataFetchers[0].typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("Movie")
-
-        // Movies datafetcher
-        assertThat(dataFetchers[1].typeSpec.name).isEqualTo("MoviesDatafetcher")
-        assertThat(dataFetchers[1].typeSpec.methodSpecs).extracting("name").containsExactly("getMovies")
-        assertThat(dataFetchers[1].typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("MoviePage")
-
-        val interfaces = result.interfaces
-        assertThat(interfaces.size).isEqualTo(4)
+        assertThat(interfaces).hasSize(4)
 
         // IMovie interface
         assertThat(interfaces[0].typeSpec.name).isEqualTo("IMovie")
@@ -1324,8 +1543,7 @@ class CodeGenTest {
         assertThat(interfaces[3].typeSpec.name).isEqualTo("IRating")
         assertThat(interfaces[3].typeSpec.methodSpecs).extracting("name").containsExactly("getName")
 
-        val dataTypes = result.dataTypes
-        assertThat(dataTypes.size).isEqualTo(5)
+        assertThat(dataTypes).hasSize(5)
 
         // Movie object type
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Movie")
@@ -1370,6 +1588,6 @@ class CodeGenTest {
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
         assertThat(dataTypes[4].typeSpec.fieldSpecs[4].type).extracting("simpleName").containsExactly("Rating")
 
-        assertCompiles(dataTypes.plus(interfaces).plus(result.enumTypes))
+        assertCompiles(dataTypes.plus(interfaces).plus(enumTypes))
     }
 }
