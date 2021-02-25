@@ -101,7 +101,6 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         }
 
         if (name in config.schemaTypeMapping) {
-            println("Found mapping for type: $name")
             val mappedType = config.schemaTypeMapping.getValue(name)
             return ClassName.bestGuess(mappedType)
         }
