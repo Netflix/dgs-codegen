@@ -31,6 +31,7 @@ internal class RequiredTypeCollectorTest {
                 search(filter: Filter): [Show]
                 shows(type: ShowType!): [Show]
                 searchByExample(example: ExampleShow): [Show]
+                searchByExamples(examples: [ExampleShow]): [Show]
             }
             
             input Filter {
@@ -84,5 +85,12 @@ internal class RequiredTypeCollectorTest {
         val types = RequiredTypeCollector(document, setOf("searchByExample", "search")).requiredTypes
 
         assertThat(types).contains("ExampleShow", "Filter", "ShowType", "ExampleActor")
+    }
+
+    @Test
+    fun `Lists of required input types should be included`() {
+
+        val types = RequiredTypeCollector(document, setOf("searchByExamples")).requiredTypes
+        assertThat(types).contains("ExampleShow", "ExampleActor", "ShowType")
     }
 }

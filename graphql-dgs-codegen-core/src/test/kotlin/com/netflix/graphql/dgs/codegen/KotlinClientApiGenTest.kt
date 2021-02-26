@@ -826,4 +826,53 @@ class KotlinClientApiGenTest {
         assertThat((codeGenResult.clientProjections[5].members[0] as TypeSpec).name).isEqualTo("SearchMovieRelatedVideoShowProjection")
         assertThat((codeGenResult.clientProjections[6].members[0] as TypeSpec).name).isEqualTo("SearchMovieRelatedVideoMovieProjection")
     }
+
+    @Test
+    fun generateOnlyRequiredDataTypesForQuery() {
+        val schema = """
+            type Query {
+                shows(showFilter: ShowFilter): [Show]
+                people(personFilter: PersonFilter): [Person]
+            }
+            
+            type Show {
+                title: String
+            }
+        
+             
+            enum ShouldNotInclude {
+                YES,NO
+            }
+            
+            input NotUsed {
+                field: String
+            }
+            
+            input ShowFilter {
+                title: String
+                showType: ShowType
+                similarTo: SimilarityInput              
+            }
+            
+            input SimilarityInput {
+                tags: [String]
+            }
+            
+            enum ShowType {
+                MOVIE, SERIES
+            }
+            
+            type Person {
+                name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeQueries = setOf("shows"),  generateDataTypes = false, writeToFiles = false, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(codeGenResult.dataTypes.size).isEqualTo(2)
+
+        assertThat(codeGenResult.dataTypes).flatExtracting("members").extracting("name").containsExactly("ShowFilter", "SimilarityInput")
+        assertThat(codeGenResult.enumTypes).flatExtracting("members").extracting("name").containsExactly("ShowType")
+    }
+
+
 }

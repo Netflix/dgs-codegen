@@ -975,7 +975,7 @@ class ClientApiGenTest {
             }                     
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, writeToFiles = true)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, writeToFiles = false)).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(6)
         val workshopAssetsReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "WorkshopAssetsReviewsProjection" }!!
@@ -983,5 +983,52 @@ class ClientApiGenTest {
 
         assertThat(workshopReviewsProjection.typeSpec.methodSpecs).extracting("name").contains("edges")
         assertThat(workshopAssetsReviewsProjection.typeSpec.methodSpecs).extracting("name").contains("edges")
+    }
+
+    @Test
+    fun generateOnlyRequiredDataTypesForQuery() {
+        val schema = """
+            type Query {
+                shows(showFilter: ShowFilter): [Show]
+                people(personFilter: PersonFilter): [Person]
+            }
+            
+            type Show {
+                title: String
+            }
+            
+            enum ShouldNotInclude {
+                YES,NO
+            }
+            
+            input NotUsed {
+                field: String
+            }
+            
+            input ShowFilter {
+                title: String
+                showType: ShowType
+                similarTo: SimilarityInput              
+            }
+            
+            input SimilarityInput {
+                tags: [String]
+            }
+            
+            enum ShowType {
+                MOVIE, SERIES
+            }
+            
+            type Person {
+                name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeQueries = setOf("shows"),  generateDataTypes = false, writeToFiles = false)).generate() as CodeGenResult
+        assertThat(codeGenResult.dataTypes.size).isEqualTo(2)
+        assertThat(codeGenResult.dataTypes).extracting("typeSpec").extracting("name").containsExactly("ShowFilter", "SimilarityInput")
+        assertThat(codeGenResult.enumTypes).extracting("typeSpec").extracting("name").containsExactly("ShowType")
+
+        assertCompiles(codeGenResult.clientProjections + codeGenResult.dataTypes + codeGenResult.enumTypes)
     }
 }

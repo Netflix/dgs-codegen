@@ -96,10 +96,9 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaEnums(definitions: MutableList<Definition<Definition<*>>>): CodeGenResult {
-        if(!config.generateDataTypes) {
-            return CodeGenResult()
-        }
+
         return definitions.filterIsInstance<EnumTypeDefinition>()
+            .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
             .map { EnumTypeGenerator(config).generate(it) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
@@ -191,6 +190,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateKotlinForSchema(schema: String): KotlinCodeGenResult {
         document = Parser().parseDocument(schema)
+        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries)
         val definitions = document.definitions
 
         val datatypesResult = generateKotlinDataTypes(definitions)
@@ -205,6 +205,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val enumsResult = definitions.filterIsInstance<EnumTypeDefinition>()
+                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
                 .map { KotlinEnumTypeGenerator(config).generate(it) }
                 .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
@@ -245,6 +246,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateKotlinInputTypes(definitions: List<Definition<Definition<*>>>): KotlinCodeGenResult {
         return definitions.filterIsInstance<InputObjectTypeDefinition>()
+                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
                 .map {
                     KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions))
                 }
@@ -254,6 +256,7 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateKotlinDataTypes(definitions: List<Definition<Definition<*>>>): KotlinCodeGenResult {
         return definitions.filterIsInstance<ObjectTypeDefinition>()
                 .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
                 .map {
                     val extensions = findExtensions(it.name, definitions)
                     KotlinDataTypeGenerator(config, document).generate(it, extensions)
