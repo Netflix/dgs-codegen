@@ -79,7 +79,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateForSchema(schema: String): CodeGenResult {
         document = Parser().parseDocument(schema)
-        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries)
+        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
         val definitions = document.definitions
         val dataTypesResult = generateJavaDataType(definitions)
         val inputTypesResult = generateJavaInputType(definitions)
@@ -190,7 +190,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateKotlinForSchema(schema: String): KotlinCodeGenResult {
         document = Parser().parseDocument(schema)
-        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries)
+        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
         val definitions = document.definitions
 
         val datatypesResult = generateKotlinDataTypes(definitions)

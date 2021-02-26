@@ -22,73 +22,74 @@ import graphql.language.*
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 
-class RequiredTypeCollector(private val document: Document, queries: Set<String> = emptySet(), mutations: Set<String> = emptySet()) {
+class RequiredTypeCollector(
+    private val document: Document,
+    queries: Set<String> = emptySet(),
+    mutations: Set<String> = emptySet()
+) {
     val requiredTypes: Set<String>
 
     init {
-        val query = document.definitions.filterIsInstance<ObjectTypeDefinition>()
-            .find { it.name == "Query" }?.fieldDefinitions?.filter { queries.contains(it.name) }
+        val queryFieldDefinitions: List<FieldDefinition> = document.definitions.filterIsInstance<ObjectTypeDefinition>()
+            .find { it.name == "Query" }?.fieldDefinitions ?: emptyList()
 
-        if(query != null) {
+        val mutationDefinitions: List<FieldDefinition> = document.definitions.filterIsInstance<ObjectTypeDefinition>()
+            .find { it.name == "Mutation" }?.fieldDefinitions ?: emptyList()
+        val fieldDefinitions = queryFieldDefinitions.plus(mutationDefinitions).filter { queries.contains(it.name) || mutations.contains(it.name) }
 
+        val nodeTraverserResult = NodeTraverser().postOrder(object : NodeVisitorStub() {
+            override fun visitInputObjectTypeDefinition(
+                node: InputObjectTypeDefinition,
+                context: TraverserContext<Node<Node<*>>>
+            ): TraversalControl {
+                println(node)
 
-            val nodeTraverserResult = NodeTraverser().postOrder(object : NodeVisitorStub() {
-                override fun visitInputObjectTypeDefinition(
-                    node: InputObjectTypeDefinition,
-                    context: TraverserContext<Node<Node<*>>>
-                ): TraversalControl {
-                    println(node)
-
-                    val currentAccumulate = context.getNewAccumulate<Set<String>>()
-                    if (currentAccumulate == null) {
-                        context.setAccumulate(setOf(node.name))
-                    } else {
-                        context.setAccumulate(currentAccumulate.plus(node.name))
-                    }
-
-                    node.inputValueDefinitions.map { it.type.findTypeDefinition(document)?.accept(context, this) }
-
-                    return TraversalControl.CONTINUE
+                val currentAccumulate = context.getNewAccumulate<Set<String>>()
+                if (currentAccumulate == null) {
+                    context.setAccumulate(setOf(node.name))
+                } else {
+                    context.setAccumulate(currentAccumulate.plus(node.name))
                 }
 
-                override fun visitEnumTypeDefinition(
-                    node: EnumTypeDefinition,
-                    context: TraverserContext<Node<Node<*>>>
-                ): TraversalControl {
-                    println(node)
+                node.inputValueDefinitions.map { it.type.findTypeDefinition(document)?.accept(context, this) }
 
-
-                    val currentAccumulate = context.getNewAccumulate<Set<String>>()
-                    if (currentAccumulate == null) {
-                        context.setAccumulate(setOf(node.name))
-                    } else {
-                        context.setAccumulate(currentAccumulate.plus(node.name))
-                    }
-
-                    return TraversalControl.CONTINUE
-                }
-
-                override fun visitInputValueDefinition(
-                    node: InputValueDefinition,
-                    context: TraverserContext<Node<Node<*>>>
-                ): TraversalControl {
-                    println(node)
-
-                    node.type.findTypeDefinition(document)?.accept(context, this)
-
-
-                    return super.visitInputValueDefinition(node, context)
-                }
-            }, query)
-
-            requiredTypes = if(nodeTraverserResult != null && nodeTraverserResult is Set<*>) {
-                nodeTraverserResult as Set<String>
-            } else {
-                emptySet()
+                return TraversalControl.CONTINUE
             }
-        } else {
-            requiredTypes = emptySet()
-        }
 
+            override fun visitEnumTypeDefinition(
+                node: EnumTypeDefinition,
+                context: TraverserContext<Node<Node<*>>>
+            ): TraversalControl {
+                println(node)
+
+
+                val currentAccumulate = context.getNewAccumulate<Set<String>>()
+                if (currentAccumulate == null) {
+                    context.setAccumulate(setOf(node.name))
+                } else {
+                    context.setAccumulate(currentAccumulate.plus(node.name))
+                }
+
+                return TraversalControl.CONTINUE
+            }
+
+            override fun visitInputValueDefinition(
+                node: InputValueDefinition,
+                context: TraverserContext<Node<Node<*>>>
+            ): TraversalControl {
+                println(node)
+
+                node.type.findTypeDefinition(document)?.accept(context, this)
+
+
+                return super.visitInputValueDefinition(node, context)
+            }
+        }, fieldDefinitions)
+
+        requiredTypes = if (nodeTraverserResult != null && nodeTraverserResult is Set<*>) {
+            nodeTraverserResult as Set<String>
+        } else {
+            emptySet()
+        }
     }
 }
