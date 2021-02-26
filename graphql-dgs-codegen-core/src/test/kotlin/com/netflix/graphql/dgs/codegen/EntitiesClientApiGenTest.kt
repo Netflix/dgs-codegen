@@ -44,7 +44,11 @@ class EntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+        )).generate() as CodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.typeSpec.name.contains("Entities")}
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -79,7 +83,11 @@ class EntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+        )).generate() as CodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.typeSpec.name.contains("Entities")}
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -122,7 +130,11 @@ class EntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+        )).generate() as CodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.typeSpec.name.contains("Entities")}
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -166,7 +178,11 @@ class EntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+        )).generate() as CodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.typeSpec.name.contains("Entities")}
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -204,7 +220,11 @@ class EntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+        )).generate() as CodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.typeSpec.name.contains("Entities")}
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -237,7 +257,12 @@ class EntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf(Pair("Long", "java.lang.Long")))).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+        )).generate() as CodeGenResult
         val representations = codeGenResult.dataTypes.filter {it.typeSpec.name.contains("Representation")}
         assertThat(representations.size).isEqualTo(1)
         val projections = codeGenResult.clientProjections
@@ -264,7 +289,12 @@ class EntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, skipEntityQueries = true)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+            skipEntityQueries = true,
+        )).generate() as CodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.typeSpec.name.contains("Entities")}
         assertThat(projections).isEmpty()

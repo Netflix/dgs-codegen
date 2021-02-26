@@ -29,6 +29,9 @@ import java.nio.file.Path
 import java.nio.file.Paths
 
 class CodeGen(private val config: CodeGenConfig) {
+    lateinit var document: Document
+    lateinit var requiredTypeCollector: RequiredTypeCollector
+
     fun generate(): Any {
         if (config.writeToFiles) {
             config.outputDir.toFile().deleteRecursively()
@@ -75,23 +78,14 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateForSchema(schema: String): CodeGenResult {
-        val document: Document = Parser().parseDocument(schema)
+        document = Parser().parseDocument(schema)
+        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
         val definitions = document.definitions
-        val dataTypesResult = generateJavaDataType(definitions, document)
+        val dataTypesResult = generateJavaDataType(definitions)
         val inputTypesResult = generateJavaInputType(definitions)
-
-        val interfacesResult = definitions.filterIsInstance<InterfaceTypeDefinition>()
-                .map { InterfaceGenerator(config).generate(it, document) }
-                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
-
-        val unionsResult = definitions.filterIsInstance<UnionTypeDefinition>()
-                .map { UnionTypeGenerator(config).generate(it) }
-                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
-
-        val enumsResult = definitions.filterIsInstance<EnumTypeDefinition>()
-                .map { EnumTypeGenerator(config).generate(it) }
-                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
-
+        val interfacesResult = generateJavaInterfaces(definitions)
+        val unionsResult = generateJavaUnions(definitions)
+        val enumsResult = generateJavaEnums(definitions)
         val dataFetchersResult = generateJavaDataFetchers(definitions)
         val client = generateJavaClientApi(definitions, document)
         val entitiesClient = generateJavaClientEntitiesApi(definitions, document)
@@ -99,6 +93,34 @@ class CodeGen(private val config: CodeGenConfig) {
         val constantsClass = ConstantsGenerator(config, document).generate()
 
         return dataTypesResult.merge(dataFetchersResult).merge(inputTypesResult).merge(unionsResult).merge(enumsResult).merge(interfacesResult).merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
+    }
+
+    private fun generateJavaEnums(definitions: MutableList<Definition<Definition<*>>>): CodeGenResult {
+
+        return definitions.filterIsInstance<EnumTypeDefinition>()
+            .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
+            .map { EnumTypeGenerator(config).generate(it) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+    }
+
+    private fun generateJavaUnions(definitions: MutableList<Definition<Definition<*>>>): CodeGenResult {
+        if(!config.generateDataTypes) {
+            return CodeGenResult()
+        }
+
+        return definitions.filterIsInstance<UnionTypeDefinition>()
+            .map { UnionTypeGenerator(config).generate(it) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+    }
+
+    private fun generateJavaInterfaces(definitions: MutableList<Definition<Definition<*>>>): CodeGenResult {
+        if(!config.generateDataTypes) {
+            return CodeGenResult()
+        }
+
+        return definitions.filterIsInstance<InterfaceTypeDefinition>()
+            .map { InterfaceGenerator(config).generate(it, document) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
     private fun generateJavaClientApi(definitions: MutableList<Definition<Definition<*>>>, document: Document): CodeGenResult {
@@ -135,7 +157,11 @@ class CodeGen(private val config: CodeGenConfig) {
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
-    private fun generateJavaDataType(definitions: List<Definition<Definition<*>>>, document: Document): CodeGenResult {
+    private fun generateJavaDataType(definitions: List<Definition<Definition<*>>>): CodeGenResult {
+        if(!config.generateDataTypes) {
+            return CodeGenResult()
+        }
+
         return definitions.filterIsInstance<ObjectTypeDefinition>()
                 .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
                 .map {
@@ -144,8 +170,13 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaInputType(definitions: List<Definition<Definition<*>>>): CodeGenResult {
-        return definitions.filterIsInstance<InputObjectTypeDefinition>()
-                .filter { it !is InputObjectTypeExtensionDefinition }
+
+
+        val inputTypes = definitions.filterIsInstance<InputObjectTypeDefinition>()
+            .filter { it !is InputObjectTypeExtensionDefinition }
+            .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
+
+        return inputTypes
                 .map { d ->
                     InputTypeGenerator(config).generate(d, findInputExtensions(d.name, definitions))
                 }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
@@ -158,11 +189,12 @@ class CodeGen(private val config: CodeGenConfig) {
             definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
 
     private fun generateKotlinForSchema(schema: String): KotlinCodeGenResult {
-        val document: Document = Parser().parseDocument(schema)
+        document = Parser().parseDocument(schema)
+        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
         val definitions = document.definitions
 
-        val datatypesResult = generateKotlinDataTypes(definitions, document)
-        val inputTypes = generateKotlinInputTypes(definitions, document)
+        val datatypesResult = generateKotlinDataTypes(definitions)
+        val inputTypes = generateKotlinInputTypes(definitions)
 
         val interfacesResult = definitions.filterIsInstance<InterfaceTypeDefinition>()
                 .map { KotlinInterfaceTypeGenerator(config).generate(it, document) }
@@ -173,19 +205,20 @@ class CodeGen(private val config: CodeGenConfig) {
                 .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val enumsResult = definitions.filterIsInstance<EnumTypeDefinition>()
+                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
                 .map { KotlinEnumTypeGenerator(config).generate(it) }
                 .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
-        val client = generateKotlinClientApi(definitions, document)
-        val entitiesClient = generateKotlinClientEntitiesApi(definitions, document)
-        val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions, document)
+        val client = generateKotlinClientApi(definitions)
+        val entitiesClient = generateKotlinClientEntitiesApi(definitions)
+        val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
 
         return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult).merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
     }
 
-    private fun generateKotlinClientApi(definitions: List<Definition<Definition<*>>>, document: Document): KotlinCodeGenResult {
+    private fun generateKotlinClientApi(definitions: List<Definition<Definition<*>>>): KotlinCodeGenResult {
         return if (config.generateClientApi) {
             definitions.filterIsInstance<ObjectTypeDefinition>().filter { it.name == "Query" || it.name == "Mutation" }
                     .map { KotlinClientApiGenerator(config, document).generate(it) }
@@ -193,14 +226,14 @@ class CodeGen(private val config: CodeGenConfig) {
         } else KotlinCodeGenResult()
     }
 
-    private fun generateKotlinClientEntitiesApi(definitions: MutableList<Definition<Definition<*>>>, document: Document): KotlinCodeGenResult {
+    private fun generateKotlinClientEntitiesApi(definitions: MutableList<Definition<Definition<*>>>): KotlinCodeGenResult {
         return if (config.generateClientApi) {
             val federatedDefinitions = definitions.filterIsInstance<ObjectTypeDefinition>().filter { it.hasDirective("key") }
             KotlinClientApiGenerator(config, document).generateEntities(federatedDefinitions)
         } else KotlinCodeGenResult()
     }
 
-    private fun generateKotlinClientEntitiesRepresentations(definitions: MutableList<Definition<Definition<*>>>, document: Document): KotlinCodeGenResult {
+    private fun generateKotlinClientEntitiesRepresentations(definitions: MutableList<Definition<Definition<*>>>): KotlinCodeGenResult {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.filterIsInstance<ObjectTypeDefinition>()
@@ -211,17 +244,19 @@ class CodeGen(private val config: CodeGenConfig) {
         } else KotlinCodeGenResult()
     }
 
-    private fun generateKotlinInputTypes(definitions: List<Definition<Definition<*>>>, document: Document): KotlinCodeGenResult {
+    private fun generateKotlinInputTypes(definitions: List<Definition<Definition<*>>>): KotlinCodeGenResult {
         return definitions.filterIsInstance<InputObjectTypeDefinition>()
+                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
                 .map {
                     KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions))
                 }
                 .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
     }
 
-    private fun generateKotlinDataTypes(definitions: List<Definition<Definition<*>>>, document: Document): KotlinCodeGenResult {
+    private fun generateKotlinDataTypes(definitions: List<Definition<Definition<*>>>): KotlinCodeGenResult {
         return definitions.filterIsInstance<ObjectTypeDefinition>()
                 .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
                 .map {
                     val extensions = findExtensions(it.name, definitions)
                     KotlinDataTypeGenerator(config, document).generate(it, extensions)
@@ -250,8 +285,7 @@ data class CodeGenConfig(
         val includeMutations: Set<String> = emptySet(),
         val skipEntityQueries: Boolean = false,
         val shortProjectionNames: Boolean = false,
-
-
+        val generateDataTypes: Boolean = true,
 ) {
     val packageNameClient: String
         get() = "${packageName}.${subPackageNameClient}"
@@ -261,6 +295,27 @@ data class CodeGenConfig(
 
     val packageNameTypes: String
         get() = "${packageName}.${subPackageNameTypes}"
+
+    override fun toString(): String {
+        return """
+            --output-dir=${outputDir}
+            --package-name=${packageName}
+            --sub-package-name-client=${subPackageNameClient}
+            --sub-package-name-datafetchers=${subPackageNameDatafetchers}
+            --sub-package-name-types=${subPackageNameTypes}
+            ${if(generateBoxedTypes)"--generate-boxed-types" else ""}
+            ${if(writeToFiles) "--write-to-disk" else ""}
+            --language=${language}
+            ${if(generateClientApi) "--generate-client" else ""}
+            ${if(generateDataTypes) "--generate-data-types" else "--skip-generate-data-types" }
+            ${includeQueries.joinToString("\n") { "--include-query=${it}" }}
+            ${includeMutations.joinToString("\n") { "--include-mutation=${it}" }}
+            ${if(skipEntityQueries) "--skip-entities" else ""}
+            ${typeMapping.map { "--type-mapping ${it.key}=${it.value}"}.joinToString("\n")}           
+            ${if(shortProjectionNames) "--short-projection-names" else ""}
+            ${schemas.joinToString(" ")}
+        """.trimIndent()
+    }
 }
 
 enum class Language {

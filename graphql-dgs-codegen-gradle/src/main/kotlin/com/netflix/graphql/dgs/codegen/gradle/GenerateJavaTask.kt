@@ -72,6 +72,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var generateClient = false
 
+    @Input
+    var generateDataTypes = true
+
     @OutputDirectory
     fun getOutputDir(): File {
         return Paths.get("${generatedSourcesDir}/generated").toFile()
@@ -118,7 +121,8 @@ open class GenerateJavaTask : DefaultTask() {
                 includeQueries = includeQueries.toSet(),
                 includeMutations = includeMutations.toSet(),
                 skipEntityQueries = skipEntityQueries,
-                shortProjectionNames = shortProjectionNames
+                shortProjectionNames = shortProjectionNames,
+                generateDataTypes = generateDataTypes
         )
 
         LOGGER.info("Codegen config: {}", config)

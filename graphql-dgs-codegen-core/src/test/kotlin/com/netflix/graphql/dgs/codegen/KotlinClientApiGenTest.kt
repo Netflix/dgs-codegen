@@ -44,7 +44,12 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
@@ -66,7 +71,12 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
@@ -94,7 +104,12 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
@@ -124,7 +139,12 @@ class KotlinClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
@@ -161,7 +181,12 @@ class KotlinClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         var projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
@@ -203,7 +228,12 @@ class KotlinClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         var projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(projectionType.name).isEqualTo("SearchProjectionRoot")
@@ -236,7 +266,12 @@ class KotlinClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         val projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
@@ -278,7 +313,12 @@ class KotlinClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
         val projectionType = codeGenResult.clientProjections[0].members[0] as TypeSpec
@@ -340,7 +380,13 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
@@ -361,7 +407,13 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
 
         val typeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(typeSpec.funSpecs.size).isEqualTo(1)
@@ -383,7 +435,13 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
         val projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
         assertThat(projectionTypeSpec.name).isEqualTo("PeopleProjectionRoot")
@@ -409,7 +467,13 @@ class KotlinClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         val projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(projectionTypeSpec.name).isEqualTo("MoviesProjectionRoot")
@@ -432,7 +496,13 @@ class KotlinClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         var projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(projectionTypeSpec.name).isEqualTo("PersonsProjectionRoot")
@@ -454,7 +524,13 @@ class KotlinClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
         var projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(projectionTypeSpec.name).isEqualTo("PersonsProjectionRoot")
         projectionTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
@@ -480,7 +556,13 @@ class KotlinClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
         var projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(projectionTypeSpec.name).isEqualTo("PersonsProjectionRoot")
         projectionTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
@@ -505,7 +587,13 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.propertySpecs[0].name).isEqualTo("lastname")
         assertThat(codeGenResult.queryTypes[0].toString()).doesNotContain("import com.netflix.graphql.dgs.codegen.tests.generated.types")
@@ -532,7 +620,13 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.propertySpecs[0].name).isEqualTo("index")
         assertThat(codeGenResult.queryTypes[0].toString()).contains("import com.netflix.graphql.dgs.codegen.tests.generated.types.SearchIndex\n")
@@ -558,7 +652,13 @@ class KotlinClientApiGenTest {
         """.trimIndent()
 
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            
+        )).generate() as KotlinCodeGenResult
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.propertySpecs[0].name).isEqualTo("index")
         assertThat(codeGenResult.queryTypes[0].toString()).contains("import com.netflix.graphql.dgs.codegen.tests.generated.types.SearchIndex\n")
@@ -579,8 +679,14 @@ class KotlinClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName,
-                generateClientApi = true, typeMapping = mapOf(Pair("Long", "java.lang.Long")), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            
+        )).generate() as KotlinCodeGenResult
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
     }
@@ -602,8 +708,14 @@ class KotlinClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName,
-                generateClientApi = true, typeMapping = mapOf(Pair("Long", "java.lang.Long")), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            
+        )).generate() as KotlinCodeGenResult
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
         assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").contains("name", "email")
@@ -629,8 +741,14 @@ class KotlinClientApiGenTest {
           }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName,
-                generateClientApi = true, typeMapping = mapOf(Pair("Long", "java.lang.Long")), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            
+        )).generate() as KotlinCodeGenResult
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(2)
         assertThat((projections[1].members[0] as TypeSpec).funSpecs).extracting("name").contains("title", "director")
@@ -708,4 +826,53 @@ class KotlinClientApiGenTest {
         assertThat((codeGenResult.clientProjections[5].members[0] as TypeSpec).name).isEqualTo("SearchMovieRelatedVideoShowProjection")
         assertThat((codeGenResult.clientProjections[6].members[0] as TypeSpec).name).isEqualTo("SearchMovieRelatedVideoMovieProjection")
     }
+
+    @Test
+    fun generateOnlyRequiredDataTypesForQuery() {
+        val schema = """
+            type Query {
+                shows(showFilter: ShowFilter): [Show]
+                people(personFilter: PersonFilter): [Person]
+            }
+            
+            type Show {
+                title: String
+            }
+        
+             
+            enum ShouldNotInclude {
+                YES,NO
+            }
+            
+            input NotUsed {
+                field: String
+            }
+            
+            input ShowFilter {
+                title: String
+                showType: ShowType
+                similarTo: SimilarityInput              
+            }
+            
+            input SimilarityInput {
+                tags: [String]
+            }
+            
+            enum ShowType {
+                MOVIE, SERIES
+            }
+            
+            type Person {
+                name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeQueries = setOf("shows"),  generateDataTypes = false, writeToFiles = false, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(codeGenResult.dataTypes.size).isEqualTo(2)
+
+        assertThat(codeGenResult.dataTypes).flatExtracting("members").extracting("name").containsExactly("ShowFilter", "SimilarityInput")
+        assertThat(codeGenResult.enumTypes).flatExtracting("members").extracting("name").containsExactly("ShowType")
+    }
+
+
 }
