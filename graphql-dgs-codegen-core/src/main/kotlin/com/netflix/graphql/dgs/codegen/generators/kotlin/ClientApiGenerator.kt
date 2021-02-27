@@ -29,6 +29,7 @@ import graphql.language.*
 
 class KotlinClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
     private val generatedClasses = mutableSetOf<String>()
+    private val projectionDepth = mutableMapOf<String, Int>()
 
     fun generate(definition: ObjectTypeDefinition): KotlinCodeGenResult {
 
@@ -299,24 +300,34 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                 .addSuperclassConstructorParameter("root")
 
         val fieldDefinitions = type.filterInterfaceFields(document) + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
-        val codeGenResult = fieldDefinitions.filterSkipped()
+
+        val codeGenResult = if(projectionDepth[root.name]?:0 < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
+            val depth = projectionDepth.getOrPut(root.name!!) { 0 }
+            projectionDepth[root.name!!] = depth + 1
+
+            fieldDefinitions.filterSkipped()
                 .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
-                .filter { ! processedEdges.contains(Pair(it.second!!.name, type.name)) }
+                .filter { !processedEdges.contains(Pair(it.second!!.name, type.name)) }
                 .map {
                     val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
-                    javaType.addFunction(FunSpec.builder(it.first.name)
+                    javaType.addFunction(
+                        FunSpec.builder(it.first.name)
                             .returns(ClassName.bestGuess("${getPackageName()}.${projectionName}"))
-                            .addCode("""
+                            .addCode(
+                                """
                         val projection = ${projectionName}(this, root)    
                         fields["${it.first.name}"] = projection
                         return projection
-                    """.trimIndent())
+                    """.trimIndent()
+                            )
                             .addModifiers(KModifier.PUBLIC)
-                            .build())
+                            .build()
+                    )
                     val updatedProcessedEdges = processedEdges.toMutableSet()
                     updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
                     createSubProjection(it.second!!, javaType.build(), root, "${prefix}${it.first.name.capitalize()}", updatedProcessedEdges)
                 }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
+        } else KotlinCodeGenResult()
 
         fieldDefinitions.filterSkipped().forEach {
 

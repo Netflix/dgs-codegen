@@ -286,6 +286,7 @@ data class CodeGenConfig(
         val skipEntityQueries: Boolean = false,
         val shortProjectionNames: Boolean = false,
         val generateDataTypes: Boolean = true,
+        val maxProjectionDepth: Int = 10
 ) {
     val packageNameClient: String
         get() = "${packageName}.${subPackageNameClient}"
