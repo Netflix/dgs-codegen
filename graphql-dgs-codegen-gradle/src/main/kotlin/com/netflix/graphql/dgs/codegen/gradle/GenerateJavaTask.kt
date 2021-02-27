@@ -97,6 +97,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var shortProjectionNames = false
 
+    @Input
+    var maxProjectionDepth = 10
+
     @TaskAction
     fun generate() {
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.toSet()
@@ -122,7 +125,8 @@ open class GenerateJavaTask : DefaultTask() {
                 includeMutations = includeMutations.toSet(),
                 skipEntityQueries = skipEntityQueries,
                 shortProjectionNames = shortProjectionNames,
-                generateDataTypes = generateDataTypes
+                generateDataTypes = generateDataTypes,
+                maxProjectionDepth = maxProjectionDepth,
         )
 
         LOGGER.info("Codegen config: {}", config)

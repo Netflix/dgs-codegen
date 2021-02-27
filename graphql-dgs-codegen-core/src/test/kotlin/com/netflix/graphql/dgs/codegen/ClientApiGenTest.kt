@@ -1078,4 +1078,43 @@ class ClientApiGenTest {
 
         assertCompiles(codeGenResult.clientProjections + codeGenResult.dataTypes + codeGenResult.enumTypes)
     }
+
+    @Test
+    fun generateSubProjectionTypesMaxDepth() {
+
+        val schema = """
+            type Query {
+                movies: [Movie]
+            }
+            
+            type Movie {
+                title: String
+                actors: [Actor]
+            }
+            
+            type Actor {
+                name: String
+                age: Integer
+                agent: Agent
+            }
+            
+            type Agent {
+                name: String                
+            }
+
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+            maxProjectionDepth = 0,
+        )).generate() as CodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MoviesActorsProjection")
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+    }
 }

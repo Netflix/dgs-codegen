@@ -874,5 +874,43 @@ class KotlinClientApiGenTest {
         assertThat(codeGenResult.enumTypes).flatExtracting("members").extracting("name").containsExactly("ShowType")
     }
 
+    @Test
+    fun generateSubProjectionTypesMaxDepth() {
 
+        val schema = """
+            type Query {
+                movies: [Movie]
+            }
+            
+            type Movie {
+                title: String
+                actors: [Actor]
+            }
+            
+            type Actor {
+                name: String
+                age: Integer
+                agent: Agent
+            }
+            
+            type Agent {
+                name: String                
+            }
+
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            maxProjectionDepth = 0,
+            )).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        val projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
+        assertThat(projectionTypeSpec.name).isEqualTo("MoviesProjectionRoot")
+        val actorTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(actorTypeSpec.name).isEqualTo("MoviesActorsProjection")
+    }
 }
