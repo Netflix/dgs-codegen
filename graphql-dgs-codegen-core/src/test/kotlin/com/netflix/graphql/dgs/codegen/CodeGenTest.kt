@@ -21,8 +21,8 @@ package com.netflix.graphql.dgs.codegen
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -1570,4 +1570,25 @@ class CodeGenTest {
         assertCompiles(dataTypes + interfaces)
     }
 
+
+    @Test
+    fun generateWithJavaTypeDirective() {
+        val schema = """
+          type Query {
+              movieCountry(movieId: MovieID): MovieCountry
+          }
+          
+          type MovieCountry {
+            country: String
+            movieId: MovieID
+          }
+          scalar MovieID @javaType(name : "java.lang.String")
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf())).generate() as CodeGenResult
+        assertCompiles(codeGenResult.javaFiles)
+    }
+
+    private val CodeGenResult.javaFiles: Collection<JavaFile>
+        get() = dataTypes + interfaces + enumTypes + dataFetchers + queryTypes + clientProjections + constants
 }

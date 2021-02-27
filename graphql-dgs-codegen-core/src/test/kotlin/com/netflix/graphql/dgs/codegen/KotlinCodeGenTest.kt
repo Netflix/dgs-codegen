@@ -1496,4 +1496,23 @@ class KotlinCodeGenTest {
                 |""".trimMargin())
     }
 
+
+    @Test
+    fun generateWithJavaTypeDirective() {
+        val schema = """
+          type Query {
+              movieCountry(movieId: MovieID): MovieCountry
+          }
+          
+          type MovieCountry {
+            country: String
+            movieId: MovieID
+          }
+          scalar MovieID @javaType(name : "com.example.MyType")
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf(), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        assertThat(codeGenResult.dataTypes.first().toString()).contains("com.example.MyType")
+        assertThat(codeGenResult.queryTypes.first().toString()).contains("com.example.MyType")
+    }
 }
