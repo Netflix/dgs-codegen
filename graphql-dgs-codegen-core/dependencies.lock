@@ -1,6 +1,6 @@
 {
     "apiDependenciesMetadata": {
-        "org.jetbrains.kotlin:kotlin-stdlib": {
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         }
     },
@@ -15,10 +15,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -26,7 +26,7 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.7.2"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib": {
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         }
     },
@@ -41,10 +41,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -52,7 +52,7 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.7.2"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib": {
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         }
     },
@@ -82,10 +82,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -93,7 +93,7 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.7.2"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib": {
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         }
     },
@@ -114,10 +114,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -128,7 +128,7 @@
         "org.assertj:assertj-core": {
             "locked": "3.11.1"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib": {
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         },
         "org.junit.jupiter:junit-jupiter": {
@@ -158,10 +158,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -172,7 +172,7 @@
         "org.assertj:assertj-core": {
             "locked": "3.11.1"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib": {
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         },
         "org.junit.jupiter:junit-jupiter": {
@@ -202,10 +202,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.5.1"
+            "locked": "3.6.0"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -216,7 +216,7 @@
         "org.assertj:assertj-core": {
             "locked": "3.11.1"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib": {
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.4.30"
         },
         "org.junit.jupiter:junit-jupiter": {

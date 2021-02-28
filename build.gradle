@@ -24,7 +24,6 @@ plugins {
 allprojects {
     repositories {
         mavenCentral()
-        jcenter()
     }
     group = 'com.netflix.graphql.dgs.codegen'
 
