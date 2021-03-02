@@ -118,6 +118,11 @@ task createClasspathManifest {
 }
 
 publishPlugins.dependsOn tasks.check
+gradle.taskGraph.whenReady { graph ->
+    tasks.publishPlugins.onlyIf {
+        graph.hasTask(':final')
+    }
+}
 
 // Add the classpath file to the test runtime classpath
 dependencies {
