@@ -17,8 +17,8 @@
  */
 
 plugins {
-    id 'nebula.netflixoss' version '8.9.0'
     id 'org.jetbrains.kotlin.jvm' version '1.4.31' apply false
+    id 'nebula.netflixoss' version '9.1.0'
 }
 
 allprojects {
@@ -34,7 +34,3 @@ allprojects {
     }
 }
 description = 'Netflix GraphQL DGS Code Generation'
-
-bintray {
-    pkgName = 'dgs-codegen'
-}
