@@ -17,8 +17,8 @@
  */
 
 plugins {
+    id 'org.jetbrains.kotlin.jvm' version '1.4.31' apply false
     id 'nebula.netflixoss' version '9.1.0'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.30' apply false
 }
 
 allprojects {
