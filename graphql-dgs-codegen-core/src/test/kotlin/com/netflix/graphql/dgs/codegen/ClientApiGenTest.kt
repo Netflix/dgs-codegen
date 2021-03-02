@@ -22,6 +22,7 @@ import com.google.common.truth.Truth
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ClientApiGenTest {
@@ -111,6 +112,41 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+    }
+
+    @Test
+    fun generateMutationAddsNullChecksDuringInit() {
+
+        val schema = """
+            type Mutation {
+                updateMovie(movie: MovieDescription): Movie
+            }
+            
+            input MovieDescription {
+                movieId: ID
+                title: String
+                actors: [String]
+            }
+            
+            type Movie {
+                movieId: ID
+                lastname: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true,
+        )).generate() as CodeGenResult
+
+
+        assert(codeGenResult.queryTypes[0].typeSpec.methodSpecs
+            .find {it.name == "<init>"}?.code.toString()
+            .contains("super(\"mutation\");\nif (movie != null) {\n    getInput().put(\"movie\", movie);\n}"))
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }

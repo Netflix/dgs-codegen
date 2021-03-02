@@ -102,8 +102,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
             constructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
             constructorBuilder.addCode("""
-                getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
-                
+                if (${inputValue.name} != null) {
+                    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
+                }
             """.trimIndent())
         }
 
