@@ -23,28 +23,27 @@ import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import graphql.language.*
 import graphql.parser.Parser
-import com.squareup.javapoet.TypeName as JavaTypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-
 import java.time.*
 import java.util.*
+import com.squareup.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig) {
-    private val commonScalars =  mutableMapOf<String, com.squareup.javapoet.TypeName>(
-        "LocalTime" to ClassName.get(LocalTime::class.java),
-        "LocalDate" to ClassName.get(LocalDate::class.java),
-        "LocalDateTime" to ClassName.get(LocalDateTime::class.java),
-        "TimeZone" to ClassName.get(String::class.java),
-        "Date" to ClassName.get(LocalDate::class.java),
-        "DateTime" to ClassName.get(OffsetDateTime::class.java),
-        "Currency" to ClassName.get(Currency::class.java),
-        "Instant" to ClassName.get(Instant::class.java),
-        "RelayPageInfo" to ClassName.get(PageInfo::class.java),
-        "PageInfo" to ClassName.get(PageInfo::class.java),
-        "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
-        "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"))
+    private val commonScalars = mutableMapOf<String, com.squareup.javapoet.TypeName>(
+            "LocalTime" to ClassName.get(LocalTime::class.java),
+            "LocalDate" to ClassName.get(LocalDate::class.java),
+            "LocalDateTime" to ClassName.get(LocalDateTime::class.java),
+            "TimeZone" to ClassName.get(String::class.java),
+            "Date" to ClassName.get(LocalDate::class.java),
+            "DateTime" to ClassName.get(OffsetDateTime::class.java),
+            "Currency" to ClassName.get(Currency::class.java),
+            "Instant" to ClassName.get(Instant::class.java),
+            "RelayPageInfo" to ClassName.get(PageInfo::class.java),
+            "PageInfo" to ClassName.get(PageInfo::class.java),
+            "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
+            "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"))
 
     fun findReturnType(fieldType: Type<*>): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
@@ -54,6 +53,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 context.setAccumulate(boxed)
                 return TraversalControl.CONTINUE
             }
+
             override fun visitListType(node: ListType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = context.getCurrentAccumulate<JavaTypeName>()
                 val boxed = boxType(typeName)
@@ -61,6 +61,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 context.setAccumulate(parameterizedTypeName)
                 return TraversalControl.CONTINUE
             }
+
             override fun visitNonNullType(node: NonNullType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = context.getCurrentAccumulate<JavaTypeName>()
                 val accumulate = if (config.generateBoxedTypes) {
@@ -71,6 +72,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 context.setAccumulate(accumulate)
                 return TraversalControl.CONTINUE
             }
+
             override fun visitNode(node: Node<*>, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 throw AssertionError("Unknown field type: $node")
             }
@@ -105,7 +107,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             return ClassName.bestGuess(mappedType)
         }
 
-        if(commonScalars.containsKey(name)) {
+        if (commonScalars.containsKey(name)) {
             return commonScalars[name]!!
         }
 
@@ -126,7 +128,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
 
     fun isStringInput(name: com.squareup.javapoet.TypeName): Boolean {
         if (config.typeMapping.containsValue(name.toString())) {
-            return when(name) {
+            return when (name) {
                 JavaTypeName.INT -> false
                 JavaTypeName.DOUBLE -> false
                 JavaTypeName.BOOLEAN -> false
@@ -136,7 +138,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 else -> true
             }
         }
-        return  (name == ClassName.get(String::class.java) || commonScalars.containsValue(name))
+        return (name == ClassName.get(String::class.java) || commonScalars.containsValue(name))
     }
 
     private val CodeGenConfig.schemaTypeMapping: Map<String, String>
@@ -148,7 +150,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             val document = Parser().parseDocument(joinedSchema)
 
             return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
-              it.getDirectives("javaType").isNullOrEmpty()
+                it.getDirectives("javaType").isNullOrEmpty()
             }.map {
                 val javaType = it.getDirectives("javaType").singleOrNull()
                         ?: throw IllegalArgumentException("multiple @javaType directives are defined")

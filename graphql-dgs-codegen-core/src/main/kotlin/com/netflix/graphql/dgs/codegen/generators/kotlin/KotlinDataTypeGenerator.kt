@@ -26,16 +26,16 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.TypeName
 import graphql.language.*
 
-class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
+class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): KotlinCodeGenResult {
-        if(definition.shouldSkip()) {
+        if (definition.shouldSkip()) {
             return KotlinCodeGenResult()
         }
 
         val fields = definition.fieldDefinitions
                 .filterSkipped()
                 .filter(ReservedKeywordFilter.filterInvalidNames)
-            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
+                .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
                 .plus(extensions.flatMap { it.fieldDefinitions }
                         .filterSkipped()
                         .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
@@ -49,7 +49,7 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
 }
 
 
-class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document): AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
+class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): KotlinCodeGenResult {
 
         val fields = definition.inputValueDefinitions
@@ -64,17 +64,17 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
     }
 
     private fun generateCode(value: Value<Value<*>>, type: TypeName): CodeBlock =
-        when (value) {
-            is BooleanValue -> CodeBlock.of("%L", value.isValue)
-            is IntValue -> CodeBlock.of("%L", value.value)
-            is StringValue -> CodeBlock.of("%S", value.value)
-            is FloatValue -> CodeBlock.of("%L", value.value)
-            is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
-            is ArrayValue ->
-                if (value.values.isEmpty()) CodeBlock.of("emptyList()")
-                else CodeBlock.of("listOf(%L)", value.values.joinToString { v -> generateCode(v, type).toString() })
-            else -> CodeBlock.of("%L", value)
-        }
+            when (value) {
+                is BooleanValue -> CodeBlock.of("%L", value.isValue)
+                is IntValue -> CodeBlock.of("%L", value.value)
+                is StringValue -> CodeBlock.of("%S", value.value)
+                is FloatValue -> CodeBlock.of("%L", value.value)
+                is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
+                is ArrayValue ->
+                    if (value.values.isEmpty()) CodeBlock.of("emptyList()")
+                    else CodeBlock.of("listOf(%L)", value.values.joinToString { v -> generateCode(v, type).toString() })
+                else -> CodeBlock.of("%L", value)
+            }
 
     private val TypeName.className: ClassName
         get() = when (this) {
@@ -96,7 +96,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
     internal fun generate(name: String, fields: List<Field>, interfaces: List<Type<*>>, isInputType: Boolean, document: Document): KotlinCodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
 
-        if(fields.isNotEmpty()) {
+        if (fields.isNotEmpty()) {
             kotlinType.addModifiers(KModifier.DATA)
         }
 
@@ -108,7 +108,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
         }
 
         fields.forEach { field ->
-            val returnType = if(field.nullable) field.type.copy(nullable = true) else field.type
+            val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
             val parameterSpec = ParameterSpec.builder(field.name, returnType)
                     .addAnnotation(jsonPropertyAnnotation(field.name))
 
@@ -144,7 +144,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
         }
 
         interfaces.plus(unionTypes).forEach {
-            if(it is NamedNode<*>) {
+            if (it is NamedNode<*>) {
                 kotlinType.addSuperinterface(ClassName.bestGuess("${getPackageName()}.${it.name}"))
             }
         }
@@ -172,12 +172,12 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
                 is ParameterizedTypeName -> {
                     val innerType = fieldTypeName.typeArguments[0]
                     if (typeUtils.isStringInput(innerType)) {
-                        val name = if (innerType is ClassName ) {
+                        val name = if (innerType is ClassName) {
                             "serializeListOf" + innerType.simpleName
                         } else {
                             "serializeListOf$innerType"
                         }
-                        addToStringForListOfStrings(name,field, kotlinType)
+                        addToStringForListOfStrings(name, field, kotlinType)
                         """
                             "${field.name}:" + ${name}(${field.name}) + "${if (index < fields.size - 1) "," else ""}" +
                         """.trimIndent()
@@ -197,7 +197,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
                     defaultString(field, index, fields)
                 }
             }
-        }.forEach { toStringBody.append(it)}
+        }.forEach { toStringBody.append(it) }
 
         return toStringBody.append("""
             "}"
@@ -241,7 +241,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
             )
         }
         toStringBody.append(
-            """
+                """
                 val builder = java.lang.StringBuilder()
                 builder.append("[")
                 if (! inputList.isEmpty()) {

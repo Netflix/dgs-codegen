@@ -104,31 +104,31 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
         // handle simple keys and nested keys by constructing the path to each  key
         // e.g. type Movie @key(fields: "movieId") or type MovieCast @key(fields: movie { movieId } actors { name } }
         val mappedKeyTypes = mutableMapOf<String, Any>()
-        var parent =  Node("", mappedKeyTypes, null)
-        var current =  Node("", mappedKeyTypes, null)
-        keys.filter { it  !=  " " && it != "" }
-            .forEach {
-                when (it) {
-                    "{" -> {
-                        // set the key and corresponding map for the next level
-                        val previous = parent
-                        parent = current
-                        if (current.map.containsKey(current.key)) {
-                            current = Node("", current.map[current.key] as MutableMap<String, Any>, previous)
+        var parent = Node("", mappedKeyTypes, null)
+        var current = Node("", mappedKeyTypes, null)
+        keys.filter { it != " " && it != "" }
+                .forEach {
+                    when (it) {
+                        "{" -> {
+                            // set the key and corresponding map for the next level
+                            val previous = parent
+                            parent = current
+                            if (current.map.containsKey(current.key)) {
+                                current = Node("", current.map[current.key] as MutableMap<String, Any>, previous)
+                            }
+                        }
+                        "}" -> {
+                            // pop back to parent level
+                            current = parent
+                            parent = parent.parent!!
+                        }
+                        else -> {
+                            // make an entry at the current level
+                            current.map.putIfAbsent(it, mutableMapOf<String, Any>())
+                            current = Node(it, current.map, parent)
                         }
                     }
-                    "}" -> {
-                        // pop back to parent level
-                        current = parent
-                        parent = parent.parent!!
-                    }
-                    else -> {
-                        // make an entry at the current level
-                        current.map.putIfAbsent(it, mutableMapOf<String, Any>())
-                        current = Node(it, current.map, parent)
-                    }
                 }
-        }
         return mappedKeyTypes
     }
 }

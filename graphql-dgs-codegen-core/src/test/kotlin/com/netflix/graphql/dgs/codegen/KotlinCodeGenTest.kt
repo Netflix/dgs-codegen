@@ -44,9 +44,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
@@ -71,9 +71,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -103,9 +103,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -133,9 +133,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -159,9 +159,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         assertThat(dataTypes.size).isEqualTo(1)
         val type = dataTypes[0].members[0] as TypeSpec
@@ -183,9 +183,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = "com.mypackage",
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = "com.mypackage",
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
@@ -208,9 +208,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -240,9 +240,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -269,9 +269,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -306,9 +306,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes, interfaces) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -389,9 +389,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes, interfaces) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -432,9 +432,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -480,9 +480,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         assertThat(dataTypes).flatExtracting("members").extracting("name").contains("Car", "Engine", "Performance")
@@ -507,9 +507,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val result = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = result.enumTypes[0].members[0] as TypeSpec
 
@@ -536,10 +536,10 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN,
-            typeMapping = mapOf(Pair("Date", "java.time.LocalDateTime"))
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(Pair("Date", "java.time.LocalDateTime"))
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -567,9 +567,9 @@ class KotlinCodeGenTest {
 
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -821,9 +821,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -852,9 +852,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -883,9 +883,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -920,9 +920,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -949,9 +949,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -995,9 +995,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
 
         val type = dataTypes[0].members[0] as TypeSpec
@@ -1024,8 +1024,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName
+                schemas = setOf(schema),
+                packageName = basePackageName
         )).generate() as CodeGenResult
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
@@ -1052,9 +1052,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
@@ -1080,9 +1080,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
@@ -1109,8 +1109,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN,
-            typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer"))
+                schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN,
+                typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer"))
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
@@ -1142,9 +1142,9 @@ class KotlinCodeGenTest {
 
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = dataTypes[0].members[0] as TypeSpec
 
@@ -1169,9 +1169,9 @@ class KotlinCodeGenTest {
 
 
         val result = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
@@ -1198,9 +1198,9 @@ class KotlinCodeGenTest {
 
 
         val result = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
@@ -1230,9 +1230,9 @@ class KotlinCodeGenTest {
 
 
         val result = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
@@ -1258,9 +1258,9 @@ class KotlinCodeGenTest {
 
 
         val result = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
@@ -1286,9 +1286,9 @@ class KotlinCodeGenTest {
 
 
         val result = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
@@ -1316,9 +1316,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes, interfaces) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         assertThat(dataTypes).extracting("name").containsExactly("Movie", "Actor")
         assertThat(interfaces).extracting("name").containsExactly("SearchResult")
@@ -1340,9 +1340,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         assertThat(dataTypes).extracting("name").containsExactly("Person")
     }
@@ -1357,9 +1357,9 @@ class KotlinCodeGenTest {
         """.trimIndent()
 
         val (dataTypes) = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
         )).generate() as KotlinCodeGenResult
         assertThat(dataTypes).extracting("name").containsExactly("Person")
         val type = dataTypes[0].members[0] as TypeSpec

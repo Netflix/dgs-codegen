@@ -52,6 +52,6 @@ class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
         }
 
         val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
-        return KotlinCodeGenResult(interfaces =  listOf(fileSpec))
+        return KotlinCodeGenResult(interfaces = listOf(fileSpec))
     }
 }

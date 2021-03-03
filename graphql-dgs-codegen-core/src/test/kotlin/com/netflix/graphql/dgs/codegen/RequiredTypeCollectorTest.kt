@@ -18,12 +18,9 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import graphql.language.Document
 import graphql.parser.Parser
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 
 internal class RequiredTypeCollectorTest {
     private val document = Parser.parse("""

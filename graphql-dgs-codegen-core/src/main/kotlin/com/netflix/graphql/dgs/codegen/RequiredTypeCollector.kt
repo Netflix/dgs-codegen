@@ -23,24 +23,24 @@ import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 
 class RequiredTypeCollector(
-    private val document: Document,
-    queries: Set<String> = emptySet(),
-    mutations: Set<String> = emptySet()
+        private val document: Document,
+        queries: Set<String> = emptySet(),
+        mutations: Set<String> = emptySet()
 ) {
     val requiredTypes: Set<String>
 
     init {
         val queryFieldDefinitions: List<FieldDefinition> = document.definitions.filterIsInstance<ObjectTypeDefinition>()
-            .find { it.name == "Query" }?.fieldDefinitions ?: emptyList()
+                .find { it.name == "Query" }?.fieldDefinitions ?: emptyList()
 
         val mutationDefinitions: List<FieldDefinition> = document.definitions.filterIsInstance<ObjectTypeDefinition>()
-            .find { it.name == "Mutation" }?.fieldDefinitions ?: emptyList()
+                .find { it.name == "Mutation" }?.fieldDefinitions ?: emptyList()
         val fieldDefinitions = queryFieldDefinitions.plus(mutationDefinitions).filter { queries.contains(it.name) || mutations.contains(it.name) }
 
         val nodeTraverserResult = NodeTraverser().postOrder(object : NodeVisitorStub() {
             override fun visitInputObjectTypeDefinition(
-                node: InputObjectTypeDefinition,
-                context: TraverserContext<Node<Node<*>>>
+                    node: InputObjectTypeDefinition,
+                    context: TraverserContext<Node<Node<*>>>
             ): TraversalControl {
                 println(node)
 
@@ -57,8 +57,8 @@ class RequiredTypeCollector(
             }
 
             override fun visitEnumTypeDefinition(
-                node: EnumTypeDefinition,
-                context: TraverserContext<Node<Node<*>>>
+                    node: EnumTypeDefinition,
+                    context: TraverserContext<Node<Node<*>>>
             ): TraversalControl {
                 println(node)
 
@@ -74,8 +74,8 @@ class RequiredTypeCollector(
             }
 
             override fun visitInputValueDefinition(
-                node: InputValueDefinition,
-                context: TraverserContext<Node<Node<*>>>
+                    node: InputValueDefinition,
+                    context: TraverserContext<Node<Node<*>>>
             ): TraversalControl {
                 println(node)
 

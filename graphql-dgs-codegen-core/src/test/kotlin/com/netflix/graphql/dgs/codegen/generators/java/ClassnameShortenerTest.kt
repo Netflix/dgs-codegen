@@ -37,10 +37,10 @@ class ClassnameShortenerTest {
         @JvmStatic
         fun inputAndExpectedProvider(): Stream<Arguments> {
             return Stream.of(
-                Arguments.arguments("ThisIsATest", "ThIsATe"),
-                Arguments.arguments("T", "T"),
-                Arguments.arguments("lowercase", "lo"),
-                Arguments.arguments("lowercaseAndUppercase", "loAnUp"),
+                    Arguments.arguments("ThisIsATest", "ThIsATe"),
+                    Arguments.arguments("T", "T"),
+                    Arguments.arguments("lowercase", "lo"),
+                    Arguments.arguments("lowercaseAndUppercase", "loAnUp"),
             )
         }
     }

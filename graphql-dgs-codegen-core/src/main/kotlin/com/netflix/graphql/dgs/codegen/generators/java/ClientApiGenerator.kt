@@ -42,18 +42,18 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     fun generateEntities(definitions: List<ObjectTypeDefinition>): CodeGenResult {
-            if(config.skipEntityQueries) {
-                return CodeGenResult()
-            }
+        if (config.skipEntityQueries) {
+            return CodeGenResult()
+        }
 
-            var entitiesRootProjection = CodeGenResult()
-            // generate for federation types, if present
-            val federatedTypes = definitions.filter { it.hasDirective("key") }
-            if (federatedTypes.isNotEmpty()) {
-                // create entities root projection
-                entitiesRootProjection = createEntitiesRootProjection(federatedTypes)
-            }
-            return CodeGenResult().merge(entitiesRootProjection)
+        var entitiesRootProjection = CodeGenResult()
+        // generate for federation types, if present
+        val federatedTypes = definitions.filter { it.hasDirective("key") }
+        if (federatedTypes.isNotEmpty()) {
+            // create entities root projection
+            entitiesRootProjection = createEntitiesRootProjection(federatedTypes)
+        }
+        return CodeGenResult().merge(entitiesRootProjection)
     }
 
     private fun createQueryClass(it: FieldDefinition, operation: String): JavaFile {
@@ -81,7 +81,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                         .build())
 
         val constructorBuilder = MethodSpec.constructorBuilder()
-                                        .addModifiers(Modifier.PUBLIC)
+                .addModifiers(Modifier.PUBLIC)
         constructorBuilder.addCode("""
                 super("${operation.toLowerCase()}");
                 
@@ -132,11 +132,11 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
         println("Generating ${prefix}ProjectionRoot")
 
-        if(generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
+        if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
 
-        val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
+        val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
         val codeGenResult = fieldDefinitions.filterSkipped()
-                .mapNotNull { if (it.type.findTypeDefinition(document) != null ) Pair(it, it.type.findTypeDefinition(document)) else null }
+                .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
                 .map {
                     val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
                     javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
@@ -181,21 +181,21 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val javaType = TypeSpec.classBuilder(clazzName)
                 .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
 
-        if(generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
+        if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
         val codeGenResult = federatedTypes
                 .map {
-            javaType.addMethod(MethodSpec.methodBuilder("on${it.name}")
-                    .addModifiers(Modifier.PUBLIC)
-                    .returns(ClassName.get(getPackageName(), "Entities${it.name.capitalize()}KeyProjection"))
-                    .addCode("""
+                    javaType.addMethod(MethodSpec.methodBuilder("on${it.name}")
+                            .addModifiers(Modifier.PUBLIC)
+                            .returns(ClassName.get(getPackageName(), "Entities${it.name.capitalize()}KeyProjection"))
+                            .addCode("""
                                 Entities${it.name.capitalize()}KeyProjection fragment = new Entities${it.name.capitalize()}KeyProjection(this, this);
                                 getFragments().add(fragment);
                                 return fragment;
                             """.trimIndent())
-                    .build())
+                            .build())
                     val processedEdges = mutableSetOf<Pair<String, String>>()
-            createFragment(it, javaType.build(), javaType.build(), "Entities${it.name.capitalize()}Key", processedEdges)
-        }.fold(CodeGenResult()) { total, current -> total.merge(current) }
+                    createFragment(it, javaType.build(), javaType.build(), "Entities${it.name.capitalize()}Key", processedEdges)
+                }.fold(CodeGenResult()) { total, current -> total.merge(current) }
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
@@ -205,7 +205,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         return if (type is InterfaceTypeDefinition) {
 
             val concreteTypes = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).filter {
-                it.implements.filterIsInstance<NamedNode<*>>().find { iface -> iface.name == type.name } != null }
+                it.implements.filterIsInstance<NamedNode<*>>().find { iface -> iface.name == type.name } != null
+            }
             concreteTypes.map {
                 addFragmentProjectionMethod(javaType, root, prefix, it, processedEdges)
             }.fold(CodeGenResult()) { total, current -> total.merge(current) }
@@ -287,7 +288,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun createSubProjectionType(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>): Pair<TypeSpec.Builder, CodeGenResult>? {
         val className = ClassName.get(BaseSubProjectionNode::class.java)
         val clazzName = "${prefix}Projection"
-        if(generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
+        if (generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
         val javaType = TypeSpec.classBuilder(clazzName)
                 .addModifiers(Modifier.PUBLIC).superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), parent.name), ClassName.get(getPackageName(), root.name)))
                 .addMethod(MethodSpec.constructorBuilder()
@@ -297,50 +298,50 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                         .addCode("super(parent, root);")
                         .build())
 
-            val fieldDefinitions = type.filterInterfaceFields(document) + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
+        val fieldDefinitions = type.filterInterfaceFields(document) + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
 
-             val codeGenResult = if(projectionDepth[root.name]?:0 < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
-                val depth = projectionDepth.getOrPut(root.name) { 0 }
-                projectionDepth[root.name] = depth + 1
+        val codeGenResult = if (projectionDepth[root.name] ?: 0 < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
+            val depth = projectionDepth.getOrPut(root.name) { 0 }
+            projectionDepth[root.name] = depth + 1
 
-                fieldDefinitions.filterSkipped()
+            fieldDefinitions.filterSkipped()
                     .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
                     .filter { !processedEdges.contains(Pair(it.second!!.name, type.name)) }
                     .map {
                         val projectionName = "${truncatePrefix(prefix)}${it.first.name.capitalize()}Projection"
                         javaType.addMethod(
-                            MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
-                                .returns(ClassName.get(getPackageName(), projectionName))
-                                .addCode(
-                                    """
+                                MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
+                                        .returns(ClassName.get(getPackageName(), projectionName))
+                                        .addCode(
+                                                """
                             $projectionName projection = new $projectionName(this, getRoot());    
                             getFields().put("${it.first.name}", projection);
                             return projection;
                         """.trimIndent()
-                                )
-                                .addModifiers(Modifier.PUBLIC)
-                                .build()
+                                        )
+                                        .addModifiers(Modifier.PUBLIC)
+                                        .build()
                         )
                         val updatedProcessedEdges = processedEdges.toMutableSet()
                         updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
                         createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}${it.first.name.capitalize()}", updatedProcessedEdges)
                     }.fold(CodeGenResult()) { total, current -> total.merge(current) }
 
-            } else CodeGenResult()
+        } else CodeGenResult()
 
 
-            fieldDefinitions.filterSkipped()
+        fieldDefinitions.filterSkipped()
                 .forEach {
                     val objectTypeDefinition = it.type.findTypeDefinition(document)
                     if (objectTypeDefinition == null) {
                         javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
-                            .returns(ClassName.get(getPackageName(), javaType.build().name))
-                            .addCode("""
+                                .returns(ClassName.get(getPackageName(), javaType.build().name))
+                                .addCode("""
                         getFields().put("${it.name}", null);
                         return this;
                     """.trimIndent())
-                            .addModifiers(Modifier.PUBLIC)
-                            .build())
+                                .addModifiers(Modifier.PUBLIC)
+                                .build())
                     }
                 }
 
@@ -352,7 +353,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun truncatePrefix(prefix: String): String {
-        return if(config.shortProjectionNames) ClassnameShortener.shorten(prefix) else prefix
+        return if (config.shortProjectionNames) ClassnameShortener.shorten(prefix) else prefix
     }
 
     fun getPackageName(): String {

@@ -30,9 +30,9 @@ class SchemaMergingTest {
         val schemaDir = Paths.get("src/test/resources/schemas").toAbsolutePath().toFile()
 
         val codeGen = CodeGen(config = CodeGenConfig(
-            schemaFiles = setOf(schemaDir),
-            writeToFiles = false,
-            generateClientApi = true,
+                schemaFiles = setOf(schemaDir),
+                writeToFiles = false,
+                generateClientApi = true,
         ))
         val result = codeGen.generate() as CodeGenResult
 
@@ -49,10 +49,10 @@ class SchemaMergingTest {
         val schemaDir = Paths.get("src/test/resources/schemas").toAbsolutePath().toFile()
 
         val codeGen = CodeGen(config = CodeGenConfig(
-            schemaFiles = setOf(schemaDir),
-            writeToFiles = false,
-            language = Language.KOTLIN,
-            generateClientApi = true,
+                schemaFiles = setOf(schemaDir),
+                writeToFiles = false,
+                language = Language.KOTLIN,
+                generateClientApi = true,
         ))
         val result = codeGen.generate() as KotlinCodeGenResult
         val type = result.dataTypes.find { it.name == "Person" }!!.members[0] as TypeSpec

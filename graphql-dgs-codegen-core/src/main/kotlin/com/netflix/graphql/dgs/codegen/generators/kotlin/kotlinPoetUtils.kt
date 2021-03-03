@@ -41,7 +41,7 @@ fun jsonTypeInfoAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonTypeInfo::class)
             .addMember("use = %T.%L", JsonTypeInfo.Id::class, JsonTypeInfo.Id.NAME.name)
             .addMember("include = %T.%L", JsonTypeInfo.As::class, JsonTypeInfo.As.PROPERTY.name)
-            .addMember("property = %S",  Introspection.TypeNameMetaFieldDef.name)
+            .addMember("property = %S", Introspection.TypeNameMetaFieldDef.name)
             .build()
 }
 

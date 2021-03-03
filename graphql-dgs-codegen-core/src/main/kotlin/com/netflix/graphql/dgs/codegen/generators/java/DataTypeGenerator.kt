@@ -61,8 +61,8 @@ class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.p
                     is StringValue -> CodeBlock.of("\$S", defVal.value)
                     is FloatValue -> CodeBlock.of("\$L", defVal.value)
                     is EnumValue -> CodeBlock.of("\$T.\$N", typeUtils.findReturnType(it.type), defVal.name)
-                    is ArrayValue -> if(defVal.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()") else CodeBlock.of("java.util.Arrays.asList(\$L)", defVal.values.map { v ->
-                        when(v) {
+                    is ArrayValue -> if (defVal.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()") else CodeBlock.of("java.util.Arrays.asList(\$L)", defVal.values.map { v ->
+                        when (v) {
                             is BooleanValue -> CodeBlock.of("\$L", v.isValue)
                             is IntValue -> CodeBlock.of("\$L", v.value)
                             is StringValue -> CodeBlock.of("\$S", v.value)
@@ -216,7 +216,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
                 else -> defaultString(fieldSpec, index, fieldDefinitions)
 
             }
-        }.forEach { toStringBody.append(it)}
+        }.forEach { toStringBody.append(it) }
 
         toStringBody.append("""
             "}"
@@ -239,7 +239,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
     }
 
     private fun addToStringForListOfStrings(name: String, field: FieldSpec, javaType: TypeSpec.Builder) {
-        if(javaType.methodSpecs.any { it.name == name }) return
+        if (javaType.methodSpecs.any { it.name == name }) return
 
         val methodBuilder = MethodSpec.methodBuilder(name)
                 .addModifiers(Modifier.PRIVATE)
