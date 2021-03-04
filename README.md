@@ -21,8 +21,8 @@ or
 ```gradle
 // Using legacy plugin application
 buildscript {
-    dependencies{
-        classpath 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:latest.release
+    dependencies {
+        classpath 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:latest.release'
     }
 }
 
