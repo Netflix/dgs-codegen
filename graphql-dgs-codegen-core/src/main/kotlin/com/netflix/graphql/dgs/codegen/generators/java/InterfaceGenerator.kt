@@ -31,12 +31,12 @@ import graphql.language.ObjectTypeDefinition
 import graphql.language.TypeName
 import javax.lang.model.element.Modifier
 
-class InterfaceGenerator(config: CodeGenConfig) {
+class InterfaceGenerator(config: CodeGenConfig, private val document: Document) {
 
     private val packageName = config.packageNameTypes
-    private val typeUtils = TypeUtils(packageName, config)
+    private val typeUtils = TypeUtils(packageName, config, document)
 
-    fun generate(definition: InterfaceTypeDefinition, document: Document): CodeGenResult {
+    fun generate(definition: InterfaceTypeDefinition): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(definition.name)
                 .addModifiers(Modifier.PUBLIC)
 

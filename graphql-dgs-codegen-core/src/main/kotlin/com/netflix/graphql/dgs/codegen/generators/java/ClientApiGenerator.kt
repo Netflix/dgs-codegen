@@ -88,7 +88,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             """.trimIndent())
 
         it.inputValueDefinitions.forEach { inputValue ->
-            val findReturnType = TypeUtils(getDatatypesPackageName(), config).findReturnType(inputValue.type)
+            val findReturnType = TypeUtils(getDatatypesPackageName(), config, document).findReturnType(inputValue.type)
             builderClass
                     .addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name))
                             .addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))

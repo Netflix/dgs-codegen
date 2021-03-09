@@ -27,8 +27,8 @@ import graphql.language.*
 import graphql.language.TypeName
 import javax.lang.model.element.Modifier
 
-class DataTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageNameTypes, config) {
-    fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>, document: Document): CodeGenResult {
+class DataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+    fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip()) {
             return CodeGenResult()
         }
@@ -39,17 +39,35 @@ class DataTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.pa
             union.memberTypes.map { it as TypeName }.map { it.name }.contains(name)
         }.map { it.name }
 
-        val implements = definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
-        val fieldDefinitions = definition.fieldDefinitions
+        var implements = definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
+
+        var useInterfaceType = false
+        var overrideGetter = false
+        var interfaceCodeGenResult = CodeGenResult()
+
+        if (config.generateInterfaces) {
+            useInterfaceType = true
+            overrideGetter = true
+            val fieldDefinitions = definition.fieldDefinitions
                 .filterSkipped()
-                .map { Field(it.name, typeUtils.findReturnType(it.type)) }
-                .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type)) })
+                .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) }
+                .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) })
+            val interfaceName = "I${name}"
+            implements = listOf(interfaceName) + implements
+            interfaceCodeGenResult = generateInterface(interfaceName, fieldDefinitions)
+        }
+
+        val fieldDefinitions = definition.fieldDefinitions
+            .filterSkipped()
+            .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter) }
+            .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter) })
 
         return generate(name, unionTypes.plus(implements), fieldDefinitions, false)
+                .merge(interfaceCodeGenResult)
     }
 }
 
-class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.packageNameTypes, config) {
+class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
         val name = definition.name
 
@@ -80,10 +98,10 @@ class InputTypeGenerator(config: CodeGenConfig) : BaseDataTypeGenerator(config.p
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null)
+internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false)
 
-abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig) {
-    internal val typeUtils = TypeUtils(packageName, config)
+abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig, document: Document) {
+    internal val typeUtils = TypeUtils(packageName, config, document)
 
     internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
@@ -120,6 +138,19 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
         return CodeGenResult(dataTypes = listOf(javaFile))
+    }
+
+    internal fun generateInterface(name: String, fields: List<Field>): CodeGenResult {
+        val javaType = TypeSpec.interfaceBuilder(name)
+                .addModifiers(Modifier.PUBLIC)
+
+        fields.forEach {
+            addAbstractGetter(it.type, it, javaType)
+        }
+
+        val javaFile = JavaFile.builder(packageName, javaType.build()).build()
+
+        return CodeGenResult(interfaces = listOf(javaFile))
     }
 
     private fun addHashcode(javaType: TypeSpec.Builder) {
@@ -301,10 +332,19 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         javaType.addField(field)
 
         val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
-        javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
+        val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+        if (fieldDefinition.overrideGetter) {
+            getterMethodBuilder.addAnnotation(Override::class.java)
+        }
+        javaType.addMethod(getterMethodBuilder.build())
 
         val setterName = "set${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
         javaType.addMethod(MethodSpec.methodBuilder(setterName).addModifiers(Modifier.PUBLIC).addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name), ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
+    }
+
+    private fun addAbstractGetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
+        val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
+        javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT).returns(returnType).build())
     }
 
     private fun addBuilder(javaType: TypeSpec.Builder) {

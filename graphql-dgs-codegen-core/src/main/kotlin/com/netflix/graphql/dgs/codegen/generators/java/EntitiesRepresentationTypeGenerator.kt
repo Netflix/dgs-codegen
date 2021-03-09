@@ -26,8 +26,8 @@ import graphql.language.*
 
 
 @Suppress("UNCHECKED_CAST")
-class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig) : BaseDataTypeGenerator(config.packageNameClient, config) {
-    fun generate(definition: ObjectTypeDefinition, document: Document, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
+class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
+    fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
         if (config.skipEntityQueries) {
             return CodeGenResult()
         }
@@ -38,10 +38,10 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig) : BaseDataT
         }
         val directiveArg = definition.getDirectives("key").map { it.argumentsByName["fields"]?.value as StringValue }.map { it.value }
         val keyFields = parseKeyDirectiveValue(directiveArg)
-        return generateRepresentations(definition, document, generatedRepresentations, keyFields)
+        return generateRepresentations(definition, generatedRepresentations, keyFields)
     }
 
-    private fun generateRepresentations(definition: ObjectTypeDefinition, document: Document, generatedRepresentations: MutableMap<String, Any>,
+    private fun generateRepresentations(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>,
                                         keyFields: Map<String, Any>): CodeGenResult {
         val name = "${definition.name}Representation"
         if (generatedRepresentations.containsKey(name)) {
@@ -59,7 +59,7 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig) : BaseDataT
                     if (type != null && type is ObjectTypeDefinition) {
                         val representationType = typeUtils.findReturnType(it.type).toString().replace(type.name, "${type.name}Representation")
                         if (!generatedRepresentations.containsKey(name)) {
-                            result = generateRepresentations(type, document, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
+                            result = generateRepresentations(type, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
                         }
                         generatedRepresentations["${type.name}Representation"] = representationType
                         Field(it.name, ClassName.get("", representationType))
