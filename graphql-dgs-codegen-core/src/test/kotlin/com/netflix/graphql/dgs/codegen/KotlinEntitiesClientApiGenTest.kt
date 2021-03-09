@@ -45,7 +45,12 @@ class KotlinEntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         val projections = codeGenResult.clientProjections.filter { it.name.contains("Entities")}
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
@@ -78,7 +83,12 @@ class KotlinEntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.name.contains("Entities")}
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
@@ -119,7 +129,12 @@ class KotlinEntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.name.contains("Entities")}
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
@@ -162,7 +177,12 @@ class KotlinEntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.name.contains("Entities")}
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
@@ -198,7 +218,12 @@ class KotlinEntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN)).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+        )).generate() as KotlinCodeGenResult
 
         val projections = codeGenResult.clientProjections.filter {it.name.contains("Entities")}
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
@@ -229,7 +254,13 @@ class KotlinEntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, language = Language.KOTLIN, typeMapping = mapOf(Pair("Long", "java.lang.Long")))).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateClientApi = true,
+            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+        )).generate() as KotlinCodeGenResult
         val representations = codeGenResult.dataTypes.filter {it.name.contains("Representation")}
         assertThat(representations.size).isEqualTo(1)
         val projections = codeGenResult.clientProjections

@@ -27,14 +27,9 @@ import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.asTypeName
+import graphql.language.*
+import graphql.parser.Parser
 import com.squareup.kotlinpoet.TypeName as KtTypeName
-import graphql.language.ListType
-import graphql.language.Node
-import graphql.language.NodeTraverser
-import graphql.language.NodeVisitorStub
-import graphql.language.NonNullType
-import graphql.language.Type
-import graphql.language.TypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
@@ -94,6 +89,10 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             return ClassName.bestGuess(config.typeMapping.getValue(name))
         }
 
+        if (name in config.schemaTypeMapping) {
+            return ClassName.bestGuess(config.schemaTypeMapping.getValue(name))
+        }
+
         if(commonScalars.containsKey(name)) {
             return commonScalars[name]!!
         }
@@ -121,4 +120,23 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
         }
         return  name.copy(false) == STRING || commonScalars.containsValue(name.copy(false))
     }
+
+    private val CodeGenConfig.schemaTypeMapping: Map<String, String>
+        get() {
+            val inputSchemas = this.schemaFiles.flatMap { it.walkTopDown().toList().filter { file -> file.isFile } }
+                    .map { it.readText() }
+                    .plus(this.schemas)
+            val joinedSchema = inputSchemas.joinToString("\n")
+            val document = Parser().parseDocument(joinedSchema)
+
+            return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
+                it.getDirectives("javaType").isNullOrEmpty()
+            }.map {
+                val javaType = it.getDirectives("javaType").singleOrNull()
+                        ?: throw IllegalArgumentException("multiple @javaType directives are defined")
+                val value = javaType.argumentsByName["name"]?.value
+                        ?: throw IllegalArgumentException("@javaType directive must contains name argument")
+                it.name to (value as StringValue).value
+            }.toMap()
+        }
 }

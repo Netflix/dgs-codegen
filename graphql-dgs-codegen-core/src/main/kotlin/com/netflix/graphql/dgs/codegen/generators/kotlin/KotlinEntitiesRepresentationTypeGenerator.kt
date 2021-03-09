@@ -27,20 +27,20 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import graphql.language.*
 
-class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig): AbstractKotlinDataTypeGenerator(config.packageNameClient, config) {
+class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig) : AbstractKotlinDataTypeGenerator(config.packageNameClient, config) {
 
     fun generate(definition: ObjectTypeDefinition, document: Document, generatedRepresentations: MutableMap<String, Any>): KotlinCodeGenResult {
         val name = "${definition.name}Representation"
         if (generatedRepresentations.containsKey(name)) {
             return KotlinCodeGenResult()
         }
-        val directiveArg = (definition.getDirective("key").argumentsByName["fields"]?.value as StringValue).value
+        val directiveArg = definition.getDirectives("key").map { it.argumentsByName["fields"]?.value as StringValue }.map { it.value }
         val keyFields = parseKeyDirectiveValue(directiveArg)
         return generateRepresentations(definition, document, generatedRepresentations, keyFields)
     }
 
     fun generateRepresentations(definition: ObjectTypeDefinition, document: Document, generatedRepresentations: MutableMap<String, Any>,
-                                keyFields: Map<String, Any> ): KotlinCodeGenResult {
+                                keyFields: Map<String, Any>): KotlinCodeGenResult {
         val name = "${definition.name}Representation"
         if (generatedRepresentations.containsKey(name)) {
             return KotlinCodeGenResult()
@@ -49,7 +49,7 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
         var result = KotlinCodeGenResult()
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", STRING, false, CodeBlock.of("%S", definition.name))
-        val fieldDefinitions= definition.fieldDefinitions
+        val fieldDefinitions = definition.fieldDefinitions
                 .filter {
                     keyFields.containsKey(it.name)
                 }
@@ -58,7 +58,7 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
                     val fieldType = typeUtils.findReturnType(it.type)
                     if (type != null && type is ObjectTypeDefinition) {
                         val representationType = fieldType.toString().replace(type.name, "${type.name}Representation").removeSuffix("?")
-                        if (! generatedRepresentations.containsKey(name)) {
+                        if (!generatedRepresentations.containsKey(name)) {
                             result = generateRepresentations(type, document, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
                         }
                         generatedRepresentations["${type.name}Representation"] = representationType
@@ -92,10 +92,14 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
         }
     }
 
-    private fun parseKeyDirectiveValue(keyDirective: String): Map<String, Any> {
-        data class Node (val key: String, val map: MutableMap<String, Any>, val parent: Node?)
-        val sanitizedKeys =  keyDirective.map { if (it == '{' || it == '}') " $it "  else "$it" }
-        val keys = sanitizedKeys.joinToString("", "", "").split(" ")
+    private fun parseKeyDirectiveValue(keyDirective: List<String>): Map<String, Any> {
+        data class Node(val key: String, val map: MutableMap<String, Any>, val parent: Node?)
+
+        val keys = keyDirective.map { ds ->
+            ds.map { if (it == '{' || it == '}') " $it " else "$it" }
+                    .joinToString("", "", "")
+                    .split(" ")
+        }.flatten()
 
         // handle simple keys and nested keys by constructing the path to each  key
         // e.g. type Movie @key(fields: "movieId") or type MovieCast @key(fields: movie { movieId } actors { name } }

@@ -73,6 +73,9 @@ open class GenerateJavaTask : DefaultTask() {
     var generateClient = false
 
     @Input
+    var generateDataTypes = true
+
+    @Input
     var generateInterfaces = false
 
     @OutputDirectory
@@ -96,6 +99,9 @@ open class GenerateJavaTask : DefaultTask() {
 
     @Input
     var shortProjectionNames = false
+
+    @Input
+    var maxProjectionDepth = 10
 
     @TaskAction
     fun generate() {
@@ -122,7 +128,9 @@ open class GenerateJavaTask : DefaultTask() {
                 includeQueries = includeQueries.toSet(),
                 includeMutations = includeMutations.toSet(),
                 skipEntityQueries = skipEntityQueries,
-                shortProjectionNames = shortProjectionNames
+                shortProjectionNames = shortProjectionNames,
+                generateDataTypes = generateDataTypes,
+                maxProjectionDepth = maxProjectionDepth,
         )
 
         LOGGER.info("Codegen config: {}", config)
