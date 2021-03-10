@@ -128,3 +128,16 @@ gradle.taskGraph.whenReady { graph ->
 dependencies {
     testRuntimeOnly files(createClasspathManifest)
 }
+
+project.afterEvaluate {
+    //Disable marker tasks
+    project.tasks.findAll {
+        (it.name.contains("Marker") && it.name.contains('Maven')) ||
+                it.name.contains("PluginMarkerMavenPublicationToNetflixOSSRepository") ||
+                it.name.contains("PluginMarkerMavenPublicationToSonatypeRepository") ||
+                it.name.contains("publishPluginMavenPublicationToNetflixOSSRepository") ||
+                it.name.contains("publishPluginMavenPublicationToSonatypeRepository")
+    }.each {
+        it.enabled = false
+    }
+}
