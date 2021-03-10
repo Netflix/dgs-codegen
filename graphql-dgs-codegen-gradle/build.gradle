@@ -141,3 +141,16 @@ project.afterEvaluate {
         it.enabled = false
     }
 }
+
+TaskProvider validatePluginsTask = project.tasks.named('validatePlugins')
+TaskProvider publishPluginsTask = project.tasks.named('publishPlugins')
+project.plugins.withId('nebula.release') {
+    project.tasks.withType(PublishToMavenRepository).configureEach {
+        def releasetask = project.rootProject.tasks.findByName('release')
+        if (releasetask) {
+              it.mustRunAfter(releasetask)
+              it.dependsOn(validatePluginsTask)
+              it.dependsOn(publishPluginsTask)
+        }
+    }
+}
