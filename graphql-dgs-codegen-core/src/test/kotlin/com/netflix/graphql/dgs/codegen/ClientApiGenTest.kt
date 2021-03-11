@@ -22,8 +22,8 @@ import com.google.common.truth.Truth
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import java.util.stream.Collectors.toList
 
 class ClientApiGenTest {
 
@@ -565,9 +565,9 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
         assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs[0].name).isEqualTo("title")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("SearchMovieProjection")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs[1].name).isEqualTo("duration")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs[2].name).isEqualTo("duration")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SearchSeriesProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[1].name).isEqualTo("episodes")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[2].name).isEqualTo("episodes")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
@@ -832,8 +832,9 @@ class ClientApiGenTest {
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
         assertThat(projections[0].typeSpec.name).isEqualTo("PeopleProjectionRoot")
-        assertThat(projections[0].typeSpec.methodSpecs.size).isEqualTo(2)
-        assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("name", "email")
+        assertThat(projections[0].typeSpec.methodSpecs.size).isEqualTo(5)
+        assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly(
+                "name", "name", "email", "email", "determineFieldString")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
     }
@@ -867,7 +868,7 @@ class ClientApiGenTest {
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(2)
         assertThat(projections[1].typeSpec.name).isEqualTo("SearchMovieProjection")
-        assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
+        assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(6)
         assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
@@ -946,7 +947,16 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly("__", "_root", "_parent", "_import")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly(
+                "__",
+                "__",
+                "_root",
+                "_root",
+                "_parent",
+                "_parent",
+                "_import",
+                "_import",
+                "determineFieldString")
 
         assertCompiles(codeGenResult.clientProjections)
     }
@@ -1152,5 +1162,58 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MoviesActorsProjection")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+    }
+
+    @Test
+    fun generateQueryTypeToTakeAliasAndArgument() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+                arg(field: String): FieldType
+            }
+            
+            type FieldType {
+                field
+                value
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+        )).generate() as CodeGenResult
+
+        assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("PeopleGraphQLQuery")
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+
+        val methodSpecs = codeGenResult.clientProjections[0].typeSpec.methodSpecs
+
+        assertThat(methodSpecs.stream().filter{it.name == "firstname"}.count()).isEqualTo(2)
+        assertThat(methodSpecs.stream().filter{it.name == "firstname"}.collect(toList())[0].parameters.size).isEqualTo(0)
+        assertThat(methodSpecs.stream().filter{it.name == "firstname"}.collect(toList())[1].parameters.size).isEqualTo(1)
+        assertThat(methodSpecs.stream().filter{it.name == "firstname"}.collect(toList())[1].parameters[0].name).isEqualTo("alias")
+
+        assertThat(methodSpecs.stream().filter{it.name == "lastname"}.count()).isEqualTo(2)
+
+        assertThat(methodSpecs.stream().filter{it.name == "arg"}.count()).isEqualTo(2)
+        assertThat(methodSpecs.stream().filter{it.name == "arg"}.collect(toList())[0].parameters.size).isEqualTo(1)
+        assertThat(methodSpecs.stream().filter{it.name == "arg"}.collect(toList())[0].parameters[0].name).isEqualTo("args")
+        assertThat(methodSpecs.stream().filter{it.name == "arg"}.collect(toList())[1].parameters.size).isEqualTo(2)
+        assertThat(methodSpecs.stream().filter{it.name == "arg"}.collect(toList())[1].parameters[0].name).isEqualTo("alias")
+        assertThat(methodSpecs.stream().filter{it.name == "arg"}.collect(toList())[1].parameters[1].name).isEqualTo("args")
+
+        assertThat(methodSpecs.stream().filter{it.name == "determineFieldString"}.count()).isEqualTo(1)
+        assertThat(methodSpecs.size).isEqualTo(7)
     }
 }

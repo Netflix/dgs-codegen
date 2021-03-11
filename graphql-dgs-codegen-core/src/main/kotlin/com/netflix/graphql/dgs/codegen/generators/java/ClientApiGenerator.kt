@@ -26,6 +26,7 @@ import com.netflix.graphql.dgs.codegen.generators.shared.ClassnameShortener
 import com.squareup.javapoet.*
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.*
+import graphql.language.TypeName
 import javax.lang.model.element.Modifier
 
 class ClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
@@ -139,15 +140,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .mapNotNull { if (it.type.findTypeDefinition(document) != null ) Pair(it, it.type.findTypeDefinition(document)) else null }
                 .map {
                     val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
-                    javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
-                            .returns(ClassName.get(getPackageName(), projectionName))
-                            .addCode("""
-                        $projectionName projection = new $projectionName(this, this);    
-                        getFields().put("${it.first.name}", projection);
-                        return projection;
-                    """.trimIndent())
-                            .addModifiers(Modifier.PUBLIC)
-                            .build())
+
+                    createFieldMethods(it.first, type.name, javaType, isRoot = true, projectionName)
+
                     val processedEdges = mutableSetOf<Pair<String, String>>()
                     processedEdges.add(Pair(it.second!!.name, type.name))
                     createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}${it.first.name.capitalize()}", processedEdges)
@@ -156,24 +151,50 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         fieldDefinitions.filterSkipped().forEach {
 
-            val objectTypeDefinition = it.type.findTypeDefinition(document)
-            if (objectTypeDefinition == null) {
-                javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
-                        .returns(ClassName.get(getPackageName(), javaType.build().name))
-                        .addCode("""
-                        getFields().put("${it.name}", null);
-                        return this;
-                    """.trimIndent())
-                        .addModifiers(Modifier.PUBLIC)
-                        .build())
+            if (it.type.findTypeDefinition(document) == null) {
+                createFieldMethods(it, type.name, javaType, isRoot = true)
             }
         }
+
+        createDetermineFieldStringMethod(javaType)
 
         val concreteTypesResult = createConcreteTypes(type, javaType.build(), javaType, prefix, mutableSetOf<Pair<String, String>>())
         val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), prefix, mutableSetOf<Pair<String, String>>())
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
+    }
+
+    private fun createDetermineFieldStringMethod(javaType: TypeSpec.Builder) {
+        javaType.addMethod(MethodSpec.methodBuilder("determineFieldString")
+                .returns(String::class.java)
+                .addParameter(String::class.java, "field")
+                .addParameter(String::class.java, "alias")
+                .addParameter(Map::class.java, "args")
+                .addCode(
+                    """
+                        java.lang.StringBuilder fieldStringBuilder = new java.lang.StringBuilder();
+                        if (alias != null && alias.length() > 0) {
+                          fieldStringBuilder.append(alias).append(": ");
+                        }
+                        fieldStringBuilder.append(field);
+                        
+                        if (args.size() > 0 ) {
+                          java.util.StringJoiner arguments = new java.util.StringJoiner(", ", "(", ")");
+                          args.forEach((k, v) -> {
+                            java.lang.StringBuilder argumentBuilder = new java.lang.StringBuilder().append(k).append(": ");
+                            if (v instanceof String) { // Strings need quotation marks
+                              argumentBuilder.append("\"").append(v).append("\"");
+                            } else {
+                              argumentBuilder.append(v);
+                            }
+                            arguments.add(argumentBuilder);
+                          });
+                          fieldStringBuilder.append(arguments);
+                        }
+                        return fieldStringBuilder.toString();
+                    """.trimIndent())
+                .build())
     }
 
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
@@ -299,7 +320,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
             val fieldDefinitions = type.filterInterfaceFields(document) + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
 
-             val codeGenResult = if(projectionDepth[root.name]?:0 < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
+            val codeGenResult = if(projectionDepth[root.name]?:0 < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
                 val depth = projectionDepth.getOrPut(root.name) { 0 }
                 projectionDepth[root.name] = depth + 1
 
@@ -308,19 +329,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .filter { !processedEdges.contains(Pair(it.second!!.name, type.name)) }
                     .map {
                         val projectionName = "${truncatePrefix(prefix)}${it.first.name.capitalize()}Projection"
-                        javaType.addMethod(
-                            MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
-                                .returns(ClassName.get(getPackageName(), projectionName))
-                                .addCode(
-                                    """
-                            $projectionName projection = new $projectionName(this, getRoot());    
-                            getFields().put("${it.first.name}", projection);
-                            return projection;
-                        """.trimIndent()
-                                )
-                                .addModifiers(Modifier.PUBLIC)
-                                .build()
-                        )
+                        createFieldMethods(it.first, type.name, javaType, projectionName = projectionName)
                         val updatedProcessedEdges = processedEdges.toMutableSet()
                         updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
                         createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}${it.first.name.capitalize()}", updatedProcessedEdges)
@@ -328,27 +337,114 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
             } else CodeGenResult()
 
-
             fieldDefinitions.filterSkipped()
                 .forEach {
-                    val objectTypeDefinition = it.type.findTypeDefinition(document)
-                    if (objectTypeDefinition == null) {
-                        javaType.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
-                            .returns(ClassName.get(getPackageName(), javaType.build().name))
-                            .addCode("""
-                        getFields().put("${it.name}", null);
-                        return this;
-                    """.trimIndent())
-                            .addModifiers(Modifier.PUBLIC)
-                            .build())
+                    if (it.type.findTypeDefinition(document) == null) {
+                        createFieldMethods(it, type.name, javaType)
                     }
                 }
 
+        createDetermineFieldStringMethod(javaType)
 
         val concreteTypesResult = createConcreteTypes(type, root, javaType, prefix, processedEdges)
         val unionTypesResult = createUnionTypes(type, javaType, root, prefix, processedEdges)
 
         return Pair(javaType, codeGenResult.merge(concreteTypesResult).merge(unionTypesResult))
+    }
+
+
+    private fun createFieldMethods(
+            fieldDefinition: FieldDefinition,
+            fieldParentTypeName: String,
+            javaType: TypeSpec.Builder,
+            isRoot: Boolean = false,
+            projectionName: String = ""
+    ) {
+
+        if (fieldDefinition.inputValueDefinitions.isEmpty()) {
+            javaType.addMethod(createFieldMethodBuilder(fieldDefinition, projectionName, javaType)
+                    .addCode(createFieldCode(fieldDefinition, isRoot = isRoot, projectionName = projectionName))
+                    .build()
+            )
+            javaType.addMethod(createFieldMethodBuilder(fieldDefinition, projectionName, javaType)
+                    .addCode(createFieldCode(fieldDefinition, isRoot = isRoot, projectionName = projectionName, withAlias = true))
+                    .addParameter(String::class.java, "alias")
+                    .build()
+            )
+        } else {
+            val clazzName = "$fieldParentTypeName${ReservedKeywordSanitizer.sanitize(fieldDefinition.name.capitalize())}Args"
+            println("Generating $clazzName")
+            val builder = TypeSpec.classBuilder(clazzName)
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+            builder.addField(FieldSpec.builder(Map::class.java, "map", Modifier.PRIVATE)
+                    .initializer("new java.util.HashMap()").build())
+                    .build()
+            fieldDefinition.inputValueDefinitions.stream().forEach {
+                builder.addMethod(MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
+                        .addModifiers(Modifier.PUBLIC)
+                        .addCode("""
+                            map.put("${it.name}", value);
+                            return this;
+                        """.trimIndent())
+                        .returns(ClassName.get("", clazzName))
+                        .addParameter(Object::class.java, "value") // TODO: determine actual type
+                        .build())
+            }
+
+            builder.addMethod(MethodSpec.methodBuilder("toMap")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addCode("return map;")
+                    .returns(Map::class.java)
+                    .build())
+
+            javaType.addType(builder.build())
+                    .build()
+
+            javaType.addMethod(createFieldMethodBuilder(fieldDefinition, projectionName, javaType)
+                    .addCode(createFieldCode(fieldDefinition, isRoot = isRoot, projectionName = projectionName, withArgs = true))
+                    .addParameter(ClassName.get("", clazzName), "args")
+                    .build()
+            )
+            javaType.addMethod(createFieldMethodBuilder(fieldDefinition, projectionName, javaType)
+                    .addCode(createFieldCode(fieldDefinition, isRoot = isRoot, projectionName = projectionName, withAlias = true, withArgs = true))
+                    .addParameter(String::class.java, "alias")
+                    .addParameter(ClassName.get("", clazzName), "args")
+                    .build()
+            )
+        }
+    }
+
+    private fun createFieldMethodBuilder(fieldDefinition: FieldDefinition, projectionName: String, javaType: TypeSpec.Builder) =
+            MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                    .returns(ClassName.get(
+                            getPackageName(),
+                            if (projectionName.isNotBlank()) projectionName else javaType.build().name)
+                    )
+                    .addModifiers(Modifier.PUBLIC)
+
+    private fun createFieldCode(
+            it: FieldDefinition,
+            isRoot: Boolean = false,
+            projectionName: String = "",
+            withAlias: Boolean = false,
+            withArgs: Boolean = false,
+    ): String {
+        val alias = if (withAlias) "alias" else "null"
+        val args = if (withArgs) "args.toMap()" else "java.util.Collections.emptyMap()"
+        val root = if (!isRoot) "getRoot()" else "this"
+        val field = """determineFieldString("${it.name}", $alias, ${args})"""
+        return if (projectionName.isNotEmpty()) {
+            """
+                $projectionName projection = new $projectionName(this, ${root});
+                getFields().put($field, projection);
+                return projection;
+            """.trimIndent()
+        } else {
+            """
+                getFields().put($field, null);
+                return this;
+            """.trimIndent()
+        }
     }
 
     private fun truncatePrefix(prefix: String): String {
