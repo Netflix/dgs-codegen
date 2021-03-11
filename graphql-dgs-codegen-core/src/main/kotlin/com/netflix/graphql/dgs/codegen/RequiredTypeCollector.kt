@@ -27,31 +27,29 @@ class RequiredTypeCollector(
     queries: Set<String> = emptySet(),
     mutations: Set<String> = emptySet()
 ) {
-    val requiredTypes: Set<String>
+    val requiredTypes: Set<String> = LinkedHashSet()
 
     init {
-        val queryFieldDefinitions: List<FieldDefinition> = document.definitions.filterIsInstance<ObjectTypeDefinition>()
-            .find { it.name == "Query" }?.fieldDefinitions ?: emptyList()
+        val fieldDefinitions = mutableListOf<FieldDefinition>()
+        for (definition in document.definitions.asSequence().filterIsInstance<ObjectTypeDefinition>()) {
+            when (definition.name) {
+                "Query" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in queries }
+                "Mutation" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in mutations }
+            }
+        }
 
-        val mutationDefinitions: List<FieldDefinition> = document.definitions.filterIsInstance<ObjectTypeDefinition>()
-            .find { it.name == "Mutation" }?.fieldDefinitions ?: emptyList()
-        val fieldDefinitions = queryFieldDefinitions.plus(mutationDefinitions).filter { queries.contains(it.name) || mutations.contains(it.name) }
+        val required = requiredTypes as MutableSet<String>
 
-        val nodeTraverserResult = NodeTraverser().postOrder(object : NodeVisitorStub() {
+        NodeTraverser().postOrder(object : NodeVisitorStub() {
             override fun visitInputObjectTypeDefinition(
                 node: InputObjectTypeDefinition,
                 context: TraverserContext<Node<Node<*>>>
             ): TraversalControl {
-                println(node)
+                required += node.name
 
-                val currentAccumulate = context.getNewAccumulate<Set<String>>()
-                if (currentAccumulate == null) {
-                    context.setAccumulate(setOf(node.name))
-                } else {
-                    context.setAccumulate(currentAccumulate.plus(node.name))
+                node.inputValueDefinitions.forEach {
+                    it.type.findTypeDefinition(document)?.accept(context, this)
                 }
-
-                node.inputValueDefinitions.map { it.type.findTypeDefinition(document)?.accept(context, this) }
 
                 return TraversalControl.CONTINUE
             }
@@ -60,16 +58,7 @@ class RequiredTypeCollector(
                 node: EnumTypeDefinition,
                 context: TraverserContext<Node<Node<*>>>
             ): TraversalControl {
-                println(node)
-
-
-                val currentAccumulate = context.getNewAccumulate<Set<String>>()
-                if (currentAccumulate == null) {
-                    context.setAccumulate(setOf(node.name))
-                } else {
-                    context.setAccumulate(currentAccumulate.plus(node.name))
-                }
-
+                required += node.name
                 return TraversalControl.CONTINUE
             }
 
@@ -77,19 +66,9 @@ class RequiredTypeCollector(
                 node: InputValueDefinition,
                 context: TraverserContext<Node<Node<*>>>
             ): TraversalControl {
-                println(node)
-
                 node.type.findTypeDefinition(document)?.accept(context, this)
-
-
-                return super.visitInputValueDefinition(node, context)
+                return TraversalControl.CONTINUE
             }
         }, fieldDefinitions)
-
-        requiredTypes = if (nodeTraverserResult != null && nodeTraverserResult is Set<*>) {
-            nodeTraverserResult as Set<String>
-        } else {
-            emptySet()
-        }
     }
 }

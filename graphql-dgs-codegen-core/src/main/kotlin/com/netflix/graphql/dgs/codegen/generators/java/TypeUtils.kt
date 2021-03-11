@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.WildcardTypeName
 import graphql.language.*
 import graphql.parser.Parser
 import com.squareup.javapoet.TypeName as JavaTypeName
@@ -31,7 +32,7 @@ import graphql.util.TraverserContext
 import java.time.*
 import java.util.*
 
-class TypeUtils(private val packageName: String, private val config: CodeGenConfig) {
+class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
     private val commonScalars =  mutableMapOf<String, com.squareup.javapoet.TypeName>(
         "LocalTime" to ClassName.get(LocalTime::class.java),
         "LocalDate" to ClassName.get(LocalDate::class.java),
@@ -46,10 +47,10 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
         "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"))
 
-    fun findReturnType(fieldType: Type<*>): JavaTypeName {
+    fun findReturnType(fieldType: Type<*>, useInterfaceType: Boolean = false, useWildcardType: Boolean = false): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
-                val typeName = node.toJavaTypeName()
+                val typeName = node.toJavaTypeName(useInterfaceType)
                 val boxed = boxType(typeName)
                 context.setAccumulate(boxed)
                 return TraversalControl.CONTINUE
@@ -57,7 +58,22 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             override fun visitListType(node: ListType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = context.getCurrentAccumulate<JavaTypeName>()
                 val boxed = boxType(typeName)
-                val parameterizedTypeName = ParameterizedTypeName.get(ClassName.get(List::class.java), boxed)
+
+                var canUseWildcardType = false
+                if (useWildcardType) {
+                    if (typeName is ClassName) {
+                        if (document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> "I${e.name}" == typeName.simpleName() }) {
+                            canUseWildcardType = true
+                        }
+                    }
+                }
+
+                val parameterizedTypeName = if (canUseWildcardType) {
+                    val wildcardTypeName: WildcardTypeName = WildcardTypeName.subtypeOf(boxed)
+                    ParameterizedTypeName.get(ClassName.get(List::class.java), wildcardTypeName)
+                } else {
+                    ParameterizedTypeName.get(ClassName.get(List::class.java), boxed)
+                }
                 context.setAccumulate(parameterizedTypeName)
                 return TraversalControl.CONTINUE
             }
@@ -94,7 +110,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         }
     }
 
-    private fun TypeName.toJavaTypeName(): JavaTypeName {
+    private fun TypeName.toJavaTypeName(useInterfaceType: Boolean): JavaTypeName {
         if (name in config.typeMapping) {
             val mappedType = config.typeMapping.getValue(name)
             return ClassName.bestGuess(mappedType)
@@ -120,7 +136,13 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "BooleanValue" -> JavaTypeName.BOOLEAN
             "ID" -> ClassName.get(String::class.java)
             "IDValue" -> ClassName.get(String::class.java)
-            else -> ClassName.get(packageName, name)
+            else -> {
+                var simpleName = name
+                if (useInterfaceType && !document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name }) {
+                    simpleName = "I${name}"
+                }
+                ClassName.get(packageName, simpleName)
+            }
         }
     }
 

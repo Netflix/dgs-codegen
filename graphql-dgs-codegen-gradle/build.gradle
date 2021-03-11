@@ -128,3 +128,29 @@ gradle.taskGraph.whenReady { graph ->
 dependencies {
     testRuntimeOnly files(createClasspathManifest)
 }
+
+project.afterEvaluate {
+    //Disable marker tasks
+    project.tasks.findAll {
+        (it.name.contains("Marker") && it.name.contains('Maven')) ||
+                it.name.contains("PluginMarkerMavenPublicationToNetflixOSSRepository") ||
+                it.name.contains("PluginMarkerMavenPublicationToSonatypeRepository") ||
+                it.name.contains("publishPluginMavenPublicationToNetflixOSSRepository") ||
+                it.name.contains("publishPluginMavenPublicationToSonatypeRepository")
+    }.each {
+        it.enabled = false
+    }
+}
+
+TaskProvider validatePluginsTask = project.tasks.named('validatePlugins')
+TaskProvider publishPluginsTask = project.tasks.named('publishPlugins')
+project.plugins.withId('nebula.release') {
+    project.tasks.withType(PublishToMavenRepository).configureEach {
+        def releasetask = project.rootProject.tasks.findByName('release')
+        if (releasetask) {
+              it.mustRunAfter(releasetask)
+              it.dependsOn(validatePluginsTask)
+              it.dependsOn(publishPluginsTask)
+        }
+    }
+}
