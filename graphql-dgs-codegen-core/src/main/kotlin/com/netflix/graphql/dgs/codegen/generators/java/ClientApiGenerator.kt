@@ -101,11 +101,20 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .addField(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
 
             constructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
-            constructorBuilder.addCode("""
-                if (${inputValue.name} != null) {
+
+            if (findReturnType.isPrimitive) {
+                constructorBuilder.addCode("""
                     getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
-                }
-            """.trimIndent())
+                """.trimIndent())
+            } else {
+                constructorBuilder.addCode(
+                    """
+                    if (${inputValue.name} != null) {
+                        getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
+                    }
+                """.trimIndent()
+                )
+            }
         }
 
         javaType.addMethod(constructorBuilder.build())
