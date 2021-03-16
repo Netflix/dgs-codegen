@@ -1,54 +1,26 @@
+[![CI](https://github.com/Netflix/dgs-codegen/actions/workflows/ci.yml/badge.svg)](https://github.com/Netflix/dgs-codegen/actions/workflows/ci.yml)
+[![GitHub release](https://img.shields.io/github/v/release/Netflix/dgs-codegen.svg)](https://GitHub.com/Netflix/dgs-framework/releases)
 [![Apache 2.0](https://img.shields.io/github/license/nebula-plugins/gradle-netflixoss-project-plugin.svg)](http://www.apache.org/licenses/LICENSE-2.0)
 
 # DGS Code Generation Plugin
 
-The DGS Code Generation plugin generates code for basic types and example data fetchers based on the your Domain Graph Service's graphql schema file during the project's build process.
-The plugin requires the path to schema files and the package name to use to generate the file. If no schema path is specified, 
-it will look under src/resources/schema for any files with .graphqls extension.  
+The DGS Code Generation plugin generates code during your project’s build process based on your GraphQL schema file. The
+plugin generates the following:
 
-# Quick Start
+* Data types for types, input types, enums and interfaces.
+* A DgsConstants class containing the names of types and fields
+* A type safe query API that represents your queries
+* Example data fetchers
 
-Update your project's build.gradle to apply the plugin:
+# Getting Started
 
-```gradle
-// Using plugins DSL
-plugins {
-	id "com.netflix.dgs.codegen" version "4.0.10"
-}
-```
-or 
+To get started with the DGS Framework the [getting started guide](https://netflix.github.io/dgs/getting-started/) is
+great starting place. Documentation for DGS Code Generation can be
+found [here](https://netflix.github.io/dgs/generating-code-from-schema/).
 
-```gradle
-// Using legacy plugin application
-buildscript {
-    dependencies {
-        classpath 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:latest.release'
-    }
-}
+# Contributing, asking questions and reporting issues.
 
-apply plugin: 'com.netflix.dgs.codegen'
-```
-
-GenerateJava is a gradle task that is run as part of your project's build to generate sources that your project depends on. 
-Please ensure that your project's sources refer to the generated code using the specified package name.
- 
-To trigger code generation, add the following parameters for the generateJava task in your build.gradle:
-
- ````gradle
-generateJava {
-  schemaPaths = ["${projectDir}/src/main/resources/schema"] // List of directories containing schema files
-  packageName = 'com.example.packagename' // The package name to use to generate sources
-}
- ````
-
-# Generated Output
-The generated types are available as part of the packageName.types package under build/generated. These are automatically added to your project's sources.
-The generated example data fetchers are available under build/generated-examples. Note that these are NOT added to your project's sources and serve mainly as a 
-basic boilerplate code requiring further customization.
-
-
-
-
+Please read our [contributor guide](CONTRIBUTING.md)!
 
 
 
