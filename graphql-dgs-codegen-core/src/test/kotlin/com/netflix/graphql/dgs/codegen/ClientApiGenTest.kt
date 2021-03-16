@@ -121,19 +121,21 @@ class ClientApiGenTest {
 
         val schema = """
             type Mutation {
-                updateMovie(movie: MovieDescription): Movie
+                updateMovie(movie: MovieDescription, reviews: [String], uuid: UUID): Movie
             }
             
             input MovieDescription {
-                movieId: ID
+                movieId: Int
                 title: String
                 actors: [String]
             }
             
             type Movie {
-                movieId: ID
+                movieId: Int
                 lastname: String
             }
+            
+            scalar UUID @javaType(name : "java.util.UUID")
         """.trimIndent()
 
 
@@ -143,10 +145,45 @@ class ClientApiGenTest {
             generateClientApi = true,
         )).generate() as CodeGenResult
 
+        val initMethod = codeGenResult.queryTypes[0].typeSpec.methodSpecs
+            .find {it.name == "<init>"}?.code.toString();
+
+        assert(initMethod.contains("super(\"mutation\");\n" +
+                "if (movie != null) {\n" +
+                "    getInput().put(\"movie\", movie);\n" +
+                "}if (reviews != null) {\n" +
+                "    getInput().put(\"reviews\", reviews);\n" +
+                "}if (uuid != null) {\n" +
+                "    getInput().put(\"uuid\", uuid);\n" +
+                "}"))
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
+    }
+
+    @Test
+    fun generateMutationDoesNotAddNullChecksForPrimitiveTypesDuringInit() {
+
+        val schema = """
+            type Mutation {
+                updateMovie(movieId: Int!): Movie
+            }
+            
+            type Movie {
+                movieId: Int
+                lastname: String
+            }
+        """.trimIndent()
+
+
+        val codeGenResult = CodeGen(CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            generateClientApi = true
+        )).generate() as CodeGenResult
+
 
         assert(codeGenResult.queryTypes[0].typeSpec.methodSpecs
             .find {it.name == "<init>"}?.code.toString()
-            .contains("super(\"mutation\");\nif (movie != null) {\n    getInput().put(\"movie\", movie);\n}"))
+            .contains("super(\"mutation\");\ngetInput().put(\"movieId\", movieId);"))
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
