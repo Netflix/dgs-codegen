@@ -19,6 +19,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.4.31' apply false
     id 'nebula.netflixoss' version '9.1.0'
+    id 'org.jlleitschuh.gradle.ktlint' version '10.0.0'
 }
 
 allprojects {
@@ -33,4 +34,15 @@ allprojects {
       }
     }
 }
+
+subprojects {
+    apply {
+        plugin("org.jlleitschuh.gradle.ktlint")
+    }
+
+    ktlint {
+        disabledRules = ["no-wildcard-imports"]
+    }
+}
+
 description = 'Netflix GraphQL DGS Code Generation'

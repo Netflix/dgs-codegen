@@ -39,10 +39,10 @@ import graphql.introspection.Introspection
  */
 fun jsonTypeInfoAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonTypeInfo::class)
-            .addMember("use = %T.%L", JsonTypeInfo.Id::class, JsonTypeInfo.Id.NAME.name)
-            .addMember("include = %T.%L", JsonTypeInfo.As::class, JsonTypeInfo.As.PROPERTY.name)
-            .addMember("property = %S",  Introspection.TypeNameMetaFieldDef.name)
-            .build()
+        .addMember("use = %T.%L", JsonTypeInfo.Id::class, JsonTypeInfo.Id.NAME.name)
+        .addMember("include = %T.%L", JsonTypeInfo.As::class, JsonTypeInfo.As.PROPERTY.name)
+        .addMember("property = %S", Introspection.TypeNameMetaFieldDef.name)
+        .build()
 }
 
 /**
@@ -60,8 +60,8 @@ fun jsonTypeInfoAnnotation(): AnnotationSpec {
  */
 fun disableJsonTypeInfoAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonTypeInfo::class)
-            .addMember("use = %T.%L", JsonTypeInfo.Id::class, JsonTypeInfo.Id.NONE.name)
-            .build()
+        .addMember("use = %T.%L", JsonTypeInfo.Id::class, JsonTypeInfo.Id.NONE.name)
+        .build()
 }
 
 /**
@@ -79,18 +79,19 @@ fun disableJsonTypeInfoAnnotation(): AnnotationSpec {
 fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
     val subTypeAnnotations = subTypes.map { type ->
         AnnotationSpec.builder(JsonSubTypes.Type::class)
-                .addMember("value = %T::class", type)
-                .addMember("name = %S", type.simpleName)
-                .build()
+            .addMember("value = %T::class", type)
+            .addMember("name = %S", type.simpleName)
+            .build()
     }
 
     val formatString = subTypes.joinToString(
-            separator = ",\n",
-            prefix = "value = [\n⇥", postfix = "⇤\n]") { "%L" }
+        separator = ",\n",
+        prefix = "value = [\n⇥", postfix = "⇤\n]"
+    ) { "%L" }
 
     return AnnotationSpec.builder(JsonSubTypes::class)
-            .addMember(formatString, *subTypeAnnotations.toTypedArray())
-            .build()
+        .addMember(formatString, *subTypeAnnotations.toTypedArray())
+        .build()
 }
 
 /**
@@ -104,6 +105,6 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
  */
 fun jsonPropertyAnnotation(name: String): AnnotationSpec {
     return AnnotationSpec.builder(JsonProperty::class.java)
-            .addMember("%S", name)
-            .build()
+        .addMember("%S", name)
+        .build()
 }

@@ -48,8 +48,8 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
         .default("java")
     private val generateClient by option("--generate-client", "-c", help = "Genereate client api").flag(default = false)
     private val generateDataTypes by option(
-            "--generate-data-types",
-            help = "Generate data types. Not needed when only generating an API"
+        "--generate-data-types",
+        help = "Generate data types. Not needed when only generating an API"
     ).flag("--skip-generate-data-types", default = true)
     private val generateInterfaces by option("--generate-interfaces", "-i", help = "Generate interfaces for data types").flag(default = false)
     private val includeQueries by option("--include-query").multiple().unique()
@@ -57,7 +57,6 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val skipEntityQueries by option("--skip-entities").flag()
     private val typeMapping: Map<String, String> by option("--type-mapping").associate()
     private val shortProjectionNames by option("--short-projection-names").flag()
-
 
     override fun run() {
         val inputSchemas = if (schemas.isEmpty()) {
@@ -73,15 +72,15 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
         }
 
         val generate = CodeGen(
-                if (packageName != null) {
-                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), packageName = packageName!!, subPackageNameClient = subPackageNameClient, subPackageNameDatafetchers = subPackageNameDatafetchers, subPackageNameTypes = subPackageNameTypes, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames, generateDataTypes = generateDataTypes, generateInterfaces = generateInterfaces)
-                } else {
-                    CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), subPackageNameClient = subPackageNameClient, subPackageNameDatafetchers = subPackageNameDatafetchers, subPackageNameTypes = subPackageNameTypes, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames, generateDataTypes = generateDataTypes, generateInterfaces = generateInterfaces)
-                }
+            if (packageName != null) {
+                CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), packageName = packageName!!, subPackageNameClient = subPackageNameClient, subPackageNameDatafetchers = subPackageNameDatafetchers, subPackageNameTypes = subPackageNameTypes, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames, generateDataTypes = generateDataTypes, generateInterfaces = generateInterfaces)
+            } else {
+                CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), subPackageNameClient = subPackageNameClient, subPackageNameDatafetchers = subPackageNameDatafetchers, subPackageNameTypes = subPackageNameTypes, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames, generateDataTypes = generateDataTypes, generateInterfaces = generateInterfaces)
+            }
         ).generate()
 
-        if(writeFiles) {
-            when(generate) {
+        if (writeFiles) {
+            when (generate) {
                 is CodeGenResult -> echo("${(generate.dataTypes + generate.interfaces + generate.enumTypes + generate.queryTypes + generate.clientProjections + generate.constants).size} files written to ${output.absoluteFile}")
                 is KotlinCodeGenResult -> echo("${(generate.dataTypes + generate.interfaces + generate.enumTypes + generate.queryTypes + generate.clientProjections + generate.constants).size} files written to ${output.absoluteFile}")
             }

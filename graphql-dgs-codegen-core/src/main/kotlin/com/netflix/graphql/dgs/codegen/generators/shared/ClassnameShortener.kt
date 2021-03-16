@@ -30,7 +30,7 @@ class ClassnameShortener {
 
             val split = name.split(Regex("(?=[A-Z])"))
             split.filter { it.isNotEmpty() }.forEach {
-                sb.append(it.substring(0, if(it.length > 1) 2 else 1))
+                sb.append(it.substring(0, if (it.length > 1) 2 else 1))
             }
             return sb.toString()
         }

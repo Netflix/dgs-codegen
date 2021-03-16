@@ -30,12 +30,12 @@ import javax.lang.model.element.Modifier
 class UnionTypeGenerator(private val config: CodeGenConfig) {
     fun generate(definition: UnionTypeDefinition): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(definition.name)
-                .addModifiers(Modifier.PUBLIC)
+            .addModifiers(Modifier.PUBLIC)
 
         val memberTypes = definition.memberTypes.asSequence()
-                .filterIsInstance<TypeName>()
-                .map { member -> ClassName.get(packageName, member.name) }
-                .toList()
+            .filterIsInstance<TypeName>()
+            .map { member -> ClassName.get(packageName, member.name) }
+            .toList()
 
         if (memberTypes.isNotEmpty()) {
             javaType.addAnnotation(jsonTypeInfoAnnotation())

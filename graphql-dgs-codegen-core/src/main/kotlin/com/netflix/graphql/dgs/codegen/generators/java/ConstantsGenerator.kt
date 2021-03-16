@@ -30,9 +30,9 @@ import javax.lang.model.element.Modifier
 class ConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(): CodeGenResult {
         val javaType = TypeSpec.classBuilder("DgsConstants")
-                .addModifiers(Modifier.PUBLIC)
+            .addModifiers(Modifier.PUBLIC)
 
-        document.definitions.filterIsInstance<ObjectTypeDefinition>().filter { it !is ObjectTypeExtensionDefinition } .map {
+        document.definitions.filterIsInstance<ObjectTypeDefinition>().filter { it !is ObjectTypeExtensionDefinition }.map {
             val constantsType = createConstantTypeBuilder(it.name)
 
             val extensions = findExtensions(it.name, document.definitions)
@@ -40,7 +40,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
 
             constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
 
-            fields.forEach {field ->
+            fields.forEach { field ->
                 addFieldNameConstant(constantsType, field.name)
             }
 
@@ -54,7 +54,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             val extensions = findInputExtensions(it.name, document.definitions)
             val fields = it.inputValueDefinitions.plus(extensions.flatMap { it.inputValueDefinitions })
 
-            fields.forEach {field ->
+            fields.forEach { field ->
                 addFieldNameConstant(constantsType, field.name)
             }
 
@@ -65,7 +65,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             val constantsType = createConstantTypeBuilder(it.name)
 
             constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
-            it.fieldDefinitions.forEach {field ->
+            it.fieldDefinitions.forEach { field ->
                 addFieldNameConstant(constantsType, field.name)
             }
 
@@ -77,13 +77,13 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
         }
 
-        if(document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Query" } != null) {
+        if (document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Query" } != null) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "QUERY_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Query"""").build())
         }
-        if(document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "MUTATION" } != null) {
+        if (document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "MUTATION" } != null) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "MUTATION_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Mutation"""").build())
         }
-        if(document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Subscription" } != null) {
+        if (document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Subscription" } != null) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "SUBSCRIPTION_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Subscription"""").build())
         }
 
@@ -93,8 +93,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
 
     private fun createConstantTypeBuilder(name: String): TypeSpec.Builder {
         return TypeSpec.classBuilder(name.toUpperCase())
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-
+            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
     }
 
     private fun addFieldNameConstant(constantsType: TypeSpec.Builder, fieldName: String) {
@@ -102,8 +101,8 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun findExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-            definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { name == it.name }
+        definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { name == it.name }
 
     private fun findInputExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-            definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
+        definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
 }

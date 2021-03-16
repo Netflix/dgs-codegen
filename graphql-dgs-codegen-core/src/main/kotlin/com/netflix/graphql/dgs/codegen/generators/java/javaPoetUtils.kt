@@ -38,10 +38,10 @@ import graphql.introspection.Introspection.TypeNameMetaFieldDef
  */
 fun jsonTypeInfoAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonTypeInfo::class.java)
-            .addMember("use", "\$T.\$L", JsonTypeInfo.Id::class.java, JsonTypeInfo.Id.NAME.name)
-            .addMember("include", "\$T.\$L", JsonTypeInfo.As::class.java, JsonTypeInfo.As.PROPERTY.name)
-            .addMember("property", "\$S", TypeNameMetaFieldDef.name)
-            .build()
+        .addMember("use", "\$T.\$L", JsonTypeInfo.Id::class.java, JsonTypeInfo.Id.NAME.name)
+        .addMember("include", "\$T.\$L", JsonTypeInfo.As::class.java, JsonTypeInfo.As.PROPERTY.name)
+        .addMember("property", "\$S", TypeNameMetaFieldDef.name)
+        .build()
 }
 
 /**
@@ -59,8 +59,8 @@ fun jsonTypeInfoAnnotation(): AnnotationSpec {
  */
 fun disableJsonTypeInfoAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonTypeInfo::class.java)
-            .addMember("use", "\$T.\$L", JsonTypeInfo.Id::class.java, JsonTypeInfo.Id.NONE.name)
-            .build()
+        .addMember("use", "\$T.\$L", JsonTypeInfo.Id::class.java, JsonTypeInfo.Id.NONE.name)
+        .build()
 }
 
 /**
@@ -79,10 +79,13 @@ fun jsonSubTypeAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
     val annotationSpec = AnnotationSpec.builder(JsonSubTypes::class.java)
 
     for (type in subTypes) {
-        annotationSpec.addMember("value", "\$L", AnnotationSpec.builder(JsonSubTypes.Type::class.java)
+        annotationSpec.addMember(
+            "value", "\$L",
+            AnnotationSpec.builder(JsonSubTypes.Type::class.java)
                 .addMember("value", "\$T.class", type)
                 .addMember("name", "\$S", type.simpleName())
-                .build())
+                .build()
+        )
     }
 
     return annotationSpec.build()

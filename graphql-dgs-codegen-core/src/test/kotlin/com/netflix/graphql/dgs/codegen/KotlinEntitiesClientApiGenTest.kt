@@ -45,21 +45,23 @@ class KotlinEntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN,
-            generateClientApi = true,
-        )).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+            )
+        ).generate() as KotlinCodeGenResult
 
-        val projections = codeGenResult.clientProjections.filter { it.name.contains("Entities")}
+        val projections = codeGenResult.clientProjections.filter { it.name.contains("Entities") }
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
         assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").containsExactly("onMovie")
         assertThat(projections[1].name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].name).isEqualTo("EntitiesMovieKeyActorProjection")
         assertThat(projections[3].name).isEqualTo("EntitiesMovieKeyActorFriendsProjection")
 
-        val representations = codeGenResult.dataTypes.filter {it.name.contains("Representation")}
+        val representations = codeGenResult.dataTypes.filter { it.name.contains("Representation") }
         assertThat(representations.size).isEqualTo(1)
         assertThat(representations[0].name).isEqualTo("MovieRepresentation")
         assertThat((representations[0].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movieId")
@@ -83,25 +85,27 @@ class KotlinEntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN,
-            generateClientApi = true,
-        )).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+            )
+        ).generate() as KotlinCodeGenResult
 
-        val projections = codeGenResult.clientProjections.filter {it.name.contains("Entities")}
+        val projections = codeGenResult.clientProjections.filter { it.name.contains("Entities") }
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
         assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").containsExactly("onMovie", "onActor")
         assertThat(projections[1].name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].name).isEqualTo("EntitiesMovieKeyActorsProjection")
 
-        val representations = codeGenResult.dataTypes.filter {it.name.contains("Representation")}
+        val representations = codeGenResult.dataTypes.filter { it.name.contains("Representation") }
         assertThat(representations.size).isEqualTo(2)
         assertThat(representations[0].name).isEqualTo("MovieRepresentation")
         assertThat((representations[0].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movieId", "actors")
         assertThat((representations[0].members[0] as TypeSpec).propertySpecs[1]).extracting("type")
-                .toString().contains("List<com.netflix.graphql.dgs.codegen.tests.generated.client.ActorRepresentation>")
+            .toString().contains("List<com.netflix.graphql.dgs.codegen.tests.generated.client.ActorRepresentation>")
     }
 
     @Test
@@ -129,14 +133,16 @@ class KotlinEntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN,
-            generateClientApi = true,
-        )).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+            )
+        ).generate() as KotlinCodeGenResult
 
-        val projections = codeGenResult.clientProjections.filter {it.name.contains("Entities")}
+        val projections = codeGenResult.clientProjections.filter { it.name.contains("Entities") }
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
         assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").containsExactlyInAnyOrder("onMovie", "onPerson", "onMovieCast")
         assertThat(projections[1].name).isEqualTo("EntitiesMovieKeyProjection")
@@ -147,7 +153,7 @@ class KotlinEntitiesClientApiGenTest {
         assertThat(projections[6].name).isEqualTo("EntitiesMovieCastKeyMovieActorProjection")
         assertThat(projections[7].name).isEqualTo("EntitiesMovieCastKeyActorProjection")
 
-        val representations = codeGenResult.dataTypes.filter {it.name.contains("Representation")}
+        val representations = codeGenResult.dataTypes.filter { it.name.contains("Representation") }
         assertThat(representations.size).isEqualTo(3)
         assertThat(representations[0].name).isEqualTo("MovieRepresentation")
         assertThat((representations[0].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movieId", "actor")
@@ -177,21 +183,23 @@ class KotlinEntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN,
-            generateClientApi = true,
-        )).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+            )
+        ).generate() as KotlinCodeGenResult
 
-        val projections = codeGenResult.clientProjections.filter {it.name.contains("Entities")}
+        val projections = codeGenResult.clientProjections.filter { it.name.contains("Entities") }
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
         assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").containsExactlyInAnyOrder("onMovie", "onMovieActor")
         assertThat(projections[1].name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].name).isEqualTo("EntitiesMovieKeyActorProjection")
         assertThat(projections[3].name).isEqualTo("EntitiesMovieActorKeyProjection")
 
-        val representations = codeGenResult.dataTypes.filter {it.name.contains("Representation")}
+        val representations = codeGenResult.dataTypes.filter { it.name.contains("Representation") }
         assertThat(representations.size).isEqualTo(2)
         assertThat(representations[0].name).isEqualTo("MovieRepresentation")
         assertThat((representations[0].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movieId")
@@ -218,20 +226,22 @@ class KotlinEntitiesClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN,
-            generateClientApi = true,
-        )).generate() as KotlinCodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+            )
+        ).generate() as KotlinCodeGenResult
 
-        val projections = codeGenResult.clientProjections.filter {it.name.contains("Entities")}
+        val projections = codeGenResult.clientProjections.filter { it.name.contains("Entities") }
         assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
         assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").containsExactlyInAnyOrder("onMovie")
         assertThat(projections[1].name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].name).isEqualTo("EntitiesMovieKeyActorProjection")
 
-        val representations = codeGenResult.dataTypes.filter {it.name.contains("Representation")}
+        val representations = codeGenResult.dataTypes.filter { it.name.contains("Representation") }
         assertThat(representations.size).isEqualTo(2)
         assertThat(representations[0].name).isEqualTo("MovieRepresentation")
         assertThat((representations[0].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "movieId", "actor")
@@ -254,14 +264,16 @@ class KotlinEntitiesClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            language = Language.KOTLIN,
-            generateClientApi = true,
-            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
-        )).generate() as KotlinCodeGenResult
-        val representations = codeGenResult.dataTypes.filter {it.name.contains("Representation")}
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            )
+        ).generate() as KotlinCodeGenResult
+        val representations = codeGenResult.dataTypes.filter { it.name.contains("Representation") }
         assertThat(representations.size).isEqualTo(1)
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(3)

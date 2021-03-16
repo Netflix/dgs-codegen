@@ -75,14 +75,14 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
             baseConstantsType.addType(constantsType.build())
         }
 
-        if(document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Query" } != null) {
+        if (document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Query" } != null) {
             baseConstantsType.addProperty(PropertySpec.builder("QUERY_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Query"""").build())
         }
 
-        if(document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Mutation" } != null) {
+        if (document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Mutation" } != null) {
             baseConstantsType.addProperty(PropertySpec.builder("Mutation_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Mutation"""").build())
         }
-        if(document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Subscription" } != null) {
+        if (document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Subscription" } != null) {
             baseConstantsType.addProperty(PropertySpec.builder("Subscription_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Subscription"""").build())
         }
 
@@ -95,11 +95,8 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
     }
 
     private fun findExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-            definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { name == it.name }
+        definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { name == it.name }
 
     private fun findInputExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-            definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
-
-
-
+        definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
 }

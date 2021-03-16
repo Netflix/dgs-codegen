@@ -24,16 +24,15 @@ import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.WildcardTypeName
 import graphql.language.*
 import graphql.parser.Parser
-import com.squareup.javapoet.TypeName as JavaTypeName
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-
 import java.time.*
 import java.util.*
+import com.squareup.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
-    private val commonScalars =  mutableMapOf<String, com.squareup.javapoet.TypeName>(
+    private val commonScalars = mutableMapOf<String, com.squareup.javapoet.TypeName>(
         "LocalTime" to ClassName.get(LocalTime::class.java),
         "LocalDate" to ClassName.get(LocalDate::class.java),
         "LocalDateTime" to ClassName.get(LocalDateTime::class.java),
@@ -45,7 +44,8 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "RelayPageInfo" to ClassName.get(PageInfo::class.java),
         "PageInfo" to ClassName.get(PageInfo::class.java),
         "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
-        "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"))
+        "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header")
+    )
 
     fun findReturnType(fieldType: Type<*>, useInterfaceType: Boolean = false, useWildcardType: Boolean = false): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
@@ -121,7 +121,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             return ClassName.bestGuess(mappedType)
         }
 
-        if(commonScalars.containsKey(name)) {
+        if (commonScalars.containsKey(name)) {
             return commonScalars[name]!!
         }
 
@@ -139,7 +139,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             else -> {
                 var simpleName = name
                 if (useInterfaceType && !document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name }) {
-                    simpleName = "I${name}"
+                    simpleName = "I$name"
                 }
                 ClassName.get(packageName, simpleName)
             }
@@ -148,7 +148,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
 
     fun isStringInput(name: com.squareup.javapoet.TypeName): Boolean {
         if (config.typeMapping.containsValue(name.toString())) {
-            return when(name) {
+            return when (name) {
                 JavaTypeName.INT -> false
                 JavaTypeName.DOUBLE -> false
                 JavaTypeName.BOOLEAN -> false
@@ -158,24 +158,24 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 else -> true
             }
         }
-        return  (name == ClassName.get(String::class.java) || commonScalars.containsValue(name))
+        return (name == ClassName.get(String::class.java) || commonScalars.containsValue(name))
     }
 
     private val CodeGenConfig.schemaTypeMapping: Map<String, String>
         get() {
             val inputSchemas = this.schemaFiles.flatMap { it.walkTopDown().toList().filter { file -> file.isFile } }
-                    .map { it.readText() }
-                    .plus(this.schemas)
+                .map { it.readText() }
+                .plus(this.schemas)
             val joinedSchema = inputSchemas.joinToString("\n")
             val document = Parser().parseDocument(joinedSchema)
 
             return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
-              it.getDirectives("javaType").isNullOrEmpty()
+                it.getDirectives("javaType").isNullOrEmpty()
             }.map {
                 val javaType = it.getDirectives("javaType").singleOrNull()
-                        ?: throw IllegalArgumentException("multiple @javaType directives are defined")
+                    ?: throw IllegalArgumentException("multiple @javaType directives are defined")
                 val value = javaType.argumentsByName["name"]?.value
-                        ?: throw IllegalArgumentException("@javaType directive must contains name argument")
+                    ?: throw IllegalArgumentException("@javaType directive must contains name argument")
                 it.name to (value as StringValue).value
             }.toMap()
         }

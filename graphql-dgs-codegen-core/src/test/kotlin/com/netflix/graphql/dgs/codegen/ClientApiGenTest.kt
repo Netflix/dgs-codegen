@@ -22,7 +22,6 @@ import com.google.common.truth.Truth
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 class ClientApiGenTest {
@@ -43,12 +42,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("PeopleGraphQLQuery")
@@ -70,12 +70,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
@@ -103,12 +104,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
@@ -138,24 +140,29 @@ class ClientApiGenTest {
             scalar UUID @javaType(name : "java.util.UUID")
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         val initMethod = codeGenResult.queryTypes[0].typeSpec.methodSpecs
-            .find {it.name == "<init>"}?.code.toString();
+            .find { it.name == "<init>" }?.code.toString()
 
-        assert(initMethod.contains("super(\"mutation\");\n" +
-                "if (movie != null) {\n" +
-                "    getInput().put(\"movie\", movie);\n" +
-                "}if (reviews != null) {\n" +
-                "    getInput().put(\"reviews\", reviews);\n" +
-                "}if (uuid != null) {\n" +
-                "    getInput().put(\"uuid\", uuid);\n" +
-                "}"))
+        assert(
+            initMethod.contains(
+                "super(\"mutation\");\n" +
+                    "if (movie != null) {\n" +
+                    "    getInput().put(\"movie\", movie);\n" +
+                    "}if (reviews != null) {\n" +
+                    "    getInput().put(\"reviews\", reviews);\n" +
+                    "}if (uuid != null) {\n" +
+                    "    getInput().put(\"uuid\", uuid);\n" +
+                    "}"
+            )
+        )
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
 
@@ -173,17 +180,19 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true
+            )
+        ).generate() as CodeGenResult
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true
-        )).generate() as CodeGenResult
-
-
-        assert(codeGenResult.queryTypes[0].typeSpec.methodSpecs
-            .find {it.name == "<init>"}?.code.toString()
-            .contains("super(\"mutation\");\ngetInput().put(\"movieId\", movieId);"))
+        assert(
+            codeGenResult.queryTypes[0].typeSpec.methodSpecs
+                .find { it.name == "<init>" }?.code.toString()
+                .contains("super(\"mutation\");\ngetInput().put(\"movieId\", movieId);")
+        )
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes))
     }
@@ -202,12 +211,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PeopleProjectionRoot")
@@ -229,11 +239,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("PersonsFriendsProjection")
@@ -267,11 +279,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(5)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -336,11 +350,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("FriendsProjectionRoot")
 
@@ -366,11 +382,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("PersonsDetailsProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("DetailsProjectionRoot")
@@ -398,11 +416,13 @@ class ClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
@@ -432,12 +452,14 @@ class ClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-            shortProjectionNames = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                shortProjectionNames = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
@@ -462,12 +484,13 @@ class ClientApiGenTest {
 
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
         assertThat(codeGenResult.queryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("lastname")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
@@ -492,12 +515,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("index")
 
@@ -523,11 +547,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("PersonSearchGraphQLQuery")
         assertThat(codeGenResult.queryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("index")
@@ -555,11 +581,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("PersonsGraphQLQuery")
@@ -590,11 +618,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("SearchGraphQLQuery")
@@ -632,11 +662,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -680,11 +712,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -723,11 +757,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -766,11 +802,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -795,7 +833,7 @@ class ClientApiGenTest {
         val searchResult = codeGenResult.interfaces[0].typeSpec
 
         Truth.assertThat(JavaFile.builder("$basePackageName.types", searchResult).build().toString()).isEqualTo(
-                """
+            """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
@@ -812,7 +850,8 @@ class ClientApiGenTest {
                 |})
                 |public interface SearchResult {
                 |}
-                |""".trimMargin())
+                |""".trimMargin()
+        )
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.enumTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
     }
@@ -832,12 +871,14 @@ class ClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            )
+        ).generate() as CodeGenResult
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
@@ -860,12 +901,14 @@ class ClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            )
+        ).generate() as CodeGenResult
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
         assertThat(projections[0].typeSpec.name).isEqualTo("PeopleProjectionRoot")
@@ -895,12 +938,14 @@ class ClientApiGenTest {
           }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-            typeMapping = mapOf(Pair("Long", "java.lang.Long")),
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            )
+        ).generate() as CodeGenResult
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(2)
         assertThat(projections[1].typeSpec.name).isEqualTo("SearchMovieProjection")
@@ -920,13 +965,14 @@ class ClientApiGenTest {
             }           
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-            includeQueries = setOf("movieTitles"),
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                includeQueries = setOf("movieTitles"),
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("MovieTitlesGraphQLQuery")
@@ -944,13 +990,14 @@ class ClientApiGenTest {
             }           
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-            includeMutations = setOf("updateMovieTitle"),
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                includeMutations = setOf("updateMovieTitle"),
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.queryTypes[0].typeSpec.name).isEqualTo("UpdateMovieTitleGraphQLQuery")
@@ -974,12 +1021,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
@@ -1008,12 +1056,13 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         val weirdType = codeGenResult.clientProjections.find { it.typeSpec.name == "NormalTypeWeirdTypeProjection" }
@@ -1097,7 +1146,7 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeQueries = setOf("shows"),  generateDataTypes = false, writeToFiles = false)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeQueries = setOf("shows"), generateDataTypes = false, writeToFiles = false)).generate() as CodeGenResult
         assertThat(codeGenResult.dataTypes.size).isEqualTo(2)
         assertThat(codeGenResult.dataTypes).extracting("typeSpec").extracting("name").containsExactly("ShowFilter", "SimilarityInput")
         assertThat(codeGenResult.enumTypes).extracting("typeSpec").extracting("name").containsExactly("ShowType")
@@ -1144,7 +1193,7 @@ class ClientApiGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeMutations = setOf("shows"),  generateDataTypes = false, writeToFiles = false)).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeMutations = setOf("shows"), generateDataTypes = false, writeToFiles = false)).generate() as CodeGenResult
         assertThat(codeGenResult.dataTypes.size).isEqualTo(2)
         assertThat(codeGenResult.dataTypes).extracting("typeSpec").extracting("name").containsExactly("ShowFilter", "SimilarityInput")
         assertThat(codeGenResult.enumTypes).extracting("typeSpec").extracting("name").containsExactly("ShowType")
@@ -1177,12 +1226,14 @@ class ClientApiGenTest {
 
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = basePackageName,
-            generateClientApi = true,
-            maxProjectionDepth = 0,
-        )).generate() as CodeGenResult
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                maxProjectionDepth = 0,
+            )
+        ).generate() as CodeGenResult
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")

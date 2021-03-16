@@ -29,7 +29,6 @@ import graphql.language.ObjectTypeDefinition
 import graphql.schema.DataFetchingEnvironment
 import javax.lang.model.element.Modifier
 
-
 class DatafetcherGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(query: ObjectTypeDefinition): CodeGenResult {
 
@@ -54,16 +53,16 @@ class DatafetcherGenerator(private val config: CodeGenConfig, private val docume
         }
 
         val methodSpec = MethodSpec.methodBuilder("get$fieldName")
-                .returns(returnType)
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(AnnotationSpec.builder(DgsData::class.java).addMember("parentType", "\$S", "Query").addMember("field", "\$S", field.name).build())
-                .addParameter(ParameterSpec.builder(DataFetchingEnvironment::class.java, "dataFetchingEnvironment").build())
-                .addStatement("return $returnValue")
+            .returns(returnType)
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(AnnotationSpec.builder(DgsData::class.java).addMember("parentType", "\$S", "Query").addMember("field", "\$S", field.name).build())
+            .addParameter(ParameterSpec.builder(DataFetchingEnvironment::class.java, "dataFetchingEnvironment").build())
+            .addStatement("return $returnValue")
 
         val javaType = TypeSpec.classBuilder(clazzName)
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(DgsComponent::class.java)
-                .addMethod(methodSpec.build())
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(DgsComponent::class.java)
+            .addMethod(methodSpec.build())
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
 

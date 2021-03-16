@@ -29,11 +29,13 @@ class SchemaMergingTest {
 
         val schemaDir = Paths.get("src/test/resources/schemas").toAbsolutePath().toFile()
 
-        val codeGen = CodeGen(config = CodeGenConfig(
-            schemaFiles = setOf(schemaDir),
-            writeToFiles = false,
-            generateClientApi = true,
-        ))
+        val codeGen = CodeGen(
+            config = CodeGenConfig(
+                schemaFiles = setOf(schemaDir),
+                writeToFiles = false,
+                generateClientApi = true,
+            )
+        )
         val result = codeGen.generate() as CodeGenResult
 
         Assertions.assertThat(result.dataTypes.size).isEqualTo(2)
@@ -48,12 +50,14 @@ class SchemaMergingTest {
 
         val schemaDir = Paths.get("src/test/resources/schemas").toAbsolutePath().toFile()
 
-        val codeGen = CodeGen(config = CodeGenConfig(
-            schemaFiles = setOf(schemaDir),
-            writeToFiles = false,
-            language = Language.KOTLIN,
-            generateClientApi = true,
-        ))
+        val codeGen = CodeGen(
+            config = CodeGenConfig(
+                schemaFiles = setOf(schemaDir),
+                writeToFiles = false,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+            )
+        )
         val result = codeGen.generate() as KotlinCodeGenResult
         val type = result.dataTypes.find { it.name == "Person" }!!.members[0] as TypeSpec
 
