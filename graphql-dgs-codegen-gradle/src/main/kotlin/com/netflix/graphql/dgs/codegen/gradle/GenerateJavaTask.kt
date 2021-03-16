@@ -80,12 +80,12 @@ open class GenerateJavaTask : DefaultTask() {
 
     @OutputDirectory
     fun getOutputDir(): File {
-        return Paths.get("${generatedSourcesDir}/generated").toFile()
+        return Paths.get("$generatedSourcesDir/generated").toFile()
     }
 
     @OutputDirectory
     fun getExampleOutputDir(): File {
-        return Paths.get("${generatedSourcesDir}/generated-examples").toFile()
+        return Paths.get("$generatedSourcesDir/generated-examples").toFile()
     }
 
     @Input
@@ -111,26 +111,26 @@ open class GenerateJavaTask : DefaultTask() {
         }
 
         val config = CodeGenConfig(
-                schemas = emptySet(),
-                schemaFiles = schemaPaths,
-                outputDir = getOutputDir().toPath(),
-                examplesOutputDir = getExampleOutputDir().toPath(),
-                writeToFiles = true,
-                packageName = packageName,
-                subPackageNameClient = subPackageNameClient,
-                subPackageNameDatafetchers = subPackageNameDatafetchers,
-                subPackageNameTypes = subPackageNameTypes,
-                language = Language.valueOf(language.toUpperCase()),
-                generateBoxedTypes = generateBoxedTypes,
-                generateClientApi = generateClient,
-                generateInterfaces = generateInterfaces,
-                typeMapping = typeMapping,
-                includeQueries = includeQueries.toSet(),
-                includeMutations = includeMutations.toSet(),
-                skipEntityQueries = skipEntityQueries,
-                shortProjectionNames = shortProjectionNames,
-                generateDataTypes = generateDataTypes,
-                maxProjectionDepth = maxProjectionDepth,
+            schemas = emptySet(),
+            schemaFiles = schemaPaths,
+            outputDir = getOutputDir().toPath(),
+            examplesOutputDir = getExampleOutputDir().toPath(),
+            writeToFiles = true,
+            packageName = packageName,
+            subPackageNameClient = subPackageNameClient,
+            subPackageNameDatafetchers = subPackageNameDatafetchers,
+            subPackageNameTypes = subPackageNameTypes,
+            language = Language.valueOf(language.toUpperCase()),
+            generateBoxedTypes = generateBoxedTypes,
+            generateClientApi = generateClient,
+            generateInterfaces = generateInterfaces,
+            typeMapping = typeMapping,
+            includeQueries = includeQueries.toSet(),
+            includeMutations = includeMutations.toSet(),
+            skipEntityQueries = skipEntityQueries,
+            shortProjectionNames = shortProjectionNames,
+            generateDataTypes = generateDataTypes,
+            maxProjectionDepth = maxProjectionDepth,
         )
 
         LOGGER.info("Codegen config: {}", config)

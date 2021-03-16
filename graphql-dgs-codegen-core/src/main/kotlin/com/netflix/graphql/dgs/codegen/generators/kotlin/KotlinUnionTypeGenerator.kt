@@ -24,7 +24,6 @@ import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.TypeName
-
 import graphql.language.UnionTypeDefinition
 
 class KotlinUnionTypeGenerator(config: CodeGenConfig) {
@@ -35,9 +34,9 @@ class KotlinUnionTypeGenerator(config: CodeGenConfig) {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
 
         val memberTypes = definition.memberTypes.asSequence()
-                .filterIsInstance<TypeName>()
-                .map { member -> ClassName(packageName, member.name) }
-                .toList()
+            .filterIsInstance<TypeName>()
+            .map { member -> ClassName(packageName, member.name) }
+            .toList()
 
         if (memberTypes.isNotEmpty()) {
             interfaceBuilder.addAnnotation(jsonTypeInfoAnnotation())

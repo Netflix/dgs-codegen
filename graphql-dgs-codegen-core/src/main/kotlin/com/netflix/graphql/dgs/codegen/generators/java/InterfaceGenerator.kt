@@ -24,11 +24,7 @@ import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
-import graphql.language.Document
-import graphql.language.FieldDefinition
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.ObjectTypeDefinition
-import graphql.language.TypeName
+import graphql.language.*
 import javax.lang.model.element.Modifier
 
 class InterfaceGenerator(config: CodeGenConfig, private val document: Document) {
@@ -38,16 +34,16 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
 
     fun generate(definition: InterfaceTypeDefinition): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(definition.name)
-                .addModifiers(Modifier.PUBLIC)
+            .addModifiers(Modifier.PUBLIC)
 
         definition.fieldDefinitions.forEach {
             addInterfaceMethod(it, javaType)
         }
 
         val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
-                .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
-                .map { node -> ClassName.get(packageName, node.name) }
-                .toList()
+            .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
+            .map { node -> ClassName.get(packageName, node.name) }
+            .toList()
 
         if (implementations.isNotEmpty()) {
             javaType.addAnnotation(jsonTypeInfoAnnotation())
@@ -64,15 +60,19 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
             val returnType = typeUtils.findReturnType(fieldDefinition.type)
 
             val fieldName = fieldDefinition.name
-            javaType.addMethod(MethodSpec.methodBuilder("get${fieldName.capitalize()}")
+            javaType.addMethod(
+                MethodSpec.methodBuilder("get${fieldName.capitalize()}")
                     .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                     .returns(returnType)
-                    .build())
+                    .build()
+            )
 
-            javaType.addMethod(MethodSpec.methodBuilder("set${fieldName.capitalize()}")
+            javaType.addMethod(
+                MethodSpec.methodBuilder("set${fieldName.capitalize()}")
                     .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                     .addParameter(returnType, fieldName)
-                    .build())
+                    .build()
+            )
         }
     }
 }

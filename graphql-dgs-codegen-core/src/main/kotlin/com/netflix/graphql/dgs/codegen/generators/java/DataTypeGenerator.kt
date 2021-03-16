@@ -52,7 +52,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                 .filterSkipped()
                 .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) }
                 .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) })
-            val interfaceName = "I${name}"
+            val interfaceName = "I$name"
             implements = listOf(interfaceName) + implements
             interfaceCodeGenResult = generateInterface(interfaceName, fieldDefinitions)
         }
@@ -63,7 +63,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
             .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter) })
 
         return generate(name, unionTypes.plus(implements), fieldDefinitions, false)
-                .merge(interfaceCodeGenResult)
+            .merge(interfaceCodeGenResult)
     }
 }
 
@@ -79,16 +79,19 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                     is StringValue -> CodeBlock.of("\$S", defVal.value)
                     is FloatValue -> CodeBlock.of("\$L", defVal.value)
                     is EnumValue -> CodeBlock.of("\$T.\$N", typeUtils.findReturnType(it.type), defVal.name)
-                    is ArrayValue -> if(defVal.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()") else CodeBlock.of("java.util.Arrays.asList(\$L)", defVal.values.map { v ->
-                        when(v) {
-                            is BooleanValue -> CodeBlock.of("\$L", v.isValue)
-                            is IntValue -> CodeBlock.of("\$L", v.value)
-                            is StringValue -> CodeBlock.of("\$S", v.value)
-                            is FloatValue -> CodeBlock.of("\$L", v.value)
-                            is EnumValue -> CodeBlock.of("\$L.\$N", ((it.type as ListType).type as TypeName).name, v.name)
-                            else -> ""
-                        }
-                    }.joinToString())
+                    is ArrayValue -> if (defVal.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()") else CodeBlock.of(
+                        "java.util.Arrays.asList(\$L)",
+                        defVal.values.map { v ->
+                            when (v) {
+                                is BooleanValue -> CodeBlock.of("\$L", v.isValue)
+                                is IntValue -> CodeBlock.of("\$L", v.value)
+                                is StringValue -> CodeBlock.of("\$S", v.value)
+                                is FloatValue -> CodeBlock.of("\$L", v.value)
+                                is EnumValue -> CodeBlock.of("\$L.\$N", ((it.type as ListType).type as TypeName).name, v.name)
+                                else -> ""
+                            }
+                        }.joinToString()
+                    )
                     else -> CodeBlock.of("\$L", defVal)
                 }
             }
@@ -105,7 +108,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
     internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
-                .addModifiers(Modifier.PUBLIC)
+            .addModifiers(Modifier.PUBLIC)
 
         interfaces.forEach {
             addInterface(it, javaType)
@@ -142,7 +145,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
     internal fun generateInterface(name: String, fields: List<Field>): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(name)
-                .addModifiers(Modifier.PUBLIC)
+            .addModifiers(Modifier.PUBLIC)
 
         fields.forEach {
             addAbstractGetter(it.type, it, javaType)
@@ -155,9 +158,9 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
     private fun addHashcode(javaType: TypeSpec.Builder) {
         val methodBuilder = MethodSpec.methodBuilder("hashCode")
-                .addAnnotation(Override::class.java)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(com.squareup.javapoet.TypeName.INT)
+            .addAnnotation(Override::class.java)
+            .addModifiers(Modifier.PUBLIC)
+            .returns(com.squareup.javapoet.TypeName.INT)
 
         val fieldSpecs = javaType.build().fieldSpecs
         methodBuilder.addStatement("return java.util.Objects.hash(${fieldSpecs.joinToString(", ") { it.name }})")
@@ -166,17 +169,19 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
     private fun addEquals(javaType: TypeSpec.Builder) {
         val methodBuilder = MethodSpec.methodBuilder("equals")
-                .addAnnotation(Override::class.java)
-                .addModifiers(Modifier.PUBLIC)
-                .returns(com.squareup.javapoet.TypeName.BOOLEAN)
-                .addParameter(ClassName.get(Object::class.java), "o")
+            .addAnnotation(Override::class.java)
+            .addModifiers(Modifier.PUBLIC)
+            .returns(com.squareup.javapoet.TypeName.BOOLEAN)
+            .addParameter(ClassName.get(Object::class.java), "o")
 
-        val equalsBody = StringBuilder("""
+        val equalsBody = StringBuilder(
+            """
              if (this == o) return true;
              if (o == null || getClass() != o.getClass()) return false;
              ${javaType.build().name} that = (${javaType.build().name}) o;
              return 
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         val fieldSpecs = javaType.build().fieldSpecs
         fieldSpecs.forEachIndexed { index, fieldSpec ->
@@ -187,9 +192,11 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
             }
 
             if (index != fieldSpecs.size - 1) {
-                equalsBody.append(""" &&
+                equalsBody.append(
+                    """ &&
                     
-                """.trimMargin())
+                """.trimMargin()
+                )
             }
         }
 
@@ -205,14 +212,18 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         val methodBuilder = MethodSpec.methodBuilder("toString").addAnnotation(Override::class.java).addModifiers(Modifier.PUBLIC).returns(String::class.java)
         val toStringBody = StringBuilder("return \"${javaType.build().name}{\" + ")
         fieldDefinitions.forEachIndexed { index, field ->
-            toStringBody.append("""
+            toStringBody.append(
+                """
                 "${field.name}='" + ${ReservedKeywordSanitizer.sanitize(field.name)} + "'${if (index < fieldDefinitions.size - 1) "," else ""}" +
-            """.trimIndent())
+                """.trimIndent()
+            )
         }
 
-        toStringBody.append("""
+        toStringBody.append(
+            """
             "}"
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         methodBuilder.addStatement(toStringBody.toString())
         javaType.addMethod(methodBuilder.build())
@@ -231,7 +242,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
                         } else "serializeListOf" + fieldSpecType.typeArguments[0].toString()
                         addToStringForListOfStrings(name, fieldSpec, javaType)
                         """
-                        "${fieldSpec.name}:" + ${name}(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
+                        "${fieldSpec.name}:" + $name(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
                         """.trimIndent()
                     } else {
                         defaultString(fieldSpec, index, fieldDefinitions)
@@ -245,13 +256,14 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
                     }
                 }
                 else -> defaultString(fieldSpec, index, fieldDefinitions)
-
             }
-        }.forEach { toStringBody.append(it)}
+        }.forEach { toStringBody.append(it) }
 
-        toStringBody.append("""
+        toStringBody.append(
+            """
             "}"
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         methodBuilder.addStatement(toStringBody.toString())
         javaType.addMethod(methodBuilder.build())
@@ -260,24 +272,25 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
     private fun defaultString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
         return """
             "${fieldSpec.name}:" + ${fieldSpec.name} + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-            """.trimIndent()
+        """.trimIndent()
     }
 
     private fun quotedString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
         return """
             "${fieldSpec.name}:" + (${fieldSpec.name} != null?"\"":"") + ${fieldSpec.name} + (${fieldSpec.name} != null?"\"":"") + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-            """.trimIndent()
+        """.trimIndent()
     }
 
     private fun addToStringForListOfStrings(name: String, field: FieldSpec, javaType: TypeSpec.Builder) {
-        if(javaType.methodSpecs.any { it.name == name }) return
+        if (javaType.methodSpecs.any { it.name == name }) return
 
         val methodBuilder = MethodSpec.methodBuilder(name)
-                .addModifiers(Modifier.PRIVATE)
-                .addParameter(field.type, "inputList")
-                .returns(String::class.java)
+            .addModifiers(Modifier.PRIVATE)
+            .addParameter(field.type, "inputList")
+            .returns(String::class.java)
 
-        val toStringBody = StringBuilder("""
+        val toStringBody = StringBuilder(
+            """
                 if (inputList == null) {
                     return null;
                 }
@@ -292,7 +305,8 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
                 }
                 builder.append("]");
                 return  builder.toString()
-        """.trimIndent())
+            """.trimIndent()
+        )
 
         methodBuilder.addStatement(toStringBody.toString())
         javaType.addMethod(methodBuilder.build())
@@ -303,9 +317,9 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         val constructorBuilder = MethodSpec.constructorBuilder()
         fieldDefinitions.forEach {
             constructorBuilder
-                    .addParameter(it.type, ReservedKeywordSanitizer.sanitize(it.name))
-                    .addModifiers(Modifier.PUBLIC)
-                    .addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(it.name), ReservedKeywordSanitizer.sanitize(it.name))
+                .addParameter(it.type, ReservedKeywordSanitizer.sanitize(it.name))
+                .addModifiers(Modifier.PUBLIC)
+                .addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(it.name), ReservedKeywordSanitizer.sanitize(it.name))
         }
 
         javaType.addMethod(constructorBuilder.build())
@@ -350,23 +364,23 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
     private fun addBuilder(javaType: TypeSpec.Builder) {
 
         val className = ClassName.get(packageName, javaType.build().name)
-        val buildMethod = MethodSpec.methodBuilder("build").returns(className).addStatement("""
-            ${className} result = new ${className}();
+        val buildMethod = MethodSpec.methodBuilder("build").returns(className).addStatement(
+            """
+            $className result = new $className();
             ${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
             return result
-        """.trimIndent()).addModifiers(Modifier.PUBLIC).build()
+            """.trimIndent()
+        ).addModifiers(Modifier.PUBLIC).build()
 
-        val builderClassName = ClassName.get(packageName, "${className}.Builder")
+        val builderClassName = ClassName.get(packageName, "$className.Builder")
         val newBuilderMethod = MethodSpec.methodBuilder("newBuilder").returns(builderClassName).addStatement("return new Builder()").addModifiers(Modifier.PUBLIC, Modifier.STATIC).build()
         javaType.addMethod(newBuilderMethod)
 
         val builderType = TypeSpec.classBuilder("Builder").addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addMethod(buildMethod)
+            .addMethod(buildMethod)
 
         javaType.build().fieldSpecs.map { MethodSpec.methodBuilder(it.name).returns(builderClassName).addStatement("this.${it.name} = ${it.name}").addStatement("return this").addParameter(ParameterSpec.builder(it.type, it.name).build()).addModifiers(Modifier.PUBLIC).build() }.forEach { builderType.addMethod(it) }
         builderType.addFields(javaType.build().fieldSpecs)
         javaType.addType(builderType.build())
     }
-
-
 }

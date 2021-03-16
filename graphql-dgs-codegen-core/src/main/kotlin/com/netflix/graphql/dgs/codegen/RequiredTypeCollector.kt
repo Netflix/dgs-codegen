@@ -40,35 +40,38 @@ class RequiredTypeCollector(
 
         val required = requiredTypes as MutableSet<String>
 
-        NodeTraverser().postOrder(object : NodeVisitorStub() {
-            override fun visitInputObjectTypeDefinition(
-                node: InputObjectTypeDefinition,
-                context: TraverserContext<Node<Node<*>>>
-            ): TraversalControl {
-                required += node.name
+        NodeTraverser().postOrder(
+            object : NodeVisitorStub() {
+                override fun visitInputObjectTypeDefinition(
+                    node: InputObjectTypeDefinition,
+                    context: TraverserContext<Node<Node<*>>>
+                ): TraversalControl {
+                    required += node.name
 
-                node.inputValueDefinitions.forEach {
-                    it.type.findTypeDefinition(document)?.accept(context, this)
+                    node.inputValueDefinitions.forEach {
+                        it.type.findTypeDefinition(document)?.accept(context, this)
+                    }
+
+                    return TraversalControl.CONTINUE
                 }
 
-                return TraversalControl.CONTINUE
-            }
+                override fun visitEnumTypeDefinition(
+                    node: EnumTypeDefinition,
+                    context: TraverserContext<Node<Node<*>>>
+                ): TraversalControl {
+                    required += node.name
+                    return TraversalControl.CONTINUE
+                }
 
-            override fun visitEnumTypeDefinition(
-                node: EnumTypeDefinition,
-                context: TraverserContext<Node<Node<*>>>
-            ): TraversalControl {
-                required += node.name
-                return TraversalControl.CONTINUE
-            }
-
-            override fun visitInputValueDefinition(
-                node: InputValueDefinition,
-                context: TraverserContext<Node<Node<*>>>
-            ): TraversalControl {
-                node.type.findTypeDefinition(document)?.accept(context, this)
-                return TraversalControl.CONTINUE
-            }
-        }, fieldDefinitions)
+                override fun visitInputValueDefinition(
+                    node: InputValueDefinition,
+                    context: TraverserContext<Node<Node<*>>>
+                ): TraversalControl {
+                    node.type.findTypeDefinition(document)?.accept(context, this)
+                    return TraversalControl.CONTINUE
+                }
+            },
+            fieldDefinitions
+        )
     }
 }

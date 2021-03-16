@@ -37,13 +37,13 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
             val javaFile = createQueryClass(it, definition.name)
 
             val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) }
-                    ?: KotlinCodeGenResult()
+                ?: KotlinCodeGenResult()
             KotlinCodeGenResult(queryTypes = listOf(javaFile)).merge(rootProjection)
         }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
     }
 
     fun generateEntities(definitions: List<ObjectTypeDefinition>): KotlinCodeGenResult {
-        if(config.skipEntityQueries) {
+        if (config.skipEntityQueries) {
             return KotlinCodeGenResult()
         }
 
@@ -59,52 +59,65 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
 
     private fun createQueryClass(it: FieldDefinition, operation: String): FileSpec {
         val javaType = TypeSpec.classBuilder("${it.name.capitalize()}GraphQLQuery")
-                .superclass(GraphQLQuery::class.asTypeName())
-                .addSuperclassConstructorParameter("%S", operation.toLowerCase())
+            .superclass(GraphQLQuery::class.asTypeName())
+            .addSuperclassConstructorParameter("%S", operation.toLowerCase())
 
         if (it.inputValueDefinitions.isNotEmpty()) {
             javaType.addModifiers(KModifier.DATA)
         }
 
         javaType.addFunction(
-                FunSpec.builder("getOperationName")
-                        .addModifiers(KModifier.OVERRIDE)
-                        .returns(String::class)
-                        .addCode("""
+            FunSpec.builder("getOperationName")
+                .addModifiers(KModifier.OVERRIDE)
+                .returns(String::class)
+                .addCode(
+                    """
                                     return "${it.name}";
                                     
-                                    """.trimIndent()).build())
+                    """.trimIndent()
+                ).build()
+        )
 
         val builderClass = TypeSpec.classBuilder("Builder")
-                .addFunction(FunSpec.builder("build")
-                        .addModifiers(KModifier.PUBLIC)
-                        .returns(ClassName.bestGuess("${it.name.capitalize()}GraphQLQuery"))
-                        .addCode("""
+            .addFunction(
+                FunSpec.builder("build")
+                    .addModifiers(KModifier.PUBLIC)
+                    .returns(ClassName.bestGuess("${it.name.capitalize()}GraphQLQuery"))
+                    .addCode(
+                        """
                                      return ${it.name.capitalize()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { it.name }})
                                      
-                                """.trimIndent())
-                        .build())
+                        """.trimIndent()
+                    )
+                    .build()
+            )
 
         val constructorBuilder = FunSpec.constructorBuilder()
 
         it.inputValueDefinitions.forEach { inputValue ->
             val findReturnType = KotlinTypeUtils(getTypesPackageName(), config).findReturnType(inputValue.type)
             builderClass
-                    .addFunction(FunSpec.builder(inputValue.name)
-                            .addParameter(inputValue.name, findReturnType)
-                            .returns(ClassName.bestGuess("Builder"))
-                            .addCode("""
+                .addFunction(
+                    FunSpec.builder(inputValue.name)
+                        .addParameter(inputValue.name, findReturnType)
+                        .returns(ClassName.bestGuess("Builder"))
+                        .addCode(
+                            """
                                 this.${inputValue.name} = ${inputValue.name};
                                 return this
-                            """.trimIndent()).build())
+                            """.trimIndent()
+                        ).build()
+                )
 
             constructorBuilder.addParameter(ParameterSpec.builder(inputValue.name, findReturnType.copy(nullable = true)).defaultValue(getInitializer(findReturnType)).build())
-            constructorBuilder.addCode("""
+            constructorBuilder.addCode(
+                """
                 if(${inputValue.name} != null) {
                     input["${inputValue.name}"] = ${inputValue.name}
                 }
                 
-                """.trimIndent())
+                """.trimIndent()
+            )
             javaType.addProperty(PropertySpec.builder(inputValue.name, findReturnType.copy(nullable = true)).initializer(inputValue.name).build())
             builderClass.addProperty(PropertySpec.builder(inputValue.name, findReturnType.copy(nullable = true)).mutable().initializer(getInitializer(findReturnType)).build())
         }
@@ -112,7 +125,6 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         javaType.primaryConstructor(constructorBuilder.build())
 
         javaType.addType(builderClass.build())
-
 
         val typeSpec = javaType.build()
         return FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
@@ -130,42 +142,50 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
     private fun createRootProjection(type: TypeDefinition<*>, prefix: String): KotlinCodeGenResult {
 
         val clazzName = "${prefix}ProjectionRoot"
-        if(generatedClasses.contains(clazzName)) return KotlinCodeGenResult() else generatedClasses.add(clazzName)
+        if (generatedClasses.contains(clazzName)) return KotlinCodeGenResult() else generatedClasses.add(clazzName)
 
         val javaType = TypeSpec.classBuilder(clazzName)
-                .addModifiers(KModifier.PUBLIC)
-                .superclass(BaseProjectionNode::class.asTypeName())
+            .addModifiers(KModifier.PUBLIC)
+            .superclass(BaseProjectionNode::class.asTypeName())
 
-        val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
+        val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
         val codeGenResult = fieldDefinitions.filterSkipped()
-                .mapNotNull { if (it.type.findTypeDefinition(document) != null ) Pair(it, it.type.findTypeDefinition(document)) else null }
-                .map {
-                    val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
-                    javaType.addFunction(FunSpec.builder(it.first.name)
-                            .returns(ClassName.bestGuess("${getPackageName()}.${projectionName}"))
-                            .addCode("""
-                        val projection = ${projectionName}(this, this)    
+            .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
+            .map {
+                val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
+                javaType.addFunction(
+                    FunSpec.builder(it.first.name)
+                        .returns(ClassName.bestGuess("${getPackageName()}.$projectionName"))
+                        .addCode(
+                            """
+                        val projection = $projectionName(this, this)    
                         fields["${it.first.name}"] = projection
                         return projection
-                    """.trimIndent())
-                            .addModifiers(KModifier.PUBLIC)
-                            .build())
-                    val processedEdges = mutableSetOf<Pair<String, String>>()
-                    processedEdges.add(Pair(it.second!!.name, type.name))
-                    createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}${it.first.name.capitalize()}", processedEdges)
-                }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
+                            """.trimIndent()
+                        )
+                        .addModifiers(KModifier.PUBLIC)
+                        .build()
+                )
+                val processedEdges = mutableSetOf<Pair<String, String>>()
+                processedEdges.add(Pair(it.second!!.name, type.name))
+                createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}${it.first.name.capitalize()}", processedEdges)
+            }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
 
         fieldDefinitions.filterSkipped().forEach {
             val objectTypeDefinition = it.type.findTypeDefinition(document)
             if (objectTypeDefinition == null) {
-                javaType.addFunction(FunSpec.builder(it.name)
+                javaType.addFunction(
+                    FunSpec.builder(it.name)
                         .returns(ClassName.bestGuess("${getPackageName()}.${javaType.build().name}"))
-                        .addCode("""
+                        .addCode(
+                            """
                         fields["${it.name}"] = null
                         return this
-                    """.trimIndent())
+                            """.trimIndent()
+                        )
                         .addModifiers(KModifier.PUBLIC)
-                        .build())
+                        .build()
+                )
             }
         }
 
@@ -181,24 +201,28 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         val clazzName = "EntitiesProjectionRoot"
 
         val javaType = TypeSpec.classBuilder(clazzName)
-                .addModifiers(KModifier.PUBLIC)
-                .superclass(BaseProjectionNode::class.asTypeName())
+            .addModifiers(KModifier.PUBLIC)
+            .superclass(BaseProjectionNode::class.asTypeName())
 
-        if(generatedClasses.contains(clazzName)) return KotlinCodeGenResult() else generatedClasses.add(clazzName)
+        if (generatedClasses.contains(clazzName)) return KotlinCodeGenResult() else generatedClasses.add(clazzName)
         val codeGenResult = federatedTypes
-                .map {
-                    javaType.addFunction(FunSpec.builder("on${it.name}")
-                            .addModifiers(KModifier.PUBLIC)
-                            .returns(ClassName.bestGuess("${getPackageName()}.Entities${it.name.capitalize()}KeyProjection"))
-                            .addCode("""
+            .map {
+                javaType.addFunction(
+                    FunSpec.builder("on${it.name}")
+                        .addModifiers(KModifier.PUBLIC)
+                        .returns(ClassName.bestGuess("${getPackageName()}.Entities${it.name.capitalize()}KeyProjection"))
+                        .addCode(
+                            """
                                 val fragment = Entities${it.name.capitalize()}KeyProjection(this, this)
                                 fragments.add(fragment)
                                 return fragment
-                            """.trimIndent())
-                            .build())
-                    val processedEdges = mutableSetOf<Pair<String, String>>()
-                    createFragment(it, javaType.build(), javaType.build(), "Entities${it.name.capitalize()}Key", processedEdges)
-                }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
+                            """.trimIndent()
+                        )
+                        .build()
+                )
+                val processedEdges = mutableSetOf<Pair<String, String>>()
+                createFragment(it, javaType.build(), javaType.build(), "Entities${it.name.capitalize()}Key", processedEdges)
+            }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
 
         val typeSpec = javaType.build()
         val javaFile = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
@@ -209,14 +233,18 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return if (type is InterfaceTypeDefinition) {
             val concreteTypes = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).filter { it.implements.filterIsInstance<NamedNode<*>>().find { iface -> iface.name == type.name } != null }
             concreteTypes.map {
-                javaType.addFunction(FunSpec.builder("on${it.name}")
+                javaType.addFunction(
+                    FunSpec.builder("on${it.name}")
                         .returns(ClassName.bestGuess("${getPackageName()}.${prefix}${it.name.capitalize()}Projection"))
-                        .addCode("""
+                        .addCode(
+                            """
                                 val fragment = ${prefix}${it.name.capitalize()}Projection(this, root)
                                 fragments.add(fragment)
                                 return fragment;
-                            """.trimIndent())
-                        .build())
+                            """.trimIndent()
+                        )
+                        .build()
+                )
 
                 createFragment(it, javaType.build(), rootType, "${prefix}${it.name.capitalize()}", processedEdges)
             }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
@@ -228,14 +256,18 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
             val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document) }
 
             memberTypes.map {
-                javaType.addFunction(FunSpec.builder("on${it.name}")
+                javaType.addFunction(
+                    FunSpec.builder("on${it.name}")
                         .returns(ClassName.bestGuess("${getPackageName()}.${prefix}${it.name.capitalize()}Projection"))
-                        .addCode("""
+                        .addCode(
+                            """
                                 val fragment = ${prefix}${it.name.capitalize()}Projection(this, root)
                                 fragments.add(fragment)
                                 return fragment;
-                            """.trimIndent())
-                        .build())
+                            """.trimIndent()
+                        )
+                        .build()
+                )
 
                 createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}${it.name.capitalize()}", processedEdges)
             }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
@@ -243,18 +275,23 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
     }
 
     private fun createFragment(type: ObjectTypeDefinition, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>): KotlinCodeGenResult {
-        val subProjection = createSubProjectionType(type, parent, root, prefix, processedEdges) ?: return KotlinCodeGenResult()
+        val subProjection = createSubProjectionType(type, parent, root, prefix, processedEdges)
+            ?: return KotlinCodeGenResult()
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
 
-        javaType.addInitializerBlock(CodeBlock.builder()
+        javaType.addInitializerBlock(
+            CodeBlock.builder()
                 .addStatement("fields[%S] = null", TypeNameMetaFieldDef.name)
-                .build())
+                .build()
+        )
 
-        javaType.addFunction(FunSpec.builder("toString")
+        javaType.addFunction(
+            FunSpec.builder("toString")
                 .returns(STRING)
                 .addModifiers(KModifier.OVERRIDE)
-                .addCode("""
+                .addCode(
+                    """
                     val builder = StringBuilder()
                     builder.append("... on ${type.name} {")
                     fields.forEach { k, v ->
@@ -266,8 +303,10 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                     builder.append("}")
             
                     return builder.toString()
-                """.trimIndent())
-                .build())
+                    """.trimIndent()
+                )
+                .build()
+        )
 
         val typeSpec = javaType.build()
         val javaFile = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
@@ -282,26 +321,28 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         return KotlinCodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    private fun createSubProjectionType(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>) : Pair<TypeSpec.Builder, KotlinCodeGenResult>? {
+    private fun createSubProjectionType(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>): Pair<TypeSpec.Builder, KotlinCodeGenResult>? {
         val className = ClassName(BaseSubProjectionNode::class.java.`package`.name, BaseSubProjectionNode::class.java.simpleName)
         val clazzName = "${prefix}Projection"
 
         if (generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
 
         val javaType = TypeSpec.classBuilder(clazzName)
-                .addModifiers(KModifier.PUBLIC)
-                .superclass(className.parameterizedBy(ClassName.bestGuess("${getPackageName()}.${parent.name}"), ClassName.bestGuess("${getPackageName()}.${root.name}")))
-                .primaryConstructor(FunSpec.constructorBuilder()
-                        .addParameter("parent", ClassName.bestGuess("${getPackageName()}.${parent.name}"))
-                        .addParameter("root", ClassName.bestGuess("${getPackageName()}.${root.name}"))
+            .addModifiers(KModifier.PUBLIC)
+            .superclass(className.parameterizedBy(ClassName.bestGuess("${getPackageName()}.${parent.name}"), ClassName.bestGuess("${getPackageName()}.${root.name}")))
+            .primaryConstructor(
+                FunSpec.constructorBuilder()
+                    .addParameter("parent", ClassName.bestGuess("${getPackageName()}.${parent.name}"))
+                    .addParameter("root", ClassName.bestGuess("${getPackageName()}.${root.name}"))
 
-                        .build())
-                .addSuperclassConstructorParameter("parent")
-                .addSuperclassConstructorParameter("root")
+                    .build()
+            )
+            .addSuperclassConstructorParameter("parent")
+            .addSuperclassConstructorParameter("root")
 
-        val fieldDefinitions = type.filterInterfaceFields(document) + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name}.flatMap { it.fieldDefinitions }
+        val fieldDefinitions = type.filterInterfaceFields(document) + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
 
-        val codeGenResult = if(projectionDepth[root.name]?:0 < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
+        val codeGenResult = if (projectionDepth[root.name] ?: 0 < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
             val depth = projectionDepth.getOrPut(root.name!!) { 0 }
             projectionDepth[root.name!!] = depth + 1
 
@@ -312,13 +353,13 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                     val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
                     javaType.addFunction(
                         FunSpec.builder(it.first.name)
-                            .returns(ClassName.bestGuess("${getPackageName()}.${projectionName}"))
+                            .returns(ClassName.bestGuess("${getPackageName()}.$projectionName"))
                             .addCode(
                                 """
-                        val projection = ${projectionName}(this, root)    
+                        val projection = $projectionName(this, root)    
                         fields["${it.first.name}"] = projection
                         return projection
-                    """.trimIndent()
+                                """.trimIndent()
                             )
                             .addModifiers(KModifier.PUBLIC)
                             .build()
@@ -333,14 +374,18 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
 
             val objectTypeDefinition = it.type.findTypeDefinition(document)
             if (objectTypeDefinition == null) {
-                javaType.addFunction(FunSpec.builder(it.name)
+                javaType.addFunction(
+                    FunSpec.builder(it.name)
                         .returns(ClassName.bestGuess("${getPackageName()}.${javaType.build().name}"))
-                        .addCode("""
+                        .addCode(
+                            """
                         fields["${it.name}"] = null
                         return this
-                    """.trimIndent())
+                            """.trimIndent()
+                        )
                         .addModifiers(KModifier.PUBLIC)
-                        .build())
+                        .build()
+                )
             }
         }
 

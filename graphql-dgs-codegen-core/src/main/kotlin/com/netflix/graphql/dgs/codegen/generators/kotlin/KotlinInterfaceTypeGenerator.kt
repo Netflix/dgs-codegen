@@ -42,9 +42,9 @@ class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
         }
 
         val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
-                .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
-                .map { node -> ClassName(packageName, node.name) }
-                .toList()
+            .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
+            .map { node -> ClassName(packageName, node.name) }
+            .toList()
 
         if (implementations.isNotEmpty()) {
             interfaceBuilder.addAnnotation(jsonTypeInfoAnnotation())
@@ -52,6 +52,6 @@ class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
         }
 
         val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
-        return KotlinCodeGenResult(interfaces =  listOf(fileSpec))
+        return KotlinCodeGenResult(interfaces = listOf(fileSpec))
     }
 }

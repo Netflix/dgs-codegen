@@ -39,8 +39,12 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
         return generateRepresentations(definition, document, generatedRepresentations, keyFields)
     }
 
-    fun generateRepresentations(definition: ObjectTypeDefinition, document: Document, generatedRepresentations: MutableMap<String, Any>,
-                                keyFields: Map<String, Any>): KotlinCodeGenResult {
+    fun generateRepresentations(
+        definition: ObjectTypeDefinition,
+        document: Document,
+        generatedRepresentations: MutableMap<String, Any>,
+        keyFields: Map<String, Any>
+    ): KotlinCodeGenResult {
         val name = "${definition.name}Representation"
         if (generatedRepresentations.containsKey(name)) {
             return KotlinCodeGenResult()
@@ -50,27 +54,27 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", STRING, false, CodeBlock.of("%S", definition.name))
         val fieldDefinitions = definition.fieldDefinitions
-                .filter {
-                    keyFields.containsKey(it.name)
-                }
-                .map {
-                    val type = findType(it.type, document)
-                    val fieldType = typeUtils.findReturnType(it.type)
-                    if (type != null && type is ObjectTypeDefinition) {
-                        val representationType = fieldType.toString().replace(type.name, "${type.name}Representation").removeSuffix("?")
-                        if (!generatedRepresentations.containsKey(name)) {
-                            result = generateRepresentations(type, document, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
-                        }
-                        generatedRepresentations["${type.name}Representation"] = representationType
-                        if (fieldType is ParameterizedTypeName && fieldType.rawType.simpleName == "List") {
-                            Field(it.name, LIST.parameterizedBy(com.squareup.kotlinpoet.ClassName(getPackageName(), "${type.name}Representation")), typeUtils.isNullable(it.type))
-                        } else {
-                            Field(it.name, com.squareup.kotlinpoet.ClassName(getPackageName(), representationType), typeUtils.isNullable(it.type))
-                        }
-                    } else {
-                        Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type))
+            .filter {
+                keyFields.containsKey(it.name)
+            }
+            .map {
+                val type = findType(it.type, document)
+                val fieldType = typeUtils.findReturnType(it.type)
+                if (type != null && type is ObjectTypeDefinition) {
+                    val representationType = fieldType.toString().replace(type.name, "${type.name}Representation").removeSuffix("?")
+                    if (!generatedRepresentations.containsKey(name)) {
+                        result = generateRepresentations(type, document, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
                     }
+                    generatedRepresentations["${type.name}Representation"] = representationType
+                    if (fieldType is ParameterizedTypeName && fieldType.rawType.simpleName == "List") {
+                        Field(it.name, LIST.parameterizedBy(com.squareup.kotlinpoet.ClassName(getPackageName(), "${type.name}Representation")), typeUtils.isNullable(it.type))
+                    } else {
+                        Field(it.name, com.squareup.kotlinpoet.ClassName(getPackageName(), representationType), typeUtils.isNullable(it.type))
+                    }
+                } else {
+                    Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type))
                 }
+            }
 
         return generate(name, fieldDefinitions.plus(typeName), emptyList(), true, document).merge(result)
     }
@@ -78,7 +82,6 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
     override fun getPackageName(): String {
         return config.packageNameClient
     }
-
 
     private fun findType(typeName: Type<*>, document: Document): TypeDefinition<*>? {
         return when (typeName) {
@@ -97,16 +100,16 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
 
         val keys = keyDirective.map { ds ->
             ds.map { if (it == '{' || it == '}') " $it " else "$it" }
-                    .joinToString("", "", "")
-                    .split(" ")
+                .joinToString("", "", "")
+                .split(" ")
         }.flatten()
 
         // handle simple keys and nested keys by constructing the path to each  key
         // e.g. type Movie @key(fields: "movieId") or type MovieCast @key(fields: movie { movieId } actors { name } }
         val mappedKeyTypes = mutableMapOf<String, Any>()
-        var parent =  Node("", mappedKeyTypes, null)
-        var current =  Node("", mappedKeyTypes, null)
-        keys.filter { it  !=  " " && it != "" }
+        var parent = Node("", mappedKeyTypes, null)
+        var current = Node("", mappedKeyTypes, null)
+        keys.filter { it != " " && it != "" }
             .forEach {
                 when (it) {
                     "{" -> {
@@ -128,7 +131,7 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
                         current = Node(it, current.map, parent)
                     }
                 }
-        }
+            }
         return mappedKeyTypes
     }
 }

@@ -24,7 +24,6 @@ import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
 import graphql.language.*
 
-
 @Suppress("UNCHECKED_CAST")
 class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
     fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
@@ -41,8 +40,11 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
         return generateRepresentations(definition, generatedRepresentations, keyFields)
     }
 
-    private fun generateRepresentations(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>,
-                                        keyFields: Map<String, Any>): CodeGenResult {
+    private fun generateRepresentations(
+        definition: ObjectTypeDefinition,
+        generatedRepresentations: MutableMap<String, Any>,
+        keyFields: Map<String, Any>
+    ): CodeGenResult {
         val name = "${definition.name}Representation"
         if (generatedRepresentations.containsKey(name)) {
             return CodeGenResult()
@@ -51,22 +53,22 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", ClassName.get(String::class.java), CodeBlock.of("\$S", definition.name))
         val fieldDefinitions = definition.fieldDefinitions
-                .filter {
-                    keyFields.containsKey(it.name)
-                }
-                .map {
-                    val type = findType(it.type, document)
-                    if (type != null && type is ObjectTypeDefinition) {
-                        val representationType = typeUtils.findReturnType(it.type).toString().replace(type.name, "${type.name}Representation")
-                        if (!generatedRepresentations.containsKey(name)) {
-                            result = generateRepresentations(type, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
-                        }
-                        generatedRepresentations["${type.name}Representation"] = representationType
-                        Field(it.name, ClassName.get("", representationType))
-                    } else {
-                        Field(it.name, typeUtils.findReturnType(it.type))
+            .filter {
+                keyFields.containsKey(it.name)
+            }
+            .map {
+                val type = findType(it.type, document)
+                if (type != null && type is ObjectTypeDefinition) {
+                    val representationType = typeUtils.findReturnType(it.type).toString().replace(type.name, "${type.name}Representation")
+                    if (!generatedRepresentations.containsKey(name)) {
+                        result = generateRepresentations(type, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
                     }
+                    generatedRepresentations["${type.name}Representation"] = representationType
+                    Field(it.name, ClassName.get("", representationType))
+                } else {
+                    Field(it.name, typeUtils.findReturnType(it.type))
                 }
+            }
         return generate(name, emptyList(), fieldDefinitions.plus(typeName), true).merge(result)
     }
 
@@ -87,16 +89,16 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
 
         val keys = keyDirective.map { ds ->
             ds.map { if (it == '{' || it == '}') " $it " else "$it" }
-                    .joinToString("", "", "")
-                    .split(" ")
+                .joinToString("", "", "")
+                .split(" ")
         }.flatten()
 
         // handle simple keys and nested keys by constructing the path to each  key
         // e.g. type Movie @key(fields: "movieId") or type MovieCast @key(fields: movie { movieId } actors { name } }
         val mappedKeyTypes = mutableMapOf<String, Any>()
-        var parent =  Node("", mappedKeyTypes, null)
-        var current =  Node("", mappedKeyTypes, null)
-        keys.filter { it  !=  " " && it != "" }
+        var parent = Node("", mappedKeyTypes, null)
+        var current = Node("", mappedKeyTypes, null)
+        keys.filter { it != " " && it != "" }
             .forEach {
                 when (it) {
                     "{" -> {
@@ -116,7 +118,7 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
                         current = Node(it, current.map, parent)
                     }
                 }
-        }
+            }
         return mappedKeyTypes
     }
 }

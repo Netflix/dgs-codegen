@@ -38,8 +38,8 @@ class CodeGen(private val config: CodeGenConfig) {
         }
 
         val inputSchemas = config.schemaFiles.flatMap { it.walkTopDown().toList().filter { file -> file.isFile } }
-                .map { it.readText() }
-                .plus(config.schemas)
+            .map { it.readText() }
+            .plus(config.schemas)
 
         val joinedSchema = inputSchemas.joinToString("\n")
         if (config.language == Language.JAVA) {
@@ -52,11 +52,13 @@ class CodeGen(private val config: CodeGenConfig) {
                 codeGenResult.enumTypes.forEach { it.writeTo(config.outputDir) }
                 codeGenResult.dataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
                 codeGenResult.queryTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.clientProjections.forEach { try {
-                    it.writeTo(config.outputDir)
-                } catch (ex: Exception) {
-                    println(ex.message)
-                } }
+                codeGenResult.clientProjections.forEach {
+                    try {
+                        it.writeTo(config.outputDir)
+                    } catch (ex: Exception) {
+                        println(ex.message)
+                    }
+                }
                 codeGenResult.constants.forEach { it.writeTo(config.outputDir) }
             }
 
@@ -104,7 +106,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaUnions(definitions: MutableList<Definition<Definition<*>>>): CodeGenResult {
-        if(!config.generateDataTypes) {
+        if (!config.generateDataTypes) {
             return CodeGenResult()
         }
 
@@ -114,7 +116,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaInterfaces(definitions: MutableList<Definition<Definition<*>>>): CodeGenResult {
-        if(!config.generateDataTypes) {
+        if (!config.generateDataTypes) {
             return CodeGenResult()
         }
 
@@ -126,9 +128,9 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateJavaClientApi(definitions: MutableList<Definition<Definition<*>>>): CodeGenResult {
         return if (config.generateClientApi) {
             definitions.filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.name == "Query" || it.name ==  "Mutation"}
-                    .map { ClientApiGenerator(config, document).generate(it) }
-                    .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+                .filter { it.name == "Query" || it.name == "Mutation" }
+                .map { ClientApiGenerator(config, document).generate(it) }
+                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
     }
 
@@ -143,30 +145,30 @@ class CodeGen(private val config: CodeGenConfig) {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.hasDirective("key") }
-                    .map { d ->
-                        EntitiesRepresentationTypeGenerator(config, document).generate(d, generatedRepresentations)
-                    }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+                .filter { it.hasDirective("key") }
+                .map { d ->
+                    EntitiesRepresentationTypeGenerator(config, document).generate(d, generatedRepresentations)
+                }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
     }
 
     private fun generateJavaDataFetchers(definitions: List<Definition<Definition<*>>>): CodeGenResult {
         return definitions.filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.name == "Query" }
-                .map { DatafetcherGenerator(config, document).generate(it) }
-                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .filter { it.name == "Query" }
+            .map { DatafetcherGenerator(config, document).generate(it) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
     private fun generateJavaDataType(definitions: List<Definition<Definition<*>>>): CodeGenResult {
-        if(!config.generateDataTypes) {
+        if (!config.generateDataTypes) {
             return CodeGenResult()
         }
 
         return definitions.filterIsInstance<ObjectTypeDefinition>()
-                .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
-                .map {
-                    DataTypeGenerator(config, document).generate(it, findExtensions(it.name, definitions))
-                }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .map {
+                DataTypeGenerator(config, document).generate(it, findExtensions(it.name, definitions))
+            }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
     private fun generateJavaInputType(definitions: List<Definition<Definition<*>>>): CodeGenResult {
@@ -175,16 +177,16 @@ class CodeGen(private val config: CodeGenConfig) {
             .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
 
         return inputTypes
-                .map { d ->
-                    InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions))
-                }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .map { d ->
+                InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions))
+            }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
     private fun findExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-            definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { name == it.name }
+        definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { name == it.name }
 
     private fun findInputExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-            definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
+        definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
 
     private fun generateKotlinForSchema(schema: String): KotlinCodeGenResult {
         document = Parser.parse(schema)
@@ -195,17 +197,17 @@ class CodeGen(private val config: CodeGenConfig) {
         val inputTypes = generateKotlinInputTypes(definitions)
 
         val interfacesResult = definitions.filterIsInstance<InterfaceTypeDefinition>()
-                .map { KotlinInterfaceTypeGenerator(config).generate(it, document) }
-                .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .map { KotlinInterfaceTypeGenerator(config).generate(it, document) }
+            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val unionResult = definitions.filterIsInstance<UnionTypeDefinition>()
-                .map { KotlinUnionTypeGenerator(config).generate(it) }
-                .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .map { KotlinUnionTypeGenerator(config).generate(it) }
+            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val enumsResult = definitions.filterIsInstance<EnumTypeDefinition>()
-                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
-                .map { KotlinEnumTypeGenerator(config).generate(it) }
-                .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
+            .map { KotlinEnumTypeGenerator(config).generate(it) }
+            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
@@ -219,8 +221,8 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateKotlinClientApi(definitions: List<Definition<Definition<*>>>): KotlinCodeGenResult {
         return if (config.generateClientApi) {
             definitions.filterIsInstance<ObjectTypeDefinition>().filter { it.name == "Query" || it.name == "Mutation" }
-                    .map { KotlinClientApiGenerator(config, document).generate(it) }
-                    .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+                .map { KotlinClientApiGenerator(config, document).generate(it) }
+                .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
         } else KotlinCodeGenResult()
     }
 
@@ -235,84 +237,82 @@ class CodeGen(private val config: CodeGenConfig) {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.hasDirective("key") }
-                    .map { d ->
-                        KotlinEntitiesRepresentationTypeGenerator(config).generate(d, document, generatedRepresentations)
-                    }.fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+                .filter { it.hasDirective("key") }
+                .map { d ->
+                    KotlinEntitiesRepresentationTypeGenerator(config).generate(d, document, generatedRepresentations)
+                }.fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
         } else KotlinCodeGenResult()
     }
 
     private fun generateKotlinInputTypes(definitions: List<Definition<Definition<*>>>): KotlinCodeGenResult {
         return definitions.filterIsInstance<InputObjectTypeDefinition>()
-                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
-                .map {
-                    KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions))
-                }
-                .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
+            .map {
+                KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions))
+            }
+            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
     }
 
     private fun generateKotlinDataTypes(definitions: List<Definition<Definition<*>>>): KotlinCodeGenResult {
         return definitions.filterIsInstance<ObjectTypeDefinition>()
-                .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
-                .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
-                .map {
-                    val extensions = findExtensions(it.name, definitions)
-                    KotlinDataTypeGenerator(config, document).generate(it, extensions)
-                }
-                .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filter { config.generateDataTypes || requiredTypeCollector.requiredTypes.contains(it.name) }
+            .map {
+                val extensions = findExtensions(it.name, definitions)
+                KotlinDataTypeGenerator(config, document).generate(it, extensions)
+            }
+            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
     }
-
 }
 
-
 data class CodeGenConfig(
-        val schemas: Set<String> = emptySet(),
-        val schemaFiles: Set<File> = emptySet(),
-        val outputDir: Path = Paths.get("generated"),
-        val examplesOutputDir: Path = Paths.get("generated-examples"),
-        val writeToFiles: Boolean = false,
-        val packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
-        private val subPackageNameClient: String = "client",
-        private val subPackageNameDatafetchers: String = "datafetchers",
-        private val subPackageNameTypes: String = "types",
-        val language: Language = Language.JAVA,
-        val generateBoxedTypes: Boolean = false,
-        val generateClientApi: Boolean = false,
-        val generateInterfaces: Boolean = false,
-        val typeMapping: Map<String, String> = emptyMap(),
-        val includeQueries: Set<String> = emptySet(),
-        val includeMutations: Set<String> = emptySet(),
-        val skipEntityQueries: Boolean = false,
-        val shortProjectionNames: Boolean = false,
-        val generateDataTypes: Boolean = true,
-        val maxProjectionDepth: Int = 10
+    val schemas: Set<String> = emptySet(),
+    val schemaFiles: Set<File> = emptySet(),
+    val outputDir: Path = Paths.get("generated"),
+    val examplesOutputDir: Path = Paths.get("generated-examples"),
+    val writeToFiles: Boolean = false,
+    val packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
+    private val subPackageNameClient: String = "client",
+    private val subPackageNameDatafetchers: String = "datafetchers",
+    private val subPackageNameTypes: String = "types",
+    val language: Language = Language.JAVA,
+    val generateBoxedTypes: Boolean = false,
+    val generateClientApi: Boolean = false,
+    val generateInterfaces: Boolean = false,
+    val typeMapping: Map<String, String> = emptyMap(),
+    val includeQueries: Set<String> = emptySet(),
+    val includeMutations: Set<String> = emptySet(),
+    val skipEntityQueries: Boolean = false,
+    val shortProjectionNames: Boolean = false,
+    val generateDataTypes: Boolean = true,
+    val maxProjectionDepth: Int = 10
 ) {
     val packageNameClient: String
-        get() = "${packageName}.${subPackageNameClient}"
+        get() = "$packageName.$subPackageNameClient"
 
     val packageNameDatafetchers: String
-        get() = "${packageName}.${subPackageNameDatafetchers}"
+        get() = "$packageName.$subPackageNameDatafetchers"
 
     val packageNameTypes: String
-        get() = "${packageName}.${subPackageNameTypes}"
+        get() = "$packageName.$subPackageNameTypes"
 
     override fun toString(): String {
         return """
-            --output-dir=${outputDir}
-            --package-name=${packageName}
-            --sub-package-name-client=${subPackageNameClient}
-            --sub-package-name-datafetchers=${subPackageNameDatafetchers}
-            --sub-package-name-types=${subPackageNameTypes}
-            ${if(generateBoxedTypes)"--generate-boxed-types" else ""}
-            ${if(writeToFiles) "--write-to-disk" else ""}
-            --language=${language}
-            ${if(generateClientApi) "--generate-client" else ""}
-            ${if(generateDataTypes) "--generate-data-types" else "--skip-generate-data-types" }
-            ${includeQueries.joinToString("\n") { "--include-query=${it}" }}
-            ${includeMutations.joinToString("\n") { "--include-mutation=${it}" }}
-            ${if(skipEntityQueries) "--skip-entities" else ""}
-            ${typeMapping.map { "--type-mapping ${it.key}=${it.value}"}.joinToString("\n")}           
-            ${if(shortProjectionNames) "--short-projection-names" else ""}
+            --output-dir=$outputDir
+            --package-name=$packageName
+            --sub-package-name-client=$subPackageNameClient
+            --sub-package-name-datafetchers=$subPackageNameDatafetchers
+            --sub-package-name-types=$subPackageNameTypes
+            ${if (generateBoxedTypes) "--generate-boxed-types" else ""}
+            ${if (writeToFiles) "--write-to-disk" else ""}
+            --language=$language
+            ${if (generateClientApi) "--generate-client" else ""}
+            ${if (generateDataTypes) "--generate-data-types" else "--skip-generate-data-types"}
+            ${includeQueries.joinToString("\n") { "--include-query=$it" }}
+            ${includeMutations.joinToString("\n") { "--include-mutation=$it" }}
+            ${if (skipEntityQueries) "--skip-entities" else ""}
+            ${typeMapping.map { "--type-mapping ${it.key}=${it.value}" }.joinToString("\n")}           
+            ${if (shortProjectionNames) "--short-projection-names" else ""}
             ${schemas.joinToString(" ")}
         """.trimIndent()
     }
@@ -358,7 +358,7 @@ fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
 fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
     return when (definitionName) {
         "Query" -> {
-            if(config.includeQueries.isNullOrEmpty()) {
+            if (config.includeQueries.isNullOrEmpty()) {
                 this
             } else {
                 this.filter {
@@ -367,7 +367,7 @@ fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config:
             }
         }
         "Mutation" -> {
-            if(config.includeMutations.isNullOrEmpty()) {
+            if (config.includeMutations.isNullOrEmpty()) {
                 this
             } else {
                 this.filter {
@@ -395,7 +395,7 @@ fun TypeDefinition<*>.fieldDefinitions(): List<FieldDefinition> {
  * Only return fields not declared on the type's interface
  */
 fun TypeDefinition<*>.filterInterfaceFields(document: Document): List<FieldDefinition> {
-    val interfaceFields = if(this is ObjectTypeDefinition) {
+    val interfaceFields = if (this is ObjectTypeDefinition) {
         this.implements.mapNotNull { it.findTypeDefinition(document) }.flatMap { it.fieldDefinitions() }.map { it.name }.toList()
     } else emptyList()
 
@@ -419,4 +419,3 @@ fun Type<*>.findTypeDefinition(document: Document, excludeExtensions: Boolean = 
         }
     }
 }
-

@@ -29,7 +29,7 @@ import javax.lang.model.element.Modifier
 class EnumTypeGenerator(private val config: CodeGenConfig) {
     fun generate(definition: EnumTypeDefinition): CodeGenResult {
         val javaType = TypeSpec.enumBuilder(definition.name)
-                .addModifiers(Modifier.PUBLIC)
+            .addModifiers(Modifier.PUBLIC)
 
         definition.enumValueDefinitions.forEach {
             addEnum(it, javaType)
