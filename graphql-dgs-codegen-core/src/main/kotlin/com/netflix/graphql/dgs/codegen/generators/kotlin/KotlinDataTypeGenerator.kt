@@ -161,6 +161,8 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
                     .build()
             )
         }
+        kotlinType.addType(TypeSpec.companionObjectBuilder().build())
+
         val typeSpec = kotlinType.build()
 
         val fileSpec = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()

@@ -176,6 +176,9 @@ class KotlinCodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.name).isEqualTo("Person")
+        val companion = type.typeSpecs[0]
+        assertThat(companion.isCompanion).isTrue
+        assertThat(companion.name).isNull()
     }
 
     @Test
@@ -384,7 +387,9 @@ class KotlinCodeGenTest {
                 |  public override val lastname: String? = null,
                 |  @JsonProperty("company")
                 |  public val company: String? = null
-                |) : Person
+                |) : Person {
+                |  public companion object
+                |}
                 |""".trimMargin()
         )
     }
@@ -1560,7 +1565,9 @@ class KotlinCodeGenTest {
                 |  public override val company: String? = null,
                 |  @JsonProperty("imdbProfile")
                 |  public val imdbProfile: String? = null
-                |) : Employee
+                |) : Employee {
+                |  public companion object
+                |}
                 |""".trimMargin()
         )
     }
