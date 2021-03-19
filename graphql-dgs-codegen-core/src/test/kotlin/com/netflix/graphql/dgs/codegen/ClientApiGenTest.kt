@@ -407,13 +407,14 @@ class ClientApiGenTest {
             type Movie {
                 title: String
                 actors: [Actor]
+                type: MovieType
             }
             
             type Actor {
                 name: String
                 age: Integer
             }
-
+           
         """.trimIndent()
 
         val codeGenResult = CodeGen(
@@ -1211,6 +1212,7 @@ class ClientApiGenTest {
             
             type Movie {
                 title: String
+                rating: Rating
                 actors: [Actor]
             }
             
@@ -1221,8 +1223,23 @@ class ClientApiGenTest {
             }
             
             type Agent {
-                name: String                
+                name: String  
+                address : Address
             }
+            
+            type Address {
+                street: String
+            }
+            
+            type Rating {
+                starts: Integer
+                review: Review 
+            }
+            
+            type Review {
+                description: String
+            }
+                
 
         """.trimIndent()
 
@@ -1231,13 +1248,16 @@ class ClientApiGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                maxProjectionDepth = 0,
+                maxProjectionDepth = 2,
             )
         ).generate() as CodeGenResult
 
-        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(5)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MoviesActorsProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MoviesRatingProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MoviesRatingReviewProjection")
+        assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("MoviesActorsProjection")
+        assertThat(codeGenResult.clientProjections[4].typeSpec.name).isEqualTo("MoviesActorsAgentProjection")
 
         assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
     }

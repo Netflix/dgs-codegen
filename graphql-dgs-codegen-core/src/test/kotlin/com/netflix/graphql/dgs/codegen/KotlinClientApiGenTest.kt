@@ -916,6 +916,7 @@ class KotlinClientApiGenTest {
             
             type Movie {
                 title: String
+                rating: Rating
                 actors: [Actor]
             }
             
@@ -926,8 +927,23 @@ class KotlinClientApiGenTest {
             }
             
             type Agent {
-                name: String                
+                name: String  
+                address : Address
             }
+            
+            type Address {
+                street: String
+            }
+            
+            type Rating {
+                starts: Integer
+                review: Review 
+            }
+            
+            type Review {
+                description: String
+            }
+                
 
         """.trimIndent()
 
@@ -937,14 +953,20 @@ class KotlinClientApiGenTest {
                 packageName = basePackageName,
                 language = Language.KOTLIN,
                 generateClientApi = true,
-                maxProjectionDepth = 0,
+                maxProjectionDepth = 2,
             )
         ).generate() as KotlinCodeGenResult
 
-        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(5)
         val projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(projectionTypeSpec.name).isEqualTo("MoviesProjectionRoot")
-        val actorTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        val ratingTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
+        assertThat(ratingTypeSpec.name).isEqualTo("MoviesRatingProjection")
+        val reviewTypeSpec = codeGenResult.clientProjections[2].members[0] as TypeSpec
+        assertThat(reviewTypeSpec.name).isEqualTo("MoviesRatingReviewProjection")
+        val actorTypeSpec = codeGenResult.clientProjections[3].members[0] as TypeSpec
         assertThat(actorTypeSpec.name).isEqualTo("MoviesActorsProjection")
+        val agentTypeSpec = codeGenResult.clientProjections[4].members[0] as TypeSpec
+        assertThat(agentTypeSpec.name).isEqualTo("MoviesActorsAgentProjection")
     }
 }
