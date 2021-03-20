@@ -6,7 +6,7 @@
     },
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
+            "locked": "2.12.2"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -15,10 +15,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -32,7 +32,7 @@
     },
     "implementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
+            "locked": "2.12.2"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -41,10 +41,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -71,9 +71,14 @@
             "locked": "1.4.31"
         }
     },
+    "ktlint": {
+        "com.pinterest:ktlint": {
+            "locked": "0.40.0"
+        }
+    },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
+            "locked": "2.12.2"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -82,10 +87,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -99,7 +104,7 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
+            "locked": "2.12.2"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -114,10 +119,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -143,7 +148,7 @@
     },
     "testImplementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
+            "locked": "2.12.2"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -158,10 +163,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -187,7 +192,7 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.12.1"
+            "locked": "2.12.2"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.1.0"
@@ -202,10 +207,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "3.6.0"
+            "locked": "3.9.3"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"

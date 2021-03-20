@@ -1,3 +1,7 @@
 {
-    
+    "ktlint": {
+        "com.pinterest:ktlint": {
+            "locked": "0.40.0"
+        }
+    }
 }
