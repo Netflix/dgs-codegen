@@ -41,7 +41,6 @@ class CodegenPlugin : Plugin<Project> {
         val mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
         val outputDir = taskProvider.get().getOutputDir()
 
-        val srcDirs = mainSourceSet.java.srcDirs + outputDir
-        mainSourceSet.java.setSrcDirs(srcDirs)
+        mainSourceSet.java.srcDirs(outputDir)
     }
 }
