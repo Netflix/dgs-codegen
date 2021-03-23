@@ -68,6 +68,53 @@ class KotlinEntitiesClientApiGenTest {
     }
 
     @Test
+    fun generateForEntitiesWithInterface() {
+        val schema = """
+            type Query {
+                search: Movie
+            }
+
+            type Movie @key(fields: "actor { name }") {
+                movieId: ID!
+                title: String
+                actor: IActor @external
+            }
+
+            interface IActor {
+                name: String
+            }
+            
+            type Actor implements IActor {
+                name: String
+                friends: Actor
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+            )
+        ).generate() as KotlinCodeGenResult
+
+        val projections = codeGenResult.clientProjections.filter { it.name.contains("Entities") }
+        assertThat(projections[0].name).isEqualTo("EntitiesProjectionRoot")
+        assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").containsExactly("onMovie")
+        assertThat(projections[1].name).isEqualTo("EntitiesMovieKeyProjection")
+        assertThat(projections[2].name).isEqualTo("EntitiesMovieKeyActorProjection")
+        assertThat(projections[3].name).isEqualTo("EntitiesMovieKeyActorActorProjection")
+
+        val representations = codeGenResult.dataTypes.filter { it.name.contains("Representation") }
+        assertThat(representations.size).isEqualTo(2)
+        assertThat(representations[0].name).isEqualTo("MovieRepresentation")
+        assertThat((representations[0].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "actor")
+        assertThat(representations[1].name).isEqualTo("IActorRepresentation")
+        assertThat((representations[1].members[0] as TypeSpec).propertySpecs).extracting("name").containsExactlyInAnyOrder("__typename", "name")
+    }
+
+    @Test
     fun generateForEntitiesWithArraysAndNestedKeys() {
         val schema = """
             type Query {

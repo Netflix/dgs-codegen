@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
 import graphql.language.*
@@ -37,31 +38,32 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
         }
         val directiveArg = definition.getDirectives("key").map { it.argumentsByName["fields"]?.value as StringValue }.map { it.value }
         val keyFields = parseKeyDirectiveValue(directiveArg)
-        return generateRepresentations(definition, generatedRepresentations, keyFields)
+        return generateRepresentations(definition.name, definition.fieldDefinitions, generatedRepresentations, keyFields)
     }
 
     private fun generateRepresentations(
-        definition: ObjectTypeDefinition,
+        definitionName: String,
+        fields: List<FieldDefinition>,
         generatedRepresentations: MutableMap<String, Any>,
         keyFields: Map<String, Any>
     ): CodeGenResult {
-        val name = "${definition.name}Representation"
+        val name = "${definitionName}Representation"
         if (generatedRepresentations.containsKey(name)) {
             return CodeGenResult()
         }
         var result = CodeGenResult()
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
-        val typeName = Field("__typename", ClassName.get(String::class.java), CodeBlock.of("\$S", definition.name))
-        val fieldDefinitions = definition.fieldDefinitions
+        val typeName = Field("__typename", ClassName.get(String::class.java), CodeBlock.of("\$S", definitionName))
+        val fieldDefinitions = fields
             .filter {
                 keyFields.containsKey(it.name)
             }
             .map {
                 val type = findType(it.type, document)
-                if (type != null && type is ObjectTypeDefinition) {
+                if (type != null && (type is ObjectTypeDefinition || type is InterfaceTypeDefinition)) {
                     val representationType = typeUtils.findReturnType(it.type).toString().replace(type.name, "${type.name}Representation")
                     if (!generatedRepresentations.containsKey(name)) {
-                        result = generateRepresentations(type, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
+                        result = generateRepresentations(type.name, type.fieldDefinitions(), generatedRepresentations, keyFields[it.name] as Map<String, Any>)
                     }
                     generatedRepresentations["${type.name}Representation"] = representationType
                     Field(it.name, ClassName.get("", representationType))
