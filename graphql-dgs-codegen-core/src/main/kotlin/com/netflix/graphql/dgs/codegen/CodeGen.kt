@@ -266,7 +266,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.hasDirective("key") }
                 .map { d ->
-                    KotlinEntitiesRepresentationTypeGenerator(config).generate(d, document, generatedRepresentations)
+                    KotlinEntitiesRepresentationTypeGenerator(config, document).generate(d, generatedRepresentations)
                 }.fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
         } else KotlinCodeGenResult()
     }

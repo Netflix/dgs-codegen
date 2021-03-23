@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName
@@ -27,43 +28,43 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import graphql.language.*
 
-class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig) : AbstractKotlinDataTypeGenerator(config.packageNameClient, config) {
+class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameClient, config) {
 
-    fun generate(definition: ObjectTypeDefinition, document: Document, generatedRepresentations: MutableMap<String, Any>): KotlinCodeGenResult {
+    fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): KotlinCodeGenResult {
         val name = "${definition.name}Representation"
         if (generatedRepresentations.containsKey(name)) {
             return KotlinCodeGenResult()
         }
         val directiveArg = definition.getDirectives("key").map { it.argumentsByName["fields"]?.value as StringValue }.map { it.value }
         val keyFields = parseKeyDirectiveValue(directiveArg)
-        return generateRepresentations(definition, document, generatedRepresentations, keyFields)
+        return generateRepresentations(definition.name, definition.fieldDefinitions, generatedRepresentations, keyFields)
     }
 
     fun generateRepresentations(
-        definition: ObjectTypeDefinition,
-        document: Document,
+        definitionName: String,
+        fields: List<FieldDefinition>,
         generatedRepresentations: MutableMap<String, Any>,
         keyFields: Map<String, Any>
     ): KotlinCodeGenResult {
-        val name = "${definition.name}Representation"
+        val name = "${definitionName}Representation"
         if (generatedRepresentations.containsKey(name)) {
             return KotlinCodeGenResult()
         }
 
         var result = KotlinCodeGenResult()
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
-        val typeName = Field("__typename", STRING, false, CodeBlock.of("%S", definition.name))
-        val fieldDefinitions = definition.fieldDefinitions
+        val typeName = Field("__typename", STRING, false, CodeBlock.of("%S", definitionName))
+        val fieldDefinitions = fields
             .filter {
                 keyFields.containsKey(it.name)
             }
             .map {
                 val type = findType(it.type, document)
                 val fieldType = typeUtils.findReturnType(it.type)
-                if (type != null && type is ObjectTypeDefinition) {
+                if (type != null && (type is ObjectTypeDefinition || type is InterfaceTypeDefinition)) {
                     val representationType = fieldType.toString().replace(type.name, "${type.name}Representation").removeSuffix("?")
                     if (!generatedRepresentations.containsKey(name)) {
-                        result = generateRepresentations(type, document, generatedRepresentations, keyFields[it.name] as Map<String, Any>)
+                        result = generateRepresentations(type.name, type.fieldDefinitions(), generatedRepresentations, keyFields[it.name] as Map<String, Any>)
                     }
                     generatedRepresentations["${type.name}Representation"] = representationType
                     if (fieldType is ParameterizedTypeName && fieldType.rawType.simpleName == "List") {

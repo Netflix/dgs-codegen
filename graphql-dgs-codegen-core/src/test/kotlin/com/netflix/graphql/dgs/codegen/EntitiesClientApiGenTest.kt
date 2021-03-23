@@ -68,6 +68,54 @@ class EntitiesClientApiGenTest {
     }
 
     @Test
+    fun generateForEntitiesWithInterface() {
+        val schema = """
+            type Query {
+                search: Movie
+            }
+
+            type Movie @key(fields: "actor { name }") {
+                movieId: ID!
+                title: String
+                actor: IActor @external
+            }
+
+            interface IActor {
+                name: String 
+            }
+            
+            type Actor implements IActor {
+                name: String
+                friends: Actor
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate() as CodeGenResult
+
+        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
+        assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("onMovie")
+        assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
+        assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieKeyActorProjection")
+        assertThat(projections[3].typeSpec.name).isEqualTo("EntitiesMovieKeyActorActorProjection")
+
+        val representations = codeGenResult.dataTypes.filter { it.typeSpec.name.contains("Representation") }
+        assertThat(representations.size).isEqualTo(2)
+        assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
+        assertThat(representations[0].typeSpec.fieldSpecs).extracting("name").containsExactlyInAnyOrder("__typename", "actor")
+        assertThat(representations[1].typeSpec.name).isEqualTo("IActorRepresentation")
+        assertThat(representations[1].typeSpec.fieldSpecs).extracting("name").containsExactlyInAnyOrder("__typename", "name")
+
+        assertCompiles(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.interfaces))
+    }
+
+    @Test
     fun generateForEntitiesWithArraysAndNestedKeys() {
         val schema = """
             type Query {
