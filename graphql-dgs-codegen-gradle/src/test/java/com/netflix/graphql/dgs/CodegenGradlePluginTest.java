@@ -84,7 +84,7 @@ public class CodegenGradlePluginTest {
         // Verify the result
         assertThat(result.task(":build").getOutcome()).isEqualTo(SUCCESS);
         // Verify that POJOs are generated in the configured directory
-        assertThat(new File(EXPECTED_PATH +"Result.java").exists()).isTrue();
+        assertThat(new File(EXPECTED_PATH + "Result.java").exists()).isTrue();
 
     }
 
@@ -102,7 +102,8 @@ public class CodegenGradlePluginTest {
         // Verify the result
         assertThat(result.task(":build").getOutcome()).isEqualTo(SUCCESS);
         // Verify that POJOs are generated in the configured directory
-        assertThat(new File(EXPECTED_DEFAULT_PATH +"Result.java").exists()).isTrue();
+        assertThat(new File(EXPECTED_DEFAULT_PATH + "Result.java").exists()).isTrue();
+    }
 
     @Test
     public void sourcesGenerated_OmitNullInputFields() {
