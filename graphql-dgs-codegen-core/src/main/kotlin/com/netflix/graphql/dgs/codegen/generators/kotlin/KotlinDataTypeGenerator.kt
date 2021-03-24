@@ -212,21 +212,27 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
     }
 
     private fun defaultString(field: Field, index: Int, fields: List<Field>): String {
-        return """
-            "${field.name}:" + ${field.name} + "${if (index < fields.size - 1) "," else ""}" +
-        """.trimIndent()
+        val inputField = """"${field.name}:" + ${field.name}"""
+        val suffix = """+ "${if (index < fields.size - 1) "," else ""}" +"""
+        val expression = if (config.omitNullInputFields && !field.nullable) {
+            """(if (${field.name} == null) "" else $inputField)"""
+        } else {
+            inputField
+        }
+        return expression + suffix
     }
 
     private fun quotedString(field: Field, index: Int, fields: List<Field>): String {
-        return if (field.nullable) {
-            """
-            "${field.name}:" + "${'$'}{if(${field.name} != null) "\"" else ""}" + ${field.name} + "${'$'}{if(${field.name} != null) "\"" else ""}" + "${if (index < fields.size - 1) "," else ""}" +
-            """.trimIndent()
+        val quoted = """"${field.name}:\"" + ${field.name} + "\"""""
+        val suffix = """+ "${if (index < fields.size - 1) "," else ""}" +"""
+        val expression = if (!field.nullable) {
+            "$quoted"
+        } else if (config.omitNullInputFields) {
+            """(if (${field.name} == null) "" else $quoted)"""
         } else {
-            """
-            "${field.name}:" + "\"" + ${field.name} + "\"" + "${if (index < fields.size - 1) "," else ""}" +
-            """.trimIndent()
+            """(if (${field.name} == null) "${field.name}:null" else $quoted)"""
         }
+        return expression + suffix
     }
 
     private fun addToStringForListOfStrings(name: String, field: Field, kotlinType: TypeSpec.Builder) {

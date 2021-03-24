@@ -103,7 +103,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
 
 internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false)
 
-abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig, document: Document) {
+abstract class BaseDataTypeGenerator(internal val packageName: String, private val config: CodeGenConfig, document: Document) {
     internal val typeUtils = TypeUtils(packageName, config, document)
 
     internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean): CodeGenResult {
@@ -270,15 +270,26 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
     }
 
     private fun defaultString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
-        return """
-            "${fieldSpec.name}:" + ${fieldSpec.name} + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-        """.trimIndent()
+        val inputField = """"${fieldSpec.name}:" + ${fieldSpec.name}"""
+        val suffix = """+ "${if (index < fieldDefinitions.size - 1) "," else ""}" +"""
+        val expression = if (config.omitNullInputFields && !fieldSpec.type.isPrimitive) {
+            return """(${fieldSpec.name} == null ? "" : $inputField)"""
+        } else {
+            inputField
+        }
+        return expression + suffix
     }
 
     private fun quotedString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
-        return """
-            "${fieldSpec.name}:" + (${fieldSpec.name} != null?"\"":"") + ${fieldSpec.name} + (${fieldSpec.name} != null?"\"":"") + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-        """.trimIndent()
+        val suffix = """+ "${if (index < fieldDefinitions.size - 1) "," else ""}" +"""
+        val expression = if (config.omitNullInputFields) {
+            """(${fieldSpec.name} == null ? "" : "${fieldSpec.name}:\"" + ${fieldSpec.name} + "\"")"""
+        } else {
+            """
+            (${fieldSpec.name} == null ? "${fieldSpec.name}:null" : "${fieldSpec.name}:\"" + ${fieldSpec.name} + "\"")
+            """.trimIndent()
+        }
+        return expression + suffix
     }
 
     private fun addToStringForListOfStrings(name: String, field: FieldSpec, javaType: TypeSpec.Builder) {

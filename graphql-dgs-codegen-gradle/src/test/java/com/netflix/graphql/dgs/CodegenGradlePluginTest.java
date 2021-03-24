@@ -103,5 +103,22 @@ public class CodegenGradlePluginTest {
         assertThat(result.task(":build").getOutcome()).isEqualTo(SUCCESS);
         // Verify that POJOs are generated in the configured directory
         assertThat(new File(EXPECTED_DEFAULT_PATH +"Result.java").exists()).isTrue();
+
+    @Test
+    public void sourcesGenerated_OmitNullInputFields() {
+        // build a project
+        BuildResult result = GradleRunner.create()
+                .withProjectDir(new File("src/test/resources/test-project/"))
+                .withPluginClasspath(pluginClasspath)
+                .withArguments("-c", "smoke_test_settings_omit_null_input_fields.gradle", "-b", "build_omit_null_input_fields.gradle", "clean", "build", "--stacktrace")
+                .forwardOutput()
+                .withDebug(true)
+                .build();
+
+        // Verify the result
+        assertThat(result.task(":build").getOutcome()).isEqualTo(SUCCESS);
+        // Verify that POJOs are generated in the configured directory
+        assertThat(new File(EXPECTED_DEFAULT_PATH + "Result.java").exists()).isTrue();
+        assertThat(new File(EXPECTED_DEFAULT_PATH + "Filter.java").exists()).isTrue();
     }
 }

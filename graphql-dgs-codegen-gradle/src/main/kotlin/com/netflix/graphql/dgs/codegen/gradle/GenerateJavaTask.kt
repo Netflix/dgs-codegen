@@ -101,6 +101,9 @@ open class GenerateJavaTask : DefaultTask() {
     var shortProjectionNames = false
 
     @Input
+    var omitNullInputFields = false
+
+    @Input
     var maxProjectionDepth = 10
 
     @TaskAction
@@ -130,6 +133,7 @@ open class GenerateJavaTask : DefaultTask() {
             skipEntityQueries = skipEntityQueries,
             shortProjectionNames = shortProjectionNames,
             generateDataTypes = generateDataTypes,
+            omitNullInputFields = omitNullInputFields,
             maxProjectionDepth = maxProjectionDepth,
         )
 
