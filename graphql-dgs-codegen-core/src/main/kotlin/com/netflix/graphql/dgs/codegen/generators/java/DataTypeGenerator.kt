@@ -271,7 +271,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
 
     private fun defaultString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
         val inputField = """"${fieldSpec.name}:" + ${fieldSpec.name}"""
-        val suffix = """+ "${if (index < fieldDefinitions.size - 1) "," else ""}" +"""
+        val suffix = """ + "${if (index < fieldDefinitions.size - 1) "," else ""}" + """
         val expression = if (config.omitNullInputFields && !fieldSpec.type.isPrimitive) {
             return """(${fieldSpec.name} == null ? "" : $inputField)"""
         } else {
@@ -281,7 +281,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
     }
 
     private fun quotedString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
-        val suffix = """+ "${if (index < fieldDefinitions.size - 1) "," else ""}" +"""
+        val suffix = """ + "${if (index < fieldDefinitions.size - 1) "," else ""}" + """
         val expression = if (config.omitNullInputFields) {
             """(${fieldSpec.name} == null ? "" : "${fieldSpec.name}:\"" + ${fieldSpec.name} + "\"")"""
         } else {

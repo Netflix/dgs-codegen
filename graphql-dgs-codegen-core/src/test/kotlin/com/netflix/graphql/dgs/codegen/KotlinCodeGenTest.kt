@@ -869,7 +869,7 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + "${'$'}{if(genre != null) "\"" else ""}" + genre + "${'$'}{if(genre != null) "\"" else ""}" + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}"
+            return "{" + (if (genre == null) "genre:null" else "genre:\"" + genre + "\"") + "," + "rating:" + rating + "," + "views:" + views + "," + "stars:" + stars + "" + "}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -902,7 +902,7 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + "\"" + genre + "\"" + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}"
+            return "{" + "genre:\"" + genre + "\"" + "," + "rating:" + rating + "," + "views:" + views + "," + "stars:" + stars + "" + "}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -935,7 +935,7 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + "\"" + genre + "\"" + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "" +"}"
+            return "{" + "genre:\"" + genre + "\"" + "," + "rating:" + rating + "," + "average:" + average + "," + "viewed:" + viewed + "" + "}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -974,7 +974,7 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + "${'$'}{if(genre != null) "\"" else ""}" + genre + "${'$'}{if(genre != null) "\"" else ""}" + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "," +"identifier:" + "${'$'}{if(identifier != null) "\"" else ""}" + identifier + "${'$'}{if(identifier != null) "\"" else ""}" + "" +"}"
+            return "{" + (if (genre == null) "genre:null" else "genre:\"" + genre + "\"") + "," + "rating:" + rating + "," + "average:" + average + "," + "viewed:" + viewed + "," + (if (identifier == null) "identifier:null" else "identifier:\"" + identifier + "\"") + "" + "}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -1052,7 +1052,7 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + genre + "" +"}"
+            return "{" + "genre:" + genre + "" + "}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -1113,7 +1113,7 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
 
         val expectedInputString = """
-           return "{" + "localDateTime:" + "${'$'}{if(localDateTime != null) "\"" else ""}" + localDateTime + "${'$'}{if(localDateTime != null) "\"" else ""}" + "," +"localDate:" + "${'$'}{if(localDate != null) "\"" else ""}" + localDate + "${'$'}{if(localDate != null) "\"" else ""}" + "," +"localTime:" + "${'$'}{if(localTime != null) "\"" else ""}" + localTime + "${'$'}{if(localTime != null) "\"" else ""}" + "," +"dateTime:" + "${'$'}{if(dateTime != null) "\"" else ""}" + dateTime + "${'$'}{if(dateTime != null) "\"" else ""}" + "" +"}"
+           return "{" + (if (localDateTime == null) "localDateTime:null" else "localDateTime:\"" + localDateTime + "\"") + "," + (if (localDate == null) "localDate:null" else "localDate:\"" + localDate + "\"") + "," + (if (localTime == null) "localTime:null" else "localTime:\"" + localTime + "\"") + "," + (if (dateTime == null) "dateTime:null" else "dateTime:\"" + dateTime + "\"") + "" + "}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
@@ -1173,7 +1173,7 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
 
         val expectedInputString = """
-            return "{" + "time:" + "${'$'}{if(time != null) "\"" else ""}" + time + "${'$'}{if(time != null) "\"" else ""}" + "," +"date:" + date + "" +"}"
+            return "{" + (if (time == null) "time:null" else "time:\"" + time + "\"") + "," + "date:" + date + "" + "}"
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)

@@ -829,7 +829,7 @@ class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"viewed:" + viewed + "" +"}";
+            return "{" + (genre == null ? "genre:null" : "genre:\"" + genre + "\"") + "," + "rating:" + rating + "," + "viewed:" + viewed + "" + "}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -859,7 +859,7 @@ class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "" +"}";
+            return "{" + (genre == null ? "genre:null" : "genre:\"" + genre + "\"") + "," + "rating:" + rating + "" + "}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -891,7 +891,7 @@ class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "" +"}";
+            return "{" + (genre == null ? "genre:null" : "genre:\"" + genre + "\"") + "," + "rating:" + rating + "," + "average:" + average + "," + "viewed:" + viewed + "" + "}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -929,7 +929,7 @@ class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + (genre != null?"\"":"") + genre + (genre != null?"\"":"") + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "," +"identifier:" + (identifier != null?"\"":"") + identifier + (identifier != null?"\"":"") + "" +"}";
+            return "{" + (genre == null ? "genre:null" : "genre:\"" + genre + "\"") + "," + "rating:" + rating + "," + "average:" + average + "," + "viewed:" + viewed + "," + (identifier == null ? "identifier:null" : "identifier:\"" + identifier + "\"") + "" + "}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -1007,7 +1007,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
         val expectedInputString = """
-            return "{" + "genre:" + genre + "" +"}";
+            return "{" + "genre:" + genre + "" + "}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -1038,7 +1038,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
         val expectedInputString = """
-            return "{" + "localDateTime:" + (localDateTime != null?"\"":"") + localDateTime + (localDateTime != null?"\"":"") + "," +"localDate:" + (localDate != null?"\"":"") + localDate + (localDate != null?"\"":"") + "," +"localTime:" + (localTime != null?"\"":"") + localTime + (localTime != null?"\"":"") + "," +"dateTime:" + (dateTime != null?"\"":"") + dateTime + (dateTime != null?"\"":"") + "" +"}";
+            return "{" + (localDateTime == null ? "localDateTime:null" : "localDateTime:\"" + localDateTime + "\"") + "," + (localDate == null ? "localDate:null" : "localDate:\"" + localDate + "\"") + "," + (localTime == null ? "localTime:null" : "localTime:\"" + localTime + "\"") + "," + (dateTime == null ? "dateTime:null" : "dateTime:\"" + dateTime + "\"") + "" + "}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -1068,7 +1068,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
         val expectedInputString = """
-            return "{" + "time:" + (time != null?"\"":"") + time + (time != null?"\"":"") + "," +"date:" + date + "" +"}";
+            return "{" + (time == null ? "time:null" : "time:\"" + time + "\"") + "," + "date:" + date + "" + "}";
         """.trimIndent()
         val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)

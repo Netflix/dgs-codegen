@@ -213,7 +213,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
 
     private fun defaultString(field: Field, index: Int, fields: List<Field>): String {
         val inputField = """"${field.name}:" + ${field.name}"""
-        val suffix = """+ "${if (index < fields.size - 1) "," else ""}" +"""
+        val suffix = """ + "${if (index < fields.size - 1) "," else ""}" + """
         val expression = if (config.omitNullInputFields && !field.nullable) {
             """(if (${field.name} == null) "" else $inputField)"""
         } else {
@@ -224,9 +224,9 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
 
     private fun quotedString(field: Field, index: Int, fields: List<Field>): String {
         val quoted = """"${field.name}:\"" + ${field.name} + "\"""""
-        val suffix = """+ "${if (index < fields.size - 1) "," else ""}" +"""
+        val suffix = """ + "${if (index < fields.size - 1) "," else ""}" + """
         val expression = if (!field.nullable) {
-            "$quoted"
+            quoted
         } else if (config.omitNullInputFields) {
             """(if (${field.name} == null) "" else $quoted)"""
         } else {
