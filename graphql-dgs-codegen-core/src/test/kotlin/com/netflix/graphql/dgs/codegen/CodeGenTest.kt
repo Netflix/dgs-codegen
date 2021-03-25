@@ -18,12 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.google.common.jimfs.Configuration
+import com.google.common.jimfs.Jimfs
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.io.File
 import java.net.URL
 import java.net.URLClassLoader
 import java.nio.file.Files
@@ -1809,27 +1810,30 @@ class CodeGenTest {
     }
 
     private fun compileAndGetConstructor(dataTypes: List<JavaFile>, type: String, vararg constructorTypes: Class<*>): (Array<*>) -> Any {
-        // TODO use jimfs instead of the filesystem
-        val packageNameAsPath = basePackageName.replace(".", File.separator)
-        val result = assertCompiles(dataTypes)
-        val tempDir = Files.createTempDirectory("oi")
-        val urls = result.generatedFiles()
+        val packageNameAsUnixPath = basePackageName.replace(".", "/")
+        val compilation = assertCompiles(dataTypes)
+        val temporaryFilesystem = Jimfs.newFileSystem(Configuration.unix())
+        val classpath = compilation.generatedFiles()
             .filter { it.kind == JavaFileObject.Kind.CLASS }
             .map {
-                val destFile = tempDir.resolve(it.toUri().path.removePrefix("/"))
+                val destFile = temporaryFilesystem.getPath(it.toUri().path)
                 Files.createDirectories(destFile.parent)
-                it.openInputStream().copyTo(Files.newOutputStream(destFile))
+                it.openInputStream().use { input ->
+                    Files.newOutputStream(destFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
                 destFile.parent
             }
             .toSet()
-            .map { URL(it.toUri().toString().replace("$packageNameAsPath.*".toRegex(), "")) }
+            .map { URL(it.toUri().toString().replace("$packageNameAsUnixPath.*".toRegex(), "")) }
+            .toTypedArray()
 
-        val classLoader = URLClassLoader(urls.toTypedArray())
-        val loadClass = classLoader.loadClass("$basePackageName.types.$type")
+        val clazz = URLClassLoader(classpath).loadClass("$basePackageName.types.$type")
         val constructor = try {
-            loadClass.getConstructor(*constructorTypes)
+            clazz.getConstructor(*constructorTypes)
         } catch (e: Exception) {
-            throw RuntimeException("Could not get constructor. Available options are: ${loadClass.constructors.toList()}", e)
+            throw RuntimeException("Could not get constructor. Available options are: ${clazz.constructors.toList()}", e)
         }
         return { args -> constructor.newInstance(*args) }
     }
