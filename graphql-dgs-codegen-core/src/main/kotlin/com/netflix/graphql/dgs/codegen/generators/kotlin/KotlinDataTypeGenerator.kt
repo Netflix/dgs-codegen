@@ -171,8 +171,8 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
     }
 
     private fun addToString(fields: List<Field>, kotlinType: TypeSpec.Builder): String {
-        val toStringBody = StringBuilder("return \"{\" + ")
-        fields.mapIndexed { index, field ->
+        val toStringBody = StringBuilder("return linkedMapOf(\n")
+        fields.map { field ->
             when (val fieldTypeName = field.type) {
                 is ParameterizedTypeName -> {
                     val innerType = fieldTypeName.typeArguments[0]
@@ -183,56 +183,29 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
                             "serializeListOf$innerType"
                         }
                         addToStringForListOfStrings(name, field, kotlinType)
-                        """
-                            "${field.name}:" + $name(${field.name}) + "${if (index < fields.size - 1) "," else ""}" +
-                        """.trimIndent()
+                        """"${field.name}" to $name(${field.name})"""
                     } else {
-                        defaultString(field, index, fields)
+                        """"${field.name}" to ${field.name}"""
                     }
                 }
-
                 is ClassName -> {
                     if (typeUtils.isStringInput(fieldTypeName)) {
-                        quotedString(field, index, fields)
+                        """"${field.name}" to (if (${field.name} == null) null else "\"" + ${field.name} + "\"")"""
                     } else {
-                        defaultString(field, index, fields)
+                        """"${field.name}" to ${field.name}"""
                     }
                 }
                 else -> {
-                    defaultString(field, index, fields)
+                    """"${field.name}" to ${field.name}"""
                 }
             }
-        }.forEach { toStringBody.append(it) }
+        }.forEach { toStringBody.append(it).append(",\n") }
 
         return toStringBody.append(
             """
-            "}"
+            )${if (config.omitNullInputFields) ".filter { it.value != null }" else ""}.map { it.key + ":" + it.value }.joinToString(",", "{", "}")
             """.trimIndent()
         ).toString()
-    }
-
-    private fun defaultString(field: Field, index: Int, fields: List<Field>): String {
-        val inputField = """"${field.name}:" + ${field.name}"""
-        val suffix = """ + "${if (index < fields.size - 1) "," else ""}" + """
-        val expression = if (config.omitNullInputFields && !field.nullable) {
-            """(if (${field.name} == null) "" else $inputField)"""
-        } else {
-            inputField
-        }
-        return expression + suffix
-    }
-
-    private fun quotedString(field: Field, index: Int, fields: List<Field>): String {
-        val quoted = """"${field.name}:\"" + ${field.name} + "\"""""
-        val suffix = """ + "${if (index < fields.size - 1) "," else ""}" + """
-        val expression = if (!field.nullable) {
-            quoted
-        } else if (config.omitNullInputFields) {
-            """(if (${field.name} == null) "" else $quoted)"""
-        } else {
-            """(if (${field.name} == null) "${field.name}:null" else $quoted)"""
-        }
-        return expression + suffix
     }
 
     private fun addToStringForListOfStrings(name: String, field: Field, kotlinType: TypeSpec.Builder) {

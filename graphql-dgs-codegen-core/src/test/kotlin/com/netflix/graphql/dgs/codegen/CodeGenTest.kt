@@ -20,15 +20,19 @@ package com.netflix.graphql.dgs.codegen
 
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.WildcardTypeName
+import com.squareup.javapoet.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.io.File
+import java.net.URL
+import java.net.URLClassLoader
+import java.nio.file.Files
+import java.time.*
+import javax.tools.JavaFileObject
 
 class CodeGenTest {
 
+    val clock = Clock.fixed(Instant.ofEpochMilli(0), ZoneId.of("America/Sao_Paulo"))
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
     val typesPackageName = "$basePackageName.types"
     val dataFetcherPackageName = "$basePackageName.datafetchers"
@@ -827,13 +831,13 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-        val expectedInputString = """
-            return "{" + (genre == null ? "genre:null" : "genre:\"" + genre + "\"") + "," + "rating:" + rating + "," + "viewed:" + viewed + "" + "}";
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
-        assertCompiles(dataTypes)
+        val createDefaultMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", String::class.java, Int::class.javaObjectType, Boolean::class.javaObjectType)
+
+        assertThat(createDefaultMovieFilter(emptyArray<Any>()).toString())
+            .isEqualTo("""{genre:null,rating:3,viewed:true}""")
+        assertThat(createMovieFilter(arrayOf(null, 7, null)).toString())
+            .isEqualTo("""{genre:null,rating:7,viewed:null}""")
     }
 
     @Test
@@ -857,13 +861,9 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-        val expectedInputString = """
-            return "{" + (genre == null ? "genre:null" : "genre:\"" + genre + "\"") + "," + "rating:" + rating + "" + "}";
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
-        assertCompiles(dataTypes)
+        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", String::class.java, Int::class.java)
+        assertThat(createMovieFilter(arrayOf("hi", 1)).toString())
+            .isEqualTo("""{genre:"hi",rating:1}""")
     }
 
     @Test
@@ -889,13 +889,9 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-        val expectedInputString = """
-            return "{" + (genre == null ? "genre:null" : "genre:\"" + genre + "\"") + "," + "rating:" + rating + "," + "average:" + average + "," + "viewed:" + viewed + "" + "}";
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
-        assertCompiles(dataTypes)
+        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+        assertThat(createMovieFilter(emptyArray<Any>()).toString())
+            .isEqualTo("""{genre:"horror",rating:3,average:1.2,viewed:true}""")
     }
 
     @Test
@@ -927,18 +923,13 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-        val expectedInputString = """
-            return "{" + (genre == null ? "genre:null" : "genre:\"" + genre + "\"") + "," + "rating:" + rating + "," + "average:" + average + "," + "viewed:" + viewed + "," + (identifier == null ? "identifier:null" : "identifier:\"" + identifier + "\"") + "" + "}";
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
-        assertCompiles(dataTypes)
+        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+        assertThat(createMovieFilter(emptyArray<Any>()).toString())
+            .isEqualTo("""{genre:"horror",rating:3,average:1.2,viewed:true,identifier:"jhw"}""")
     }
 
     @Test
     fun generateToInputStringMethodForListOfString() {
-
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
@@ -958,14 +949,12 @@ class CodeGenTest {
         ).generate() as CodeGenResult
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
-        var expectedInputString = """
-            return "{" + "genre:" + serializeListOfString(genre) + "," +"actors:" + serializeListOfString(actors) + "" +"}";
-        """.trimIndent()
-        var generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
+        val movieFilterString = compileAndGetConstructor(dataTypes, "MovieFilter", List::class.java, List::class.java)
+        assertThat(movieFilterString(arrayOf(listOf("hello", "world"), listOf("bye"))).toString())
+            .isEqualTo("""{genre:["hello", "world"],actors:["bye"]}""")
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("serializeListOfString")
-        expectedInputString = """
+        val expectedInputString = """
             if (inputList == null) {
                     return null;
                 }
@@ -981,9 +970,8 @@ class CodeGenTest {
                 builder.append("]");
                 return  builder.toString();
         """.trimIndent()
-        generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "serializeListOfString" }.code.toString().trimIndent()
+        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "serializeListOfString" }.code.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
-        assertCompiles(dataTypes)
     }
 
     @Test
@@ -1004,14 +992,11 @@ class CodeGenTest {
                 packageName = basePackageName,
             )
         ).generate() as CodeGenResult
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
-        val expectedInputString = """
-            return "{" + "genre:" + genre + "" + "}";
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
-        assertCompiles(dataTypes)
+        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", List::class.java)
+
+        assertThat(createMovieFilter(arrayOf(emptyList<Int>())).toString()).isEqualTo("{genre:[]}")
+        assertThat(createMovieFilter(arrayOf(listOf(1, 2, 3))).toString()).isEqualTo("{genre:[1, 2, 3]}")
     }
 
     @Test
@@ -1035,14 +1020,19 @@ class CodeGenTest {
                 packageName = basePackageName,
             )
         ).generate() as CodeGenResult
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
-        val expectedInputString = """
-            return "{" + (localDateTime == null ? "localDateTime:null" : "localDateTime:\"" + localDateTime + "\"") + "," + (localDate == null ? "localDate:null" : "localDate:\"" + localDate + "\"") + "," + (localTime == null ? "localTime:null" : "localTime:\"" + localTime + "\"") + "," + (dateTime == null ? "dateTime:null" : "dateTime:\"" + dateTime + "\"") + "" + "}";
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
-        assertCompiles(dataTypes)
+        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", LocalDateTime::class.java, LocalDate::class.java, LocalTime::class.java, OffsetDateTime::class.java)
+
+        assertThat(
+            createMovieFilter(
+                arrayOf(
+                    LocalDateTime.now(clock),
+                    LocalDate.now(clock),
+                    LocalTime.now(clock),
+                    OffsetDateTime.now(clock)
+                )
+            ).toString()
+        ).isEqualTo("""{localDateTime:"1969-12-31T21:00",localDate:"1969-12-31",localTime:"21:00",dateTime:"1969-12-31T21:00-03:00"}""")
     }
 
     @Test
@@ -1055,7 +1045,6 @@ class CodeGenTest {
             input MovieFilter {
                 time: LocalTime
                 date: LocalDate
-                
             }
         """.trimIndent()
 
@@ -1065,14 +1054,11 @@ class CodeGenTest {
                 typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer")),
             )
         ).generate() as CodeGenResult
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
-        val expectedInputString = """
-            return "{" + (time == null ? "time:null" : "time:\"" + time + "\"") + "," + "date:" + date + "" + "}";
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(generatedInputString).isEqualTo(expectedInputString)
-        assertCompiles(dataTypes)
+        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", LocalDateTime::class.java, Int::class.javaObjectType)
+
+        assertThat(createMovieFilter(arrayOf(LocalDateTime.now(clock), 98)).toString())
+            .isEqualTo("""{time:"1969-12-31T21:00",date:98}""")
     }
 
     @Test
@@ -1094,14 +1080,11 @@ class CodeGenTest {
                 packageName = basePackageName,
             )
         ).generate() as CodeGenResult
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
-        val expectedInputString = """
-            return "{" + "names:" + serializeListOfString(names) + "," +"localDateTime:" + serializeListOfLocalDateTime(localDateTime) + "" +"}";
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(generatedInputString).isEqualTo(expectedInputString)
-        assertCompiles(dataTypes)
+        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", List::class.java, List::class.java)
+
+        assertThat(createMovieFilter(arrayOf(listOf("hi"), listOf(LocalDateTime.now(clock)))).toString())
+            .isEqualTo("""{names:["hi"],localDateTime:["1969-12-31T21:00"]}""")
     }
 
     @Test
@@ -1657,6 +1640,39 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateDataTypeThatOmitsNulls() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                mandatoryString: String!
+                optionalString: String
+                mandatoryInt: Int!
+                optionalInt: Int
+                mandatoryList: [String]!
+                optionalList: [Int]
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                omitNullInputFields = true,
+            )
+        ).generate() as CodeGenResult
+
+        val constructor = compileAndGetConstructor(dataTypes, "MovieFilter", String::class.java, String::class.java, Int::class.java, Int::class.javaObjectType, List::class.java, List::class.java)
+
+        assertThat(constructor(arrayOf("a", "b", 1, 2, listOf("x"), listOf(3))).toString())
+            .isEqualTo("""{mandatoryString:"a",optionalString:"b",mandatoryInt:1,optionalInt:2,mandatoryList:["x"],optionalList:[3]}""")
+        assertThat(constructor(arrayOf("a", null, 1, null, listOf("x"), null)).toString())
+            .isEqualTo("""{mandatoryString:"a",mandatoryInt:1,mandatoryList:["x"]}""")
+    }
+
+    @Test
     fun generateObjectTypeInterface() {
         val schema = """
             type Query {
@@ -1790,6 +1806,32 @@ class CodeGenTest {
         assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").containsExactly("Rating")
 
         assertCompiles(dataTypes.plus(interfaces).plus(result.enumTypes))
+    }
+
+    private fun compileAndGetConstructor(dataTypes: List<JavaFile>, type: String, vararg constructorTypes: Class<*>): (Array<*>) -> Any {
+        // TODO use jimfs instead of the filesystem
+        val packageNameAsPath = basePackageName.replace(".", File.separator)
+        val result = assertCompiles(dataTypes)
+        val tempDir = Files.createTempDirectory("oi")
+        val urls = result.generatedFiles()
+            .filter { it.kind == JavaFileObject.Kind.CLASS }
+            .map {
+                val destFile = tempDir.resolve(it.toUri().path.removePrefix("/"))
+                Files.createDirectories(destFile.parent)
+                it.openInputStream().copyTo(Files.newOutputStream(destFile))
+                destFile.parent
+            }
+            .toSet()
+            .map { URL(it.toUri().toString().replace("$packageNameAsPath.*".toRegex(), "")) }
+
+        val classLoader = URLClassLoader(urls.toTypedArray())
+        val loadClass = classLoader.loadClass("$basePackageName.types.$type")
+        val constructor = try {
+            loadClass.getConstructor(*constructorTypes)
+        } catch (e: Exception) {
+            throw RuntimeException("Could not get constructor. Available options are: ${loadClass.constructors.toList()}", e)
+        }
+        return { args -> constructor.newInstance(*args) }
     }
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
