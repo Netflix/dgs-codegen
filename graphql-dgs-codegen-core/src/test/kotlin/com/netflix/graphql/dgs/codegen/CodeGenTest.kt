@@ -832,12 +832,11 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val createDefaultMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", String::class.java, Int::class.javaObjectType, Boolean::class.javaObjectType)
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
 
-        assertThat(createDefaultMovieFilter(emptyArray<Any>()).toString())
+        assertThat(movieFilter.create().toString())
             .isEqualTo("""{genre:null,rating:3,viewed:true}""")
-        assertThat(createMovieFilter(arrayOf(null, 7, null)).toString())
+        assertThat(movieFilter.create(null, 7, null).toString())
             .isEqualTo("""{genre:null,rating:7,viewed:null}""")
     }
 
@@ -862,8 +861,8 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", String::class.java, Int::class.java)
-        assertThat(createMovieFilter(arrayOf("hi", 1)).toString())
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+        assertThat(movieFilter.create("hi", 1).toString())
             .isEqualTo("""{genre:"hi",rating:1}""")
     }
 
@@ -890,8 +889,8 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-        assertThat(createMovieFilter(emptyArray<Any>()).toString())
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+        assertThat(movieFilter.create().toString())
             .isEqualTo("""{genre:"horror",rating:3,average:1.2,viewed:true}""")
     }
 
@@ -924,8 +923,8 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-        assertThat(createMovieFilter(emptyArray<Any>()).toString())
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+        assertThat(movieFilter.create().toString())
             .isEqualTo("""{genre:"horror",rating:3,average:1.2,viewed:true,identifier:"jhw"}""")
     }
 
@@ -950,8 +949,8 @@ class CodeGenTest {
         ).generate() as CodeGenResult
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
 
-        val movieFilterString = compileAndGetConstructor(dataTypes, "MovieFilter", List::class.java, List::class.java)
-        assertThat(movieFilterString(arrayOf(listOf("hello", "world"), listOf("bye"))).toString())
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+        assertThat(movieFilter.create(listOf("hello", "world"), listOf("bye")).toString())
             .isEqualTo("""{genre:["hello", "world"],actors:["bye"]}""")
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("serializeListOfString")
@@ -994,10 +993,10 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", List::class.java)
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
 
-        assertThat(createMovieFilter(arrayOf(emptyList<Int>())).toString()).isEqualTo("{genre:[]}")
-        assertThat(createMovieFilter(arrayOf(listOf(1, 2, 3))).toString()).isEqualTo("{genre:[1, 2, 3]}")
+        assertThat(movieFilter.create(emptyList<Int>()).toString()).isEqualTo("{genre:[]}")
+        assertThat(movieFilter.create(listOf(1, 2, 3)).toString()).isEqualTo("{genre:[1, 2, 3]}")
     }
 
     @Test
@@ -1022,16 +1021,14 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", LocalDateTime::class.java, LocalDate::class.java, LocalTime::class.java, OffsetDateTime::class.java)
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
 
         assertThat(
-            createMovieFilter(
-                arrayOf(
-                    LocalDateTime.now(clock),
-                    LocalDate.now(clock),
-                    LocalTime.now(clock),
-                    OffsetDateTime.now(clock)
-                )
+            movieFilter.create(
+                LocalDateTime.now(clock),
+                LocalDate.now(clock),
+                LocalTime.now(clock),
+                OffsetDateTime.now(clock)
             ).toString()
         ).isEqualTo("""{localDateTime:"1969-12-31T21:00",localDate:"1969-12-31",localTime:"21:00",dateTime:"1969-12-31T21:00-03:00"}""")
     }
@@ -1056,9 +1053,9 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", LocalDateTime::class.java, Int::class.javaObjectType)
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
 
-        assertThat(createMovieFilter(arrayOf(LocalDateTime.now(clock), 98)).toString())
+        assertThat(movieFilter.create(LocalDateTime.now(clock), 98).toString())
             .isEqualTo("""{time:"1969-12-31T21:00",date:98}""")
     }
 
@@ -1082,9 +1079,9 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val createMovieFilter = compileAndGetConstructor(dataTypes, "MovieFilter", List::class.java, List::class.java)
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
 
-        assertThat(createMovieFilter(arrayOf(listOf("hi"), listOf(LocalDateTime.now(clock)))).toString())
+        assertThat(movieFilter.create(listOf("hi"), listOf(LocalDateTime.now(clock))).toString())
             .isEqualTo("""{names:["hi"],localDateTime:["1969-12-31T21:00"]}""")
     }
 
@@ -1665,11 +1662,11 @@ class CodeGenTest {
             )
         ).generate() as CodeGenResult
 
-        val constructor = compileAndGetConstructor(dataTypes, "MovieFilter", String::class.java, String::class.java, Int::class.java, Int::class.javaObjectType, List::class.java, List::class.java)
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
 
-        assertThat(constructor(arrayOf("a", "b", 1, 2, listOf("x"), listOf(3))).toString())
+        assertThat(movieFilter.create("a", "b", 1, 2, listOf("x"), listOf(3)).toString())
             .isEqualTo("""{mandatoryString:"a",optionalString:"b",mandatoryInt:1,optionalInt:2,mandatoryList:["x"],optionalList:[3]}""")
-        assertThat(constructor(arrayOf("a", null, 1, null, listOf("x"), null)).toString())
+        assertThat(movieFilter.create("a", null, 1, null, listOf("x"), null).toString())
             .isEqualTo("""{mandatoryString:"a",mandatoryInt:1,mandatoryList:["x"]}""")
     }
 
@@ -1809,7 +1806,7 @@ class CodeGenTest {
         assertCompiles(dataTypes.plus(interfaces).plus(result.enumTypes))
     }
 
-    private fun compileAndGetConstructor(dataTypes: List<JavaFile>, type: String, vararg constructorTypes: Class<*>): (Array<*>) -> Any {
+    private fun compileAndGetConstructor(dataTypes: List<JavaFile>, type: String): ClassConstructor {
         val packageNameAsUnixPath = basePackageName.replace(".", "/")
         val compilation = assertCompiles(dataTypes)
         val temporaryFilesystem = Jimfs.newFileSystem(Configuration.unix())
@@ -1830,12 +1827,20 @@ class CodeGenTest {
             .toTypedArray()
 
         val clazz = URLClassLoader(classpath).loadClass("$basePackageName.types.$type")
-        val constructor = try {
-            clazz.getConstructor(*constructorTypes)
-        } catch (e: Exception) {
-            throw RuntimeException("Could not get constructor. Available options are: ${clazz.constructors.toList()}", e)
+        return ClassConstructor(clazz)
+    }
+
+    private class ClassConstructor(private val clazz: Class<*>) {
+        fun create(vararg args: Any?): Any {
+            val constructor = try {
+                clazz.constructors.find { it.parameterCount == args.size }
+                    ?: throw RuntimeException("No constructor with ${args.size} arguments")
+            } catch (e: Exception) {
+                throw RuntimeException("Could not get constructor. Available options are: ${clazz.constructors.toList()}", e)
+            }
+
+            return constructor.newInstance(*args)
         }
-        return { args -> constructor.newInstance(*args) }
     }
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
