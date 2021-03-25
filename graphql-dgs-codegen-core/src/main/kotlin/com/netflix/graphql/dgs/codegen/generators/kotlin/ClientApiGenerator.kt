@@ -152,7 +152,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
         val codeGenResult = fieldDefinitions.filterSkipped()
             .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
             .map {
-                val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
+                val projectionName = "${prefix}_${it.first.name.capitalize()}Projection"
                 javaType.addFunction(
                     FunSpec.builder(it.first.name)
                         .returns(ClassName.bestGuess("${getPackageName()}.$projectionName"))
@@ -169,7 +169,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                 )
                 val processedEdges = mutableSetOf<Pair<String, String>>()
                 processedEdges.add(Pair(it.second!!.name, type.name))
-                createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}${it.first.name.capitalize()}", processedEdges, 1)
+                createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}_${it.first.name.capitalize()}", processedEdges, 1)
             }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
 
         fieldDefinitions.filterSkipped().forEach {
@@ -236,10 +236,10 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
             concreteTypes.map {
                 javaType.addFunction(
                     FunSpec.builder("on${it.name}")
-                        .returns(ClassName.bestGuess("${getPackageName()}.${prefix}${it.name.capitalize()}Projection"))
+                        .returns(ClassName.bestGuess("${getPackageName()}.${prefix}_${it.name.capitalize()}Projection"))
                         .addCode(
                             """
-                                val fragment = ${prefix}${it.name.capitalize()}Projection(this, root)
+                                val fragment = ${prefix}_${it.name.capitalize()}Projection(this, root)
                                 fragments.add(fragment)
                                 return fragment;
                             """.trimIndent()
@@ -247,7 +247,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                         .build()
                 )
 
-                createFragment(it, javaType.build(), rootType, "${prefix}${it.name.capitalize()}", processedEdges, queryDepth)
+                createFragment(it, javaType.build(), rootType, "${prefix}_${it.name.capitalize()}", processedEdges, queryDepth)
             }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
         } else KotlinCodeGenResult()
     }
@@ -259,10 +259,10 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
             memberTypes.map {
                 javaType.addFunction(
                     FunSpec.builder("on${it.name}")
-                        .returns(ClassName.bestGuess("${getPackageName()}.${prefix}${it.name.capitalize()}Projection"))
+                        .returns(ClassName.bestGuess("${getPackageName()}.${prefix}_${it.name.capitalize()}Projection"))
                         .addCode(
                             """
-                                val fragment = ${prefix}${it.name.capitalize()}Projection(this, root)
+                                val fragment = ${prefix}_${it.name.capitalize()}Projection(this, root)
                                 fragments.add(fragment)
                                 return fragment;
                             """.trimIndent()
@@ -270,7 +270,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                         .build()
                 )
 
-                createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}${it.name.capitalize()}", processedEdges, queryDepth)
+                createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}_${it.name.capitalize()}", processedEdges, queryDepth)
             }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
         } else KotlinCodeGenResult()
     }
@@ -350,7 +350,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                 .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
                 .filter { !processedEdges.contains(Pair(it.second!!.name, type.name)) }
                 .map {
-                    val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
+                    val projectionName = "${prefix}_${it.first.name.capitalize()}Projection"
                     javaType.addFunction(
                         FunSpec.builder(it.first.name)
                             .returns(ClassName.bestGuess("${getPackageName()}.$projectionName"))
@@ -366,7 +366,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                     )
                     val updatedProcessedEdges = processedEdges.toMutableSet()
                     updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
-                    createSubProjection(it.second!!, javaType.build(), root, "${prefix}${it.first.name.capitalize()}", updatedProcessedEdges, queryDepth + 1)
+                    createSubProjection(it.second!!, javaType.build(), root, "${prefix}_${it.first.name.capitalize()}", updatedProcessedEdges, queryDepth + 1)
                 }.fold(KotlinCodeGenResult()) { total, current -> total.merge(current) }
         } else KotlinCodeGenResult()
 

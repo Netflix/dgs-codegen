@@ -22,17 +22,17 @@ class ClassnameShortener {
     companion object {
         /**
          * Takes a class name, and shortens it by taking each upper case letter, and the first following lower case letter.
-         * Example: ThisIsATest becomes ThIsATe
+         * Example: This_Is_A_Test becomes Th_Is_A_Te
          * This is required to prevent extremely long class/file names for projections.
          */
         fun shorten(name: String): String {
             val sb = StringBuilder()
-
-            val split = name.split(Regex("(?=[A-Z])"))
+            val split = name.replace("_", "").split(Regex("(?=[A-Z])"))
             split.filter { it.isNotEmpty() }.forEach {
                 sb.append(it.substring(0, if (it.length > 1) 2 else 1))
+                sb.append("_")
             }
-            return sb.toString()
+            return sb.trimEnd { it == '_' }.toString()
         }
     }
 }
