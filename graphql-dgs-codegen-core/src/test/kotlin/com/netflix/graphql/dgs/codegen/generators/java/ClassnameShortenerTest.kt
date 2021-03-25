@@ -41,6 +41,7 @@ class ClassnameShortenerTest {
                 Arguments.arguments("T", "T"),
                 Arguments.arguments("lowercase", "lo"),
                 Arguments.arguments("lowercase_And_Uppercase", "lo_An_Up"),
+                Arguments.arguments("Movies_SupplementalData", "Mo_SuDa")
             )
         }
     }
