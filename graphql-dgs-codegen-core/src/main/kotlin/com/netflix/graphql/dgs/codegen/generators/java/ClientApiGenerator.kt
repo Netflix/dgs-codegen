@@ -165,7 +165,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val codeGenResult = fieldDefinitions.filterSkipped()
             .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
             .map {
-                val projectionName = "${prefix}${it.first.name.capitalize()}Projection"
+                val projectionName = "${prefix}_${it.first.name.capitalize()}Projection"
                 javaType.addMethod(
                     MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
                         .returns(ClassName.get(getPackageName(), projectionName))
@@ -181,7 +181,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 )
                 val processedEdges = mutableSetOf<Pair<String, String>>()
                 processedEdges.add(Pair(it.second!!.name, type.name))
-                createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}${it.first.name.capitalize()}", processedEdges, 1)
+                createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}_${it.first.name.capitalize()}", processedEdges, 1)
             }
             .fold(CodeGenResult()) { total, current -> total.merge(current) }
 
@@ -268,7 +268,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun addFragmentProjectionMethod(javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String, it: TypeDefinition<*>, processedEdges: Set<Pair<String, String>>, queryDepth: Int): CodeGenResult {
         val rootRef = if (javaType.build().name == rootType.name) "this" else "getRoot()"
 
-        val projectionName = "${prefix}${it.name.capitalize()}Projection"
+        val projectionName = "${prefix}_${it.name.capitalize()}Projection"
         javaType.addMethod(
             MethodSpec.methodBuilder("on${it.name}")
                 .addModifiers(Modifier.PUBLIC)
@@ -283,7 +283,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .build()
         )
 
-        return createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}${it.name.capitalize()}", processedEdges, queryDepth)
+        return createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}_${it.name.capitalize()}", processedEdges, queryDepth)
     }
 
     private fun createFragment(type: ObjectTypeDefinition, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>, queryDepth: Int): CodeGenResult {
@@ -354,7 +354,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
                 .filter { !processedEdges.contains(Pair(it.second!!.name, type.name)) }
                 .map {
-                    val projectionName = "${truncatePrefix(prefix)}${it.first.name.capitalize()}Projection"
+                    val projectionName = "${truncatePrefix(prefix)}_${it.first.name.capitalize()}Projection"
                     javaType.addMethod(
                         MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
                             .returns(ClassName.get(getPackageName(), projectionName))
@@ -370,7 +370,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     )
                     val updatedProcessedEdges = processedEdges.toMutableSet()
                     updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
-                    createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}${it.first.name.capitalize()}", updatedProcessedEdges, queryDepth + 1)
+                    createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}_${it.first.name.capitalize()}", updatedProcessedEdges, queryDepth + 1)
                 }.fold(CodeGenResult()) { total, current -> total.merge(current) }
         } else CodeGenResult()
 
