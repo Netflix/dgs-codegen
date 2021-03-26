@@ -23,6 +23,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.net.URLClassLoader
 
 class KotlinCodeGenTest {
 
@@ -1655,19 +1656,18 @@ class KotlinCodeGenTest {
                 )
             ).generate() as KotlinCodeGenResult
 
-        val type = dataTypes[0].members[0] as TypeSpec
-        assertThat(type.funSpecs).extracting("name").contains("toString")
-        val expectedInputString = """
-            return linkedMapOf(
-            "mandatoryString" to ("\"" + mandatoryString + "\""),
-            "optionalString" to (if (optionalString == null) null else "\"" + optionalString + "\""),
-            "mandatoryInt" to mandatoryInt,
-            "optionalInt" to optionalInt,
-            "mandatoryList" to serializeListOfString(mandatoryList),
-            "optionalList" to optionalList,
-            ).filter { it.value != null }.map { it.key + ":" + it.value }.joinToString(",", "{", "}")
-        """.trimIndent()
-        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+
+        assertThat(movieFilter.create("hi", "bye", 3, 7, listOf("hey"), listOf(1, 2)).toString())
+            .isEqualTo("""{mandatoryString:"hi",optionalString:"bye",mandatoryInt:3,optionalInt:7,mandatoryList:["hey"],optionalList:[1, 2]}""")
+        assertThat(movieFilter.create("hi", null, 3, null, listOf("hey"), null).toString())
+            .isEqualTo("""{mandatoryString:"hi",mandatoryInt:3,mandatoryList:["hey"]}""")
+    }
+
+    private fun compileAndGetConstructor(dataTypes: List<FileSpec>, type: String): ClassConstructor {
+        val buildDir = assertCompilesKotlin(dataTypes)
+
+        val clazz = URLClassLoader(arrayOf(buildDir.toUri().toURL())).loadClass("$basePackageName.types.$type")
+        return ClassConstructor(clazz)
     }
 }

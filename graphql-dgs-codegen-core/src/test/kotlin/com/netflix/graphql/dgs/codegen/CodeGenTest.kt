@@ -68,7 +68,7 @@ class CodeGenTest {
         assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname")
         assertThat(typeSpec.methodSpecs).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
         dataTypes[0].writeTo(System.out)
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -180,7 +180,7 @@ class CodeGenTest {
         val toString = assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn("name", "toString")
         toString.extracting("code").allMatch { it.toString().contains("return \"Person{") }
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -208,7 +208,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("equals")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -234,7 +234,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("equals")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -266,7 +266,7 @@ class CodeGenTest {
         assertThat(builderType.methodSpecs).extracting("name").contains("firstname", "lastname", "build")
         assertThat(builderType.methodSpecs).filteredOn("name", "firstname").extracting("returnType.simpleName").contains("com.netflix.graphql.dgs.codegen.tests.generated.types.Person.Builder")
         assertThat(builderType.methodSpecs).filteredOn("name", "build").extracting("returnType.simpleName").contains("Person")
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -294,7 +294,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("hashCode")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -322,7 +322,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].packageName).isEqualTo("com.mypackage.types")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -354,7 +354,7 @@ class CodeGenTest {
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -386,7 +386,7 @@ class CodeGenTest {
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -453,7 +453,7 @@ class CodeGenTest {
                |""".trimMargin()
         )
 
-        assertCompiles(dataTypes + interfaces)
+        assertCompilesJava(dataTypes + interfaces)
     }
 
     @Test
@@ -493,7 +493,7 @@ class CodeGenTest {
             .extracting("type", ParameterizedTypeName::class.java)
             .contains(parameterizedType)
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -538,7 +538,7 @@ class CodeGenTest {
             .extracting("type.simpleName")
             .containsExactly("Performance")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -569,7 +569,7 @@ class CodeGenTest {
         assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants.size).isEqualTo(3)
         assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
 
-        assertCompiles(codeGenResult.enumTypes)
+        assertCompilesJava(codeGenResult.enumTypes)
     }
 
     @Test
@@ -598,7 +598,7 @@ class CodeGenTest {
         assertThat(dataFetchers.size).isEqualTo(1)
         assertThat(dataFetchers[0].typeSpec.name).isEqualTo("PeopleDatafetcher")
         assertThat(dataFetchers[0].packageName).isEqualTo(dataFetcherPackageName)
-        assertCompiles(dataFetchers + dataTypes)
+        assertCompilesJava(dataFetchers + dataTypes)
     }
 
     @Test
@@ -632,7 +632,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(3)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "birthDate")
         dataTypes[0].writeTo(System.out)
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -662,7 +662,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -694,7 +694,7 @@ class CodeGenTest {
         assertThat(colorField.type.toString()).isEqualTo("$typesPackageName.Color")
         assertThat(colorField.initializer.toString()).isEqualTo("$typesPackageName.Color.red")
 
-        assertCompiles(enumTypes + dataTypes)
+        assertCompilesJava(enumTypes + dataTypes)
     }
 
     @Test
@@ -721,7 +721,7 @@ class CodeGenTest {
         assertThat(colorField.name).isEqualTo("names")
         assertThat(colorField.initializer.toString()).isEqualTo("java.util.Collections.emptyList()")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -748,7 +748,7 @@ class CodeGenTest {
         assertThat(colorField.name).isEqualTo("names")
         assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList("A", "B")""")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -775,7 +775,7 @@ class CodeGenTest {
         assertThat(colorField.name).isEqualTo("numbers")
         assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(1, 2, 3)""")
 
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -807,7 +807,7 @@ class CodeGenTest {
         assertThat(colorField.name).isEqualTo("colors")
         assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(Color.red)""")
 
-        assertCompiles(dataTypes + enumTypes)
+        assertCompilesJava(dataTypes + enumTypes)
     }
 
     @Test
@@ -1115,7 +1115,7 @@ class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(2)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "releaseYear")
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -1145,7 +1145,7 @@ class CodeGenTest {
         """.trimIndent()
         val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedString).isEqualTo(generatedString)
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -1379,7 +1379,7 @@ class CodeGenTest {
         val typeSpec = dataTypes[0].typeSpec
         assertThat(typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].packageName).isEqualTo("$basePackageName.mytypes")
-        assertCompiles(dataTypes)
+        assertCompilesJava(dataTypes)
     }
 
     @Test
@@ -1616,7 +1616,7 @@ class CodeGenTest {
                 |""".trimMargin()
         )
 
-        assertCompiles(dataTypes + interfaces)
+        assertCompilesJava(dataTypes + interfaces)
     }
 
     @Test
@@ -1634,7 +1634,7 @@ class CodeGenTest {
         """.trimIndent()
 
         val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf())).generate() as CodeGenResult
-        assertCompiles(codeGenResult.javaFiles)
+        assertCompilesJava(codeGenResult.javaFiles)
     }
 
     @Test
@@ -1803,12 +1803,12 @@ class CodeGenTest {
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
         assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").containsExactly("Rating")
 
-        assertCompiles(dataTypes.plus(interfaces).plus(result.enumTypes))
+        assertCompilesJava(dataTypes.plus(interfaces).plus(result.enumTypes))
     }
 
     private fun compileAndGetConstructor(dataTypes: List<JavaFile>, type: String): ClassConstructor {
         val packageNameAsUnixPath = basePackageName.replace(".", "/")
-        val compilation = assertCompiles(dataTypes)
+        val compilation = assertCompilesJava(dataTypes)
         val temporaryFilesystem = Jimfs.newFileSystem(Configuration.unix())
         val classpath = compilation.generatedFiles()
             .filter { it.kind == JavaFileObject.Kind.CLASS }
@@ -1828,19 +1828,6 @@ class CodeGenTest {
 
         val clazz = URLClassLoader(classpath).loadClass("$basePackageName.types.$type")
         return ClassConstructor(clazz)
-    }
-
-    private class ClassConstructor(private val clazz: Class<*>) {
-        fun create(vararg args: Any?): Any {
-            val constructor = try {
-                clazz.constructors.find { it.parameterCount == args.size }
-                    ?: throw RuntimeException("No constructor with ${args.size} arguments")
-            } catch (e: Exception) {
-                throw RuntimeException("Could not get constructor. Available options are: ${clazz.constructors.toList()}", e)
-            }
-
-            return constructor.newInstance(*args)
-        }
     }
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
