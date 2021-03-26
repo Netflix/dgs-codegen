@@ -908,7 +908,7 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
             return linkedMapOf(
-            "genre" to (if (genre == null) null else "\"" + genre + "\""),
+            "genre" to ("\"" + genre + "\""),
             "rating" to rating,
             "views" to views,
             "stars" to stars,
@@ -946,7 +946,7 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
             return linkedMapOf(
-            "genre" to (if (genre == null) null else "\"" + genre + "\""),
+            "genre" to ("\"" + genre + "\""),
             "rating" to rating,
             "average" to average,
             "viewed" to viewed,
@@ -1659,7 +1659,7 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
             return linkedMapOf(
-            "mandatoryString" to (if (mandatoryString == null) null else "\"" + mandatoryString + "\""),
+            "mandatoryString" to ("\"" + mandatoryString + "\""),
             "optionalString" to (if (optionalString == null) null else "\"" + optionalString + "\""),
             "mandatoryInt" to mandatoryInt,
             "optionalInt" to optionalInt,

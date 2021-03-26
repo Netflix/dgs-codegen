@@ -190,7 +190,11 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
                 }
                 is ClassName -> {
                     if (typeUtils.isStringInput(fieldTypeName)) {
-                        """"${field.name}" to (if (${field.name} == null) null else "\"" + ${field.name} + "\"")"""
+                        if (field.nullable) {
+                            """"${field.name}" to (if (${field.name} == null) null else "\"" + ${field.name} + "\"")"""
+                        } else {
+                            """"${field.name}" to ("\"" + ${field.name} + "\"")"""
+                        }
                     } else {
                         """"${field.name}" to ${field.name}"""
                     }
