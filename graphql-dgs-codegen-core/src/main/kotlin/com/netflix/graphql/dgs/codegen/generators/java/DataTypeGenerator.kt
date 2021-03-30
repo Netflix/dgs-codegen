@@ -103,7 +103,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
 
 internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false)
 
-abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig, document: Document) {
+abstract class BaseDataTypeGenerator(internal val packageName: String, private val config: CodeGenConfig, document: Document) {
     internal val typeUtils = TypeUtils(packageName, config, document)
 
     internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean): CodeGenResult {
@@ -129,7 +129,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         }
 
         if (isInputType) {
-            addToInputString(fields, javaType)
+            addToInputString(javaType)
         } else {
             addToString(fields, javaType)
         }
@@ -229,56 +229,45 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         javaType.addMethod(methodBuilder.build())
     }
 
-    private fun addToInputString(fieldDefinitions: List<Field>, javaType: TypeSpec.Builder) {
+    private fun addToInputString(javaType: TypeSpec.Builder) {
         val methodBuilder = MethodSpec.methodBuilder("toString").addModifiers(Modifier.PUBLIC).returns(String::class.java)
-        val toStringBody = StringBuilder("return \"{\" + ")
+        val toStringBody = StringBuilder("java.util.LinkedHashMap<String, Object> entries = new java.util.LinkedHashMap<String,Object>();\n")
         val fieldSpecs = javaType.build().fieldSpecs
-        fieldSpecs.mapIndexed { index, fieldSpec ->
+        fieldSpecs.map { fieldSpec ->
             when (val fieldSpecType = fieldSpec.type) {
                 is ParameterizedTypeName -> {
                     if (typeUtils.isStringInput(fieldSpecType.typeArguments[0])) {
-                        var name: String = if (fieldSpecType.typeArguments[0] is ClassName) {
+                        val name: String = if (fieldSpecType.typeArguments[0] is ClassName) {
                             "serializeListOf" + (fieldSpecType.typeArguments[0] as ClassName).simpleName()
                         } else "serializeListOf" + fieldSpecType.typeArguments[0].toString()
                         addToStringForListOfStrings(name, fieldSpec, javaType)
-                        """
-                        "${fieldSpec.name}:" + $name(${fieldSpec.name}) + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-                        """.trimIndent()
+                        """entries.put("${fieldSpec.name}", $name(${fieldSpec.name}))"""
                     } else {
-                        defaultString(fieldSpec, index, fieldDefinitions)
+                        """entries.put("${fieldSpec.name}", ${fieldSpec.name})"""
                     }
                 }
                 is ClassName -> {
                     if (typeUtils.isStringInput(fieldSpecType)) {
-                        quotedString(fieldSpec, index, fieldDefinitions)
+                        """entries.put("${fieldSpec.name}", ${fieldSpec.name} == null ? null : "\"" + ${fieldSpec.name} + "\"")"""
                     } else {
-                        defaultString(fieldSpec, index, fieldDefinitions)
+                        """entries.put("${fieldSpec.name}", ${fieldSpec.name})"""
                     }
                 }
-                else -> defaultString(fieldSpec, index, fieldDefinitions)
+                else -> """entries.put("${fieldSpec.name}", ${fieldSpec.name})"""
             }
-        }.forEach { toStringBody.append(it) }
+        }.forEach { toStringBody.append(it).append(";\n") }
 
         toStringBody.append(
             """
-            "}"
+            return entries.entrySet()
+                .stream()${if (config.omitNullInputFields) ".filter(entry -> entry.getValue() != null)" else ""}
+                .map(entry -> entry.getKey() + ":" + entry.getValue())
+                .collect(java.util.stream.Collectors.joining(",", "{", "}"))
             """.trimIndent()
         )
 
         methodBuilder.addStatement(toStringBody.toString())
         javaType.addMethod(methodBuilder.build())
-    }
-
-    private fun defaultString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
-        return """
-            "${fieldSpec.name}:" + ${fieldSpec.name} + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-        """.trimIndent()
-    }
-
-    private fun quotedString(fieldSpec: FieldSpec, index: Int, fieldDefinitions: List<Field>): String {
-        return """
-            "${fieldSpec.name}:" + (${fieldSpec.name} != null?"\"":"") + ${fieldSpec.name} + (${fieldSpec.name} != null?"\"":"") + "${if (index < fieldDefinitions.size - 1) "," else ""}" +
-        """.trimIndent()
     }
 
     private fun addToStringForListOfStrings(name: String, field: FieldSpec, javaType: TypeSpec.Builder) {

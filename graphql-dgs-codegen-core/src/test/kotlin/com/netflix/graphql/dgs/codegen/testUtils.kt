@@ -18,11 +18,53 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
 import com.squareup.javapoet.JavaFile
+import com.squareup.kotlinpoet.FileSpec
+import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
+import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
+import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
+import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
+import org.jetbrains.kotlin.config.Services
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Path
 
-fun assertCompiles(javaFiles: Collection<JavaFile>) {
+fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
     val result = javac().compile(javaFiles.map(JavaFile::toJavaFileObject))
     CompilationSubject.assertThat(result).succeededWithoutWarnings()
+    return result
+}
+
+fun assertCompilesKotlin(files: List<FileSpec>): Path {
+    val srcDir = Files.createTempDirectory("src")
+    val buildDir = Files.createTempDirectory("build")
+    files.forEach { it.writeTo(srcDir) }
+
+    K2JVMCompiler().run {
+        execImpl(
+            PrintingMessageCollector(
+                System.out,
+                MessageRenderer.WITHOUT_PATHS,
+                false,
+            ),
+            Services.EMPTY,
+            K2JVMCompilerArguments().apply {
+                freeArgs = listOf(srcDir.toAbsolutePath().toString())
+                destination = buildDir.toAbsolutePath().toString()
+                classpath = System.getProperty("java.class.path")
+                    .split(System.getProperty("path.separator"))
+                    .filter {
+                        File(it).exists() && File(it).canRead()
+                    }.joinToString(":")
+                noStdlib = true
+                noReflect = true
+                skipRuntimeVersionCheck = true
+            }
+        )
+    }
+
+    return buildDir
 }

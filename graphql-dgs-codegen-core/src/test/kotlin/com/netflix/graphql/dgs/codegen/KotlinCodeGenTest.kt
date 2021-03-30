@@ -23,6 +23,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.net.URLClassLoader
 
 class KotlinCodeGenTest {
 
@@ -869,7 +870,12 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + "${'$'}{if(genre != null) "\"" else ""}" + genre + "${'$'}{if(genre != null) "\"" else ""}" + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}"
+            return linkedMapOf(
+            "genre" to (if (genre == null) null else "\"" + genre + "\""),
+            "rating" to rating,
+            "views" to views,
+            "stars" to stars,
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -902,7 +908,12 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + "\"" + genre + "\"" + "," +"rating:" + rating + "," +"views:" + views + "," +"stars:" + stars + "" +"}"
+            return linkedMapOf(
+            "genre" to ("\"" + genre + "\""),
+            "rating" to rating,
+            "views" to views,
+            "stars" to stars,
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -935,7 +946,12 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + "\"" + genre + "\"" + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "" +"}"
+            return linkedMapOf(
+            "genre" to ("\"" + genre + "\""),
+            "rating" to rating,
+            "average" to average,
+            "viewed" to viewed,
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -974,7 +990,13 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + "${'$'}{if(genre != null) "\"" else ""}" + genre + "${'$'}{if(genre != null) "\"" else ""}" + "," +"rating:" + rating + "," +"average:" + average + "," +"viewed:" + viewed + "," +"identifier:" + "${'$'}{if(identifier != null) "\"" else ""}" + identifier + "${'$'}{if(identifier != null) "\"" else ""}" + "" +"}"
+            return linkedMapOf(
+            "genre" to (if (genre == null) null else "\"" + genre + "\""),
+            "rating" to rating,
+            "average" to average,
+            "viewed" to viewed,
+            "identifier" to (if (identifier == null) null else "\"" + identifier + "\""),
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -1005,7 +1027,10 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         var expectedInputString = """
-            return "{" + "genre:" + serializeListOfString(genre) + "," +"actors:" + serializeListOfString(actors) + "" +"}"
+            return linkedMapOf(
+            "genre" to serializeListOfString(genre),
+            "actors" to serializeListOfString(actors),
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         var generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -1052,7 +1077,9 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
-            return "{" + "genre:" + genre + "" +"}"
+            return linkedMapOf(
+            "genre" to genre,
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
@@ -1113,7 +1140,12 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
 
         val expectedInputString = """
-           return "{" + "localDateTime:" + "${'$'}{if(localDateTime != null) "\"" else ""}" + localDateTime + "${'$'}{if(localDateTime != null) "\"" else ""}" + "," +"localDate:" + "${'$'}{if(localDate != null) "\"" else ""}" + localDate + "${'$'}{if(localDate != null) "\"" else ""}" + "," +"localTime:" + "${'$'}{if(localTime != null) "\"" else ""}" + localTime + "${'$'}{if(localTime != null) "\"" else ""}" + "," +"dateTime:" + "${'$'}{if(dateTime != null) "\"" else ""}" + dateTime + "${'$'}{if(dateTime != null) "\"" else ""}" + "" +"}"
+            return linkedMapOf(
+            "localDateTime" to (if (localDateTime == null) null else "\"" + localDateTime + "\""),
+            "localDate" to (if (localDate == null) null else "\"" + localDate + "\""),
+            "localTime" to (if (localTime == null) null else "\"" + localTime + "\""),
+            "dateTime" to (if (dateTime == null) null else "\"" + dateTime + "\""),
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
@@ -1143,7 +1175,10 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
 
         val expectedInputString = """
-            return "{" + "names:" + serializeListOfString(names) + "," +"localDateTime:" + serializeListOfLocalDateTime(localDateTime) + "" +"}"
+            return linkedMapOf(
+            "names" to serializeListOfString(names),
+            "localDateTime" to serializeListOfLocalDateTime(localDateTime),
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
@@ -1173,7 +1208,10 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
 
         val expectedInputString = """
-            return "{" + "time:" + "${'$'}{if(time != null) "\"" else ""}" + time + "${'$'}{if(time != null) "\"" else ""}" + "," +"date:" + date + "" +"}"
+            return linkedMapOf(
+            "time" to (if (time == null) null else "\"" + time + "\""),
+            "date" to date,
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
@@ -1589,5 +1627,47 @@ class KotlinCodeGenTest {
         val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf(), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
         assertThat(codeGenResult.dataTypes.first().toString()).contains("com.example.MyType")
         assertThat(codeGenResult.queryTypes.first().toString()).contains("com.example.MyType")
+    }
+
+    @Test
+    fun generateDataTypeThatOmitsNulls() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+            
+            input MovieFilter {
+                mandatoryString: String!
+                optionalString: String
+                mandatoryInt: Int!
+                optionalInt: Int
+                mandatoryList: [String]!
+                optionalList: [Int]
+            }
+        """.trimIndent()
+
+        val (dataTypes) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    omitNullInputFields = true,
+                )
+            ).generate() as KotlinCodeGenResult
+
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+
+        assertThat(movieFilter.create("hi", "bye", 3, 7, listOf("hey"), listOf(1, 2)).toString())
+            .isEqualTo("""{mandatoryString:"hi",optionalString:"bye",mandatoryInt:3,optionalInt:7,mandatoryList:["hey"],optionalList:[1, 2]}""")
+        assertThat(movieFilter.create("hi", null, 3, null, listOf("hey"), null).toString())
+            .isEqualTo("""{mandatoryString:"hi",mandatoryInt:3,mandatoryList:["hey"]}""")
+    }
+
+    private fun compileAndGetConstructor(dataTypes: List<FileSpec>, type: String): ClassConstructor {
+        val buildDir = assertCompilesKotlin(dataTypes)
+
+        val clazz = URLClassLoader(arrayOf(buildDir.toUri().toURL())).loadClass("$basePackageName.types.$type")
+        return ClassConstructor(clazz)
     }
 }
