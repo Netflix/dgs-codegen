@@ -55,6 +55,8 @@ class KotlinClientApiGenTest {
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.name).isEqualTo("PeopleGraphQLQuery")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -83,6 +85,8 @@ class KotlinClientApiGenTest {
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -117,6 +121,8 @@ class KotlinClientApiGenTest {
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -161,6 +167,8 @@ class KotlinClientApiGenTest {
         assertThat(movieProjectionType.name).isEqualTo("Search_MovieProjection")
         val seriesProjectionType = codeGenResult.clientProjections[2].members[0] as TypeSpec
         assertThat(seriesProjectionType.name).isEqualTo("Search_SeriesProjection")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -205,6 +213,8 @@ class KotlinClientApiGenTest {
         projectionType = codeGenResult.clientProjections[2].members[0] as TypeSpec
         assertThat(projectionType.name).isEqualTo("Search_SeriesProjection")
         assertThat(projectionType.funSpecs).extracting("name").containsExactly("episodes", "toString")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -255,6 +265,8 @@ class KotlinClientApiGenTest {
 
         val superclass = projectionType.superclass as ParameterizedTypeName
         assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -299,6 +311,8 @@ class KotlinClientApiGenTest {
         assertThat(actorProjectionType.name).isEqualTo("Search_ActorProjection")
         assertThat(actorProjectionType.funSpecs).extracting("name").contains("name")
         assertThat(actorProjectionType.funSpecs).extracting("name").doesNotContain("title")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -376,6 +390,7 @@ class KotlinClientApiGenTest {
                 |public interface SearchResult
                 |""".trimMargin()
         )
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -406,6 +421,7 @@ class KotlinClientApiGenTest {
         assertThat(codeGenResult.queryTypes.size).isEqualTo(1)
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.name).isEqualTo("PersonSearchGraphQLQuery")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -434,6 +450,7 @@ class KotlinClientApiGenTest {
         val typeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(typeSpec.funSpecs.size).isEqualTo(1)
         assertThat(typeSpec.funSpecs[0].name).isEqualTo("lastname")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -462,6 +479,7 @@ class KotlinClientApiGenTest {
         val projectionTypeSpec = codeGenResult.clientProjections[0].members[0] as TypeSpec
         assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
         assertThat(projectionTypeSpec.name).isEqualTo("PeopleProjectionRoot")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -498,6 +516,7 @@ class KotlinClientApiGenTest {
         assertThat(projectionTypeSpec.name).isEqualTo("MoviesProjectionRoot")
         val actorTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
         assertThat(actorTypeSpec.name).isEqualTo("Movies_ActorsProjection")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -528,6 +547,7 @@ class KotlinClientApiGenTest {
         assertThat(projectionTypeSpec.name).isEqualTo("PersonsProjectionRoot")
         projectionTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
         assertThat(projectionTypeSpec.name).isEqualTo("Persons_FriendsProjection")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -557,6 +577,7 @@ class KotlinClientApiGenTest {
         assertThat(projectionTypeSpec.name).isEqualTo("PersonsProjectionRoot")
         projectionTypeSpec = codeGenResult.clientProjections[1].members[0] as TypeSpec
         assertThat(projectionTypeSpec.name).isEqualTo("FriendsProjectionRoot")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -593,6 +614,7 @@ class KotlinClientApiGenTest {
         assertThat(projectionTypeSpec.name).isEqualTo("Persons_DetailsProjection")
         projectionTypeSpec = codeGenResult.clientProjections[2].members[0] as TypeSpec
         assertThat(projectionTypeSpec.name).isEqualTo("DetailsProjectionRoot")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -622,6 +644,7 @@ class KotlinClientApiGenTest {
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.propertySpecs[0].name).isEqualTo("lastname")
         assertThat(codeGenResult.queryTypes[0].toString()).doesNotContain("import com.netflix.graphql.dgs.codegen.tests.generated.types")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -655,6 +678,7 @@ class KotlinClientApiGenTest {
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.propertySpecs[0].name).isEqualTo("index")
         assertThat(codeGenResult.queryTypes[0].toString()).contains("import com.netflix.graphql.dgs.codegen.tests.generated.types.SearchIndex\n")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -688,6 +712,7 @@ class KotlinClientApiGenTest {
         val typeSpec = codeGenResult.queryTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.propertySpecs[0].name).isEqualTo("index")
         assertThat(codeGenResult.queryTypes[0].toString()).contains("import com.netflix.graphql.dgs.codegen.tests.generated.types.SearchIndex\n")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -717,6 +742,7 @@ class KotlinClientApiGenTest {
         ).generate() as KotlinCodeGenResult
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -749,6 +775,7 @@ class KotlinClientApiGenTest {
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
         assertThat((projections[0].members[0] as TypeSpec).funSpecs).extracting("name").contains("name", "email")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -784,6 +811,7 @@ class KotlinClientApiGenTest {
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(2)
         assertThat((projections[1].members[0] as TypeSpec).funSpecs).extracting("name").contains("title", "director")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -820,6 +848,7 @@ class KotlinClientApiGenTest {
 
         assertThat((workshopReviewsProjection.members[0] as TypeSpec).funSpecs).extracting("name").contains("edges")
         assertThat((workshopAssetsReviewsProjection.members[0] as TypeSpec).funSpecs).extracting("name").contains("edges")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -857,6 +886,7 @@ class KotlinClientApiGenTest {
         assertThat((codeGenResult.clientProjections[4].members[0] as TypeSpec).name).isEqualTo("Search_Movie_Related_VideoProjection")
         assertThat((codeGenResult.clientProjections[5].members[0] as TypeSpec).name).isEqualTo("Search_Movie_Related_Video_ShowProjection")
         assertThat((codeGenResult.clientProjections[6].members[0] as TypeSpec).name).isEqualTo("Search_Movie_Related_Video_MovieProjection")
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -904,6 +934,8 @@ class KotlinClientApiGenTest {
 
         assertThat(codeGenResult.dataTypes).flatExtracting("members").extracting("name").containsExactly("ShowFilter", "SimilarityInput")
         assertThat(codeGenResult.enumTypes).flatExtracting("members").extracting("name").containsExactly("ShowType")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 
     @Test
@@ -968,5 +1000,7 @@ class KotlinClientApiGenTest {
         assertThat(actorTypeSpec.name).isEqualTo("Movies_ActorsProjection")
         val agentTypeSpec = codeGenResult.clientProjections[4].members[0] as TypeSpec
         assertThat(agentTypeSpec.name).isEqualTo("Movies_Actors_AgentProjection")
+
+        assertCompilesKotlin(codeGenResult.clientProjections)
     }
 }
