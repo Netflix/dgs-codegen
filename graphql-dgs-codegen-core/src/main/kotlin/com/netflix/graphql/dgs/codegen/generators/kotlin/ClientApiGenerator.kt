@@ -232,6 +232,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
 
     private fun createConcreteTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>, queryDepth: Int): KotlinCodeGenResult {
         return if (type is InterfaceTypeDefinition) {
+            val rootRef = if (javaType.build().name == rootType.name) "this" else "root"
             val concreteTypes = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).filter { it.implements.filterIsInstance<NamedNode<*>>().find { iface -> iface.name == type.name } != null }
             concreteTypes.map {
                 javaType.addFunction(
@@ -239,7 +240,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                         .returns(ClassName.bestGuess("${getPackageName()}.${prefix}_${it.name.capitalize()}Projection"))
                         .addCode(
                             """
-                                val fragment = ${prefix}_${it.name.capitalize()}Projection(this, root)
+                                val fragment = ${prefix}_${it.name.capitalize()}Projection(this, $rootRef)
                                 fragments.add(fragment)
                                 return fragment;
                             """.trimIndent()
@@ -254,6 +255,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
 
     private fun createUnionTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>, queryDepth: Int): KotlinCodeGenResult {
         return if (type is UnionTypeDefinition) {
+            val rootRef = if (javaType.build().name == rootType.name) "this" else "root"
             val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document) }
 
             memberTypes.map {
@@ -262,7 +264,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
                         .returns(ClassName.bestGuess("${getPackageName()}.${prefix}_${it.name.capitalize()}Projection"))
                         .addCode(
                             """
-                                val fragment = ${prefix}_${it.name.capitalize()}Projection(this, root)
+                                val fragment = ${prefix}_${it.name.capitalize()}Projection(this, $rootRef)
                                 fragments.add(fragment)
                                 return fragment;
                             """.trimIndent()
