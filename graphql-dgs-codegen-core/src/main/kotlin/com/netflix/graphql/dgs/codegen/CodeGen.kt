@@ -262,6 +262,12 @@ class CodeGen(private val config: CodeGenConfig) {
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
+        val dataFetchersResult = definitions.asSequence()
+            .filterIsInstance<ObjectTypeDefinition>()
+            .filter { it.name == "Query" }
+            .map { KotlinDataFetcherGenerator(config).generate(it) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+
         val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
         val client = generateJavaClientApi(definitions)
@@ -269,7 +275,7 @@ class CodeGen(private val config: CodeGenConfig) {
         val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
 
         return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult)
-            .merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
+            .merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(dataFetchersResult).merge(constantsClass)
     }
 
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
