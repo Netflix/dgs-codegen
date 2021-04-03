@@ -98,7 +98,13 @@ class CodeGen(private val config: CodeGenConfig) {
             codeGenResult.kotlinInputTypes.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinInterfaces.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinEnumTypes.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.kotlinDataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
+            codeGenResult.kotlinDataFetchers.forEach {
+                if (config.generateDataFetcherInterfaces) {
+                    it.writeTo(config.outputDir)
+                } else {
+                    it.writeTo(config.examplesOutputDir)
+                }
+            }
             codeGenResult.kotlinConstants.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinClientTypes.forEach { it.writeTo(config.outputDir) }
             codeGenResult.docFiles.forEach { it.writeTo(config.generatedDocsFolder) }
@@ -387,12 +393,23 @@ class CodeGen(private val config: CodeGenConfig) {
 
             val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
+            val dataFetchers = if (config.generateDataFetcherInterfaces) {
+                definitions.asSequence()
+                    .filterIsInstance<ObjectTypeDefinition>()
+                    .filter { it.name == "Query" }
+                    .map { KotlinDataFetcherGenerator(config, document).generate(it) }
+                    .fold(CodeGenResult()) { result, next -> result.merge(next) }
+            } else {
+                CodeGenResult()
+            }
+
             datatypesResult
                 .merge(inputTypes)
                 .merge(interfacesResult)
                 .merge(unionResult)
                 .merge(enumsResult)
                 .merge(constantsClass)
+                .merge(dataFetchers)
         }
 
         val clientTypes = if (config.generateKotlinClosureProjections) {
@@ -505,6 +522,7 @@ class CodeGenConfig(
     var generateInterfaces: Boolean = false,
     var generateKotlinNullableClasses: Boolean = false,
     var generateKotlinClosureProjections: Boolean = false,
+    var generateDataFetcherInterfaces: Boolean = false,
     var typeMapping: Map<String, String> = emptyMap(),
     var includeQueries: Set<String> = emptySet(),
     var includeMutations: Set<String> = emptySet(),

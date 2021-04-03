@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import graphql.schema.DataFetchingEnvironment
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.Index
@@ -34,6 +35,10 @@ import java.util.stream.Stream
 import java.util.stream.Stream.of
 
 class KotlinCodeGenTest {
+
+    val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
+    val typesPackageName = "$basePackageName.types"
+    val datafetchersPackageName = "$basePackageName.datafetchers"
 
     @Test
     fun generateDataClassWithStringProperties() {
@@ -66,6 +71,104 @@ class KotlinCodeGenTest {
         assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname")
 
         assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun generateDataFetcherInterfaceWithFunction() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val dataFetchers = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDataFetcherInterfaces = true
+            )
+        ).generate().kotlinDataFetchers
+
+        assertThat(dataFetchers.size).isEqualTo(1)
+        assertThat(dataFetchers[0].name).isEqualTo("PeopleDatafetcher")
+        assertThat(dataFetchers[0].packageName).isEqualTo(datafetchersPackageName)
+        val type = dataFetchers[0].members[0] as TypeSpec
+
+        assertThat(type.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
+        assertThat(type.annotations).hasSize(1).first().satisfies({
+            assertThat(it.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.DgsComponent")
+        })
+        assertThat(type.funSpecs).hasSize(1)
+        val fn = type.funSpecs.single()
+        assertThat(fn.name).isEqualTo("getPeople")
+        val returnType = fn.returnType as ParameterizedTypeName
+        assertThat(fn.returnType)
+        assertThat(returnType.rawType.canonicalName).isEqualTo(List::class.qualifiedName)
+        assertThat(returnType.typeArguments).hasSize(1)
+        val arg0 = returnType.typeArguments.single() as ClassName
+        assertThat(arg0.canonicalName).isEqualTo("$typesPackageName.Person")
+        assertThat(fn.parameters).hasSize(1)
+        val param0 = fn.parameters.single()
+        assertThat(param0.name).isEqualTo("dataFetchingEnvironment")
+        assertThat((param0.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
+        assertThat(fn.annotations).hasSize(1).first().satisfies({ annotation ->
+            assertThat(annotation.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.DgsData")
+            assertThat(annotation.members).satisfiesExactly(
+                { member -> assertThat(member.toString()).isEqualTo("parentType = DgsConstants.QUERY.TYPE_NAME") },
+                { member -> assertThat(member.toString()).isEqualTo("field = DgsConstants.QUERY.People") }
+            )
+        })
+    }
+
+    @Test
+    fun generateDataFetcherInterfaceWithArgument() {
+        val schema = """
+            type Query {
+                person(name: String): Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val dataFetchers = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDataFetcherInterfaces = true
+            )
+        ).generate().kotlinDataFetchers
+
+        assertThat(dataFetchers.size).isEqualTo(1)
+        assertThat(dataFetchers[0].name).isEqualTo("PersonDatafetcher")
+        assertThat(dataFetchers[0].packageName).isEqualTo(datafetchersPackageName)
+        val type = dataFetchers[0].members[0] as TypeSpec
+
+        assertThat(type.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
+        assertThat(type.funSpecs).hasSize(1)
+        val fn = type.funSpecs.single()
+        assertThat(fn.name).isEqualTo("getPerson")
+        assertThat((fn.returnType as ClassName).canonicalName).isEqualTo("$typesPackageName.Person")
+        assertThat(fn.parameters).hasSize(2)
+        val arg0 = fn.parameters[0]
+        assertThat(arg0.name).isEqualTo("name")
+        assertThat((arg0.type as ClassName).canonicalName).isEqualTo(String::class.qualifiedName)
+        assertThat(arg0.annotations).hasSize(1)
+        val arg0Annotation = arg0.annotations[0]
+        assertThat(arg0Annotation.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.InputArgument")
+        assertThat(arg0Annotation.members.single().toString()).isEqualTo("\"name\"")
+        val arg1 = fn.parameters[1]
+        assertThat(arg1.name).isEqualTo("dataFetchingEnvironment")
+        assertThat((arg1.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
     }
 
     @Test
