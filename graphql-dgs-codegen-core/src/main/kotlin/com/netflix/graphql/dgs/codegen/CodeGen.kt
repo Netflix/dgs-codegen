@@ -230,13 +230,19 @@ class CodeGen(private val config: CodeGenConfig) {
             .map { KotlinEnumTypeGenerator(config).generate(it) }
             .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
+        val dataFetchersResult = definitions.asSequence()
+            .filterIsInstance<ObjectTypeDefinition>()
+            .filter { it.name == "Query" }
+            .map { KotlinDataFetcherGenerator(config).generate(it) }
+            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+
         val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
         val client = generateKotlinClientApi(definitions)
         val entitiesClient = generateKotlinClientEntitiesApi(definitions)
         val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
 
-        return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult).merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
+        return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult).merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(dataFetchersResult).merge(constantsClass)
     }
 
     private fun generateKotlinClientApi(definitions: Collection<Definition<Definition<*>>>): KotlinCodeGenResult {
