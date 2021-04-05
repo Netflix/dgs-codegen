@@ -390,6 +390,73 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInterfaceClassWithNonNullableFields() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            interface Person {
+                firstname: String!
+                lastname: String
+            }
+            
+            type Employee implements Person {
+                firstname: String!
+                lastname: String
+                company: String
+            }
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val employee = dataTypes.single().typeSpec
+        // Check data class
+        assertThat(employee.name).isEqualTo("Employee")
+        assertThat(employee.fieldSpecs.size).isEqualTo(3)
+        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
+
+        val annotation = employee.annotations.single()
+        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+
+        val person = interfaces[0]
+        Truth.assertThat(person.toString()).isEqualTo(
+            """
+               |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+               |
+               |import com.fasterxml.jackson.annotation.JsonSubTypes;
+               |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import java.lang.String;
+               |
+               |@JsonTypeInfo(
+               |    use = JsonTypeInfo.Id.NAME,
+               |    include = JsonTypeInfo.As.PROPERTY,
+               |    property = "__typename"
+               |)
+               |@JsonSubTypes(@JsonSubTypes.Type(value = Employee.class, name = "Employee"))
+               |public interface Person {
+               |  String getFirstname();
+               |
+               |  void setFirstname(String firstname);
+               |
+               |  String getLastname();
+               |
+               |  void setLastname(String lastname);
+               |}
+               |""".trimMargin()
+        )
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateDataClassWithInterface() {
 
         val schema = """
@@ -1391,18 +1458,18 @@ class CodeGenTest {
             }
 
             interface Person {
-                firstname: String
+                firstname: String!
                 lastname: String
             }
 
             interface Employee implements Person {
-                firstname: String
+                firstname: String!
                 lastname: String
                 company: String
             }
 
             type Talent implements Employee {
-                firstname: String
+                firstname: String!
                 lastname: String
                 company: String
                 imdbProfile: String
