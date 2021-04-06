@@ -71,7 +71,10 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
     }
 
     fun isNullable(fieldType: Type<*>): Boolean {
-        return fieldType !is NonNullType
+        return if (config.kotlinAllFieldsOptional)
+            true
+        else
+            fieldType !is NonNullType
     }
 
     private fun TypeName.toKtTypeName(): KtTypeName {
