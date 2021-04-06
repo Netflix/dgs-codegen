@@ -56,23 +56,21 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
     }
 
     private fun addInterfaceMethod(fieldDefinition: FieldDefinition, javaType: TypeSpec.Builder) {
-        if (fieldDefinition.type is TypeName) {
-            val returnType = typeUtils.findReturnType(fieldDefinition.type)
+        val returnType = typeUtils.findReturnType(fieldDefinition.type)
 
-            val fieldName = fieldDefinition.name
-            javaType.addMethod(
-                MethodSpec.methodBuilder("get${fieldName.capitalize()}")
-                    .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                    .returns(returnType)
-                    .build()
-            )
+        val fieldName = fieldDefinition.name
+        javaType.addMethod(
+            MethodSpec.methodBuilder("get${fieldName.capitalize()}")
+                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                .returns(returnType)
+                .build()
+        )
 
-            javaType.addMethod(
-                MethodSpec.methodBuilder("set${fieldName.capitalize()}")
-                    .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                    .addParameter(returnType, fieldName)
-                    .build()
-            )
-        }
+        javaType.addMethod(
+            MethodSpec.methodBuilder("set${fieldName.capitalize()}")
+                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                .addParameter(returnType, fieldName)
+                .build()
+        )
     }
 }

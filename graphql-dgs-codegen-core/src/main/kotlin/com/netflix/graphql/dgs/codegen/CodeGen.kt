@@ -37,7 +37,7 @@ class CodeGen(private val config: CodeGenConfig) {
             config.outputDir.toFile().deleteRecursively()
         }
 
-        val inputSchemas = config.schemaFiles.asSequence()
+        val inputSchemas = config.schemaFiles.sorted().asSequence()
             .flatMap { it.walkTopDown().filter { file -> file.isFile } }
             .map { it.readText() }
             .plus(config.schemas)
