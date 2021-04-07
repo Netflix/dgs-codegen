@@ -315,7 +315,8 @@ data class CodeGenConfig(
     val shortProjectionNames: Boolean = false,
     val generateDataTypes: Boolean = true,
     val omitNullInputFields: Boolean = false,
-    val maxProjectionDepth: Int = 10
+    val maxProjectionDepth: Int = 10,
+    val kotlinAllFieldsOptional: Boolean = false,
 ) {
     val packageNameClient: String
         get() = "$packageName.$subPackageNameClient"

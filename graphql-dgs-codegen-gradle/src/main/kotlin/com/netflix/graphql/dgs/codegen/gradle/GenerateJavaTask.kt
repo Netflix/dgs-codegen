@@ -106,6 +106,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var maxProjectionDepth = 10
 
+    @Input
+    var kotlinAllFieldsOptional = false
+
     @TaskAction
     fun generate() {
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.toSet()
@@ -135,6 +138,7 @@ open class GenerateJavaTask : DefaultTask() {
             generateDataTypes = generateDataTypes,
             omitNullInputFields = omitNullInputFields,
             maxProjectionDepth = maxProjectionDepth,
+            kotlinAllFieldsOptional = kotlinAllFieldsOptional,
         )
 
         LOGGER.info("Codegen config: {}", config)

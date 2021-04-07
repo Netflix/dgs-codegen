@@ -127,6 +127,33 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `non nullable primitive, but with kotlinAllFieldsOptional setting`() {
+
+        val schema = """
+            type MyType {
+                count: Int!
+                truth: Boolean!
+                floaty: Float!
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                kotlinAllFieldsOptional = true
+            )
+        ).generate() as KotlinCodeGenResult
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        val (countProperty, truthProperty, floatyProperty) = type.propertySpecs
+        assertThat(countProperty.type).isEqualTo(Int::class.asTypeName().copy(nullable = true))
+        assertThat(truthProperty.type).isEqualTo(Boolean::class.asTypeName().copy(nullable = true))
+        assertThat(floatyProperty.type).isEqualTo(Double::class.asTypeName().copy(nullable = true))
+    }
+
+    @Test
     fun generateDataClassWithNonNullableComplexType() {
 
         val schema = """
@@ -150,9 +177,39 @@ class KotlinCodeGenTest {
         val type = dataTypes[0].members[0] as TypeSpec
 
         assertThat(type.propertySpecs[0].type.toString()).isEqualTo("com.netflix.graphql.dgs.codegen.tests.generated.types.OtherType")
-        assertThat(type.propertySpecs[0].type.isNullable).isFalse()
+        assertThat(type.propertySpecs[0].type.isNullable).isFalse
 
         assertThat(type.primaryConstructor!!.parameters[0].defaultValue).isNull()
+    }
+
+    @Test
+    fun `non nullable complex type with kotlinAllFieldsOptional setting`() {
+
+        val schema = """
+            type MyType {
+                other: OtherType!
+            }
+            
+            type OtherType {
+                name: String!
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                kotlinAllFieldsOptional = true,
+            )
+        ).generate() as KotlinCodeGenResult
+
+        val type = dataTypes[0].members[0] as TypeSpec
+
+        assertThat(type.propertySpecs[0].type.toString()).isEqualTo("com.netflix.graphql.dgs.codegen.tests.generated.types.OtherType?")
+        assertThat(type.propertySpecs[0].type.isNullable).isTrue
+
+        assertThat(type.primaryConstructor!!.parameters[0].defaultValue).isNotNull
     }
 
     @Test
