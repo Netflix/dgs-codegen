@@ -150,7 +150,7 @@ class KotlinClientApiGenerator(private val config: CodeGenConfig, private val do
 
         val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
         val codeGenResult = fieldDefinitions.filterSkipped()
-            .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
+            .mapNotNull { if (it.type.findTypeDefinition(document, true) != null) Pair(it, it.type.findTypeDefinition(document, true)) else null }
             .map {
                 val projectionName = "${prefix}_${it.first.name.capitalize()}Projection"
                 javaType.addFunction(

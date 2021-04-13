@@ -996,6 +996,43 @@ class ClientApiGenTest {
     }
 
     @Test
+    fun testExtendSubProjectionOutOfOrder() {
+        val schema = """
+          type Query {
+            search: [SearchResult]
+          }
+
+          type SearchResult {
+            movie: Movie
+          }
+
+          extend type Movie {
+            director: String
+          }
+
+          type Movie {
+            title: String
+          }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            )
+        ).generate() as CodeGenResult
+        val projections = codeGenResult.clientProjections
+        assertThat(projections.size).isEqualTo(2)
+        assertThat(projections[1].typeSpec.name).isEqualTo("Search_MovieProjection")
+        assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
+        assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
+
+        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.queryTypes).plus(codeGenResult.dataTypes).plus(codeGenResult.enumTypes))
+    }
+
+    @Test
     fun includeQueryConfig() {
 
         val schema = """
