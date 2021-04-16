@@ -317,6 +317,8 @@ data class CodeGenConfig(
     val omitNullInputFields: Boolean = false,
     val maxProjectionDepth: Int = 10,
     val kotlinAllFieldsOptional: Boolean = false,
+    /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
+    val snakeCaseConstantNames: Boolean = false,
 ) {
     val packageNameClient: String
         get() = "$packageName.$subPackageNameClient"
