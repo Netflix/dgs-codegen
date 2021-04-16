@@ -58,7 +58,6 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun createQueryClass(it: FieldDefinition, operation: String): JavaFile {
         val javaType = TypeSpec.classBuilder("${it.name.capitalize()}GraphQLQuery")
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(GraphQLQuery::class.java))
-        println("Generating ${it.name.capitalize()}GraphQLQuery")
         javaType.addMethod(
             MethodSpec.methodBuilder("getOperationName")
                 .addModifiers(Modifier.PUBLIC)
@@ -157,7 +156,6 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val clazzName = "${prefix}ProjectionRoot"
         val javaType = TypeSpec.classBuilder(clazzName)
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
-        println("Generating ${prefix}ProjectionRoot")
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
 
