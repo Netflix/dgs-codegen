@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
@@ -31,7 +32,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
         val baseConstantsType = TypeSpec.objectBuilder("DgsConstants")
 
         document.definitions.filterIsInstance<ObjectTypeDefinition>().filter { it !is ObjectTypeExtensionDefinition }.map {
-            val constantsType = TypeSpec.objectBuilder((it.name.toUpperCase()))
+            val constantsType = createConstantTypeBuilder(config, it.name)
 
             val extensions = findExtensions(it.name, document.definitions)
             val fields = it.fieldDefinitions.plus(extensions.flatMap { it.fieldDefinitions }).distinctBy { it.name }
@@ -46,7 +47,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
         }
 
         document.definitions.filterIsInstance<InputObjectTypeDefinition>().filter { it !is InputObjectTypeExtensionDefinition }.map {
-            val constantsType = TypeSpec.objectBuilder((it.name.toUpperCase()))
+            val constantsType = createConstantTypeBuilder(config, it.name)
 
             val extensions = findInputExtensions(it.name, document.definitions)
             val fields = it.inputValueDefinitions.plus(extensions.flatMap { it.inputValueDefinitions })
@@ -59,7 +60,8 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
         }
 
         document.definitions.filterIsInstance<InterfaceTypeDefinition>().map {
-            val constantsType = TypeSpec.objectBuilder((it.name.toUpperCase()))
+            val constantsType = createConstantTypeBuilder(config, it.name)
+
             constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
 
             it.fieldDefinitions.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
@@ -70,7 +72,8 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
         }
 
         document.definitions.filterIsInstance<UnionTypeDefinition>().map {
-            val constantsType = TypeSpec.objectBuilder((it.name.toUpperCase()))
+            val constantsType = createConstantTypeBuilder(config, it.name)
+
             constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
             baseConstantsType.addType(constantsType.build())
         }
@@ -88,6 +91,16 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
         val fileSpec = FileSpec.builder(config.packageName, "DgsConstants").addType(baseConstantsType.build()).build()
         return KotlinCodeGenResult(constants = listOf(fileSpec))
+    }
+
+    private fun createConstantTypeBuilder(conf: CodeGenConfig, name: String): TypeSpec.Builder {
+        val className =
+            if (conf.snakeCaseConstantNames)
+                CodeGeneratorUtils.camelCasetoSnakeCase(name, CodeGeneratorUtils.Case.UPPERCASE)
+            else
+                name.toUpperCase()
+
+        return TypeSpec.classBuilder(className)
     }
 
     private fun addFieldName(constantsType: TypeSpec.Builder, name: String) {

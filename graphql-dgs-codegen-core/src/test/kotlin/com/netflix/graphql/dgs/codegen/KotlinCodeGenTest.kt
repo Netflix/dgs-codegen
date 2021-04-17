@@ -23,7 +23,11 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import java.net.URLClassLoader
+import java.util.stream.Stream
 
 class KotlinCodeGenTest {
 
@@ -1306,30 +1310,57 @@ class KotlinCodeGenTest {
         assertThat(type.propertySpecs).extracting("name").contains("genre", "releaseYear")
     }
 
-    @Test
-    fun generateConstants() {
+    @ParameterizedTest(name = "{index} => Snake Case? {0}; expected names {1}")
+    @MethodSource("generateConstantsArguments")
+    fun `Generates constants from Type names available via the DgsConstants class`(
+        snakeCaseEnabled: Boolean,
+        constantNames: List<String>,
+    ) {
         val schema = """
             type Query {
                 people: [Person]
             }
-            
+
             type Person {
                 firstname: String
                 lastname: String
+                metadata: PersonMetaData
             }
+            type PersonMetaData { data: [String] }
+            type VPersonMetaData { data: [String] }
+            type V1PersonMetaData { data: [String] }
+            type URLMetaData { data: [String] }
         """.trimIndent()
 
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                language = Language.KOTLIN
+                language = Language.KOTLIN,
+                snakeCaseConstantNames = snakeCaseEnabled
             )
         ).generate() as KotlinCodeGenResult
         val type = result.constants[0].members[0] as TypeSpec
-        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
+        assertThat(type.typeSpecs).extracting("name").containsExactlyElementsOf(constantNames)
         assertThat(type.typeSpecs[0].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "People")
-        assertThat(type.typeSpecs[1].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Firstname", "Lastname")
+        assertThat(type.typeSpecs[1].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Firstname", "Lastname", "Metadata")
+        assertThat(type.typeSpecs[2].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Data")
+    }
+
+    companion object {
+        @JvmStatic
+        fun generateConstantsArguments(): Stream<Arguments> {
+            return Stream.of(
+                Arguments.of(
+                    true,
+                    listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
+                ),
+                Arguments.of(
+                    false,
+                    listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
+                ),
+            )
+        }
     }
 
     @Test
