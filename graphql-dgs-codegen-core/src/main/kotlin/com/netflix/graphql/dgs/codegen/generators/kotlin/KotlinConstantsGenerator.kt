@@ -100,7 +100,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
             else
                 name.toUpperCase()
 
-        return TypeSpec.classBuilder(className)
+        return TypeSpec.objectBuilder(className)
     }
 
     private fun addFieldName(constantsType: TypeSpec.Builder, name: String) {
