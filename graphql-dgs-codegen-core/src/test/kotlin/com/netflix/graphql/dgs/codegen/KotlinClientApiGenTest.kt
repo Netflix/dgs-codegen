@@ -126,6 +126,42 @@ class KotlinClientApiGenTest {
     }
 
     @Test
+    fun generateRecursiveInputTypes() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieQuery): [String]
+            }
+            
+            input MovieQuery {
+                booleanQuery: BooleanQuery!
+                titleFilter: String
+            }
+            
+            input BooleanQuery {
+                first: MovieQuery!
+                second: MovieQuery!
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+            )
+        ).generate() as KotlinCodeGenResult
+
+        assertThat(codeGenResult.dataTypes.size).isEqualTo(2)
+        val movieQuery = codeGenResult.dataTypes[0].members[0] as TypeSpec
+        assertThat(movieQuery.name).isEqualTo("MovieQuery")
+
+        val booleanQuery = codeGenResult.dataTypes[1].members[0] as TypeSpec
+        assertThat(booleanQuery.name).isEqualTo("BooleanQuery")
+    }
+
+    @Test
     fun interfaceReturnTypes() {
 
         val schema = """

@@ -119,6 +119,42 @@ class ClientApiGenTest {
     }
 
     @Test
+    fun generateRecursiveInputTypes() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieQuery): [String]
+            }
+            
+            input MovieQuery {
+                booleanQuery: BooleanQuery!
+                titleFilter: String
+            }
+            
+            input BooleanQuery {
+                first: MovieQuery!
+                second: MovieQuery!
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateDataTypes = false,
+                generateClientApi = true,
+                includeQueries = mutableSetOf("movies")
+            )
+        ).generate() as CodeGenResult
+
+        assertThat(codeGenResult.dataTypes.size).isEqualTo(2)
+        assertThat(codeGenResult.dataTypes[0].typeSpec.name).isEqualTo("MovieQuery")
+        assertThat(codeGenResult.dataTypes[1].typeSpec.name).isEqualTo("BooleanQuery")
+
+        assertCompilesJava(codeGenResult.dataTypes)
+    }
+
+    @Test
     fun generateMutationAddsNullChecksDuringInit() {
 
         val schema = """

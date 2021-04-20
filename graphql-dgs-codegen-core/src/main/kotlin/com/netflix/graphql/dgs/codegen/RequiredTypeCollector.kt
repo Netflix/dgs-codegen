@@ -42,16 +42,18 @@ class RequiredTypeCollector(
 
         NodeTraverser().postOrder(
             object : NodeVisitorStub() {
+                val visitedTypes = mutableSetOf<String>()
+
                 override fun visitInputObjectTypeDefinition(
                     node: InputObjectTypeDefinition,
                     context: TraverserContext<Node<Node<*>>>
                 ): TraversalControl {
                     required += node.name
 
-                    node.inputValueDefinitions.forEach {
+                    node.inputValueDefinitions.filter { !visitedTypes.contains(it.name) }.forEach {
+                        visitedTypes.add(it.name)
                         it.type.findTypeDefinition(document)?.accept(context, this)
                     }
-
                     return TraversalControl.CONTINUE
                 }
 
