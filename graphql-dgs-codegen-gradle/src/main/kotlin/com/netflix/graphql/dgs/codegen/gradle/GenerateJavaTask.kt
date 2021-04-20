@@ -109,6 +109,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var kotlinAllFieldsOptional = false
 
+    @Input
+    var snakeCaseConstantNames = false
+
     @TaskAction
     fun generate() {
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.toSet()
@@ -139,6 +142,7 @@ open class GenerateJavaTask : DefaultTask() {
             omitNullInputFields = omitNullInputFields,
             maxProjectionDepth = maxProjectionDepth,
             kotlinAllFieldsOptional = kotlinAllFieldsOptional,
+            snakeCaseConstantNames = snakeCaseConstantNames
         )
 
         LOGGER.info("Codegen config: {}", config)
