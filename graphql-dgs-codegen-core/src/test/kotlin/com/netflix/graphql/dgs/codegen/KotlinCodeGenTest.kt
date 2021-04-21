@@ -1699,6 +1699,81 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateInterfaceClassWithInterfaceFields() {
+        // schema contains nullable, non-nullable and list types as interface fields  and fields that are
+        // not interfaces
+        val schema = """
+            interface Pet {
+                id: ID!
+	            name: String
+                address: [String!]!
+                mother: Pet!
+                father: Pet
+            	parents: [Pet]
+             }
+            type Dog implements Pet {
+                id: ID!
+	            name: String
+                address: [String!]!
+                mother: Dog!
+                father: Dog
+            	parents: [Dog]
+            }
+            type Bird implements Pet {
+                id: ID!
+	            name: String
+                address: [String!]!
+                mother: Bird!
+                father: Bird
+            	parents: [Bird]
+            }
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+
+        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import kotlin.String
+                |import kotlin.collections.List
+                |
+                |@JsonTypeInfo(
+                |  use = JsonTypeInfo.Id.NAME,
+                |  include = JsonTypeInfo.As.PROPERTY,
+                |  property = "__typename"
+                |)
+                |@JsonSubTypes(value = [
+                |  JsonSubTypes.Type(value = Dog::class, name = "Dog"),
+                |  JsonSubTypes.Type(value = Bird::class, name = "Bird")
+                |])
+                |public interface Pet {
+                |  public val id: String
+                |
+                |  public val name: String?
+                |
+                |  public val address: List<String>
+                |
+                |  public val mother: Pet
+                |
+                |  public val father: Pet?
+                |
+                |  public val parents: List<Pet?>?
+                |}
+            |""".trimMargin()
+        )
+        assertCompilesKotlin(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateWithJavaTypeDirective() {
         val schema = """
           type Query {
