@@ -90,12 +90,5 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
                 .returns(returnType)
                 .build()
         )
-
-        javaType.addMethod(
-            MethodSpec.methodBuilder("set${fieldName.capitalize()}")
-                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                .addParameter(returnType, fieldName)
-                .build()
-        )
     }
 }

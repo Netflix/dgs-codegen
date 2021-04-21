@@ -146,6 +146,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         }
     }
 
+    // Return the raw type for nullable, non-nullable and parameterized fields
     fun findInnerType(fieldType: Type<*>, useInterfaceType: Boolean = false, useWildcardType: Boolean = false): TypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
