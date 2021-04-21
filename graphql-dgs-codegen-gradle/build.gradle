@@ -39,18 +39,11 @@ dependencies {
     api project(":graphql-dgs-codegen-core")
     compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.4.31"
 
-    testImplementation gradleTestKit()
+    testApi gradleTestKit()
     testImplementation("com.google.guava:guava:30.1-jre")
     testImplementation("org.assertj:assertj-core:3.11.+")
     testImplementation(platform("org.junit:junit-bom:5.7.+"))
     testImplementation("org.junit.jupiter:junit-jupiter")
-}
-
-// Add a source set for the functional test suite
-sourceSets {
-    functionalTest {
-
-    }
 }
 
 description = 'Netflix GraphQL DGS Code Generation Plugin'
@@ -86,20 +79,6 @@ license {
     exclude('**/test-project/*')
 }
 
-gradlePlugin.testSourceSets(sourceSets.functionalTest)
-configurations.functionalTestImplementation.extendsFrom(configurations.testImplementation)
-
-// Add a task to run the functional tests
-task functionalTest(type: Test) {
-    testClassesDirs = sourceSets.functionalTest.output.classesDirs
-    classpath = sourceSets.functionalTest.runtimeClasspath
-}
-
-check {
-    // Run the functional tests as part of `check`
-    dependsOn(tasks.functionalTest)
-}
-
 test {
     useJUnitPlatform()
 }
@@ -113,7 +92,9 @@ task createClasspathManifest {
 
     doLast {
         outputDir.mkdirs()
-        file("$outputDir/plugin-classpath.txt").text = sourceSets.main.runtimeClasspath.join('\n') + project(":graphql-dgs-codegen-core").sourceSets.main.runtimeClasspath.join('\n')
+        file("$outputDir/plugin-classpath.txt").text =
+                sourceSets.main.runtimeClasspath.join('\n') +
+                        project(":graphql-dgs-codegen-core").sourceSets.main.runtimeClasspath.join('\n')
     }
 }
 

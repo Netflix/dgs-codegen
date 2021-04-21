@@ -39,15 +39,15 @@ apply plugin: 'license'
 sourceCompatibility = 1.8
 
 dependencies {
-    implementation("com.netflix.graphql.dgs:graphql-dgs:latest.release") {
-        transitive = false
-    }
-    implementation "com.netflix.graphql.dgs:graphql-dgs-client:latest.release"
+    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform:latest.release"))
+    implementation("com.netflix.graphql.dgs:graphql-dgs") { transitive = false }
+    implementation "com.netflix.graphql.dgs:graphql-dgs-client"
+    implementation "com.graphql-java:graphql-java"
+    implementation "com.fasterxml.jackson.core:jackson-annotations"
+
     implementation "com.squareup:javapoet:1.13.+"
     implementation "com.squareup:kotlinpoet:1.7.+"
-    implementation "com.graphql-java:graphql-java:16.+"
     implementation "com.github.ajalt.clikt:clikt:3.1.+"
-    implementation "com.fasterxml.jackson.core:jackson-annotations:2.12.+"
     implementation "commons-lang:commons-lang:2.6"
 
     testImplementation "com.google.jimfs:jimfs:1.2"
