@@ -395,7 +395,6 @@ class CodeGenTest {
 
     @Test
     fun generateInterfaceClassWithNonNullableFields() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -448,13 +447,131 @@ class CodeGenTest {
                |public interface Person {
                |  String getFirstname();
                |
-               |  void setFirstname(String firstname);
-               |
                |  String getLastname();
-               |
-               |  void setLastname(String lastname);
                |}
                |""".trimMargin()
+        )
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateInterfaceClassWithInterfaceFields() {
+        // schema contains nullable, non-nullable and list types as interface fields  and fields that are
+        // not interfaces
+        val schema = """
+            interface Pet {
+                id: ID!
+	            name: String
+                address: [String!]!
+                mother: Pet!
+                father: Pet
+            	parents: [Pet]
+             }
+            type Dog implements Pet {
+                id: ID!
+	            name: String
+                address: [String!]!
+                mother: Dog!
+                father: Dog
+            	parents: [Dog]
+            }
+            type Bird implements Pet {
+                id: ID!
+	            name: String
+                address: [String!]!
+                mother: Bird!
+                father: Bird
+            	parents: [Bird]
+            }
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+
+        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonSubTypes;
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import java.lang.String;
+                |import java.util.List;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NAME,
+                |    include = JsonTypeInfo.As.PROPERTY,
+                |    property = "__typename"
+                |)
+                |@JsonSubTypes({
+                |    @JsonSubTypes.Type(value = Dog.class, name = "Dog"),
+                |    @JsonSubTypes.Type(value = Bird.class, name = "Bird")
+                |})
+                |public interface Pet {
+                |  String getId();
+                |
+                |  String getName();
+                |
+                |  List<String> getAddress();
+                |}
+            |""".trimMargin()
+        )
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateInterfaceClassWithInterfaceFieldsOfDifferentType() {
+        val schema = """
+            interface Pet {
+	            name: String
+                diet: Diet
+             }
+             
+            interface Diet {
+                calories: String
+            }
+            
+            type Vegetarian implements Diet {
+                calories: String
+                vegetables: [String]
+            }
+            
+            type Dog implements Pet {
+	            name: String
+                diet: Vegetarian
+            }
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+
+        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonSubTypes;
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import java.lang.String;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NAME,
+                |    include = JsonTypeInfo.As.PROPERTY,
+                |    property = "__typename"
+                |)
+                |@JsonSubTypes(@JsonSubTypes.Type(value = Dog.class, name = "Dog"))
+                |public interface Pet {
+                |  String getName();
+                |}
+            |""".trimMargin()
         )
 
         assertCompilesJava(dataTypes + interfaces)
@@ -515,11 +632,7 @@ class CodeGenTest {
                |public interface Person {
                |  String getFirstname();
                |
-               |  void setFirstname(String firstname);
-               |
                |  String getLastname();
-               |
-               |  void setLastname(String lastname);
                |}
                |""".trimMargin()
         )
@@ -1540,11 +1653,7 @@ class CodeGenTest {
                |public interface Person {
                |  String getFirstname();
                |
-               |  void setFirstname(String firstname);
-               |
                |  String getLastname();
-               |
-               |  void setLastname(String lastname);
                |}
                |""".trimMargin()
         )
@@ -1567,15 +1676,9 @@ class CodeGenTest {
                |public interface Employee {
                |  String getFirstname();
                |
-               |  void setFirstname(String firstname);
-               |
                |  String getLastname();
                |
-               |  void setLastname(String lastname);
-               |
                |  String getCompany();
-               |
-               |  void setCompany(String company);
                |}
                |""".trimMargin()
         )

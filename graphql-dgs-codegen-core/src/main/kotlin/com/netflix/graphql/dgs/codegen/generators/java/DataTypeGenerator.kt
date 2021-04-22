@@ -50,7 +50,9 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
             overrideGetter = true
             val fieldDefinitions = definition.fieldDefinitions
                 .filterSkipped()
-                .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) }
+                .map {
+                    Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true))
+                }
                 .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) })
             val interfaceName = "I$name"
             implements = listOf(interfaceName) + implements
@@ -59,7 +61,9 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
 
         val fieldDefinitions = definition.fieldDefinitions
             .filterSkipped()
-            .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter) }
+            .map {
+                Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter)
+            }
             .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter) })
 
         return generate(name, unionTypes.plus(implements), fieldDefinitions, false)
@@ -101,7 +105,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false)
+internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null)
 
 abstract class BaseDataTypeGenerator(internal val packageName: String, private val config: CodeGenConfig, document: Document) {
     internal val typeUtils = TypeUtils(packageName, config, document)

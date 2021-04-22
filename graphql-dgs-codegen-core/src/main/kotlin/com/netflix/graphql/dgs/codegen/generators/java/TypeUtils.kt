@@ -146,6 +146,31 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         }
     }
 
+    // Return the raw type for nullable, non-nullable and parameterized fields
+    fun findInnerType(fieldType: Type<*>, useInterfaceType: Boolean = false, useWildcardType: Boolean = false): TypeName {
+        val visitor = object : NodeVisitorStub() {
+            override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
+                context.setAccumulate(node)
+                return TraversalControl.CONTINUE
+            }
+            override fun visitListType(node: ListType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
+                val typeName = context.getCurrentAccumulate<TypeName>()
+
+                context.setAccumulate(typeName)
+                return TraversalControl.CONTINUE
+            }
+            override fun visitNonNullType(node: NonNullType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
+                val typeName = context.getCurrentAccumulate<TypeName>()
+                context.setAccumulate(typeName)
+                return TraversalControl.CONTINUE
+            }
+            override fun visitNode(node: Node<*>, context: TraverserContext<Node<Node<*>>>): TraversalControl {
+                throw AssertionError("Unknown field type: $node")
+            }
+        }
+        return NodeTraverser().postOrder(visitor, fieldType) as TypeName
+    }
+
     fun isStringInput(name: com.squareup.javapoet.TypeName): Boolean {
         if (config.typeMapping.containsValue(name.toString())) {
             return when (name) {

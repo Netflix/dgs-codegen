@@ -37,7 +37,25 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
             .addModifiers(Modifier.PUBLIC)
 
         definition.fieldDefinitions.forEach {
-            addInterfaceMethod(it, javaType)
+            // Only generate getters/setters for fields that are not interfaces.
+            //
+            // interface Pet {
+            // 	 parent: Pet
+            // }
+            // type Dog implements Pet {
+            // 	 parent: Dog
+            // }
+            // type Bird implements Pet {
+            // 	 parent: Bird
+            // }
+            // For the schema above, we currently generate Dog::setParent(Dog dog), but the interface
+            // would have Pet::setParent(Pet pet) leading to missing overrides in the generated
+            // implementation classes. This is not an issue if the overridden field has the same base type,
+            // however.
+            // Ref: https://github.com/graphql/graphql-js/issues/776
+            if (! isFieldAnInterface(it)) {
+                addInterfaceMethod(it, javaType)
+            }
         }
 
         val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
@@ -55,7 +73,14 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
         return CodeGenResult(interfaces = listOf(javaFile))
     }
 
+    private fun isFieldAnInterface(fieldDefinition: FieldDefinition): Boolean {
+        return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java).asSequence()
+            .filter { node -> node.name == typeUtils.findInnerType(fieldDefinition.type).name }
+            .toList().isNotEmpty()
+    }
+
     private fun addInterfaceMethod(fieldDefinition: FieldDefinition, javaType: TypeSpec.Builder) {
+
         val returnType = typeUtils.findReturnType(fieldDefinition.type)
 
         val fieldName = fieldDefinition.name
@@ -63,13 +88,6 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
             MethodSpec.methodBuilder("get${fieldName.capitalize()}")
                 .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                 .returns(returnType)
-                .build()
-        )
-
-        javaType.addMethod(
-            MethodSpec.methodBuilder("set${fieldName.capitalize()}")
-                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                .addParameter(returnType, fieldName)
                 .build()
         )
     }
