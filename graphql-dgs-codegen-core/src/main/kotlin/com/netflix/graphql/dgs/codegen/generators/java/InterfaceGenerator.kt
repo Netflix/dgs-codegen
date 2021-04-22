@@ -31,7 +31,6 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
 
     private val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config, document)
-    private val useInterfaceType = config.generateInterfaces
 
     fun generate(definition: InterfaceTypeDefinition): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(definition.name)
@@ -82,7 +81,7 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
 
     private fun addInterfaceMethod(fieldDefinition: FieldDefinition, javaType: TypeSpec.Builder) {
 
-        val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType)
+        val returnType = typeUtils.findReturnType(fieldDefinition.type)
 
         val fieldName = fieldDefinition.name
         javaType.addMethod(
