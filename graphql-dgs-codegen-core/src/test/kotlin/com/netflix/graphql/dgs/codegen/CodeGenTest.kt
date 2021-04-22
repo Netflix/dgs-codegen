@@ -22,7 +22,10 @@ import com.google.common.jimfs.Configuration
 import com.google.common.jimfs.Jimfs
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
-import com.squareup.javapoet.*
+import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.WildcardTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -489,7 +492,7 @@ class CodeGenTest {
         val (dataTypes, interfaces) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate() as CodeGenResult
 
@@ -1869,6 +1872,55 @@ class CodeGenTest {
             .isEqualTo("""{mandatoryString:"a",optionalString:"b",mandatoryInt:1,optionalInt:2,mandatoryList:["x"],optionalList:[3]}""")
         assertThat(movieFilter.create("a", null, 1, null, listOf("x"), null).toString())
             .isEqualTo("""{mandatoryString:"a",mandatoryInt:1,mandatoryList:["x"]}""")
+    }
+
+    @Test
+    fun generateObjectTypeInterfaceWithInterface() {
+        val schema = """
+        type Team {
+            name: String
+        }
+
+        type Player {
+            name: String
+        }
+
+        interface Standing {
+            position: Int!
+            team: Team!
+        }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true
+            )
+        ).generate() as CodeGenResult
+
+        val interfaces = result.interfaces
+        val dataTypes = result.dataTypes
+
+        assertThat(interfaces).hasSize(3) // IPlayer, ITeam, Standing
+
+        val team = interfaces[0]
+        assertThat(team.typeSpec.name).isEqualTo("ITeam")
+        assertThat(team.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+        assertThat(team.typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("String")
+
+        val player = interfaces[1]
+        assertThat(player.typeSpec.name).isEqualTo("IPlayer")
+        assertThat(player.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+        assertThat(player.typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("String")
+
+        val standing = interfaces[2]
+        assertThat(standing.typeSpec.name).isEqualTo("Standing")
+        assertThat(standing.typeSpec.methodSpecs).extracting("name").containsExactly("getPosition", "getTeam")
+        assertThat(standing.typeSpec.methodSpecs[0].returnType.toString()).contains("int")
+        assertThat(standing.typeSpec.methodSpecs[1].returnType).extracting("simpleName").containsExactly("ITeam")
+
+        assertCompilesJava(dataTypes.plus(interfaces))
     }
 
     @Test
