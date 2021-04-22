@@ -14,3 +14,4 @@ graphql-dgs-codegen-core/compiled-sources/
 
 generated
 generated-examples
+scripts/__pycache__
