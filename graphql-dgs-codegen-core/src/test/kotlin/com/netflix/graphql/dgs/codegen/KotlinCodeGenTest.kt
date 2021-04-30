@@ -1484,6 +1484,42 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun extendSubProjectionOutOfOrder() {
+        val schema = """
+          type Query {
+            search: [SearchResult]
+          }
+
+          type SearchResult {
+            movie: Movie
+          }
+
+          extend type Movie {
+            director: String
+          }
+
+          type Movie {
+            title: String
+          }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+        val projections = result.clientProjections
+        assertThat(projections.size).isEqualTo(2)
+        assertThat(projections[1].name).isEqualTo("Search_MovieProjection")
+        assertThat((projections[1].members[0] as TypeSpec).funSpecs.map { it.name }).contains("title", "director")
+        assertCompilesKotlin(result.clientProjections.plus(result.queryTypes).plus(result.dataTypes).plus(result.enumTypes))
+    }
+
+    @Test
     fun generateUnion() {
         val schema = """
             type Query {
