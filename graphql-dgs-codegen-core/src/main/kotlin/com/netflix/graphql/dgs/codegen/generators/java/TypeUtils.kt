@@ -138,9 +138,10 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             "IDValue" -> ClassName.get(String::class.java)
             else -> {
                 var simpleName = name
-                if (useInterfaceType
-                        && !document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name }
-                        && !document.definitions.filterIsInstance<UnionTypeDefinition>().any { e -> e.name == name }) {
+                if (useInterfaceType &&
+                    !document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name } &&
+                    !document.definitions.filterIsInstance<UnionTypeDefinition>().any { e -> e.name == name }
+                ) {
                     simpleName = "I$name"
                 }
                 ClassName.get(packageName, simpleName)
