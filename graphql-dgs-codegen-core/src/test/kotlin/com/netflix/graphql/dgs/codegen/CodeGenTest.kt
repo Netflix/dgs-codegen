@@ -2103,7 +2103,7 @@ class CodeGenTest {
         val dataTypes = result.dataTypes
 
         assertThat(interfaces).hasSize(5) // IHuman, IDroid, ISearchResultPage, SearchResult, Character
-        assertThat(dataTypes).hasSize(3)  // Character, Human, Droid, SearchResultPage
+        assertThat(dataTypes).hasSize(3) // Human, Droid, SearchResultPage
 
         assertThat(interfaces[0].typeSpec.name).isEqualTo("IHuman")
         assertThat(interfaces[1].typeSpec.name).isEqualTo("IDroid")
