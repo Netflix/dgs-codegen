@@ -2059,6 +2059,81 @@ class CodeGenTest {
         assertCompilesJava(dataTypes.plus(interfaces).plus(result.enumTypes))
     }
 
+    @Test
+    fun generateInterfacesSupportingUnionTypes() {
+        val schema = """
+            type Query {
+                search(text: String!): SearchResultPage
+            }
+
+            interface Character {
+                id: ID!
+                name: String!
+            }
+            
+            type Human implements Character {
+                id: ID!
+                name: String!
+                totalCredits: Int
+            }
+
+            type Droid implements Character {
+                id: ID!
+                name: String!
+                primaryFunction: String
+            }
+
+            union SearchResult = Human | Droid
+            
+            type SearchResultPage {
+                items: [SearchResult]
+            }
+            
+        """.trimIndent()
+
+        val result = CodeGen(
+                CodeGenConfig(
+                        schemas = setOf(schema),
+                        packageName = basePackageName,
+                        generateInterfaces = true
+                )
+        ).generate() as CodeGenResult
+
+        val interfaces = result.interfaces
+        val dataTypes = result.dataTypes
+
+        assertThat(interfaces).hasSize(5) // IHuman, IDroid, ISearchResultPage, SearchResult, Character
+        assertThat(dataTypes).hasSize(3)  // Character, Human, Droid, SearchResultPage
+
+        assertThat(interfaces[0].typeSpec.name).isEqualTo("IHuman")
+        assertThat(interfaces[1].typeSpec.name).isEqualTo("IDroid")
+
+        val iSearchResultPage = interfaces[2]
+        assertThat(iSearchResultPage.typeSpec.name).isEqualTo("ISearchResultPage")
+        assertThat(iSearchResultPage.typeSpec.methodSpecs).extracting("name").containsExactly("getItems")
+        var parameterizedTypeName = iSearchResultPage.typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("SearchResult")
+
+        assertThat(interfaces[3].typeSpec.name).isEqualTo("SearchResult")
+        assertThat(interfaces[4].typeSpec.name).isEqualTo("Character")
+
+        assertThat(dataTypes[0].typeSpec.name).isEqualTo("Human")
+        assertThat(dataTypes[0].typeSpec.superinterfaces).extracting("simpleName").containsExactly("SearchResult", "IHuman", "com.netflix.graphql.dgs.codegen.tests.generated.types.Character")
+        assertThat(dataTypes[1].typeSpec.name).isEqualTo("Droid")
+        assertThat(dataTypes[1].typeSpec.superinterfaces).extracting("simpleName").containsExactly("SearchResult", "IDroid", "com.netflix.graphql.dgs.codegen.tests.generated.types.Character")
+
+        val searchResultPage = dataTypes[2]
+        assertThat(searchResultPage.typeSpec.name).isEqualTo("SearchResultPage")
+        assertThat(searchResultPage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("ISearchResultPage")
+        assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
+        parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("SearchResult")
+
+        assertCompilesJava(dataTypes.plus(interfaces).plus(result.enumTypes))
+    }
+
     private fun compileAndGetConstructor(dataTypes: List<JavaFile>, type: String): ClassConstructor {
         val packageNameAsUnixPath = basePackageName.replace(".", "/")
         val compilation = assertCompilesJava(dataTypes)
