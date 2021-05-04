@@ -2092,11 +2092,11 @@ class CodeGenTest {
         """.trimIndent()
 
         val result = CodeGen(
-                CodeGenConfig(
-                        schemas = setOf(schema),
-                        packageName = basePackageName,
-                        generateInterfaces = true
-                )
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true
+            )
         ).generate() as CodeGenResult
 
         val interfaces = result.interfaces
