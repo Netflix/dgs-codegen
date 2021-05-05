@@ -27,11 +27,13 @@ import graphql.language.EnumValueDefinition
 import javax.lang.model.element.Modifier
 
 class EnumTypeGenerator(private val config: CodeGenConfig) {
-    fun generate(definition: EnumTypeDefinition): CodeGenResult {
+    fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
         val javaType = TypeSpec.enumBuilder(definition.name)
             .addModifiers(Modifier.PUBLIC)
 
-        definition.enumValueDefinitions.forEach {
+        val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
+
+        mergedEnumDefinitions.forEach {
             addEnum(it, javaType)
         }
 

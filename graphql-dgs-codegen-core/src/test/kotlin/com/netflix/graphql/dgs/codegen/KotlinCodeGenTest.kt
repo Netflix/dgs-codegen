@@ -617,6 +617,39 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateExtendedEnum() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            extend enum EmployeeTypes {
+                QA
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+        val type = result.enumTypes[0].members[0] as TypeSpec
+
+        // Check generated enum type
+        assertThat(type.name).isEqualTo("EmployeeTypes")
+        assertThat(type.enumConstants.size).isEqualTo(4)
+        assertThat(type.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR", "QA")
+    }
+
+    @Test
     fun generateDataClassesWithMappedTypes() {
 
         val schema = """

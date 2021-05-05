@@ -102,8 +102,9 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateJavaEnums(definitions: Collection<Definition<*>>): CodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<EnumTypeDefinition>()
+            .filter { it !is EnumTypeExtensionDefinition }
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
-            .map { EnumTypeGenerator(config).generate(it) }
+            .map { EnumTypeGenerator(config).generate(it, findEnumExtensions(it.name, definitions)) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
@@ -206,6 +207,12 @@ class CodeGen(private val config: CodeGenConfig) {
             .filter { name == it.name }
             .toList()
 
+    private fun findEnumExtensions(name: String, definitions: Collection<Definition<*>>) =
+        definitions.asSequence()
+            .filterIsInstance<EnumTypeExtensionDefinition>()
+            .filter { name == it.name }
+            .toList()
+
     private fun generateKotlinForSchema(schema: String): KotlinCodeGenResult {
         document = Parser.parse(schema)
         requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
@@ -226,8 +233,12 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val enumsResult = definitions.asSequence()
             .filterIsInstance<EnumTypeDefinition>()
+            .filter { it !is EnumTypeExtensionDefinition }
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
-            .map { KotlinEnumTypeGenerator(config).generate(it) }
+            .map {
+                val extensions = findEnumExtensions(it.name, definitions)
+                KotlinEnumTypeGenerator(config).generate(it, extensions)
+            }
             .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val constantsClass = KotlinConstantsGenerator(config, document).generate()

@@ -730,7 +730,6 @@ class CodeGenTest {
 
     @Test
     fun generateEnum() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -755,6 +754,40 @@ class CodeGenTest {
         assertThat(codeGenResult.enumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
         assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants.size).isEqualTo(3)
         assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
+
+        assertCompilesJava(codeGenResult.enumTypes)
+    }
+
+    @Test
+    fun generateExtendedEnum() {
+        val schema = """
+             type Query {
+                people: [Person]
+            }
+            
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            extend enum EmployeeTypes {
+                QA
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+
+        // Check generated enum type
+        assertThat(codeGenResult.enumTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.enumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
+        assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants.size).isEqualTo(4)
+        assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR", "QA")
 
         assertCompilesJava(codeGenResult.enumTypes)
     }
