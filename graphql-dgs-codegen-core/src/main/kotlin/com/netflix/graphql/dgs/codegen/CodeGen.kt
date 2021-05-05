@@ -125,7 +125,11 @@ class CodeGen(private val config: CodeGenConfig) {
 
         return definitions.asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
-            .map { InterfaceGenerator(config, document).generate(it) }
+            .filter { it !is InterfaceTypeExtensionDefinition }
+            .map {
+                val extensions = findInterfaceExtensions(it.name, definitions)
+                InterfaceGenerator(config, document).generate(it, extensions)
+            }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
@@ -206,6 +210,12 @@ class CodeGen(private val config: CodeGenConfig) {
             .filter { name == it.name }
             .toList()
 
+    private fun findInterfaceExtensions(name: String, definitions: Collection<Definition<*>>) =
+        definitions.asSequence()
+            .filterIsInstance<InterfaceTypeExtensionDefinition>()
+            .filter { name == it.name }
+            .toList()
+
     private fun generateKotlinForSchema(schema: String): KotlinCodeGenResult {
         document = Parser.parse(schema)
         requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
@@ -216,7 +226,11 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val interfacesResult = definitions.asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
-            .map { KotlinInterfaceTypeGenerator(config).generate(it, document) }
+            .filter { it !is InterfaceTypeExtensionDefinition }
+            .map {
+                val extensions = findInterfaceExtensions(it.name, definitions)
+                KotlinInterfaceTypeGenerator(config).generate(it, document, extensions)
+            }
             .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val unionResult = definitions.asSequence()

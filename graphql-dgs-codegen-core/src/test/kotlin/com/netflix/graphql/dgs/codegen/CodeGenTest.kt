@@ -1824,6 +1824,35 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateConstantsWithExtendedInterface() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            interface Person {
+                firstname: String!
+                lastname: String
+            }
+
+            extend interface Person {
+                age: Int
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+
+        assertThat(result.interfaces).hasSize(1)
+        assertThat(result.interfaces[0].typeSpec.methodSpecs).hasSize(3)
+        assertThat(result.interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getFirstname", "getLastname", "getAge")
+    }
+
+    @Test
     fun generateWithJavaTypeDirective() {
         val schema = """
           type Query {

@@ -457,6 +457,38 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateDataClassWithExtendedInterface() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            interface Person {
+                firstname: String!
+                lastname: String
+            }
+
+            extend interface Person {
+                age: Int
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+
+        assertThat(result.interfaces.size).isEqualTo(1)
+
+        val interfaceType = result.interfaces[0].members[0] as TypeSpec
+        assertThat(interfaceType.propertySpecs.size).isEqualTo(3)
+        assertThat(interfaceType.propertySpecs).extracting("name").containsExactly("firstname", "lastname", "age")
+    }
+
+    @Test
     fun generateDataClassWithNonNullableAndInterface() {
 
         val schema = """
