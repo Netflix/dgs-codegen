@@ -23,20 +23,22 @@ import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
-import graphql.language.Document
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.ObjectTypeDefinition
-import graphql.language.TypeName
+import graphql.language.*
 
 class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
 
     private val packageName = config.packageNameTypes
     private val typeUtils = KotlinTypeUtils(packageName, config)
 
-    fun generate(definition: InterfaceTypeDefinition, document: Document): KotlinCodeGenResult {
+    fun generate(
+        definition: InterfaceTypeDefinition,
+        document: Document,
+        extensions: List<InterfaceTypeExtensionDefinition>
+    ): KotlinCodeGenResult {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
+        val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
-        definition.fieldDefinitions.forEach { field ->
+        mergedFieldDefinitions.forEach { field ->
             val returnType = typeUtils.findReturnType(field.type)
             interfaceBuilder.addProperty(field.name, returnType)
         }

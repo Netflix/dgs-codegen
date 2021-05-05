@@ -33,11 +33,13 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
     private val typeUtils = TypeUtils(packageName, config, document)
     private val useInterfaceType = config.generateInterfaces
 
-    fun generate(definition: InterfaceTypeDefinition): CodeGenResult {
+    fun generate(definition: InterfaceTypeDefinition, extensions: List<InterfaceTypeExtensionDefinition>): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(definition.name)
             .addModifiers(Modifier.PUBLIC)
 
-        definition.fieldDefinitions.forEach {
+        val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
+
+        mergedFieldDefinitions.forEach {
             // Only generate getters/setters for fields that are not interfaces.
             //
             // interface Pet {

@@ -20,6 +20,12 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.filterSchemaTypeExtensions
 import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
 import graphql.language.*
@@ -102,8 +108,9 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateJavaEnums(definitions: Collection<Definition<*>>): CodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<EnumTypeDefinition>()
+            .filterSchemaTypeExtensions()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
-            .map { EnumTypeGenerator(config).generate(it) }
+            .map { EnumTypeGenerator(config).generate(it, findEnumExtensions(it.name, definitions)) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
@@ -114,7 +121,8 @@ class CodeGen(private val config: CodeGenConfig) {
 
         return definitions.asSequence()
             .filterIsInstance<UnionTypeDefinition>()
-            .map { UnionTypeGenerator(config).generate(it) }
+            .filterSchemaTypeExtensions()
+            .map { UnionTypeGenerator(config).generate(it, findUnionExtensions(it.name, definitions)) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
@@ -125,7 +133,11 @@ class CodeGen(private val config: CodeGenConfig) {
 
         return definitions.asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
-            .map { InterfaceGenerator(config, document).generate(it) }
+            .filterSchemaTypeExtensions()
+            .map {
+                val extensions = findInterfaceExtensions(it.name, definitions)
+                InterfaceGenerator(config, document).generate(it, extensions)
+            }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
@@ -176,16 +188,17 @@ class CodeGen(private val config: CodeGenConfig) {
 
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
-            .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filterSchemaTypeExtensions()
+            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
             .map {
-                DataTypeGenerator(config, document).generate(it, findExtensions(it.name, definitions))
+                DataTypeGenerator(config, document).generate(it, findTypeExtensions(it.name, definitions))
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
     private fun generateJavaInputType(definitions: Collection<Definition<*>>): CodeGenResult {
         val inputTypes = definitions.asSequence()
             .filterIsInstance<InputObjectTypeDefinition>()
-            .filter { it !is InputObjectTypeExtensionDefinition }
+            .filterSchemaTypeExtensions()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
 
         return inputTypes
@@ -193,18 +206,6 @@ class CodeGen(private val config: CodeGenConfig) {
                 InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions))
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
-
-    private fun findExtensions(name: String, definitions: Collection<Definition<*>>) =
-        definitions.asSequence()
-            .filterIsInstance<ObjectTypeExtensionDefinition>()
-            .filter { name == it.name }
-            .toList()
-
-    private fun findInputExtensions(name: String, definitions: Collection<Definition<*>>) =
-        definitions.asSequence()
-            .filterIsInstance<InputObjectTypeExtensionDefinition>()
-            .filter { name == it.name }
-            .toList()
 
     private fun generateKotlinForSchema(schema: String): KotlinCodeGenResult {
         document = Parser.parse(schema)
@@ -216,18 +217,30 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val interfacesResult = definitions.asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
-            .map { KotlinInterfaceTypeGenerator(config).generate(it, document) }
+            .filterSchemaTypeExtensions()
+            .map {
+                val extensions = findInterfaceExtensions(it.name, definitions)
+                KotlinInterfaceTypeGenerator(config).generate(it, document, extensions)
+            }
             .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val unionResult = definitions.asSequence()
             .filterIsInstance<UnionTypeDefinition>()
-            .map { KotlinUnionTypeGenerator(config).generate(it) }
+            .filterSchemaTypeExtensions()
+            .map {
+                val extensions = findUnionExtensions(it.name, definitions)
+                KotlinUnionTypeGenerator(config).generate(it, extensions)
+            }
             .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val enumsResult = definitions.asSequence()
             .filterIsInstance<EnumTypeDefinition>()
+            .filterSchemaTypeExtensions()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
-            .map { KotlinEnumTypeGenerator(config).generate(it) }
+            .map {
+                val extensions = findEnumExtensions(it.name, definitions)
+                KotlinEnumTypeGenerator(config).generate(it, extensions)
+            }
             .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
 
         val constantsClass = KotlinConstantsGenerator(config, document).generate()
@@ -284,10 +297,11 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateKotlinDataTypes(definitions: Collection<Definition<*>>): KotlinCodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
-            .filter { it !is ObjectTypeExtensionDefinition && it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filterSchemaTypeExtensions()
+            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
-                val extensions = findExtensions(it.name, definitions)
+                val extensions = findTypeExtensions(it.name, definitions)
                 KotlinDataTypeGenerator(config, document).generate(it, extensions)
             }
             .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }

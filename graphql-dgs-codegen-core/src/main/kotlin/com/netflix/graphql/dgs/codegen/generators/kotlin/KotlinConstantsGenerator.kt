@@ -21,6 +21,10 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.filterSchemaTypeExtensions
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
@@ -31,52 +35,63 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
     fun generate(): KotlinCodeGenResult {
         val baseConstantsType = TypeSpec.objectBuilder("DgsConstants")
 
-        document.definitions.filterIsInstance<ObjectTypeDefinition>().filter { it !is ObjectTypeExtensionDefinition }.map {
-            val constantsType = createConstantTypeBuilder(config, it.name)
+        document.definitions.filterIsInstance<ObjectTypeDefinition>()
+            .filterSchemaTypeExtensions()
+            .map {
+                val constantsType = createConstantTypeBuilder(config, it.name)
 
-            val extensions = findExtensions(it.name, document.definitions)
-            val fields = it.fieldDefinitions.plus(extensions.flatMap { it.fieldDefinitions }).distinctBy { it.name }
+                val extensions = findTypeExtensions(it.name, document.definitions)
+                val fields = it.fieldDefinitions.plus(extensions.flatMap { it.fieldDefinitions }).distinctBy { it.name }
 
-            constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
+                constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
 
-            fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
-                addFieldName(constantsType, field.name)
+                fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
+                    addFieldName(constantsType, field.name)
+                }
+
+                baseConstantsType.addType(constantsType.build())
             }
 
-            baseConstantsType.addType(constantsType.build())
-        }
+        document.definitions.filterIsInstance<InputObjectTypeDefinition>()
+            .filterSchemaTypeExtensions()
+            .map {
+                val constantsType = createConstantTypeBuilder(config, it.name)
 
-        document.definitions.filterIsInstance<InputObjectTypeDefinition>().filter { it !is InputObjectTypeExtensionDefinition }.map {
-            val constantsType = createConstantTypeBuilder(config, it.name)
+                val extensions = findInputExtensions(it.name, document.definitions)
+                val fields = it.inputValueDefinitions + extensions.flatMap { it.inputValueDefinitions }
+                constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
+                fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
+                    addFieldName(constantsType, field.name)
+                }
 
-            val extensions = findInputExtensions(it.name, document.definitions)
-            val fields = it.inputValueDefinitions.plus(extensions.flatMap { it.inputValueDefinitions })
-            constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
-            fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
-                addFieldName(constantsType, field.name)
+                baseConstantsType.addType(constantsType.build())
             }
 
-            baseConstantsType.addType(constantsType.build())
-        }
+        document.definitions.filterIsInstance<InterfaceTypeDefinition>()
+            .filterSchemaTypeExtensions()
+            .map {
+                val constantsType = createConstantTypeBuilder(config, it.name)
 
-        document.definitions.filterIsInstance<InterfaceTypeDefinition>().map {
-            val constantsType = createConstantTypeBuilder(config, it.name)
+                constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
 
-            constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
+                val extensions = SchemaExtensionsUtils.findInterfaceExtensions(it.name, document.definitions)
+                val fields = it.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
-            it.fieldDefinitions.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
-                addFieldName(constantsType, field.name)
+                it.fieldDefinitions.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
+                    addFieldName(constantsType, field.name)
+                }
+
+                baseConstantsType.addType(constantsType.build())
             }
 
-            baseConstantsType.addType(constantsType.build())
-        }
+        document.definitions.filterIsInstance<UnionTypeDefinition>()
+            .filterSchemaTypeExtensions()
+            .map {
+                val constantsType = createConstantTypeBuilder(config, it.name)
 
-        document.definitions.filterIsInstance<UnionTypeDefinition>().map {
-            val constantsType = createConstantTypeBuilder(config, it.name)
-
-            constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
-            baseConstantsType.addType(constantsType.build())
-        }
+                constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
+                baseConstantsType.addType(constantsType.build())
+            }
 
         if (document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Query" } != null) {
             baseConstantsType.addProperty(PropertySpec.builder("QUERY_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Query"""").build())
@@ -106,10 +121,4 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
     private fun addFieldName(constantsType: TypeSpec.Builder, name: String) {
         constantsType.addProperty(PropertySpec.builder(name.capitalize(), String::class).addModifiers(KModifier.CONST).initializer(""""$name"""").build())
     }
-
-    private fun findExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-        definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { name == it.name }
-
-    private fun findInputExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-        definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
 }

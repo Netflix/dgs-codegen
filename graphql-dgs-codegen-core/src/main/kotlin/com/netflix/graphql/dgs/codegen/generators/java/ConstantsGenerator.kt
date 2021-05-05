@@ -21,6 +21,10 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.filterSchemaTypeExtensions
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeName
@@ -33,50 +37,62 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
         val javaType = TypeSpec.classBuilder("DgsConstants")
             .addModifiers(Modifier.PUBLIC)
 
-        document.definitions.filterIsInstance<ObjectTypeDefinition>().filter { it !is ObjectTypeExtensionDefinition }.map {
-            val constantsType = createConstantTypeBuilder(config, it.name)
+        document.definitions.filterIsInstance<ObjectTypeDefinition>()
+            .filterSchemaTypeExtensions()
+            .map {
+                val constantsType = createConstantTypeBuilder(config, it.name)
 
-            val extensions = findExtensions(it.name, document.definitions)
-            val fields = it.fieldDefinitions.plus(extensions.flatMap { it.fieldDefinitions })
+                val extensions = findTypeExtensions(it.name, document.definitions)
+                val fields = it.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
-            constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
+                constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
 
-            fields.forEach { field ->
-                addFieldNameConstant(constantsType, field.name)
+                fields.forEach { field ->
+                    addFieldNameConstant(constantsType, field.name)
+                }
+
+                javaType.addType(constantsType.build())
             }
 
-            javaType.addType(constantsType.build())
-        }
+        document.definitions.filterIsInstance<InputObjectTypeDefinition>()
+            .filterSchemaTypeExtensions()
+            .map {
+                val constantsType = createConstantTypeBuilder(config, it.name)
+                constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
 
-        document.definitions.filterIsInstance<InputObjectTypeDefinition>().filter { it !is InputObjectTypeExtensionDefinition }.map {
-            val constantsType = createConstantTypeBuilder(config, it.name)
-            constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
+                val extensions = findInputExtensions(it.name, document.definitions)
+                val fields = it.inputValueDefinitions + extensions.flatMap { it.inputValueDefinitions }
 
-            val extensions = findInputExtensions(it.name, document.definitions)
-            val fields = it.inputValueDefinitions.plus(extensions.flatMap { it.inputValueDefinitions })
+                fields.forEach { field ->
+                    addFieldNameConstant(constantsType, field.name)
+                }
 
-            fields.forEach { field ->
-                addFieldNameConstant(constantsType, field.name)
+                javaType.addType(constantsType.build())
             }
 
-            javaType.addType(constantsType.build())
-        }
+        document.definitions.filterIsInstance<InterfaceTypeDefinition>()
+            .filterSchemaTypeExtensions()
+            .map {
+                val constantsType = createConstantTypeBuilder(config, it.name)
 
-        document.definitions.filterIsInstance<InterfaceTypeDefinition>().map {
-            val constantsType = createConstantTypeBuilder(config, it.name)
+                constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
 
-            constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
-            it.fieldDefinitions.forEach { field ->
-                addFieldNameConstant(constantsType, field.name)
+                val extensions = findInterfaceExtensions(it.name, document.definitions)
+                val merged = it.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
+
+                merged.forEach { field ->
+                    addFieldNameConstant(constantsType, field.name)
+                }
+
+                javaType.addType(constantsType.build())
             }
 
-            javaType.addType(constantsType.build())
-        }
-
-        document.definitions.filterIsInstance<UnionTypeDefinition>().map {
-            val constantsType = createConstantTypeBuilder(config, it.name)
-            constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
-        }
+        document.definitions.filterIsInstance<UnionTypeDefinition>()
+            .filterSchemaTypeExtensions()
+            .map {
+                val constantsType = createConstantTypeBuilder(config, it.name)
+                constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
+            }
 
         if (document.definitions.firstOrNull { it is ObjectTypeDefinition && it.name == "Query" } != null) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "QUERY_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Query"""").build())
@@ -107,10 +123,4 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
     private fun addFieldNameConstant(constantsType: TypeSpec.Builder, fieldName: String) {
         constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), ReservedKeywordSanitizer.sanitize(fieldName.capitalize())).addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""$fieldName"""").build())
     }
-
-    private fun findExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-        definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { name == it.name }
-
-    private fun findInputExtensions(name: String, definitions: List<Definition<Definition<*>>>) =
-        definitions.filterIsInstance<InputObjectTypeExtensionDefinition>().filter { name == it.name }
 }
