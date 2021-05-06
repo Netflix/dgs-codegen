@@ -932,7 +932,7 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
             return linkedMapOf(
-            "genre" to (if (genre == null) null else "\"" + genre + "\""),
+            "genre" to (if (genre == null) null else "\"" + genre.toString().replace("\"", "\\\"") + "\""),
             "rating" to rating,
             "views" to views,
             "stars" to stars,
@@ -970,7 +970,7 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
             return linkedMapOf(
-            "genre" to ("\"" + genre + "\""),
+            "genre" to ("\"" + genre.toString().replace("\"", "\\\"") + "\""),
             "rating" to rating,
             "views" to views,
             "stars" to stars,
@@ -1008,7 +1008,7 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
             return linkedMapOf(
-            "genre" to ("\"" + genre + "\""),
+            "genre" to ("\"" + genre.toString().replace("\"", "\\\"") + "\""),
             "rating" to rating,
             "average" to average,
             "viewed" to viewed,
@@ -1052,11 +1052,44 @@ class KotlinCodeGenTest {
         assertThat(type.funSpecs).extracting("name").contains("toString")
         val expectedInputString = """
             return linkedMapOf(
-            "genre" to (if (genre == null) null else "\"" + genre + "\""),
+            "genre" to (if (genre == null) null else "\"" + genre.toString().replace("\"", "\\\"") + "\""),
             "rating" to rating,
             "average" to average,
             "viewed" to viewed,
-            "identifier" to (if (identifier == null) null else "\"" + identifier + "\""),
+            "identifier" to (if (identifier == null) null else "\"" + identifier.toString().replace("\"", "\\\"") + "\""),
+            ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
+        """.trimIndent()
+        val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
+        assertThat(expectedInputString).isEqualTo(generatedInputString)
+    }
+
+    @Test
+    fun generateToStringMethodForStringWithQuotes() {
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+
+            input MovieFilter {
+                genre: String
+                id: String!
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.funSpecs).extracting("name").contains("toString")
+        val expectedInputString = """
+            return linkedMapOf(
+            "genre" to (if (genre == null) null else "\"" + genre.toString().replace("\"", "\\\"") + "\""),
+            "id" to ("\"" + id.toString().replace("\"", "\\\"") + "\""),
             ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
@@ -1202,10 +1235,10 @@ class KotlinCodeGenTest {
 
         val expectedInputString = """
             return linkedMapOf(
-            "localDateTime" to (if (localDateTime == null) null else "\"" + localDateTime + "\""),
-            "localDate" to (if (localDate == null) null else "\"" + localDate + "\""),
-            "localTime" to (if (localTime == null) null else "\"" + localTime + "\""),
-            "dateTime" to (if (dateTime == null) null else "\"" + dateTime + "\""),
+            "localDateTime" to (if (localDateTime == null) null else "\"" + localDateTime.toString().replace("\"", "\\\"") + "\""),
+            "localDate" to (if (localDate == null) null else "\"" + localDate.toString().replace("\"", "\\\"") + "\""),
+            "localTime" to (if (localTime == null) null else "\"" + localTime.toString().replace("\"", "\\\"") + "\""),
+            "dateTime" to (if (dateTime == null) null else "\"" + dateTime.toString().replace("\"", "\\\"") + "\""),
             ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
@@ -1270,7 +1303,7 @@ class KotlinCodeGenTest {
 
         val expectedInputString = """
             return linkedMapOf(
-            "time" to (if (time == null) null else "\"" + time + "\""),
+            "time" to (if (time == null) null else "\"" + time.toString().replace("\"", "\\\"") + "\""),
             "date" to date,
             ).map { it.key + ":" + it.value }.joinToString(",", "{", "}")
         """.trimIndent()
