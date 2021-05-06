@@ -64,6 +64,8 @@ class KotlinCodeGenTest {
         assertThat(type.modifiers).contains(KModifier.DATA)
         assertThat(type.propertySpecs.size).isEqualTo(2)
         assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -98,6 +100,8 @@ class KotlinCodeGenTest {
         for (param in constructor.parameters) {
             assertThat(param.defaultValue.toString()).isEqualTo("null")
         }
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -128,6 +132,8 @@ class KotlinCodeGenTest {
         assertThat(type.primaryConstructor!!.parameters[0].defaultValue).isNull()
         assertThat(type.primaryConstructor!!.parameters[1].defaultValue).isNull()
         assertThat(type.primaryConstructor!!.parameters[2].defaultValue).isNull()
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -155,6 +161,8 @@ class KotlinCodeGenTest {
         assertThat(countProperty.type).isEqualTo(Int::class.asTypeName().copy(nullable = true))
         assertThat(truthProperty.type).isEqualTo(Boolean::class.asTypeName().copy(nullable = true))
         assertThat(floatyProperty.type).isEqualTo(Double::class.asTypeName().copy(nullable = true))
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -184,6 +192,8 @@ class KotlinCodeGenTest {
         assertThat(type.propertySpecs[0].type.isNullable).isFalse
 
         assertThat(type.primaryConstructor!!.parameters[0].defaultValue).isNull()
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -214,6 +224,8 @@ class KotlinCodeGenTest {
         assertThat(type.propertySpecs[0].type.isNullable).isTrue
 
         assertThat(type.primaryConstructor!!.parameters[0].defaultValue).isNotNull
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -241,6 +253,8 @@ class KotlinCodeGenTest {
         val companion = type.typeSpecs[0]
         assertThat(companion.isCompanion).isTrue
         assertThat(companion.name).isNull()
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -268,6 +282,8 @@ class KotlinCodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
         assertThat(dataTypes[0].packageName).isEqualTo("com.mypackage.types")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -303,6 +319,8 @@ class KotlinCodeGenTest {
 
         assertThat(nameProperty.type).isEqualTo(STRING.copy(nullable = true))
         assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING.copy(nullable = true)).copy(nullable = true))
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -334,6 +352,8 @@ class KotlinCodeGenTest {
         val (nameProperty, emailProperty) = type.propertySpecs
         assertThat(nameProperty.type).isEqualTo(STRING)
         assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING))
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -366,6 +386,8 @@ class KotlinCodeGenTest {
 
         assertThat(nameProperty.type).isEqualTo(STRING)
         assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING.copy(nullable = true)))
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -454,6 +476,8 @@ class KotlinCodeGenTest {
                 |}
                 |""".trimMargin()
         )
+
+        assertCompilesKotlin(dataTypes + interfaces)
     }
 
     @Test
@@ -504,6 +528,8 @@ class KotlinCodeGenTest {
         assertThat(interfaceType.propertySpecs[0].type.isNullable).isEqualTo(false)
         assertThat(interfaceType.propertySpecs[1].type.isNullable).isEqualTo(false)
         assertThat(interfaceType.propertySpecs[2].type.isNullable).isEqualTo(true)
+
+        assertCompilesKotlin(dataTypes + interfaces)
     }
 
     @Test
@@ -544,6 +570,8 @@ class KotlinCodeGenTest {
         val personClass = ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.Person")
         val friendsType = LIST.parameterizedBy(personClass.copy(nullable = true)).copy(nullable = true)
         assertThat(friends.type).isEqualTo(friendsType)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -584,6 +612,8 @@ class KotlinCodeGenTest {
         val nestedType = dataTypes[1].members[0] as TypeSpec
         assertThat(nestedType.name).isEqualTo("Engine")
         assertThat(nestedType.propertySpecs).filteredOn("name", "performance").extracting("type.simpleName").containsExactly("Performance")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -614,6 +644,8 @@ class KotlinCodeGenTest {
         assertThat(type.name).isEqualTo("EmployeeTypes")
         assertThat(type.enumConstants.size).isEqualTo(3)
         assertThat(type.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
+
+        assertCompilesKotlin(result.dataTypes + result.enumTypes)
     }
 
     @Test
@@ -649,6 +681,8 @@ class KotlinCodeGenTest {
         assertThat(type.propertySpecs.size).isEqualTo(3)
         assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname", "birthDate")
         assertThat(type.propertySpecs[2].type.toString()).isEqualTo("java.time.LocalDateTime?")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -678,6 +712,8 @@ class KotlinCodeGenTest {
 
         assertThat(type.propertySpecs.size).isEqualTo(1)
         assertThat(type.propertySpecs).extracting("name").contains("genre")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -713,6 +749,8 @@ class KotlinCodeGenTest {
         assertThat(colorParam.type.toString()).isEqualTo("$typesPackageName.Color?")
         assertThat(colorParam.defaultValue).isNotNull
         assertThat(colorParam.defaultValue.toString()).isEqualTo("$typesPackageName.Color.red")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -744,6 +782,8 @@ class KotlinCodeGenTest {
         assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<kotlin.String>")
         assertThat(colorParam.defaultValue).isNotNull
         assertThat(colorParam.defaultValue.toString()).isEqualTo("emptyList()")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -775,6 +815,8 @@ class KotlinCodeGenTest {
         assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<kotlin.String>")
         assertThat(colorParam.defaultValue).isNotNull
         assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf("DGS")""")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -806,6 +848,8 @@ class KotlinCodeGenTest {
         assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<kotlin.String?>")
         assertThat(colorParam.defaultValue).isNotNull
         assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf("DGS")""")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -837,6 +881,8 @@ class KotlinCodeGenTest {
         assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<kotlin.Int>")
         assertThat(colorParam.defaultValue).isNotNull
         assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf(1, 2, 3)""")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -873,6 +919,8 @@ class KotlinCodeGenTest {
         assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<com.netflix.graphql.dgs.codegen.tests.generated.types.Color>")
         assertThat(colorParam.defaultValue).isNotNull
         assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf(com.netflix.graphql.dgs.codegen.tests.generated.types.Color.red)""")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -903,6 +951,8 @@ class KotlinCodeGenTest {
         assertThat(colorParam.name).isEqualTo("booleans")
         assertThat(colorParam.defaultValue).isNotNull
         assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf(true)""")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -940,6 +990,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -978,6 +1030,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1016,6 +1070,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1061,6 +1117,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1094,6 +1152,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1145,6 +1205,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         generatedInputString = type.funSpecs.single { it.name == "serializeListOfString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1177,35 +1239,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(expectedInputString).isEqualTo(generatedInputString)
-    }
 
-    @Test
-    fun generateToStringMethodForDataTypes() {
-
-        val schema = """
-            type Query {
-                people: [Person]
-            }
-            
-            type Person {
-                firstname: String
-                lastname: String
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName
-            )
-        ).generate() as CodeGenResult
-
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-        val expectedString = """
-            return "Person{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'" +"}";
-        """.trimIndent()
-        val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedString).isEqualTo(generatedString)
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1243,6 +1278,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1276,6 +1313,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1309,6 +1348,8 @@ class KotlinCodeGenTest {
         """.trimIndent()
         val generatedInputString = type.funSpecs.single { it.name == "toString" }.body.toString().trimIndent()
         assertThat(generatedInputString).isEqualTo(expectedInputString)
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1341,6 +1382,8 @@ class KotlinCodeGenTest {
 
         assertThat(type.propertySpecs.size).isEqualTo(2)
         assertThat(type.propertySpecs).extracting("name").contains("genre", "releaseYear")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @ParameterizedTest(name = "{index} => Snake Case? {0}; expected names {1}")
@@ -1378,6 +1421,8 @@ class KotlinCodeGenTest {
         assertThat(type.typeSpecs[0].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "People")
         assertThat(type.typeSpecs[1].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Firstname", "Lastname", "Metadata")
         assertThat(type.typeSpecs[2].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Data")
+
+        assertCompilesKotlin(result.dataTypes + result.constants)
     }
 
     companion object {
@@ -1423,6 +1468,8 @@ class KotlinCodeGenTest {
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
         assertThat(type.typeSpecs[2].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Email")
+
+        assertCompilesKotlin(result.dataTypes + result.constants)
     }
 
     @Test
@@ -1456,6 +1503,8 @@ class KotlinCodeGenTest {
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
         assertThat(type.typeSpecs[2].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Email", "BirthYear")
+
+        assertCompilesKotlin(result.dataTypes + result.constants)
     }
 
     @Test
@@ -1485,6 +1534,8 @@ class KotlinCodeGenTest {
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
         assertThat(type.typeSpecs[1].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Firstname", "Lastname", "Email")
+
+        assertCompilesKotlin(result.dataTypes + result.constants)
     }
 
     @Test
@@ -1514,6 +1565,8 @@ class KotlinCodeGenTest {
         val type = result.constants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
         assertThat(type.typeSpecs[0].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "People", "Friends")
+
+        assertCompilesKotlin(result.dataTypes + result.queryTypes + result.constants)
     }
 
     @Test
@@ -1549,6 +1602,7 @@ class KotlinCodeGenTest {
         assertThat(projections.size).isEqualTo(2)
         assertThat(projections[1].name).isEqualTo("Search_MovieProjection")
         assertThat((projections[1].members[0] as TypeSpec).funSpecs.map { it.name }).contains("title", "director")
+
         assertCompilesKotlin(result.clientProjections.plus(result.queryTypes).plus(result.dataTypes).plus(result.enumTypes))
     }
 
@@ -1584,6 +1638,8 @@ class KotlinCodeGenTest {
         val typeSpec = dataTypes[0].members[0] as TypeSpec
 
         assertThat(typeSpec.superinterfaces.keys).contains(ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.SearchResult"))
+
+        assertCompilesKotlin(dataTypes + interfaces)
     }
 
     @Test
@@ -1606,6 +1662,8 @@ class KotlinCodeGenTest {
             )
         ).generate() as KotlinCodeGenResult
         assertThat(dataTypes).extracting("name").containsExactly("Person")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1627,6 +1685,8 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).extracting("name").containsExactly("Person")
         val type = dataTypes[0].members[0] as TypeSpec
         assertThat(type.propertySpecs).extracting("name").containsExactly("name")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1644,6 +1704,8 @@ class KotlinCodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
         assertThat(dataTypes[0].packageName).isEqualTo("$basePackageName.mytypes")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @Test
@@ -1765,6 +1827,8 @@ class KotlinCodeGenTest {
                 |}
                 |""".trimMargin()
         )
+
+        assertCompilesKotlin(dataTypes + interfaces)
     }
 
     @Test
@@ -1918,6 +1982,8 @@ class KotlinCodeGenTest {
         val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf(), language = Language.KOTLIN)).generate() as KotlinCodeGenResult
         assertThat(codeGenResult.dataTypes.first().toString()).contains("com.example.MyType")
         assertThat(codeGenResult.queryTypes.first().toString()).contains("com.example.MyType")
+
+        assertCompilesKotlin(codeGenResult.dataTypes + codeGenResult.queryTypes)
     }
 
     @Test
@@ -1953,6 +2019,8 @@ class KotlinCodeGenTest {
             .isEqualTo("""{mandatoryString:"hi",optionalString:"bye",mandatoryInt:3,optionalInt:7,mandatoryList:["hey"],optionalList:[1, 2]}""")
         assertThat(movieFilter.create("hi", null, 3, null, listOf("hey"), null).toString())
             .isEqualTo("""{mandatoryString:"hi",mandatoryInt:3,mandatoryList:["hey"]}""")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     private fun compileAndGetConstructor(dataTypes: List<FileSpec>, type: String): ClassConstructor {
