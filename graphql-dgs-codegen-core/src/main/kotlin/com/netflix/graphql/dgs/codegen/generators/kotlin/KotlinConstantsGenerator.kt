@@ -77,7 +77,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
                 val extensions = SchemaExtensionsUtils.findInterfaceExtensions(it.name, document.definitions)
                 val fields = it.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
-                it.fieldDefinitions.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
+                fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
                 }
 
