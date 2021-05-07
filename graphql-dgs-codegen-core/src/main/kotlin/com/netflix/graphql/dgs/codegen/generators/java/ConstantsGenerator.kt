@@ -24,7 +24,7 @@ import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
-import com.netflix.graphql.dgs.codegen.generators.shared.filterSchemaTypeExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeName
@@ -38,7 +38,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC)
 
         document.definitions.filterIsInstance<ObjectTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -55,7 +55,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             }
 
         document.definitions.filterIsInstance<InputObjectTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val constantsType = createConstantTypeBuilder(config, it.name)
                 constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
@@ -71,7 +71,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             }
 
         document.definitions.filterIsInstance<InterfaceTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -88,7 +88,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             }
 
         document.definitions.filterIsInstance<UnionTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val constantsType = createConstantTypeBuilder(config, it.name)
                 constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())

@@ -25,7 +25,7 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.f
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
-import com.netflix.graphql.dgs.codegen.generators.shared.filterSchemaTypeExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
 import graphql.language.*
@@ -108,7 +108,7 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateJavaEnums(definitions: Collection<Definition<*>>): CodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<EnumTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map { EnumTypeGenerator(config).generate(it, findEnumExtensions(it.name, definitions)) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
@@ -121,7 +121,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         return definitions.asSequence()
             .filterIsInstance<UnionTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map { UnionTypeGenerator(config).generate(it, findUnionExtensions(it.name, definitions)) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
@@ -133,7 +133,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         return definitions.asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val extensions = findInterfaceExtensions(it.name, definitions)
                 InterfaceGenerator(config, document).generate(it, extensions)
@@ -188,7 +188,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
             .map {
                 DataTypeGenerator(config, document).generate(it, findTypeExtensions(it.name, definitions))
@@ -198,7 +198,7 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateJavaInputType(definitions: Collection<Definition<*>>): CodeGenResult {
         val inputTypes = definitions.asSequence()
             .filterIsInstance<InputObjectTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
 
         return inputTypes
@@ -217,7 +217,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val interfacesResult = definitions.asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val extensions = findInterfaceExtensions(it.name, definitions)
                 KotlinInterfaceTypeGenerator(config).generate(it, document, extensions)
@@ -226,7 +226,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val unionResult = definitions.asSequence()
             .filterIsInstance<UnionTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val extensions = findUnionExtensions(it.name, definitions)
                 KotlinUnionTypeGenerator(config).generate(it, extensions)
@@ -235,7 +235,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val enumsResult = definitions.asSequence()
             .filterIsInstance<EnumTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 val extensions = findEnumExtensions(it.name, definitions)
@@ -297,7 +297,7 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateKotlinDataTypes(definitions: Collection<Definition<*>>): KotlinCodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {

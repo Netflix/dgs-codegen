@@ -24,7 +24,7 @@ import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
-import com.netflix.graphql.dgs.codegen.generators.shared.filterSchemaTypeExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
@@ -36,7 +36,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
         val baseConstantsType = TypeSpec.objectBuilder("DgsConstants")
 
         document.definitions.filterIsInstance<ObjectTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -53,7 +53,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
             }
 
         document.definitions.filterIsInstance<InputObjectTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -68,7 +68,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
             }
 
         document.definitions.filterIsInstance<InterfaceTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -85,7 +85,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
             }
 
         document.definitions.filterIsInstance<UnionTypeDefinition>()
-            .filterSchemaTypeExtensions()
+            .excludeSchemaTypeExtension()
             .map {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 

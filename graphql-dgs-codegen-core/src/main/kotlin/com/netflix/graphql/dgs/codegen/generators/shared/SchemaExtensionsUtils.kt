@@ -43,11 +43,11 @@ object SchemaExtensionsUtils {
             .toList()
 }
 
-fun <T> List<T>.filterSchemaTypeExtensions(): List<T> {
+fun <T> List<T>.excludeSchemaTypeExtension(): List<T> {
     return this.filter { !isSchemaTypeExtension(it) }
 }
 
-fun <T> Sequence<T>.filterSchemaTypeExtensions(): Sequence<T> {
+fun <T> Sequence<T>.excludeSchemaTypeExtension(): Sequence<T> {
     return this.filter { !isSchemaTypeExtension(it) }
 }
 
