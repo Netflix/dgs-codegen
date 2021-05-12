@@ -103,11 +103,6 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
 
         val constructorBuilder = FunSpec.constructorBuilder()
 
-        val interfaceTypes = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
-        if (interfaceTypes.isNotEmpty()) {
-            kotlinType.addAnnotation(disableJsonTypeInfoAnnotation())
-        }
-
         fields.forEach { field ->
             val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
             val parameterSpec = ParameterSpec.builder(field.name, returnType)
@@ -127,6 +122,7 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
             }
 
             val interfaceNames = interfaces.map { it as NamedNode<*> }.map { it.name }.toSet()
+            val interfaceTypes = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
             val implementedInterfaces = interfaceTypes.filter { interfaceNames.contains(it.name) }
             val interfaceFields = implementedInterfaces.flatMap { it.fieldDefinitions }.map { it.name }.toSet()
 
@@ -144,10 +140,15 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
             union.memberTypes.map { it as graphql.language.TypeName }.map { it.name }.contains(name)
         }
 
-        interfaces.plus(unionTypes).forEach {
+        val interfaceTypes = interfaces.plus(unionTypes)
+        interfaceTypes.forEach {
             if (it is NamedNode<*>) {
                 kotlinType.addSuperinterface(ClassName.bestGuess("${getPackageName()}.${it.name}"))
             }
+        }
+
+        if (interfaceTypes.isNotEmpty()) {
+            kotlinType.addAnnotation(disableJsonTypeInfoAnnotation())
         }
 
         kotlinType.primaryConstructor(constructorBuilder.build())
