@@ -1149,6 +1149,33 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateToInputStringMethodForStringWithQuotes() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+
+            input MovieFilter {
+                genre: String
+                id: String!
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+
+        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
+
+        assertThat(movieFilter.create("quotes\"in\"the\"middle", "quotes\"in\"the\"center").toString())
+            .isEqualTo("""{genre:"quotes\"in\"the\"middle",id:"quotes\"in\"the\"center"}""")
+    }
+
+    @Test
     fun generateToInputStringMethodForListOfString() {
         val schema = """
             type Query {

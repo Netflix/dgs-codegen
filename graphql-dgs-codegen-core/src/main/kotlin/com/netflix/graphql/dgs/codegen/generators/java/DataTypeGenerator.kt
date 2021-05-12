@@ -252,7 +252,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
                 }
                 is ClassName -> {
                     if (typeUtils.isStringInput(fieldSpecType)) {
-                        """entries.put("${fieldSpec.name}", ${fieldSpec.name} == null ? null : "\"" + ${fieldSpec.name} + "\"")"""
+                        """entries.put("${fieldSpec.name}", ${fieldSpec.name} == null ? null : "\"" + ${fieldSpec.name}.toString().replace("\"", "\\\"") + "\"")"""
                     } else {
                         """entries.put("${fieldSpec.name}", ${fieldSpec.name})"""
                     }
