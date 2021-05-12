@@ -1836,6 +1836,81 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun unionTypesWithoutInterfaceCanDeserialize() {
+        val schema = """
+            type Query {
+                search(text: String!): SearchResultPage
+            }
+
+            type Human {
+                id: ID!
+                name: String!
+                totalCredits: Int
+            }
+
+            type Droid {
+                id: ID!
+                name: String!
+                primaryFunction: String
+            }
+
+            union SearchResult = Human | Droid
+
+            type SearchResultPage {
+                items: [SearchResult]
+            }
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+
+        assertThat(dataTypes.size).isEqualTo(3) // human, droid, searchresultpage
+
+        val human = dataTypes[0].members[0] as TypeSpec
+        assertThat(human.name).isEqualTo("Human")
+        assertThat(human.propertySpecs.size).isEqualTo(3)
+        assertThat(human.propertySpecs).extracting("name").contains("id", "name", "totalCredits")
+        assertThat(human.superinterfaces.keys).contains(ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.SearchResult"))
+
+        val droid = dataTypes[1].members[0] as TypeSpec
+        assertThat(droid.name).isEqualTo("Droid")
+        assertThat(droid.propertySpecs.size).isEqualTo(3)
+        assertThat(droid.propertySpecs).extracting("name").contains("id", "name", "primaryFunction")
+        assertThat(droid.superinterfaces.keys).contains(ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.SearchResult"))
+
+        val rsultPage = dataTypes[2].members[0] as TypeSpec
+        assertThat(rsultPage.name).isEqualTo("SearchResultPage")
+        assertThat(rsultPage.propertySpecs.size).isEqualTo(1)
+        assertThat(rsultPage.propertySpecs).extracting("name").contains("items")
+        assertThat(rsultPage.superinterfaces.keys).isEmpty()
+
+        assertThat(interfaces.size).isEqualTo(1)
+        val searchResult = interfaces[0].members[0] as TypeSpec
+        Truth.assertThat(FileSpec.get("$basePackageName.types", searchResult).toString()).contains(
+            """
+                |@JsonTypeInfo(
+                |  use = JsonTypeInfo.Id.NAME,
+                |  include = JsonTypeInfo.As.PROPERTY,
+                |  property = "__typename"
+                |)
+                |@JsonSubTypes(value = [
+                |  JsonSubTypes.Type(value = Human::class, name = "Human"),
+                |  JsonSubTypes.Type(value = Droid::class, name = "Droid")
+                |])
+                |""".trimMargin()
+        )
+
+        // This ensures deserializability in the absence of __typename
+        Truth.assertThat(FileSpec.get("$basePackageName.types", human).toString()).contains("@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)")
+    }
+
+    @Test
     fun generateDataClassWithInterfaceInheritance() {
 
         val schema = """
