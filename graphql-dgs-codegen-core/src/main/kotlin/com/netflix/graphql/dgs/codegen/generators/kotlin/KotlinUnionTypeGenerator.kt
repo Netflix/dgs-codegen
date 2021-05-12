@@ -25,15 +25,16 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
+import graphql.language.UnionTypeExtensionDefinition
 
 class KotlinUnionTypeGenerator(config: CodeGenConfig) {
 
     private val packageName = config.packageNameTypes
 
-    fun generate(definition: UnionTypeDefinition): KotlinCodeGenResult {
+    fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): KotlinCodeGenResult {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
 
-        val memberTypes = definition.memberTypes.asSequence()
+        val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
             .filterIsInstance<TypeName>()
             .map { member -> ClassName(packageName, member.name) }
             .toList()

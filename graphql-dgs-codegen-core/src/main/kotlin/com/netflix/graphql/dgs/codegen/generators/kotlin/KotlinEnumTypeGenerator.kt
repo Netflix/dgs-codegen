@@ -26,10 +26,11 @@ import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.EnumTypeDefinition
 
 class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
-    fun generate(definition: EnumTypeDefinition): KotlinCodeGenResult {
+    fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): KotlinCodeGenResult {
         val kotlinType = TypeSpec.classBuilder(definition.name).addModifiers(KModifier.ENUM)
 
-        definition.enumValueDefinitions.forEach {
+        val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
+        mergedEnumDefinitions.forEach {
             kotlinType.addEnumConstant(it.name)
         }
 

@@ -730,7 +730,6 @@ class CodeGenTest {
 
     @Test
     fun generateEnum() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -755,6 +754,40 @@ class CodeGenTest {
         assertThat(codeGenResult.enumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
         assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants.size).isEqualTo(3)
         assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
+
+        assertCompilesJava(codeGenResult.enumTypes)
+    }
+
+    @Test
+    fun generateExtendedEnum() {
+        val schema = """
+             type Query {
+                people: [Person]
+            }
+            
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            extend enum EmployeeTypes {
+                QA
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+
+        // Check generated enum type
+        assertThat(codeGenResult.enumTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.enumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
+        assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants.size).isEqualTo(4)
+        assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR", "QA")
 
         assertCompilesJava(codeGenResult.enumTypes)
     }
@@ -1537,6 +1570,66 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateExtendedUnion() {
+        val schema = """
+            type Query {
+                search: [SearchResult]
+            }
+            
+            union SearchResult = Movie | Actor
+
+            type Movie {
+                title: String
+            }
+
+            type Actor {
+                name: String
+            }
+            
+            type Rating {
+                stars: Int
+            }
+            
+            extend union SearchResult = Rating
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+        assertThat(result.dataTypes[0].typeSpec.name).isEqualTo("Movie")
+        assertThat(result.dataTypes[1].typeSpec.name).isEqualTo("Actor")
+        assertThat(result.dataTypes[2].typeSpec.name).isEqualTo("Rating")
+        assertThat(result.interfaces[0].typeSpec.name).isEqualTo("SearchResult")
+
+        Truth.assertThat(result.interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonSubTypes;
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NAME,
+                |    include = JsonTypeInfo.As.PROPERTY,
+                |    property = "__typename"
+                |)
+                |@JsonSubTypes({
+                |    @JsonSubTypes.Type(value = Movie.class, name = "Movie"),
+                |    @JsonSubTypes.Type(value = Actor.class, name = "Actor"),
+                |    @JsonSubTypes.Type(value = Rating.class, name = "Rating")
+                |})
+                |public interface SearchResult {
+                |}
+            |""".trimMargin()
+        )
+
+        assertCompilesJava(result.dataTypes + result.interfaces)
+    }
+
+    @Test
     fun skipCodegenOnTypes() {
         val schema = """
             type Person {
@@ -1821,6 +1914,35 @@ class CodeGenTest {
         )
 
         assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateConstantsWithExtendedInterface() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            interface Person {
+                firstname: String!
+                lastname: String
+            }
+
+            extend interface Person {
+                age: Int
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate() as CodeGenResult
+
+        assertThat(result.interfaces).hasSize(1)
+        assertThat(result.interfaces[0].typeSpec.methodSpecs).hasSize(3)
+        assertThat(result.interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getFirstname", "getLastname", "getAge")
     }
 
     @Test

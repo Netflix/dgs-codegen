@@ -457,6 +457,40 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateDataClassWithExtendedInterface() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            interface Person {
+                firstname: String!
+                lastname: String
+            }
+
+            extend interface Person {
+                age: Int
+            }
+        """.trimIndent()
+
+        val (_, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+
+        assertThat(interfaces.size).isEqualTo(1)
+
+        val interfaceType = interfaces[0].members[0] as TypeSpec
+        assertThat(interfaceType.propertySpecs.size).isEqualTo(3)
+        assertThat(interfaceType.propertySpecs).extracting("name").containsExactly("firstname", "lastname", "age")
+
+        assertCompilesKotlin(interfaces)
+    }
+
+    @Test
     fun generateDataClassWithNonNullableAndInterface() {
 
         val schema = """
@@ -614,6 +648,41 @@ class KotlinCodeGenTest {
         assertThat(type.name).isEqualTo("EmployeeTypes")
         assertThat(type.enumConstants.size).isEqualTo(3)
         assertThat(type.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
+    }
+
+    @Test
+    fun generateExtendedEnum() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            extend enum EmployeeTypes {
+                QA
+            }
+        """.trimIndent()
+
+        val (_, _, enumTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+        val type = enumTypes[0].members[0] as TypeSpec
+
+        // Check generated enum type
+        assertThat(type.name).isEqualTo("EmployeeTypes")
+        assertThat(type.enumConstants.size).isEqualTo(4)
+        assertThat(type.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR", "QA")
+
+        assertCompilesKotlin(enumTypes)
     }
 
     @Test
@@ -1308,6 +1377,8 @@ class KotlinCodeGenTest {
 
         assertThat(type.propertySpecs.size).isEqualTo(2)
         assertThat(type.propertySpecs).extracting("name").contains("genre", "releaseYear")
+
+        assertCompilesKotlin(dataTypes)
     }
 
     @ParameterizedTest(name = "{index} => Snake Case? {0}; expected names {1}")
@@ -1551,6 +1622,64 @@ class KotlinCodeGenTest {
         val typeSpec = dataTypes[0].members[0] as TypeSpec
 
         assertThat(typeSpec.superinterfaces.keys).contains(ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.SearchResult"))
+    }
+
+    @Test
+    fun generateExtendedUnion() {
+        val schema = """
+            type Query {
+                search: [SearchResult]
+            }
+            
+            union SearchResult = Movie | Actor
+
+            type Movie {
+                title: String
+            }
+
+            type Actor {
+                name: String
+            }
+            
+            type Rating {
+                stars: Int
+            }
+            
+            extend union SearchResult = Rating
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult
+        assertThat(interfaces.size).isEqualTo(1)
+
+        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |
+                |@JsonTypeInfo(
+                |  use = JsonTypeInfo.Id.NAME,
+                |  include = JsonTypeInfo.As.PROPERTY,
+                |  property = "__typename"
+                |)
+                |@JsonSubTypes(value = [
+                |  JsonSubTypes.Type(value = Movie::class, name = "Movie"),
+                |  JsonSubTypes.Type(value = Actor::class, name = "Actor"),
+                |  JsonSubTypes.Type(value = Rating::class, name = "Rating")
+                |])
+                |public interface SearchResult
+
+        """.trimMargin()
+        )
+
+        assertCompilesKotlin(dataTypes + interfaces)
     }
 
     @Test
@@ -1804,7 +1933,7 @@ class KotlinCodeGenTest {
                 |
                 |  public val parents: List<Pet?>?
                 |}
-            |""".trimMargin()
+                |""".trimMargin()
         )
         assertCompilesKotlin(dataTypes + interfaces)
     }

@@ -25,14 +25,15 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
 import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
+import graphql.language.UnionTypeExtensionDefinition
 import javax.lang.model.element.Modifier
 
 class UnionTypeGenerator(private val config: CodeGenConfig) {
-    fun generate(definition: UnionTypeDefinition): CodeGenResult {
+    fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(definition.name)
             .addModifiers(Modifier.PUBLIC)
 
-        val memberTypes = definition.memberTypes.asSequence()
+        val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
             .filterIsInstance<TypeName>()
             .map { member -> ClassName.get(packageName, member.name) }
             .toList()
