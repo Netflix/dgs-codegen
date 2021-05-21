@@ -39,7 +39,7 @@ apply plugin: 'license'
 sourceCompatibility = 1.8
 
 dependencies {
-    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
+    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:4.0.0"))
     implementation("com.netflix.graphql.dgs:graphql-dgs") { transitive = false }
     implementation "com.netflix.graphql.dgs:graphql-dgs-client"
     implementation "com.graphql-java:graphql-java"
