@@ -140,7 +140,8 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 var simpleName = name
                 if (useInterfaceType &&
                     !document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name } &&
-                    !document.definitions.filterIsInstance<UnionTypeDefinition>().any { e -> e.name == name }
+                    !document.definitions.filterIsInstance<UnionTypeDefinition>().any { e -> e.name == name } &&
+                    !isFieldTypeAnInterface(this)
                 ) {
                     simpleName = "I$name"
                 }
@@ -207,4 +208,10 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 it.name to (value as StringValue).value
             }.toMap()
         }
+
+    fun isFieldTypeAnInterface(fieldDefinitionType: TypeName): Boolean {
+        return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java).asSequence()
+            .filter { node -> node.name == findInnerType(fieldDefinitionType).name }
+            .toList().isNotEmpty()
+    }
 }
