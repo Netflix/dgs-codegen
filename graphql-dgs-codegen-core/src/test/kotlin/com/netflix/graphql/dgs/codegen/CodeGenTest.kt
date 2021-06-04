@@ -2024,6 +2024,62 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateObjectTypeInterfaceWithInterfaceInheritance() {
+        val schema = """
+        
+        interface Fruit {
+            name: String
+        }
+        
+        type Apple implements Fruit {
+            name: String
+        }
+        
+        type Basket {
+            fruit: Fruit
+        }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true
+            )
+        ).generate() as CodeGenResult
+
+        val interfaces = result.interfaces
+        val dataTypes = result.dataTypes
+
+        val iapple = interfaces[0]
+        assertThat(iapple.typeSpec.name).isEqualTo("IApple")
+        assertThat(iapple.typeSpec.superinterfaces.size).isEqualTo(1)
+        assertThat((iapple.typeSpec.superinterfaces[0] as ClassName).simpleName()).isEqualTo("Fruit")
+        assertThat(iapple.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+
+        val ibasket = interfaces[1]
+        assertThat(ibasket.typeSpec.name).isEqualTo("IBasket")
+        assertThat((ibasket.typeSpec.methodSpecs[0].returnType as ClassName).simpleName()).isEqualTo("Fruit")
+        assertThat(ibasket.typeSpec.methodSpecs).extracting("name").containsExactly("getFruit")
+
+        val fruit = interfaces[2]
+        assertThat(fruit.typeSpec.name).isEqualTo("Fruit")
+        assertThat(fruit.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+
+        val apple = dataTypes[0]
+        assertThat(apple.typeSpec.name).isEqualTo("Apple")
+        assertThat(apple.typeSpec.superinterfaces.size).isEqualTo(2)
+        assertThat(apple.typeSpec.methodSpecs).extracting("name").contains("getName")
+
+        val basket = dataTypes[1]
+        assertThat(basket.typeSpec.name).isEqualTo("Basket")
+        assertThat((basket.typeSpec.methodSpecs[0].returnType as ClassName).simpleName()).isEqualTo("Fruit")
+        assertThat(basket.typeSpec.methodSpecs).extracting("name").contains("getFruit")
+
+        assertCompilesJava(dataTypes.plus(interfaces))
+    }
+
+    @Test
     fun generateObjectTypeInterfaceWithInterface() {
         val schema = """
         type Team {

@@ -56,7 +56,8 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                 .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) })
             val interfaceName = "I$name"
             implements = listOf(interfaceName) + implements
-            interfaceCodeGenResult = generateInterface(interfaceName, fieldDefinitions)
+            val superInterfaces = definition.implements
+            interfaceCodeGenResult = generateInterface(interfaceName, superInterfaces, fieldDefinitions)
         }
 
         val fieldDefinitions = definition.fieldDefinitions
@@ -147,9 +148,13 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
         return CodeGenResult(dataTypes = listOf(javaFile))
     }
 
-    internal fun generateInterface(name: String, fields: List<Field>): CodeGenResult {
+    internal fun generateInterface(name: String, superInterfaces: List<Type<*>>, fields: List<Field>): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(name)
             .addModifiers(Modifier.PUBLIC)
+
+        superInterfaces.forEach {
+            javaType.addSuperinterface(ClassName.get(packageName, (it as TypeName).name))
+        }
 
         fields.forEach {
             addAbstractGetter(it.type, it, javaType)
