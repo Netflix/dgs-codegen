@@ -71,19 +71,26 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 ).build()
         )
 
+        val setType = ClassName.get(Set::class.java)
+        val setOfStringType = ParameterizedTypeName.get(setType, ClassName.get(String::class.java))
+
         val builderClass = TypeSpec.classBuilder("Builder").addModifiers(Modifier.STATIC, Modifier.PUBLIC)
             .addMethod(
                 MethodSpec.methodBuilder("build")
                     .addModifiers(Modifier.PUBLIC)
                     .returns(ClassName.get("", "${it.name.capitalize()}GraphQLQuery"))
                     .addCode(
-                        """
-                                     return new ${it.name.capitalize()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }});
+                        if (it.inputValueDefinitions.isNotEmpty())
+                            """
+                                     return new ${it.name.capitalize()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, fieldsSet);
                                      
-                        """.trimIndent()
+                            """.trimIndent() else
+                            """
+                             return new ${it.name.capitalize()}GraphQLQuery();                                     
+                            """.trimIndent()
                     )
                     .build()
-            )
+            ).addField(FieldSpec.builder(setOfStringType, "fieldsSet", Modifier.PRIVATE).initializer("new \$T<>()", ClassName.get(HashSet::class.java)).build())
 
         val constructorBuilder = MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
@@ -105,6 +112,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                         .addCode(
                             """
                                 this.${ReservedKeywordSanitizer.sanitize(inputValue.name)} = ${ReservedKeywordSanitizer.sanitize(inputValue.name)};
+                                this.fieldsSet.add("${inputValue.name}");
                                 return this;
                             """.trimIndent()
                         ).build()
@@ -116,18 +124,22 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             if (findReturnType.isPrimitive) {
                 constructorBuilder.addCode(
                     """
-                    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
+                    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});                   
                     """.trimIndent()
                 )
             } else {
                 constructorBuilder.addCode(
                     """
-                    if (${inputValue.name} != null) {
+                    if (${inputValue.name} != null || fieldsSet.contains("${inputValue.name}")) {
                         getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
                     }
                     """.trimIndent()
                 )
             }
+        }
+
+        if (it.inputValueDefinitions.size > 0) {
+            constructorBuilder.addParameter(setOfStringType, "fieldsSet")
         }
 
         javaType.addMethod(constructorBuilder.build())
