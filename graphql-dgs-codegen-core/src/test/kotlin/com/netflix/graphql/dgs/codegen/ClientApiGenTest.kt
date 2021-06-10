@@ -18,11 +18,18 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.google.common.jimfs.Configuration
+import com.google.common.jimfs.Jimfs
 import com.google.common.truth.Truth
+import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import java.net.URL
+import java.net.URLClassLoader
+import java.nio.file.Files
+import javax.tools.JavaFileObject
 
 class ClientApiGenTest {
 
@@ -190,11 +197,11 @@ class ClientApiGenTest {
         assert(
             initMethod.contains(
                 "super(\"mutation\");\n" +
-                    "if (movie != null) {\n" +
+                    "if (movie != null || fieldsSet.contains(\"movie\")) {\n" +
                     "    getInput().put(\"movie\", movie);\n" +
-                    "}if (reviews != null) {\n" +
+                    "}if (reviews != null || fieldsSet.contains(\"reviews\")) {\n" +
                     "    getInput().put(\"reviews\", reviews);\n" +
-                    "}if (uuid != null) {\n" +
+                    "}if (uuid != null || fieldsSet.contains(\"uuid\")) {\n" +
                     "    getInput().put(\"uuid\", uuid);\n" +
                     "}"
             )
@@ -1372,5 +1379,85 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[4].typeSpec.name).isEqualTo("Movies_Actors_AgentProjection")
 
         assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.queryTypes))
+    }
+
+    @Test
+    fun `Fields explicitly set to null in the builder should be included`() {
+        val schema = """
+            type Query {
+                filter(nameFilter: String): [String]
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                maxProjectionDepth = 2,
+            )
+        ).generate() as CodeGenResult
+
+        val builderClass = compileAndGetClass(codeGenResult.queryTypes, "FilterGraphQLQuery\$Builder")
+        val buildMethod = builderClass.getMethod("build")
+        val nameMethod = builderClass.getMethod("nameFilter", String::class.java)
+
+        // When the 'nameFilter' method is invoked with a null value, the field should be included in the input map and explicitly set to null.
+        val builder1 = builderClass.constructors[0].newInstance()
+        nameMethod.invoke(builder1, null)
+        val resultQueryObject: GraphQLQuery = buildMethod.invoke(builder1) as GraphQLQuery
+        assertThat(resultQueryObject.input.keys).containsExactly("nameFilter")
+        assertThat(resultQueryObject.input["nameFilter"]).isNull()
+    }
+
+    @Test
+    fun `Fields not explicitly set to null or any value in the builder should not be included`() {
+        val schema = """
+            type Query {
+                filter(nameFilter: String): [String]
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                maxProjectionDepth = 2,
+            )
+        ).generate() as CodeGenResult
+
+        val builderClass = compileAndGetClass(codeGenResult.queryTypes, "FilterGraphQLQuery\$Builder")
+        val buildMethod = builderClass.getMethod("build")
+        val nameMethod = builderClass.getMethod("nameFilter", String::class.java)
+
+        // When the 'nameFilter' method is not invoked, it should not be included in the input map.
+        val builder2 = builderClass.constructors[0].newInstance()
+        val result2QueryObject: GraphQLQuery = buildMethod.invoke(builder2) as GraphQLQuery
+        assertThat(result2QueryObject.input.keys).isEmpty()
+        assertThat(result2QueryObject.input["nameFilter"]).isNull()
+    }
+
+    private fun compileAndGetClass(dataTypes: List<JavaFile>, type: String): Class<*> {
+        val packageNameAsUnixPath = basePackageName.replace(".", "/")
+        val compilation = assertCompilesJava(dataTypes)
+        val temporaryFilesystem = Jimfs.newFileSystem(Configuration.unix())
+        val classpath = compilation.generatedFiles()
+            .filter { it.kind == JavaFileObject.Kind.CLASS }
+            .map {
+                val destFile = temporaryFilesystem.getPath(it.toUri().path)
+                Files.createDirectories(destFile.parent)
+                it.openInputStream().use { input ->
+                    Files.newOutputStream(destFile).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+                destFile.parent
+            }
+            .toSet()
+            .map { URL(it.toUri().toString().replace("$packageNameAsUnixPath.*".toRegex(), "")) }
+            .toTypedArray()
+
+        return URLClassLoader(classpath).loadClass("$basePackageName.client.$type")
     }
 }
