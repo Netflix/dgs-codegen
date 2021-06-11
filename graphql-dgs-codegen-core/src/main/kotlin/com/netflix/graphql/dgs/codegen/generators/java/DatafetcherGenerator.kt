@@ -66,7 +66,7 @@ class DatafetcherGenerator(private val config: CodeGenConfig, private val docume
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
 
-        return CodeGenResult(dataFetchers = listOf(javaFile))
+        return CodeGenResult(javaDataFetchers = listOf(javaFile))
     }
 
     fun getPackageName(): String {

@@ -38,7 +38,8 @@ class CodeGen(private val config: CodeGenConfig) {
     lateinit var document: Document
     lateinit var requiredTypeCollector: RequiredTypeCollector
 
-    fun generate(): Any {
+    @Suppress("DuplicatedCode")
+    fun generate(): CodeGenResult {
         if (config.writeToFiles) {
             config.outputDir.toFile().deleteRecursively()
         }
@@ -50,41 +51,29 @@ class CodeGen(private val config: CodeGenConfig) {
             .toList()
 
         val joinedSchema = inputSchemas.joinToString("\n")
-        if (config.language == Language.JAVA) {
-
-            val codeGenResult = generateForSchema(joinedSchema)
-
-            if (config.writeToFiles) {
-                codeGenResult.dataTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.interfaces.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.enumTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.dataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
-                codeGenResult.queryTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.clientProjections.forEach {
-                    try {
-                        it.writeTo(config.outputDir)
-                    } catch (ex: Exception) {
-                        println(ex.message)
-                    }
+        val codeGenResult = if (config.language == Language.JAVA) generateForSchema(joinedSchema) else generateKotlinForSchema(joinedSchema)
+        if (config.writeToFiles) {
+            codeGenResult.javaDataTypes.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.javaInterfaces.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.javaEnumTypes.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.javaDataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
+            codeGenResult.javaQueryTypes.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.clientProjections.forEach {
+                try {
+                    it.writeTo(config.outputDir)
+                } catch (ex: Exception) {
+                    println(ex.message)
                 }
-                codeGenResult.constants.forEach { it.writeTo(config.outputDir) }
             }
-
-            return codeGenResult
-        } else {
-            val codeGenResult = generateKotlinForSchema(joinedSchema)
-            if (config.writeToFiles) {
-                codeGenResult.dataTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.interfaces.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.enumTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.dataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
-                codeGenResult.queryTypes.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.clientProjections.forEach { it.writeTo(config.outputDir) }
-                codeGenResult.constants.forEach { it.writeTo(config.outputDir) }
-            }
-
-            return codeGenResult
+            codeGenResult.javaConstants.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.kotlinDataTypes.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.kotlinInterfaces.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.kotlinEnumTypes.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.kotlinDataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
+            codeGenResult.kotlinConstants.forEach { it.writeTo(config.outputDir) }
         }
+
+        return codeGenResult
     }
 
     private fun generateForSchema(schema: String): CodeGenResult {
@@ -207,7 +196,7 @@ class CodeGen(private val config: CodeGenConfig) {
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
-    private fun generateKotlinForSchema(schema: String): KotlinCodeGenResult {
+    private fun generateKotlinForSchema(schema: String): CodeGenResult {
         document = Parser.parse(schema)
         requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
         val definitions = document.definitions
@@ -222,7 +211,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 val extensions = findInterfaceExtensions(it.name, definitions)
                 KotlinInterfaceTypeGenerator(config).generate(it, document, extensions)
             }
-            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
         val unionResult = definitions.asSequence()
             .filterIsInstance<UnionTypeDefinition>()
@@ -231,7 +220,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 val extensions = findUnionExtensions(it.name, definitions)
                 KotlinUnionTypeGenerator(config).generate(it, extensions)
             }
-            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
         val enumsResult = definitions.asSequence()
             .filterIsInstance<EnumTypeDefinition>()
@@ -241,38 +230,38 @@ class CodeGen(private val config: CodeGenConfig) {
                 val extensions = findEnumExtensions(it.name, definitions)
                 KotlinEnumTypeGenerator(config).generate(it, extensions)
             }
-            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
         val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
-        val client = generateKotlinClientApi(definitions)
-        val entitiesClient = generateKotlinClientEntitiesApi(definitions)
+        val client = generateJavaClientApi(definitions)
+        val entitiesClient = generateJavaClientEntitiesApi(definitions)
         val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
 
         return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult).merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
     }
 
-    private fun generateKotlinClientApi(definitions: Collection<Definition<Definition<*>>>): KotlinCodeGenResult {
-        return if (config.generateClientApi) {
-            definitions.asSequence()
-                .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.name == "Query" || it.name == "Mutation" }
-                .map { KotlinClientApiGenerator(config, document).generate(it) }
-                .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
-        } else KotlinCodeGenResult()
-    }
+//    private fun generateKotlinClientApi(definitions: Collection<Definition<Definition<*>>>): CodeGenResult {
+//        return if (config.generateClientApi) {
+//            definitions.asSequence()
+//                .filterIsInstance<ObjectTypeDefinition>()
+//                .filter { it.name == "Query" || it.name == "Mutation" }
+//                .map { KotlinClientApiGenerator(config, document).generate(it) }
+//                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+//        } else CodeGenResult()
+//    }
+//
+//    private fun generateKotlinClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult {
+//        return if (config.generateClientApi) {
+//            val federatedDefinitions = definitions.asSequence()
+//                .filterIsInstance<ObjectTypeDefinition>()
+//                .filter { it.hasDirective("key") }
+//                .toList()
+//            KotlinClientApiGenerator(config, document).generateEntities(federatedDefinitions)
+//        } else CodeGenResult()
+//    }
 
-    private fun generateKotlinClientEntitiesApi(definitions: Collection<Definition<*>>): KotlinCodeGenResult {
-        return if (config.generateClientApi) {
-            val federatedDefinitions = definitions.asSequence()
-                .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.hasDirective("key") }
-                .toList()
-            KotlinClientApiGenerator(config, document).generateEntities(federatedDefinitions)
-        } else KotlinCodeGenResult()
-    }
-
-    private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): KotlinCodeGenResult {
+    private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.asSequence()
@@ -280,21 +269,22 @@ class CodeGen(private val config: CodeGenConfig) {
                 .filter { it.hasDirective("key") }
                 .map { d ->
                     KotlinEntitiesRepresentationTypeGenerator(config, document).generate(d, generatedRepresentations)
-                }.fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
-        } else KotlinCodeGenResult()
+                }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        } else CodeGenResult()
     }
 
-    private fun generateKotlinInputTypes(definitions: Collection<Definition<*>>): KotlinCodeGenResult {
+    private fun generateKotlinInputTypes(definitions: Collection<Definition<*>>): CodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<InputObjectTypeDefinition>()
+            .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions))
             }
-            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
-    private fun generateKotlinDataTypes(definitions: Collection<Definition<*>>): KotlinCodeGenResult {
+    private fun generateKotlinDataTypes(definitions: Collection<Definition<*>>): CodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
@@ -304,7 +294,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 val extensions = findTypeExtensions(it.name, definitions)
                 KotlinDataTypeGenerator(config, document).generate(it, extensions)
             }
-            .fold(KotlinCodeGenResult()) { t: KotlinCodeGenResult, u: KotlinCodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 }
 
@@ -370,31 +360,48 @@ enum class Language {
     KOTLIN
 }
 
-data class CodeGenResult(val dataTypes: List<JavaFile> = listOf(), val interfaces: List<JavaFile> = listOf(), val enumTypes: List<JavaFile> = listOf(), val dataFetchers: List<JavaFile> = listOf(), val queryTypes: List<JavaFile> = listOf(), val clientProjections: List<JavaFile> = listOf(), val constants: List<JavaFile> = listOf()) {
+data class CodeGenResult(
+    val javaDataTypes: List<JavaFile> = listOf(),
+    val javaInterfaces: List<JavaFile> = listOf(),
+    val javaEnumTypes: List<JavaFile> = listOf(),
+    val javaDataFetchers: List<JavaFile> = listOf(),
+    val javaQueryTypes: List<JavaFile> = listOf(),
+    val clientProjections: List<JavaFile> = listOf(),
+    val javaConstants: List<JavaFile> = listOf(),
+    val kotlinDataTypes: List<FileSpec> = listOf(),
+    val kotlinInterfaces: List<FileSpec> = listOf(),
+    val kotlinEnumTypes: List<FileSpec> = listOf(),
+    val kotlinDataFetchers: List<FileSpec> = listOf(),
+    val kotlinConstants: List<FileSpec> = emptyList()
+) {
     fun merge(current: CodeGenResult): CodeGenResult {
-        val dataTypes = this.dataTypes.plus(current.dataTypes)
-        val interfaces = this.interfaces.plus(current.interfaces)
-        val enumTypes = this.enumTypes.plus(current.enumTypes)
-        val dataFetchers = this.dataFetchers.plus(current.dataFetchers)
-        val queryTypes = this.queryTypes.plus(current.queryTypes)
+        val javaDataTypes = this.javaDataTypes.plus(current.javaDataTypes)
+        val javaInterfaces = this.javaInterfaces.plus(current.javaInterfaces)
+        val javaEnumTypes = this.javaEnumTypes.plus(current.javaEnumTypes)
+        val javaDataFetchers = this.javaDataFetchers.plus(current.javaDataFetchers)
+        val javaQueryTypes = this.javaQueryTypes.plus(current.javaQueryTypes)
         val clientProjections = this.clientProjections.plus(current.clientProjections)
-        val constants = this.constants.plus(current.constants)
+        val javaConstants = this.javaConstants.plus(current.javaConstants)
+        val kotlinDataTypes = this.kotlinDataTypes.plus(current.kotlinDataTypes)
+        val kotlinInterfaces = this.kotlinInterfaces.plus(current.kotlinInterfaces)
+        val kotlinEnumTypes = this.kotlinEnumTypes.plus(current.kotlinEnumTypes)
+        val kotlinDataFetchers = this.kotlinDataFetchers.plus(current.kotlinDataFetchers)
+        val kotlinConstants = this.kotlinConstants.plus(current.kotlinConstants)
 
-        return CodeGenResult(dataTypes = dataTypes, interfaces = interfaces, enumTypes = enumTypes, dataFetchers = dataFetchers, queryTypes = queryTypes, clientProjections = clientProjections, constants = constants)
-    }
-}
-
-data class KotlinCodeGenResult(val dataTypes: List<FileSpec> = listOf(), val interfaces: List<FileSpec> = listOf(), val enumTypes: List<FileSpec> = listOf(), val dataFetchers: List<FileSpec> = listOf(), val queryTypes: List<FileSpec> = listOf(), val clientProjections: List<FileSpec> = emptyList(), val constants: List<FileSpec> = emptyList()) {
-    fun merge(current: KotlinCodeGenResult): KotlinCodeGenResult {
-        val dataTypes = this.dataTypes.plus(current.dataTypes)
-        val interfaces = this.interfaces.plus(current.interfaces)
-        val enumTypes = this.enumTypes.plus(current.enumTypes)
-        val dataFetchers = this.dataFetchers.plus(current.dataFetchers)
-        val queryTypes = this.queryTypes.plus(current.queryTypes)
-        val clientProjections = this.clientProjections.plus(current.clientProjections)
-        val constants = this.constants.plus(current.constants)
-
-        return KotlinCodeGenResult(dataTypes = dataTypes, interfaces = interfaces, enumTypes = enumTypes, dataFetchers = dataFetchers, queryTypes = queryTypes, clientProjections = clientProjections, constants = constants)
+        return CodeGenResult(
+            javaDataTypes = javaDataTypes,
+            javaInterfaces = javaInterfaces,
+            javaEnumTypes = javaEnumTypes,
+            javaDataFetchers = javaDataFetchers,
+            javaQueryTypes = javaQueryTypes,
+            clientProjections = clientProjections,
+            javaConstants = javaConstants,
+            kotlinDataTypes = kotlinDataTypes,
+            kotlinInterfaces = kotlinInterfaces,
+            kotlinEnumTypes = kotlinEnumTypes,
+            kotlinDataFetchers = kotlinDataFetchers,
+            kotlinConstants = kotlinConstants
+        )
     }
 }
 

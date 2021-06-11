@@ -19,7 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -31,7 +31,7 @@ class KotlinUnionTypeGenerator(config: CodeGenConfig) {
 
     private val packageName = config.packageNameTypes
 
-    fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): KotlinCodeGenResult {
+    fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): CodeGenResult {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
 
         val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
@@ -44,6 +44,6 @@ class KotlinUnionTypeGenerator(config: CodeGenConfig) {
             interfaceBuilder.addAnnotation(jsonSubTypesAnnotation(memberTypes))
         }
         val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
-        return KotlinCodeGenResult(interfaces = listOf(fileSpec))
+        return CodeGenResult(kotlinInterfaces = listOf(fileSpec))
     }
 }

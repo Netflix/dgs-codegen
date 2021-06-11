@@ -23,6 +23,8 @@ import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
 import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
+import org.assertj.core.api.Assertions.assertThat
+import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
@@ -44,7 +46,7 @@ fun assertCompilesKotlin(files: List<FileSpec>): Path {
     files.forEach { it.writeTo(srcDir) }
 
     K2JVMCompiler().run {
-        execImpl(
+        val exitCode = execImpl(
             PrintingMessageCollector(
                 System.out,
                 MessageRenderer.WITHOUT_PATHS,
@@ -64,6 +66,7 @@ fun assertCompilesKotlin(files: List<FileSpec>): Path {
                 skipRuntimeVersionCheck = true
             }
         )
+        assertThat(exitCode).isEqualTo(ExitCode.OK)
     }
 
     return buildDir

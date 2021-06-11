@@ -19,7 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -34,7 +34,7 @@ class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
         definition: InterfaceTypeDefinition,
         document: Document,
         extensions: List<InterfaceTypeExtensionDefinition>
-    ): KotlinCodeGenResult {
+    ): CodeGenResult {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
@@ -54,6 +54,6 @@ class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
         }
 
         val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
-        return KotlinCodeGenResult(interfaces = listOf(fileSpec))
+        return CodeGenResult(kotlinInterfaces = listOf(fileSpec))
     }
 }

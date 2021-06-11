@@ -39,7 +39,7 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
 
-        return CodeGenResult(enumTypes = listOf(javaFile))
+        return CodeGenResult(javaEnumTypes = listOf(javaFile))
     }
 
     private fun addEnum(enumVal: EnumValueDefinition, javaType: TypeSpec.Builder) { javaType.addEnumConstant(enumVal.name); }

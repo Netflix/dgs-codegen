@@ -36,7 +36,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             val javaFile = createQueryClass(it, definition.name)
 
             val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) } ?: CodeGenResult()
-            CodeGenResult(queryTypes = listOf(javaFile)).merge(rootProjection)
+            CodeGenResult(javaQueryTypes = listOf(javaFile)).merge(rootProjection)
         }.fold(CodeGenResult()) { total, current -> total.merge(current) }
     }
 

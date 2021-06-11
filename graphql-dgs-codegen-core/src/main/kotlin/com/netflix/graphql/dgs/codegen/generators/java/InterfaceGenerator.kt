@@ -73,7 +73,7 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
-        return CodeGenResult(interfaces = listOf(javaFile))
+        return CodeGenResult(javaInterfaces = listOf(javaFile))
     }
 
     private fun isFieldAnInterface(fieldDefinition: FieldDefinition): Boolean {

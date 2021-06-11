@@ -133,11 +133,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
             addParameterizedConstructor(fields, javaType)
         }
 
-        if (isInputType) {
-            addToInputString(javaType)
-        } else {
-            addToString(fields, javaType)
-        }
+        addToString(fields, javaType)
 
         addEquals(javaType)
         addHashcode(javaType)
@@ -145,7 +141,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
-        return CodeGenResult(dataTypes = listOf(javaFile))
+        return CodeGenResult(javaDataTypes = listOf(javaFile))
     }
 
     internal fun generateInterface(name: String, superInterfaces: List<Type<*>>, fields: List<Field>): CodeGenResult {
@@ -162,7 +158,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
-        return CodeGenResult(interfaces = listOf(javaFile))
+        return CodeGenResult(javaInterfaces = listOf(javaFile))
     }
 
     private fun addHashcode(javaType: TypeSpec.Builder) {
@@ -231,78 +227,6 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
         toStringBody.append(
             """
             "}"
-            """.trimIndent()
-        )
-
-        methodBuilder.addStatement(toStringBody.toString())
-        javaType.addMethod(methodBuilder.build())
-    }
-
-    private fun addToInputString(javaType: TypeSpec.Builder) {
-        val methodBuilder = MethodSpec.methodBuilder("toString").addModifiers(Modifier.PUBLIC).returns(String::class.java)
-        val toStringBody = StringBuilder("java.util.LinkedHashMap<String, Object> entries = new java.util.LinkedHashMap<String,Object>();\n")
-        val fieldSpecs = javaType.build().fieldSpecs
-        fieldSpecs.map { fieldSpec ->
-            when (val fieldSpecType = fieldSpec.type) {
-                is ParameterizedTypeName -> {
-                    if (typeUtils.isStringInput(fieldSpecType.typeArguments[0])) {
-                        val name: String = if (fieldSpecType.typeArguments[0] is ClassName) {
-                            "serializeListOf" + (fieldSpecType.typeArguments[0] as ClassName).simpleName()
-                        } else "serializeListOf" + fieldSpecType.typeArguments[0].toString()
-                        addToStringForListOfStrings(name, fieldSpec, javaType)
-                        """entries.put("${fieldSpec.name}", $name(${fieldSpec.name}))"""
-                    } else {
-                        """entries.put("${fieldSpec.name}", ${fieldSpec.name})"""
-                    }
-                }
-                is ClassName -> {
-                    if (typeUtils.isStringInput(fieldSpecType)) {
-                        """entries.put("${fieldSpec.name}", ${fieldSpec.name} == null ? null : "\"" + ${fieldSpec.name}.toString().replace("\"", "\\\"") + "\"")"""
-                    } else {
-                        """entries.put("${fieldSpec.name}", ${fieldSpec.name})"""
-                    }
-                }
-                else -> """entries.put("${fieldSpec.name}", ${fieldSpec.name})"""
-            }
-        }.forEach { toStringBody.append(it).append(";\n") }
-
-        toStringBody.append(
-            """
-            return entries.entrySet()
-                .stream()${if (config.omitNullInputFields) ".filter(entry -> entry.getValue() != null)" else ""}
-                .map(entry -> entry.getKey() + ":" + entry.getValue())
-                .collect(java.util.stream.Collectors.joining(",", "{", "}"))
-            """.trimIndent()
-        )
-
-        methodBuilder.addStatement(toStringBody.toString())
-        javaType.addMethod(methodBuilder.build())
-    }
-
-    private fun addToStringForListOfStrings(name: String, field: FieldSpec, javaType: TypeSpec.Builder) {
-        if (javaType.methodSpecs.any { it.name == name }) return
-
-        val methodBuilder = MethodSpec.methodBuilder(name)
-            .addModifiers(Modifier.PRIVATE)
-            .addParameter(field.type, "inputList")
-            .returns(String::class.java)
-
-        val toStringBody = StringBuilder(
-            """
-                if (inputList == null) {
-                    return null;
-                }
-                StringBuilder builder = new java.lang.StringBuilder();
-                builder.append("[");
-            
-                if (! inputList.isEmpty()) {
-                    String result = inputList.stream()
-                            .map( iter -> iter.toString() )
-                            .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
-                    builder.append(result);
-                }
-                builder.append("]");
-                return  builder.toString()
             """.trimIndent()
         )
 

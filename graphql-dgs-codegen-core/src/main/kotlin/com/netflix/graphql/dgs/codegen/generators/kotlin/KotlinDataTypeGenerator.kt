@@ -19,7 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
@@ -27,9 +27,9 @@ import com.squareup.kotlinpoet.TypeName
 import graphql.language.*
 
 class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
-    fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): KotlinCodeGenResult {
+    fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip()) {
-            return KotlinCodeGenResult()
+            return CodeGenResult()
         }
 
         val fields = definition.fieldDefinitions
@@ -51,7 +51,7 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
 }
 
 class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
-    fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): KotlinCodeGenResult {
+    fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
 
         val fields = definition.inputValueDefinitions
             .filter(ReservedKeywordFilter.filterInvalidNames)
@@ -94,7 +94,7 @@ internal data class Field(val name: String, val type: com.squareup.kotlinpoet.Ty
 abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, private val config: CodeGenConfig) {
     protected val typeUtils = KotlinTypeUtils(packageName, config)
 
-    internal fun generate(name: String, fields: List<Field>, interfaces: List<Type<*>>, isInputType: Boolean, document: Document): KotlinCodeGenResult {
+    internal fun generate(name: String, fields: List<Field>, interfaces: List<Type<*>>, isInputType: Boolean, document: Document): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
 
         if (fields.isNotEmpty()) {
@@ -152,101 +152,13 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
         }
 
         kotlinType.primaryConstructor(constructorBuilder.build())
-        if (isInputType) {
-            kotlinType.addFunction(
-                FunSpec.builder("toString")
-                    .returns(STRING)
-                    .addCode(addToString(fields, kotlinType))
-                    .addModifiers(KModifier.PUBLIC)
-                    .addModifiers(KModifier.OVERRIDE)
-                    .build()
-            )
-        }
         kotlinType.addType(TypeSpec.companionObjectBuilder().build())
 
         val typeSpec = kotlinType.build()
 
         val fileSpec = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
 
-        return KotlinCodeGenResult(listOf(fileSpec))
-    }
-
-    private fun addToString(fields: List<Field>, kotlinType: TypeSpec.Builder): String {
-        val toStringBody = StringBuilder("return linkedMapOf(\n")
-        fields.map { field ->
-            when (val fieldTypeName = field.type) {
-                is ParameterizedTypeName -> {
-                    val innerType = fieldTypeName.typeArguments[0]
-                    if (typeUtils.isStringInput(innerType)) {
-                        val name = if (innerType is ClassName) {
-                            "serializeListOf" + innerType.simpleName
-                        } else {
-                            "serializeListOf$innerType"
-                        }
-                        addToStringForListOfStrings(name, field, kotlinType)
-                        """"${field.name}" to $name(${field.name})"""
-                    } else {
-                        """"${field.name}" to ${field.name}"""
-                    }
-                }
-                is ClassName -> {
-                    if (typeUtils.isStringInput(fieldTypeName)) {
-                        if (field.nullable) {
-                            """"${field.name}" to (if (${field.name} == null) null else "\"" + ${field.name}.toString().replace("\"", "\\\"") + "\"")"""
-                        } else {
-                            """"${field.name}" to ("\"" + ${field.name}.toString().replace("\"", "\\\"") + "\"")"""
-                        }
-                    } else {
-                        """"${field.name}" to ${field.name}"""
-                    }
-                }
-                else -> {
-                    """"${field.name}" to ${field.name}"""
-                }
-            }
-        }.forEach { toStringBody.append(it).append(",\n") }
-
-        return toStringBody.append(
-            """
-            )${if (config.omitNullInputFields) ".filter { it.value != null }" else ""}.map { it.key + ":" + it.value }.joinToString(",", "{", "}")
-            """.trimIndent()
-        ).toString()
-    }
-
-    private fun addToStringForListOfStrings(name: String, field: Field, kotlinType: TypeSpec.Builder) {
-        if (kotlinType.funSpecs.any { it.name == name }) return
-
-        val methodBuilder = FunSpec.builder(name)
-            .addModifiers(KModifier.PRIVATE)
-            .addParameter("inputList", field.type)
-            .returns(STRING.copy(nullable = true))
-
-        val toStringBody = StringBuilder()
-        if (field.nullable) {
-            toStringBody.append(
-                """
-                if (inputList == null) {
-                    return null
-                }
-                
-                """.trimIndent()
-            )
-        }
-        toStringBody.append(
-            """
-                val builder = java.lang.StringBuilder()
-                builder.append("[")
-                if (! inputList.isEmpty()) {
-                    val result = inputList.joinToString() {"\"" + it + "\""}
-                    builder.append(result)
-                }
-                builder.append("]")
-                return  builder.toString()
-            """.trimIndent()
-        )
-
-        methodBuilder.addStatement(toStringBody.toString())
-        kotlinType.addFunction(methodBuilder.build())
+        return CodeGenResult(kotlinDataTypes = listOf(fileSpec))
     }
 
     abstract fun getPackageName(): String

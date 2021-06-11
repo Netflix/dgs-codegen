@@ -19,7 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.LIST
@@ -30,10 +30,10 @@ import graphql.language.*
 
 class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameClient, config) {
 
-    fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): KotlinCodeGenResult {
+    fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
         val name = "${definition.name}Representation"
         if (generatedRepresentations.containsKey(name)) {
-            return KotlinCodeGenResult()
+            return CodeGenResult()
         }
         val directiveArg = definition.getDirectives("key").map { it.argumentsByName["fields"]?.value as StringValue }.map { it.value }
         val keyFields = parseKeyDirectiveValue(directiveArg)
@@ -45,13 +45,13 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
         fields: List<FieldDefinition>,
         generatedRepresentations: MutableMap<String, Any>,
         keyFields: Map<String, Any>
-    ): KotlinCodeGenResult {
+    ): CodeGenResult {
         val name = "${definitionName}Representation"
         if (generatedRepresentations.containsKey(name)) {
-            return KotlinCodeGenResult()
+            return CodeGenResult()
         }
 
-        var result = KotlinCodeGenResult()
+        var result = CodeGenResult()
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", STRING, false, CodeBlock.of("%S", definitionName))
         val fieldDefinitions = fields
