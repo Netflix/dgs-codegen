@@ -241,26 +241,6 @@ class CodeGen(private val config: CodeGenConfig) {
         return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult).merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
     }
 
-//    private fun generateKotlinClientApi(definitions: Collection<Definition<Definition<*>>>): CodeGenResult {
-//        return if (config.generateClientApi) {
-//            definitions.asSequence()
-//                .filterIsInstance<ObjectTypeDefinition>()
-//                .filter { it.name == "Query" || it.name == "Mutation" }
-//                .map { KotlinClientApiGenerator(config, document).generate(it) }
-//                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
-//        } else CodeGenResult()
-//    }
-//
-//    private fun generateKotlinClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult {
-//        return if (config.generateClientApi) {
-//            val federatedDefinitions = definitions.asSequence()
-//                .filterIsInstance<ObjectTypeDefinition>()
-//                .filter { it.hasDirective("key") }
-//                .toList()
-//            KotlinClientApiGenerator(config, document).generateEntities(federatedDefinitions)
-//        } else CodeGenResult()
-//    }
-
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
