@@ -1723,6 +1723,60 @@ class KotlinCodeGenTest {
         assertCompilesKotlin(dataTypes + interfaces)
     }
 
+    @Test
+    fun generateClassKDoc() {
+
+        val schema = """
+            type Query {
+                search(movieFilter: MovieFilter!): Movie
+            }
+
+            ""${'"'}
+            Movies are fun to watch.
+            They also work well as examples in GraphQL.
+            ""${'"'}
+            type Movie {
+                title: String
+            }
+            
+            ""${'"'}
+            Example filter for Movies.
+            
+            It takes a title and such.
+            ""${'"'}
+            input MovieFilter {
+                titleFilter: String
+            }
+            
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        val inputType = dataTypes[1].members[0] as TypeSpec
+
+        assertThat(type.kdoc.toString()).isEqualTo(
+            """Movies are fun to watch.
+They also work well as examples in GraphQL.
+            """.trimIndent()
+        )
+
+        assertThat(inputType.kdoc.toString()).isEqualTo(
+            """Example filter for Movies.
+
+It takes a title and such.
+            """.trimIndent()
+        )
+
+        assertCompilesKotlin(dataTypes)
+    }
+
     private fun compileAndGetConstructor(dataTypes: List<FileSpec>, type: String): ClassConstructor {
         val buildDir = assertCompilesKotlin(dataTypes)
 

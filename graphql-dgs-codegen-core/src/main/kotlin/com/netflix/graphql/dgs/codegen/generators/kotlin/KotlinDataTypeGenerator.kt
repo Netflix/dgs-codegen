@@ -42,7 +42,7 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
                     .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
             )
         val interfaces = definition.implements
-        return generate(definition.name, fields, interfaces, false, document)
+        return generate(definition.name, fields, interfaces, false, document, definition.description)
     }
 
     override fun getPackageName(): String {
@@ -61,7 +61,7 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
                 Field(it.name, type, typeUtils.isNullable(it.type), defaultValue)
             }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
         val interfaces = emptyList<Type<*>>()
-        return generate(definition.name, fields, interfaces, true, document)
+        return generate(definition.name, fields, interfaces, true, document, definition.description)
     }
 
     private fun generateCode(value: Value<Value<*>>, type: TypeName): CodeBlock =
@@ -94,11 +94,15 @@ internal data class Field(val name: String, val type: com.squareup.kotlinpoet.Ty
 abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, private val config: CodeGenConfig) {
     protected val typeUtils = KotlinTypeUtils(packageName, config)
 
-    internal fun generate(name: String, fields: List<Field>, interfaces: List<Type<*>>, isInputType: Boolean, document: Document): CodeGenResult {
+    internal fun generate(name: String, fields: List<Field>, interfaces: List<Type<*>>, isInputType: Boolean, document: Document, description: Description? = null): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
 
         if (fields.isNotEmpty()) {
             kotlinType.addModifiers(KModifier.DATA)
+        }
+
+        if (description != null) {
+            kotlinType.addKdoc(description.content.lines().joinToString("\n"))
         }
 
         val constructorBuilder = FunSpec.constructorBuilder()

@@ -67,7 +67,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
             }
             .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter) })
 
-        return generate(name, unionTypes.plus(implements), fieldDefinitions, false)
+        return generate(name, unionTypes.plus(implements), fieldDefinitions, false, definition.description)
             .merge(interfaceCodeGenResult)
     }
 }
@@ -102,7 +102,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
             }
             Field(it.name, typeUtils.findReturnType(it.type), defaultValue)
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
-        return generate(name, emptyList(), fieldDefinitions, true)
+        return generate(name, emptyList(), fieldDefinitions, true, definition.description)
     }
 }
 
@@ -111,9 +111,13 @@ internal data class Field(val name: String, val type: com.squareup.javapoet.Type
 abstract class BaseDataTypeGenerator(internal val packageName: String, private val config: CodeGenConfig, document: Document) {
     internal val typeUtils = TypeUtils(packageName, config, document)
 
-    internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean): CodeGenResult {
+    internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean, description: Description? = null): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
+
+        if (description != null) {
+            javaType.addJavadoc(description.content.lines().joinToString("\n"))
+        }
 
         interfaces.forEach {
             addInterface(it, javaType)

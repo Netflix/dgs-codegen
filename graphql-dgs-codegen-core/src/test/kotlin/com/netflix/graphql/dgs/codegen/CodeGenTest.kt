@@ -18,8 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.jimfs.Configuration
-import com.google.common.jimfs.Jimfs
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
@@ -31,12 +29,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.net.URL
-import java.net.URLClassLoader
-import java.nio.file.Files
 import java.time.*
 import java.util.stream.Stream
-import javax.tools.JavaFileObject
 
 class CodeGenTest {
 
@@ -2004,28 +1998,52 @@ class CodeGenTest {
         assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
     }
 
-    private fun compileAndGetConstructor(dataTypes: List<JavaFile>, type: String): ClassConstructor {
-        val packageNameAsUnixPath = basePackageName.replace(".", "/")
-        val compilation = assertCompilesJava(dataTypes)
-        val temporaryFilesystem = Jimfs.newFileSystem(Configuration.unix())
-        val classpath = compilation.generatedFiles()
-            .filter { it.kind == JavaFileObject.Kind.CLASS }
-            .map {
-                val destFile = temporaryFilesystem.getPath(it.toUri().path)
-                Files.createDirectories(destFile.parent)
-                it.openInputStream().use { input ->
-                    Files.newOutputStream(destFile).use { output ->
-                        input.copyTo(output)
-                    }
-                }
-                destFile.parent
+    @Test
+    fun generateClassJavaDoc() {
+        val schema = """
+            type Query {
+                search(movieFilter: MovieFilter!): Movie
             }
-            .toSet()
-            .map { URL(it.toUri().toString().replace("$packageNameAsUnixPath.*".toRegex(), "")) }
-            .toTypedArray()
 
-        val clazz = URLClassLoader(classpath).loadClass("$basePackageName.types.$type")
-        return ClassConstructor(clazz)
+            ""${'"'}
+            Movies are fun to watch.
+            They also work well as examples in GraphQL.
+            ""${'"'}
+            type Movie {
+                title: String
+            }
+            
+            ""${'"'}
+            Example filter for Movies.
+            
+            It takes a title and such.
+            ""${'"'}
+            input MovieFilter {
+                titleFilter: String
+            }
+            
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true,
+            )
+        ).generate() as CodeGenResult
+
+        assertThat(result.javaDataTypes[0].typeSpec.javadoc.toString()).isEqualTo(
+            """Movies are fun to watch.
+They also work well as examples in GraphQL.
+            """.trimIndent()
+        )
+
+        assertThat(result.javaDataTypes[1].typeSpec.javadoc.toString()).isEqualTo(
+            """Example filter for Movies.
+
+It takes a title and such.
+            """.trimIndent()
+        )
     }
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
