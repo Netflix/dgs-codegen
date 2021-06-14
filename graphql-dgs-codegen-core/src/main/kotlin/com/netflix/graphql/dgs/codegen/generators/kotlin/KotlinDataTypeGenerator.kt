@@ -35,11 +35,11 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
         val fields = definition.fieldDefinitions
             .filterSkipped()
             .filter(ReservedKeywordFilter.filterInvalidNames)
-            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
+            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
             .plus(
                 extensions.flatMap { it.fieldDefinitions }
                     .filterSkipped()
-                    .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) }
+                    .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
             )
         val interfaces = definition.implements
         return generate(definition.name, fields, interfaces, false, document, definition.description)
@@ -58,8 +58,8 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
             .map {
                 val type = typeUtils.findReturnType(it.type)
                 val defaultValue = it.defaultValue?.let { value -> generateCode(value, type) }
-                Field(it.name, type, typeUtils.isNullable(it.type), defaultValue)
-            }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type)) })
+                Field(it.name, type, typeUtils.isNullable(it.type), defaultValue, it.description)
+            }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) })
         val interfaces = emptyList<Type<*>>()
         return generate(definition.name, fields, interfaces, true, document, definition.description)
     }
@@ -89,7 +89,7 @@ class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val do
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.kotlinpoet.TypeName, val nullable: Boolean, val default: CodeBlock? = null)
+internal data class Field(val name: String, val type: com.squareup.kotlinpoet.TypeName, val nullable: Boolean, val default: CodeBlock? = null, val description: Description? = null)
 
 abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, private val config: CodeGenConfig) {
     protected val typeUtils = KotlinTypeUtils(packageName, config)
@@ -136,6 +136,9 @@ abstract class AbstractKotlinDataTypeGenerator(private val packageName: String, 
 
             constructorBuilder.addParameter(parameterSpec.build())
             val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
+            if (field.description != null) {
+                propertySpecBuilder.addKdoc(field.description.content.lines().joinToString("\n"))
+            }
             propertySpecBuilder.initializer(field.name)
             kotlinType.addProperty(propertySpecBuilder.build())
         }

@@ -1777,6 +1777,180 @@ It takes a title and such.
         assertCompilesKotlin(dataTypes)
     }
 
+    @Test
+    fun generateClassFieldsKDoc() {
+
+        val schema = """
+            type Query {
+                search(movieFilter: MovieFilter!): Movie
+            }
+        
+            type Movie {
+                ""${'"'}
+                The original, non localized title.
+                ""${'"'}
+                title: String
+            }
+                 
+            input MovieFilter {
+                ""${'"'}
+                Starts-with filter
+                ""${'"'}
+                titleFilter: String
+            }
+            
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        val inputType = dataTypes[1].members[0] as TypeSpec
+
+        assertThat(type.propertySpecs[0].kdoc.toString()).isEqualTo(
+            """The original, non localized title.
+            """.trimIndent()
+        )
+
+        assertThat(inputType.propertySpecs[0].kdoc.toString()).isEqualTo(
+            """Starts-with filter
+            """.trimIndent()
+        )
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun generateInterfaceKDoc() {
+        val schema = """           
+            ""${'"'}
+            Anything with a title!
+            ""${'"'}
+            interface Titled {
+                title: String
+            }                                 
+        """.trimIndent()
+
+        val interfaces = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinInterfaces
+
+        val type = interfaces[0].members[0] as TypeSpec
+
+        assertThat(type.kdoc.toString()).isEqualTo(
+            """Anything with a title!
+            """.trimIndent()
+        )
+
+        assertCompilesKotlin(interfaces)
+    }
+
+    @Test
+    fun generateInterfaceFieldsKDoc() {
+        val schema = """                       
+            interface Titled {
+               ""${'"'}
+                The original, non localized title.
+                ""${'"'}
+                title: String
+            }                                 
+        """.trimIndent()
+
+        val interfaces = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinInterfaces
+
+        val type = interfaces[0].members[0] as TypeSpec
+
+        assertThat(type.propertySpecs[0].kdoc.toString()).isEqualTo(
+            """The original, non localized title.
+            """.trimIndent()
+        )
+
+        assertCompilesKotlin(interfaces)
+    }
+
+    @Test
+    fun generateEnumKDoc() {
+        val schema = """           
+            ""${'"'}
+            Some options
+            ""${'"'}
+            enum Color {
+                red,white,blue
+            }                                 
+        """.trimIndent()
+
+        val enums = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinEnumTypes
+
+        val type = enums[0].members[0] as TypeSpec
+
+        assertThat(type.kdoc.toString()).isEqualTo(
+            """Some options
+            """.trimIndent()
+        )
+
+        assertCompilesKotlin(enums)
+    }
+
+    @Test
+    fun generateEnumItemKDoc() {
+        val schema = """                       
+            enum Color {
+                ""${'"'}
+                The first option
+                ""${'"'}
+                red,
+                
+                ""${'"'}
+                The second option
+                ""${'"'}
+                blue                         
+            }                                 
+        """.trimIndent()
+
+        val enums = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinEnumTypes
+
+        val type = enums[0].members[0] as TypeSpec
+
+        assertThat(type.enumConstants["red"]?.kdoc.toString()).isEqualTo(
+            """The first option
+            """.trimIndent()
+        )
+
+        assertThat(type.enumConstants["blue"]?.kdoc.toString()).isEqualTo(
+            """The second option
+            """.trimIndent()
+        )
+
+        assertCompilesKotlin(enums)
+    }
+
     private fun compileAndGetConstructor(dataTypes: List<FileSpec>, type: String): ClassConstructor {
         val buildDir = assertCompilesKotlin(dataTypes)
 

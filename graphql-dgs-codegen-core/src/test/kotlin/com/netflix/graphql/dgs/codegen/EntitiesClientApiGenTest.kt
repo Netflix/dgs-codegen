@@ -50,7 +50,7 @@ class EntitiesClientApiGenTest {
                 packageName = basePackageName,
                 generateClientApi = true,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -96,7 +96,7 @@ class EntitiesClientApiGenTest {
                 packageName = basePackageName,
                 generateClientApi = true,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -139,7 +139,7 @@ class EntitiesClientApiGenTest {
                 packageName = basePackageName,
                 generateClientApi = true,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -188,7 +188,7 @@ class EntitiesClientApiGenTest {
                 packageName = basePackageName,
                 generateClientApi = true,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -238,7 +238,7 @@ class EntitiesClientApiGenTest {
                 packageName = basePackageName,
                 generateClientApi = true,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -282,7 +282,7 @@ class EntitiesClientApiGenTest {
                 packageName = basePackageName,
                 generateClientApi = true,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
@@ -322,7 +322,7 @@ class EntitiesClientApiGenTest {
                 generateClientApi = true,
                 typeMapping = mapOf(Pair("Long", "java.lang.Long")),
             )
-        ).generate() as CodeGenResult
+        ).generate()
         val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
         assertThat(representations.size).isEqualTo(1)
         val projections = codeGenResult.clientProjections
@@ -356,7 +356,7 @@ class EntitiesClientApiGenTest {
                 generateClientApi = true,
                 skipEntityQueries = true,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
         assertThat(projections).isEmpty()

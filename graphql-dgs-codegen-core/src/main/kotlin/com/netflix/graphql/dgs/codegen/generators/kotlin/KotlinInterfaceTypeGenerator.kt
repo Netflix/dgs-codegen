@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
 
@@ -36,11 +37,20 @@ class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
         extensions: List<InterfaceTypeExtensionDefinition>
     ): CodeGenResult {
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
+        if (definition.description != null) {
+            interfaceBuilder.addKdoc(definition.description.content.lines().joinToString("\n"))
+        }
+
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
         mergedFieldDefinitions.forEach { field ->
             val returnType = typeUtils.findReturnType(field.type)
-            interfaceBuilder.addProperty(field.name, returnType)
+            val propertySpec = PropertySpec.builder(field.name, returnType)
+            if (field.description != null) {
+                propertySpec.addKdoc(field.description.content.lines().joinToString("\n"))
+            }
+
+            interfaceBuilder.addProperty(propertySpec.build())
         }
 
         val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()

@@ -29,9 +29,17 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
     fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(definition.name).addModifiers(KModifier.ENUM)
 
+        if (definition.description != null) {
+            kotlinType.addKdoc(definition.description.content.lines().joinToString("\n"))
+        }
+
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
         mergedEnumDefinitions.forEach {
-            kotlinType.addEnumConstant(it.name)
+            if (it.description != null) {
+                kotlinType.addEnumConstant(it.name, TypeSpec.enumBuilder(it.name).addKdoc(it.description.content.lines().joinToString("\n")).build())
+            } else {
+                kotlinType.addEnumConstant(it.name)
+            }
         }
 
         val typeSpec = kotlinType.build()

@@ -36,7 +36,7 @@ class SchemaMergingTest {
                 generateClientApi = true,
             )
         )
-        val result = codeGen.generate() as CodeGenResult
+        val result = codeGen.generate()
 
         Assertions.assertThat(result.javaDataTypes.size).isEqualTo(2)
         Assertions.assertThat(result.javaDataTypes.find { it.typeSpec.name == "Person" }!!.typeSpec.fieldSpecs).extracting("name").contains("name", "movies")
@@ -58,7 +58,7 @@ class SchemaMergingTest {
                 generateClientApi = true,
             )
         )
-        val result = codeGen.generate() as CodeGenResult
+        val result = codeGen.generate()
         val type = result.kotlinDataTypes.find { it.name == "Person" }!!.members[0] as TypeSpec
 
         Assertions.assertThat(result.kotlinDataTypes.size).isEqualTo(2)

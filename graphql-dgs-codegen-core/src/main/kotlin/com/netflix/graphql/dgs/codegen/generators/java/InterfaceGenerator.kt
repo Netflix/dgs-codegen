@@ -37,6 +37,10 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
         val javaType = TypeSpec.interfaceBuilder(definition.name)
             .addModifiers(Modifier.PUBLIC)
 
+        if (definition.description != null) {
+            javaType.addJavadoc(definition.description.content.lines().joinToString("\n"))
+        }
+
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
         mergedFieldDefinitions.forEach {
@@ -87,11 +91,14 @@ class InterfaceGenerator(config: CodeGenConfig, private val document: Document) 
         val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType)
 
         val fieldName = fieldDefinition.name
-        javaType.addMethod(
-            MethodSpec.methodBuilder("get${fieldName.capitalize()}")
-                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                .returns(returnType)
-                .build()
-        )
+        val builder = MethodSpec.methodBuilder("get${fieldName.capitalize()}")
+            .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+            .returns(returnType)
+
+        if (fieldDefinition.description != null) {
+            builder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+        }
+
+        javaType.addMethod(builder.build())
     }
 }
