@@ -18,8 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.jimfs.Configuration
-import com.google.common.jimfs.Jimfs
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
@@ -31,12 +29,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.net.URL
-import java.net.URLClassLoader
-import java.nio.file.Files
 import java.time.*
 import java.util.stream.Stream
-import javax.tools.JavaFileObject
 
 class CodeGenTest {
 
@@ -64,7 +58,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         val typeSpec = dataTypes[0].typeSpec
@@ -93,7 +87,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
         val typeSpec = dataTypes[0].typeSpec
         assertThat(typeSpec.fieldSpecs[0].type.toString()).isEqualTo("java.lang.Integer")
         assertThat(typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.lang.Boolean")
@@ -115,7 +109,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
         val typeSpec = dataTypes[0].typeSpec
         assertThat(typeSpec.fieldSpecs[0].type.toString()).isEqualTo("int")
         assertThat(typeSpec.fieldSpecs[1].type.toString()).isEqualTo("boolean")
@@ -132,7 +126,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateBoxedTypes = true)).generate() as CodeGenResult
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateBoxedTypes = true)).generate()
         val typeSpec = dataTypes[0].typeSpec
         assertThat(typeSpec.fieldSpecs[0].type.toString()).isEqualTo("java.lang.Integer")
         assertThat(typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.lang.Boolean")
@@ -154,7 +148,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
         val typeSpec = dataTypes[0].typeSpec
         assertThat(typeSpec.fieldSpecs[0].type.toString()).isEqualTo("java.util.List<java.lang.Integer>")
         assertThat(typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.util.List<java.lang.Boolean>")
@@ -180,7 +174,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -209,7 +203,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -235,7 +229,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -263,7 +257,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -295,7 +289,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -323,7 +317,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = "com.mypackage",
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -351,7 +345,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -383,7 +377,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -420,7 +414,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         val employee = dataTypes.single().typeSpec
@@ -494,7 +488,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         Truth.assertThat(interfaces[0].toString()).isEqualTo(
             """
@@ -555,7 +549,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         Truth.assertThat(interfaces[0].toString()).isEqualTo(
             """
@@ -605,7 +599,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         val employee = dataTypes.single().typeSpec
@@ -664,7 +658,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         // Check data class
         assertThat(dataTypes.size).isEqualTo(1)
@@ -714,7 +708,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes).extracting("typeSpec.name").contains("Car", "Engine", "Performance")
         assertThat(dataTypes)
@@ -747,15 +741,15 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         // Check generated enum type
-        assertThat(codeGenResult.enumTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.enumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
-        assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants.size).isEqualTo(3)
-        assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
+        assertThat(codeGenResult.javaEnumTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.enumConstants.size).isEqualTo(3)
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
 
-        assertCompilesJava(codeGenResult.enumTypes)
+        assertCompilesJava(codeGenResult.javaEnumTypes)
     }
 
     @Test
@@ -781,15 +775,15 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         // Check generated enum type
-        assertThat(codeGenResult.enumTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.enumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
-        assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants.size).isEqualTo(4)
-        assertThat(codeGenResult.enumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR", "QA")
+        assertThat(codeGenResult.javaEnumTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.enumConstants.size).isEqualTo(4)
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR", "QA")
 
-        assertCompilesJava(codeGenResult.enumTypes)
+        assertCompilesJava(codeGenResult.javaEnumTypes)
     }
 
     @Test
@@ -811,9 +805,9 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
-        val dataFetchers = codeGenResult.dataFetchers
-        val dataTypes = codeGenResult.dataTypes
+        ).generate()
+        val dataFetchers = codeGenResult.javaDataFetchers
+        val dataTypes = codeGenResult.javaDataTypes
 
         assertThat(dataFetchers.size).isEqualTo(1)
         assertThat(dataFetchers[0].typeSpec.name).isEqualTo("PeopleDatafetcher")
@@ -843,7 +837,7 @@ class CodeGenTest {
                 packageName = basePackageName,
                 typeMapping = mapOf(Pair("Date", "java.time.LocalDateTime")),
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -873,7 +867,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("MovieFilter")
@@ -897,7 +891,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -925,7 +919,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -952,7 +946,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -979,7 +973,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate() as CodeGenResult
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -1011,7 +1005,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, writeToFiles = true)).generate() as CodeGenResult
+        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -1028,308 +1022,6 @@ class CodeGenTest {
         assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(Color.red)""")
 
         assertCompilesJava(dataTypes + enumTypes)
-    }
-
-    @Test
-    fun generateToInputStringMethodForInputTypes() {
-
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                genre: String
-                rating: Int = 3
-                viewed: Boolean = true
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-
-        assertThat(movieFilter.create().toString())
-            .isEqualTo("""{genre:null,rating:3,viewed:true}""")
-        assertThat(movieFilter.create(null, 7, null).toString())
-            .isEqualTo("""{genre:null,rating:7,viewed:null}""")
-    }
-
-    @Test
-    fun generateToInputStringMethodForNonNullableInputTypes() {
-
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                genre: String!
-                rating: Int!
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-        assertThat(movieFilter.create("hi", 1).toString())
-            .isEqualTo("""{genre:"hi",rating:1}""")
-    }
-
-    @Test
-    fun generateToInputStringMethodForNonNullableInputTypesWithDefaults() {
-
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                genre: String! = "horror"
-                rating: Int! = 3
-                average: Float! = 1.2
-                viewed: Boolean! = true
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-        assertThat(movieFilter.create().toString())
-            .isEqualTo("""{genre:"horror",rating:3,average:1.2,viewed:true}""")
-    }
-
-    @Test
-    fun generateToInputStringMethodForInputTypesWithDefaults() {
-
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            enum Colors {
-                blue
-                red
-                yellow
-            }
-            input MovieFilter {
-                genre: String = "horror"
-                rating: Int = 3
-                average: Float = 1.2
-                viewed: Boolean = true
-                identifier: ID = "jhw"
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-        assertThat(movieFilter.create().toString())
-            .isEqualTo("""{genre:"horror",rating:3,average:1.2,viewed:true,identifier:"jhw"}""")
-    }
-
-    @Test
-    fun generateToInputStringMethodForStringWithQuotes() {
-
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-
-            input MovieFilter {
-                genre: String
-                id: String!
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-
-        assertThat(movieFilter.create("quotes\"in\"the\"middle", "quotes\"in\"the\"center").toString())
-            .isEqualTo("""{genre:"quotes\"in\"the\"middle",id:"quotes\"in\"the\"center"}""")
-    }
-
-    @Test
-    fun generateToInputStringMethodForListOfString() {
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                genre: [String]
-                actors: [String]!
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-        assertThat(movieFilter.create(listOf("hello", "world"), listOf("bye")).toString())
-            .isEqualTo("""{genre:["hello", "world"],actors:["bye"]}""")
-
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("serializeListOfString")
-        val expectedInputString = """
-            if (inputList == null) {
-                    return null;
-                }
-                StringBuilder builder = new java.lang.StringBuilder();
-                builder.append("[");
-            
-                if (! inputList.isEmpty()) {
-                    String result = inputList.stream()
-                            .map( iter -> iter.toString() )
-                            .collect(java.util.stream.Collectors.joining("\", \"", "\"", "\""));
-                    builder.append(result);
-                }
-                builder.append("]");
-                return  builder.toString();
-        """.trimIndent()
-        val generatedInputString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "serializeListOfString" }.code.toString().trimIndent()
-        assertThat(expectedInputString).isEqualTo(generatedInputString)
-    }
-
-    @Test
-    fun generateToInputStringMethodForListOfIntegers() {
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                genre: [Integer]
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-
-        assertThat(movieFilter.create(emptyList<Int>()).toString()).isEqualTo("{genre:[]}")
-        assertThat(movieFilter.create(listOf(1, 2, 3)).toString()).isEqualTo("{genre:[1, 2, 3]}")
-    }
-
-    @Test
-    fun generateToInputStringMethodForDateTypes() {
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                localDateTime: LocalDateTime
-                localDate: LocalDate
-                localTime: LocalTime
-                dateTime: DateTime
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-
-        assertThat(
-            movieFilter.create(
-                LocalDateTime.now(clock),
-                LocalDate.now(clock),
-                LocalTime.now(clock),
-                OffsetDateTime.now(clock)
-            ).toString()
-        ).isEqualTo("""{localDateTime:"1969-12-31T21:00",localDate:"1969-12-31",localTime:"21:00",dateTime:"1969-12-31T21:00-03:00"}""")
-    }
-
-    @Test
-    fun generateToInputStringMethodForTypeMappedTypes() {
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                time: LocalTime
-                date: LocalDate
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema), packageName = basePackageName,
-                typeMapping = mapOf(Pair("LocalTime", "java.time.LocalDateTime"), Pair("LocalDate", "java.lang.Integer")),
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-
-        assertThat(movieFilter.create(LocalDateTime.now(clock), 98).toString())
-            .isEqualTo("""{time:"1969-12-31T21:00",date:98}""")
-    }
-
-    @Test
-    fun generateToInputStringMethodForListOfDate() {
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                names: [String]
-                localDateTime: [LocalDateTime]
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-
-        assertThat(movieFilter.create(listOf("hi"), listOf(LocalDateTime.now(clock))).toString())
-            .isEqualTo("""{names:["hi"],localDateTime:["1969-12-31T21:00"]}""")
     }
 
     @Test
@@ -1354,7 +1046,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("MovieFilter")
@@ -1384,7 +1076,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedString = """
@@ -1424,8 +1116,8 @@ class CodeGenTest {
                 packageName = basePackageName,
                 snakeCaseConstantNames = snakeCaseEnabled,
             )
-        ).generate() as CodeGenResult
-        val type = result.constants[0].typeSpec
+        ).generate()
+        val type = result.javaConstants[0].typeSpec
         assertThat(type.name).isEqualTo("DgsConstants")
         assertThat(type.typeSpecs).extracting("name").containsExactlyElementsOf(constantNames)
         assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People")
@@ -1469,8 +1161,8 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
-        val type = result.constants[0].typeSpec
+        ).generate()
+        val type = result.javaConstants[0].typeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
         assertThat(type.typeSpecs[2].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Email")
         assertThat(type.typeSpecs[2].fieldSpecs[0].initializer.toString()).contains("\"PersonFilter\"")
@@ -1502,8 +1194,8 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
-        val type = result.constants[0].typeSpec
+        ).generate()
+        val type = result.javaConstants[0].typeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
         assertThat(type.typeSpecs[2].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Email", "BirthYear")
     }
@@ -1530,8 +1222,8 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
-        val type = result.constants[0].typeSpec
+        ).generate()
+        val type = result.javaConstants[0].typeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
         assertThat(type.typeSpecs[1].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Firstname", "Lastname", "Email")
     }
@@ -1558,8 +1250,8 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
-        val type = result.constants[0].typeSpec
+        ).generate()
+        val type = result.javaConstants[0].typeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
         assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People", "Friends")
     }
@@ -1587,7 +1279,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Movie")
         assertThat(dataTypes[1].typeSpec.name).isEqualTo("Actor")
         assertThat(interfaces[0].typeSpec.name).isEqualTo("SearchResult")
@@ -1625,13 +1317,13 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
-        assertThat(result.dataTypes[0].typeSpec.name).isEqualTo("Movie")
-        assertThat(result.dataTypes[1].typeSpec.name).isEqualTo("Actor")
-        assertThat(result.dataTypes[2].typeSpec.name).isEqualTo("Rating")
-        assertThat(result.interfaces[0].typeSpec.name).isEqualTo("SearchResult")
+        ).generate()
+        assertThat(result.javaDataTypes[0].typeSpec.name).isEqualTo("Movie")
+        assertThat(result.javaDataTypes[1].typeSpec.name).isEqualTo("Actor")
+        assertThat(result.javaDataTypes[2].typeSpec.name).isEqualTo("Rating")
+        assertThat(result.javaInterfaces[0].typeSpec.name).isEqualTo("SearchResult")
 
-        Truth.assertThat(result.interfaces[0].toString()).isEqualTo(
+        Truth.assertThat(result.javaInterfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -1653,7 +1345,7 @@ class CodeGenTest {
             |""".trimMargin()
         )
 
-        assertCompilesJava(result.dataTypes + result.interfaces)
+        assertCompilesJava(result.javaDataTypes + result.javaInterfaces)
     }
 
     @Test
@@ -1673,7 +1365,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
     }
@@ -1692,7 +1384,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
     }
@@ -1707,7 +1399,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, subPackageNameTypes = "mytypes")).generate() as CodeGenResult
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, subPackageNameTypes = "mytypes")).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         val typeSpec = dataTypes[0].typeSpec
@@ -1750,7 +1442,7 @@ class CodeGenTest {
                     schemas = setOf(schema),
                     packageName = basePackageName
                 )
-            ).generate() as CodeGenResult
+            ).generate()
 
         assertThat(dataTypes.size).isEqualTo(1)
         val talent = dataTypes.single().typeSpec
@@ -1965,11 +1657,11 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
-        assertThat(result.interfaces).hasSize(1)
-        assertThat(result.interfaces[0].typeSpec.methodSpecs).hasSize(3)
-        assertThat(result.interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getFirstname", "getLastname", "getAge")
+        assertThat(result.javaInterfaces).hasSize(1)
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs).hasSize(3)
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getFirstname", "getLastname", "getAge")
     }
 
     @Test
@@ -1986,41 +1678,8 @@ class CodeGenTest {
           scalar MovieID @javaType(name : "java.lang.String")
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf())).generate() as CodeGenResult
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, typeMapping = mapOf())).generate()
         assertCompilesJava(codeGenResult.javaFiles)
-    }
-
-    @Test
-    fun generateDataTypeThatOmitsNulls() {
-        val schema = """
-            type Query {
-                movies(filter: MovieFilter)
-            }
-            
-            input MovieFilter {
-                mandatoryString: String!
-                optionalString: String
-                mandatoryInt: Int!
-                optionalInt: Int
-                mandatoryList: [String]!
-                optionalList: [Int]
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                omitNullInputFields = true,
-            )
-        ).generate() as CodeGenResult
-
-        val movieFilter = compileAndGetConstructor(dataTypes, "MovieFilter")
-
-        assertThat(movieFilter.create("a", "b", 1, 2, listOf("x"), listOf(3)).toString())
-            .isEqualTo("""{mandatoryString:"a",optionalString:"b",mandatoryInt:1,optionalInt:2,mandatoryList:["x"],optionalList:[3]}""")
-        assertThat(movieFilter.create("a", null, 1, null, listOf("x"), null).toString())
-            .isEqualTo("""{mandatoryString:"a",mandatoryInt:1,mandatoryList:["x"]}""")
     }
 
     @Test
@@ -2046,10 +1705,10 @@ class CodeGenTest {
                 packageName = basePackageName,
                 generateInterfaces = true
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
-        val interfaces = result.interfaces
-        val dataTypes = result.dataTypes
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
 
         val iapple = interfaces[0]
         assertThat(iapple.typeSpec.name).isEqualTo("IApple")
@@ -2102,10 +1761,10 @@ class CodeGenTest {
                 packageName = basePackageName,
                 generateInterfaces = true
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
-        val interfaces = result.interfaces
-        val dataTypes = result.dataTypes
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
 
         assertThat(interfaces).hasSize(3)
 
@@ -2182,10 +1841,10 @@ class CodeGenTest {
                 packageName = basePackageName,
                 generateInterfaces = true
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
-        val interfaces = result.interfaces
-        val dataTypes = result.dataTypes
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
 
         assertThat(interfaces).hasSize(4) // IMovie, IMoviePage, IGenre, IRating
         assertThat(dataTypes).hasSize(5) // Movie, MoviePage, Genre, Rating, MovieFilter
@@ -2261,7 +1920,7 @@ class CodeGenTest {
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
         assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").containsExactly("Rating")
 
-        assertCompilesJava(dataTypes.plus(interfaces).plus(result.enumTypes))
+        assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
     }
 
     @Test
@@ -2302,10 +1961,10 @@ class CodeGenTest {
                 packageName = basePackageName,
                 generateInterfaces = true
             )
-        ).generate() as CodeGenResult
+        ).generate()
 
-        val interfaces = result.interfaces
-        val dataTypes = result.dataTypes
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
 
         assertThat(interfaces).hasSize(5) // IHuman, IDroid, ISearchResultPage, SearchResult, Character
         assertThat(dataTypes).hasSize(3) // Human, Droid, SearchResultPage
@@ -2336,33 +1995,169 @@ class CodeGenTest {
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("SearchResult")
 
-        assertCompilesJava(dataTypes.plus(interfaces).plus(result.enumTypes))
+        assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
     }
 
-    private fun compileAndGetConstructor(dataTypes: List<JavaFile>, type: String): ClassConstructor {
-        val packageNameAsUnixPath = basePackageName.replace(".", "/")
-        val compilation = assertCompilesJava(dataTypes)
-        val temporaryFilesystem = Jimfs.newFileSystem(Configuration.unix())
-        val classpath = compilation.generatedFiles()
-            .filter { it.kind == JavaFileObject.Kind.CLASS }
-            .map {
-                val destFile = temporaryFilesystem.getPath(it.toUri().path)
-                Files.createDirectories(destFile.parent)
-                it.openInputStream().use { input ->
-                    Files.newOutputStream(destFile).use { output ->
-                        input.copyTo(output)
-                    }
-                }
-                destFile.parent
+    @Test
+    fun generateClassJavaDoc() {
+        val schema = """
+            type Query {
+                search(movieFilter: MovieFilter!): Movie
             }
-            .toSet()
-            .map { URL(it.toUri().toString().replace("$packageNameAsUnixPath.*".toRegex(), "")) }
-            .toTypedArray()
 
-        val clazz = URLClassLoader(classpath).loadClass("$basePackageName.types.$type")
-        return ClassConstructor(clazz)
+            ""${'"'}
+            Movies are fun to watch.
+            They also work well as examples in GraphQL.
+            ""${'"'}
+            type Movie {
+                title: String
+            }
+            
+            ""${'"'}
+            Example filter for Movies.
+            
+            It takes a title and such.
+            ""${'"'}
+            input MovieFilter {
+                titleFilter: String
+            }
+            
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(result.javaDataTypes[0].typeSpec.javadoc.toString()).isEqualTo(
+            """Movies are fun to watch.
+They also work well as examples in GraphQL.
+            """.trimIndent()
+        )
+
+        assertThat(result.javaDataTypes[1].typeSpec.javadoc.toString()).isEqualTo(
+            """Example filter for Movies.
+
+It takes a title and such.
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun generateClassFieldsJavaDoc() {
+        val schema = """
+            type Query {
+                search(movieFilter: MovieFilter!): Movie
+            }
+        
+            type Movie {
+                ""${'"'}
+                The original, non localized title.
+                ""${'"'}
+                title: String
+            }
+                 
+            input MovieFilter {
+                ""${'"'}
+                Starts-with filter
+                ""${'"'}
+                titleFilter: String
+            }
+            
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[0].javadoc.toString()).isEqualTo(
+            """The original, non localized title.
+            """.trimIndent()
+        )
+
+        assertThat(result.javaDataTypes[1].typeSpec.fieldSpecs[0].javadoc.toString()).isEqualTo(
+            """Starts-with filter
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun generateInterfaceJavaDoc() {
+        val schema = """           
+            ""${'"'}
+            Anything with a title!
+            ""${'"'}
+            interface Titled {
+                title: String
+            }                                 
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(result.javaInterfaces[0].typeSpec.javadoc.toString()).isEqualTo(
+            """Anything with a title!
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun generateInterfaceFieldsJavaDoc() {
+        val schema = """                       
+            interface Titled {
+               ""${'"'}
+                The original, non localized title.
+                ""${'"'}
+                title: String
+            }                                 
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo(
+            """The original, non localized title.
+            """.trimIndent()
+        )
+    }
+
+    @Test
+    fun generateEnumJavaDoc() {
+        val schema = """           
+            ""${'"'}
+            Some options
+            ""${'"'}
+            enum Color {
+                red,white,blue
+            }                                 
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(result.javaEnumTypes[0].typeSpec.javadoc.toString()).isEqualTo(
+            """Some options
+            """.trimIndent()
+        )
     }
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
-        get() = dataTypes + interfaces + enumTypes + dataFetchers + queryTypes + clientProjections + constants
+        get() = javaDataTypes + javaInterfaces + javaEnumTypes + javaDataFetchers + javaQueryTypes + clientProjections + javaConstants
 }

@@ -36,12 +36,12 @@ class SchemaMergingTest {
                 generateClientApi = true,
             )
         )
-        val result = codeGen.generate() as CodeGenResult
+        val result = codeGen.generate()
 
-        Assertions.assertThat(result.dataTypes.size).isEqualTo(2)
-        Assertions.assertThat(result.dataTypes.find { it.typeSpec.name == "Person" }!!.typeSpec.fieldSpecs).extracting("name").contains("name", "movies")
+        Assertions.assertThat(result.javaDataTypes.size).isEqualTo(2)
+        Assertions.assertThat(result.javaDataTypes.find { it.typeSpec.name == "Person" }!!.typeSpec.fieldSpecs).extracting("name").contains("name", "movies")
 
-        val movieType = result.dataTypes.find { it.typeSpec.name == "Movie" }
+        val movieType = result.javaDataTypes.find { it.typeSpec.name == "Movie" }
         Assertions.assertThat(movieType).isNotNull
     }
 
@@ -58,13 +58,13 @@ class SchemaMergingTest {
                 generateClientApi = true,
             )
         )
-        val result = codeGen.generate() as KotlinCodeGenResult
-        val type = result.dataTypes.find { it.name == "Person" }!!.members[0] as TypeSpec
+        val result = codeGen.generate()
+        val type = result.kotlinDataTypes.find { it.name == "Person" }!!.members[0] as TypeSpec
 
-        Assertions.assertThat(result.dataTypes.size).isEqualTo(2)
+        Assertions.assertThat(result.kotlinDataTypes.size).isEqualTo(2)
         Assertions.assertThat(type.propertySpecs).extracting("name").contains("name", "movies")
 
-        val movieType = result.dataTypes.find { it.name == "Movie" }!!.members[0] as TypeSpec
+        val movieType = result.kotlinDataTypes.find { it.name == "Movie" }!!.members[0] as TypeSpec
         Assertions.assertThat(movieType).isNotNull
     }
 }

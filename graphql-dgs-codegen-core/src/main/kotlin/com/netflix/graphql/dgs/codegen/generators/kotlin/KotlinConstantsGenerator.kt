@@ -19,7 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
@@ -32,7 +32,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
 
 class KotlinConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
-    fun generate(): KotlinCodeGenResult {
+    fun generate(): CodeGenResult {
         val baseConstantsType = TypeSpec.objectBuilder("DgsConstants")
 
         document.definitions.filterIsInstance<ObjectTypeDefinition>()
@@ -105,7 +105,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
         }
 
         val fileSpec = FileSpec.builder(config.packageName, "DgsConstants").addType(baseConstantsType.build()).build()
-        return KotlinCodeGenResult(constants = listOf(fileSpec))
+        return CodeGenResult(kotlinConstants = listOf(fileSpec))
     }
 
     private fun createConstantTypeBuilder(conf: CodeGenConfig, name: String): TypeSpec.Builder {

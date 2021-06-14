@@ -36,7 +36,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             val javaFile = createQueryClass(it, definition.name)
 
             val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) } ?: CodeGenResult()
-            CodeGenResult(queryTypes = listOf(javaFile)).merge(rootProjection)
+            CodeGenResult(javaQueryTypes = listOf(javaFile)).merge(rootProjection)
         }.fold(CodeGenResult()) { total, current -> total.merge(current) }
     }
 
@@ -58,6 +58,10 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun createQueryClass(it: FieldDefinition, operation: String): JavaFile {
         val javaType = TypeSpec.classBuilder("${it.name.capitalize()}GraphQLQuery")
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(GraphQLQuery::class.java))
+
+        if (it.description != null) {
+            javaType.addJavadoc(it.description.content.lines().joinToString("\n"))
+        }
         javaType.addMethod(
             MethodSpec.methodBuilder("getOperationName")
                 .addModifiers(Modifier.PUBLIC)
@@ -103,20 +107,22 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         it.inputValueDefinitions.forEach { inputValue ->
             val findReturnType = TypeUtils(getDatatypesPackageName(), config, document).findReturnType(inputValue.type)
-            builderClass
-                .addMethod(
-                    MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name))
-                        .addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
-                        .returns(ClassName.get("", "Builder"))
-                        .addModifiers(Modifier.PUBLIC)
-                        .addCode(
-                            """
+            val methodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name))
+                .addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
+                .returns(ClassName.get("", "Builder"))
+                .addModifiers(Modifier.PUBLIC)
+                .addCode(
+                    """
                                 this.${ReservedKeywordSanitizer.sanitize(inputValue.name)} = ${ReservedKeywordSanitizer.sanitize(inputValue.name)};
                                 this.fieldsSet.add("${inputValue.name}");
                                 return this;
-                            """.trimIndent()
-                        ).build()
+                    """.trimIndent()
                 )
+
+            if (inputValue.description != null) {
+                methodBuilder.addJavadoc(inputValue.description.content.lines().joinToString("\n"))
+            }
+            builderClass.addMethod(methodBuilder.build())
                 .addField(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
 
             constructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))

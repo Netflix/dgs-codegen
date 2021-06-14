@@ -23,26 +23,27 @@ import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
 import graphql.language.EnumTypeDefinition
-import graphql.language.EnumValueDefinition
 import javax.lang.model.element.Modifier
 
 class EnumTypeGenerator(private val config: CodeGenConfig) {
     fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
         val javaType = TypeSpec.enumBuilder(definition.name)
             .addModifiers(Modifier.PUBLIC)
+        if (definition.description != null) {
+            javaType.addJavadoc(definition.description.content.lines().joinToString("\n"))
+        }
 
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
 
         mergedEnumDefinitions.forEach {
-            addEnum(it, javaType)
+            javaType.addEnumConstant(it.name)
         }
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
 
-        return CodeGenResult(enumTypes = listOf(javaFile))
+        return CodeGenResult(javaEnumTypes = listOf(javaFile))
     }
 
-    private fun addEnum(enumVal: EnumValueDefinition, javaType: TypeSpec.Builder) { javaType.addEnumConstant(enumVal.name); }
     fun getPackageName(): String {
         return config.packageNameTypes
     }

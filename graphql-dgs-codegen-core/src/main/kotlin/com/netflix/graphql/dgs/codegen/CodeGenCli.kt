@@ -81,8 +81,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
 
         if (writeFiles) {
             when (generate) {
-                is CodeGenResult -> echo("${(generate.dataTypes + generate.interfaces + generate.enumTypes + generate.queryTypes + generate.clientProjections + generate.constants).size} files written to ${output.absoluteFile}")
-                is KotlinCodeGenResult -> echo("${(generate.dataTypes + generate.interfaces + generate.enumTypes + generate.queryTypes + generate.clientProjections + generate.constants).size} files written to ${output.absoluteFile}")
+                is CodeGenResult -> echo("${(generate.javaDataTypes + generate.javaInterfaces + generate.javaEnumTypes + generate.javaQueryTypes + generate.clientProjections + generate.javaConstants).size} files written to ${output.absoluteFile}")
             }
         } else {
             echo(generate)

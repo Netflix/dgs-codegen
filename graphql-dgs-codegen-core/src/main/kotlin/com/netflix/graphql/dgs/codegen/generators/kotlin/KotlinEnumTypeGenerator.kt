@@ -19,24 +19,32 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.KotlinCodeGenResult
+import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.EnumTypeDefinition
 
 class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
-    fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): KotlinCodeGenResult {
+    fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(definition.name).addModifiers(KModifier.ENUM)
+
+        if (definition.description != null) {
+            kotlinType.addKdoc(definition.description.content.lines().joinToString("\n"))
+        }
 
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
         mergedEnumDefinitions.forEach {
-            kotlinType.addEnumConstant(it.name)
+            if (it.description != null) {
+                kotlinType.addEnumConstant(it.name, TypeSpec.enumBuilder(it.name).addKdoc(it.description.content.lines().joinToString("\n")).build())
+            } else {
+                kotlinType.addEnumConstant(it.name)
+            }
         }
 
         val typeSpec = kotlinType.build()
         val fileSpec = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
-        return KotlinCodeGenResult(enumTypes = listOf(fileSpec))
+        return CodeGenResult(kotlinEnumTypes = listOf(fileSpec))
     }
 
     fun getPackageName(): String {

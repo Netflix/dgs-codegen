@@ -105,7 +105,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
         }
 
         val javaFile = JavaFile.builder(config.packageName, javaType.build()).build()
-        return CodeGenResult(constants = listOf(javaFile))
+        return CodeGenResult(javaConstants = listOf(javaFile))
     }
 
     private fun createConstantTypeBuilder(conf: CodeGenConfig, name: String): TypeSpec.Builder {
