@@ -813,7 +813,7 @@ class ClientApiGenTest {
                 name: String
             }
             
-            type Director implements Human {
+            type Director implements Person {
                 name: String
                 shows: [Show]
             }
