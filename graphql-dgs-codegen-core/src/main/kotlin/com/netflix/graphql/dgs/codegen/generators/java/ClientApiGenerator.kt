@@ -364,8 +364,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .build()
             )
 
-        val typeFieldDefinitions = if (parent.methodSpecs.any { it.name == "on${type.name}" }) type.filterInterfaceFields(document) else type.fieldDefinitions()
-        val fieldDefinitions = typeFieldDefinitions + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
+        val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
         val codeGenResult = if (queryDepth < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
             fieldDefinitions.filterSkipped()
                 .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
