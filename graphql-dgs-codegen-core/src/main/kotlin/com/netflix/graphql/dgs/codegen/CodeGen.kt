@@ -421,21 +421,6 @@ fun TypeDefinition<*>.fieldDefinitions(): List<FieldDefinition> {
     }
 }
 
-/**
- * Only return fields not declared on the type's interface
- */
-fun TypeDefinition<*>.filterInterfaceFields(document: Document): List<FieldDefinition> {
-    val interfaceFields = if (this is ObjectTypeDefinition) {
-        this.implements.asSequence()
-            .mapNotNull { it.findTypeDefinition(document) }
-            .flatMap { it.fieldDefinitions() }
-            .map { it.name }
-            .toList()
-    } else emptyList()
-
-    return this.fieldDefinitions().filter { it.name !in interfaceFields }
-}
-
 fun Type<*>.findTypeDefinition(document: Document, excludeExtensions: Boolean = false): TypeDefinition<*>? {
     return when (this) {
         is NonNullType -> {
