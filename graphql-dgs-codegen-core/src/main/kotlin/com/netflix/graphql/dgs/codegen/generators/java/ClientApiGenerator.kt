@@ -30,12 +30,14 @@ import javax.lang.model.element.Modifier
 
 class ClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
     private val generatedClasses = mutableSetOf<String>()
+    private val typeUtils = TypeUtils(getDatatypesPackageName(), config, document)
 
     fun generate(definition: ObjectTypeDefinition): CodeGenResult {
         return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
             val javaFile = createQueryClass(it, definition.name)
 
-            val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) } ?: CodeGenResult()
+            val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) }
+                ?: CodeGenResult()
             CodeGenResult(javaQueryTypes = listOf(javaFile)).merge(rootProjection)
         }.fold(CodeGenResult()) { total, current -> total.merge(current) }
     }
@@ -178,23 +180,29 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
 
         val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
+
         val codeGenResult = fieldDefinitions.filterSkipped()
             .mapNotNull { if (it.type.findTypeDefinition(document, true) != null) Pair(it, it.type.findTypeDefinition(document, true)) else null }
             .map {
                 val projectionName = "${prefix}_${it.first.name.capitalize()}Projection"
-                javaType.addMethod(
-                    MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
-                        .returns(ClassName.get(getPackageName(), projectionName))
-                        .addCode(
-                            """
+
+                val noArgMethodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
+                    .returns(ClassName.get(getPackageName(), projectionName))
+                    .addCode(
+                        """
                         $projectionName projection = new $projectionName(this, this);    
                         getFields().put("${it.first.name}", projection);
                         return projection;
-                            """.trimIndent()
-                        )
-                        .addModifiers(Modifier.PUBLIC)
-                        .build()
-                )
+                        """.trimIndent()
+                    )
+                    .addModifiers(Modifier.PUBLIC)
+
+                javaType.addMethod(noArgMethodBuilder.build())
+
+                if (it.first.inputValueDefinitions.isNotEmpty()) {
+                    addFieldSelectionMethodWithArguments(it.first, projectionName, javaType)
+                }
+
                 val processedEdges = mutableSetOf<Pair<String, String>>()
                 processedEdges.add(Pair(it.second!!.name, type.name))
                 createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}_${it.first.name.capitalize()}", processedEdges, 1)
@@ -225,6 +233,34 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
+    }
+
+    private fun addFieldSelectionMethodWithArguments(fieldDefinition: FieldDefinition, projectionName: String, javaType: TypeSpec.Builder): TypeSpec.Builder? {
+        val methodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+            .returns(ClassName.get(getPackageName(), projectionName))
+            .addCode(
+                """
+                            $projectionName projection = new $projectionName(this, this);    
+                            getFields().put("${fieldDefinition.name}", projection);
+                            getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());                      
+                            ${
+                fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
+                    """InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                                getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
+                    """.trimIndent()
+                }
+                }
+                            return projection;
+                """.trimIndent(),
+                ArrayList::class.java
+            )
+            .addModifiers(Modifier.PUBLIC)
+
+        fieldDefinition.inputValueDefinitions.forEach { input ->
+            println("addFieldSelectionMethodWithArguments: $fieldDefinition")
+            methodBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
+        }
+        return javaType.addMethod(methodBuilder.build())
     }
 
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
@@ -342,7 +378,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun createSubProjection(type: TypeDefinition<*>, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>, queryDepth: Int): CodeGenResult {
-        val subProjection = createSubProjectionType(type, parent, root, prefix, processedEdges, queryDepth) ?: return CodeGenResult()
+        val subProjection = createSubProjectionType(type, parent, root, prefix, processedEdges, queryDepth)
+            ?: return CodeGenResult()
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
 
@@ -384,6 +421,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .addModifiers(Modifier.PUBLIC)
                             .build()
                     )
+
                     val updatedProcessedEdges = processedEdges.toMutableSet()
                     updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
                     createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}_${it.first.name.capitalize()}", updatedProcessedEdges, queryDepth + 1)
@@ -406,6 +444,34 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .addModifiers(Modifier.PUBLIC)
                             .build()
                     )
+
+                    if (it.inputValueDefinitions.isNotEmpty()) {
+                        val methodWithInputArgumentsBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
+                            .returns(ClassName.get(getPackageName(), javaType.build().name))
+                            .addCode(
+                                """
+                        getFields().put("${it.name}", null);
+                        getInputArguments().computeIfAbsent("${it.name}", k -> new ${'$'}T<>());                      
+                            ${
+                                it.inputValueDefinitions.joinToString("\n") { input ->
+                                    """InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                                getInputArguments().get("${it.name}").add(${input.name}Arg);
+                                    """.trimIndent()
+                                }
+                                }
+                        
+                        return this;
+                                """.trimIndent(),
+                                ArrayList::class.java
+                            )
+                            .addModifiers(Modifier.PUBLIC)
+
+                        it.inputValueDefinitions.forEach { input ->
+                            methodWithInputArgumentsBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
+                        }
+
+                        javaType.addMethod(methodWithInputArgumentsBuilder.build())
+                    }
                 }
             }
 

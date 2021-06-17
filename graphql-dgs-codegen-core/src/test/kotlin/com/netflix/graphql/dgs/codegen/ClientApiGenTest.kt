@@ -190,7 +190,6 @@ class ClientApiGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                writeToFiles = true
             )
         ).generate()
 
@@ -1554,6 +1553,71 @@ class ClientApiGenTest {
         val result2QueryObject: GraphQLQuery = buildMethod.invoke(builder2) as GraphQLQuery
         assertThat(result2QueryObject.input.keys).isEmpty()
         assertThat(result2QueryObject.input["nameFilter"]).isNull()
+    }
+
+    @Test
+    fun `Input arguments on root projections should be support in the query API`() {
+        val schema = """
+            type Query {
+                movies: [Movie]
+            }
+            
+            type Movie {
+                actors(leadCharactersOnly: Boolean): [Actor]
+            }
+            
+            type Actor {
+                name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                maxProjectionDepth = 2,
+            )
+        ).generate()
+
+        val methodSpecs = codeGenResult.clientProjections[0].typeSpec.methodSpecs
+        assertThat(methodSpecs.size).isEqualTo(2)
+        val methodWithArgs = methodSpecs.find { it.parameters.size > 0 }
+        assertThat(methodWithArgs).isNotNull
+        assertThat(methodWithArgs!!.parameters[0].name).isEqualTo("leadCharactersOnly")
+        assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
+    }
+
+    @Test
+    fun `Input arguments on sub projections should be support in the query API`() {
+        val schema = """
+            type Query {
+                movies: [Movie]
+            }
+            
+            type Movie {
+                actors: [Actor]
+            }
+            
+            type Actor {
+                awards(oscarsOnly: Boolean): String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                writeToFiles = true
+            )
+        ).generate()
+
+        val methodSpecs = codeGenResult.clientProjections[1].typeSpec.methodSpecs
+        val methodWithArgs = methodSpecs.filter { !it.isConstructor }.find { it.parameters.size > 0 }
+        assertThat(methodWithArgs).isNotNull
+        assertThat(methodWithArgs!!.parameters[0].name).isEqualTo("oscarsOnly")
+        assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
     }
 
     private fun compileAndGetClass(dataTypes: List<JavaFile>, type: String): Class<*> {
