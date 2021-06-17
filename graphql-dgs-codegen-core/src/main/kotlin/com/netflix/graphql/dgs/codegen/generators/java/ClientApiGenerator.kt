@@ -200,29 +200,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 javaType.addMethod(noArgMethodBuilder.build())
 
                 if (it.first.inputValueDefinitions.isNotEmpty()) {
-                    val methodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
-                        .returns(ClassName.get(getPackageName(), projectionName))
-                        .addCode(
-                            """
-                        $projectionName projection = new $projectionName(this, this);    
-                        getFields().put("${it.first.name}", projection);
-                        getInputArguments().computeIfAbsent("${it.first.name}", k -> new ${'$'}T<>());                      
-                        ${it.first.inputValueDefinitions.joinToString("\n") { input ->
-                                """InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
-                            getInputArguments().get("${it.first.name}").add(${input.name}Arg);
-                                """.trimIndent()
-                            }}
-                        return projection;
-                            """.trimIndent(),
-                            ArrayList::class.java
-                        )
-                        .addModifiers(Modifier.PUBLIC)
-
-                    it.first.inputValueDefinitions.forEach { input ->
-                        methodBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
-                    }
-
-                    javaType.addMethod(methodBuilder.build())
+                    addFieldSelectionMethodWithArguments(it.first, projectionName, javaType)
                 }
 
                 val processedEdges = mutableSetOf<Pair<String, String>>()
@@ -255,6 +233,34 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
+    }
+
+    private fun addFieldSelectionMethodWithArguments(fieldDefinition: FieldDefinition, projectionName: String, javaType: TypeSpec.Builder): TypeSpec.Builder? {
+        val methodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+            .returns(ClassName.get(getPackageName(), projectionName))
+            .addCode(
+                """
+                            $projectionName projection = new $projectionName(this, this);    
+                            getFields().put("${fieldDefinition.name}", projection);
+                            getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());                      
+                            ${
+                fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
+                    """InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                                getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
+                    """.trimIndent()
+                }
+                }
+                            return projection;
+                """.trimIndent(),
+                ArrayList::class.java
+            )
+            .addModifiers(Modifier.PUBLIC)
+
+        fieldDefinition.inputValueDefinitions.forEach { input ->
+            println("addFieldSelectionMethodWithArguments: $fieldDefinition")
+            methodBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
+        }
+        return javaType.addMethod(methodBuilder.build())
     }
 
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
@@ -415,6 +421,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .addModifiers(Modifier.PUBLIC)
                             .build()
                     )
+
                     val updatedProcessedEdges = processedEdges.toMutableSet()
                     updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
                     createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}_${it.first.name.capitalize()}", updatedProcessedEdges, queryDepth + 1)
@@ -437,6 +444,34 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .addModifiers(Modifier.PUBLIC)
                             .build()
                     )
+
+                    if (it.inputValueDefinitions.isNotEmpty()) {
+                        val methodWithInputArgumentsBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
+                            .returns(ClassName.get(getPackageName(), javaType.build().name))
+                            .addCode(
+                                """
+                        getFields().put("${it.name}", null);
+                        getInputArguments().computeIfAbsent("${it.name}", k -> new ${'$'}T<>());                      
+                            ${
+                                it.inputValueDefinitions.joinToString("\n") { input ->
+                                    """InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                                getInputArguments().get("${it.name}").add(${input.name}Arg);
+                                    """.trimIndent()
+                                }
+                                }
+                        
+                        return this;
+                                """.trimIndent(),
+                                ArrayList::class.java
+                            )
+                            .addModifiers(Modifier.PUBLIC)
+
+                        it.inputValueDefinitions.forEach { input ->
+                            methodWithInputArgumentsBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
+                        }
+
+                        javaType.addMethod(methodWithInputArgumentsBuilder.build())
+                    }
                 }
             }
 
