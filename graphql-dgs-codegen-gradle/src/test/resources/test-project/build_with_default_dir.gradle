@@ -32,3 +32,5 @@ generateJava {
     typeMapping = [Date:"java.time.LocalDateTime"]
     // no generated sources dir specified
 }
+
+codegen.clientCoreConventionsEnabled = false

@@ -16,7 +16,15 @@
  *
  */
 
-rootProject.name = 'graphql-dgs-codegen'
-include 'graphql-dgs-codegen-gradle'
-include 'graphql-dgs-codegen-core'
-include 'graphql-dgs-codegen-client-core'
+package com.netflix.graphql.dgs.client.codegen.exampleprojection
+
+import com.netflix.graphql.dgs.client.codegen.BaseProjectionNode
+import java.util.*
+
+class EntitiesProjectionRoot : BaseProjectionNode() {
+    fun onMovie(schemaType: Optional<String>): EntitiesMovieKeyProjection {
+        val fragment = EntitiesMovieKeyProjection(this, this, schemaType)
+        fragments.add(fragment)
+        return fragment
+    }
+}

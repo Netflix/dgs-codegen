@@ -27,14 +27,10 @@ import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
 import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
-import org.slf4j.LoggerFactory
 import java.io.File
 import java.nio.file.Paths
 
 open class GenerateJavaTask : DefaultTask() {
-
-    private val LOGGER = LoggerFactory.getLogger("DgsCodegenPlugin")
-
     @Input
     var generatedSourcesDir: String = project.buildDir.absolutePath
 
@@ -116,7 +112,7 @@ open class GenerateJavaTask : DefaultTask() {
     fun generate() {
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.toSet()
         schemaPaths.filter { !it.exists() }.forEach {
-            LOGGER.warn("Schema location ${it.absolutePath} does not exist")
+            logger.warn("Schema location ${it.absolutePath} does not exist")
         }
 
         val config = CodeGenConfig(
@@ -145,7 +141,7 @@ open class GenerateJavaTask : DefaultTask() {
             snakeCaseConstantNames = snakeCaseConstantNames
         )
 
-        LOGGER.info("Codegen config: {}", config)
+        logger.info("Codegen config: {}", config)
 
         val codegen = CodeGen(config)
         codegen.generate()

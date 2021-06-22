@@ -34,3 +34,5 @@ generateJava {
     generateClient = true
     generateDataTypes = true
 }
+
+codegen.clientCoreConventionsEnabled = false

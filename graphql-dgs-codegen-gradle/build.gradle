@@ -16,24 +16,11 @@
  *
  */
 
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
-    }
-}
-
 plugins {
     id 'com.gradle.plugin-publish' version '0.15.0'
 }
 
-apply plugin: 'org.jetbrains.kotlin.jvm'
 apply plugin: 'java-gradle-plugin'
-apply plugin: 'nebula.netflixoss'
-apply plugin: 'license'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
@@ -41,9 +28,6 @@ dependencies {
 
     testApi gradleTestKit()
     testImplementation("com.google.guava:guava:30.1.1-jre")
-    testImplementation("org.assertj:assertj-core:3.19.+")
-    testImplementation(platform("org.junit:junit-bom:5.7.+"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
 }
 
 description = 'Netflix GraphQL DGS Code Generation Plugin'
@@ -74,14 +58,6 @@ gradlePlugin {
     }
 }
 
-license {
-    exclude('**/*.bin')
-    exclude('**/test-project/*')
-}
-
-test {
-    useJUnitPlatform()
-}
 
 task createClasspathManifest {
     File outputDir = file("$buildDir/$name")
