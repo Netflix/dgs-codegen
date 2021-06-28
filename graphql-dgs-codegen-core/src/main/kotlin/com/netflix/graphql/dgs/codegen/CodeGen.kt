@@ -422,8 +422,16 @@ fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config:
     }
 }
 
-fun ObjectTypeDefinition.shouldSkip(): Boolean {
-    return this.directives.any { it.name == "skipcodegen" }
+fun ObjectTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean {
+    return this.directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey(this.name)
+}
+
+fun InterfaceTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean {
+    return this.directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey(this.name)
+}
+
+fun UnionTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean {
+    return this.directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey(this.name)
 }
 
 fun TypeDefinition<*>.fieldDefinitions(): List<FieldDefinition> {
