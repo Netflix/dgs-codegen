@@ -759,6 +759,156 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `Use mapped type name when the type is mapped`() {
+
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            type SearchResult {
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+                birthDate: Date
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(Pair("Person", "mypackage.Person")),
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[0].type.toString()).isEqualTo("mypackage.Person?")
+    }
+
+    @Test
+    fun `Use mapped type name when the type is mapped for interface`() {
+
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            type SearchResult {
+                item: SomethingWithAName
+            }
+            
+            interface SomethingWithAName {
+                name: String
+            }
+            
+            type Person implements SomethingWithAName {
+                name: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    Pair("SomethingWithAName", "mypackage.SomethingWithAName"),
+                    Pair("Person", "mypackage.Person"),
+                ),
+            )
+        ).generate()
+
+        val dataTypes = result.kotlinDataTypes
+        val interfaces = result.kotlinInterfaces
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[0].type.toString()).isEqualTo("mypackage.SomethingWithAName?")
+
+        assertThat(interfaces).isEmpty()
+    }
+
+    @Test
+    fun `Use mapped type name when the type is mapped for union`() {
+
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            union SearchResult = Actor | Movie
+                     
+            type Movie {
+                title: String
+            }
+            
+            type Actor {
+                name: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    Pair("SearchResult", "mypackage.SearchResult"),
+                    Pair("Movie", "mypackage.Movie"),
+                    Pair("Actor", "mypackage.Actor"),
+                ),
+            )
+        ).generate()
+
+        val dataTypes = result.kotlinDataTypes
+        val interfaces = result.kotlinInterfaces
+
+        assertThat(dataTypes).isEmpty()
+        assertThat(interfaces).isEmpty()
+    }
+
+    @Test
+    fun `Use mapped type name when a concrete type of a union is mapped`() {
+
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            union SearchResult = Actor | Movie
+                     
+            type Movie {
+                title: String
+            }
+            
+            type Actor {
+                name: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    Pair("Actor", "mypackage.Actor"),
+                ),
+            )
+        ).generate()
+        val dataTypes = result.kotlinDataTypes
+        val interfaces = result.kotlinInterfaces
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(interfaces).hasSize(1)
+        assertThat((dataTypes[0].members[0] as TypeSpec).name).isEqualTo("Movie")
+    }
+
+    @Test
     fun generateInputTypes() {
 
         val schema = """

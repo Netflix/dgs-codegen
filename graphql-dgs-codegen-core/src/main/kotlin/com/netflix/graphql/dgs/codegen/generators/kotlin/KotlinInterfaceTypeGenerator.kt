@@ -20,13 +20,14 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
 
-class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
+class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
 
     private val packageName = config.packageNameTypes
     private val typeUtils = KotlinTypeUtils(packageName, config)
@@ -36,6 +37,10 @@ class KotlinInterfaceTypeGenerator(config: CodeGenConfig) {
         document: Document,
         extensions: List<InterfaceTypeExtensionDefinition>
     ): CodeGenResult {
+        if (definition.shouldSkip(config)) {
+            return CodeGenResult()
+        }
+
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
         if (definition.description != null) {
             interfaceBuilder.addKdoc(definition.description.content.lines().joinToString("\n"))

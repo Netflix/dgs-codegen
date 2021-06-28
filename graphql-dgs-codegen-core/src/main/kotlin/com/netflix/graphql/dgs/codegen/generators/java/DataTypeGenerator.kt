@@ -29,7 +29,7 @@ import javax.lang.model.element.Modifier
 
 class DataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
-        if (definition.shouldSkip()) {
+        if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
 

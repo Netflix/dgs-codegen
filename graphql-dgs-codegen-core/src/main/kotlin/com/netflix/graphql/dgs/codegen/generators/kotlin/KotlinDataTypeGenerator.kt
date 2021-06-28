@@ -28,7 +28,7 @@ import graphql.language.*
 
 class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
-        if (definition.shouldSkip()) {
+        if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
 
