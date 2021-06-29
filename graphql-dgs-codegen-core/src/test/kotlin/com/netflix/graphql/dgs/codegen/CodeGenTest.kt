@@ -34,7 +34,6 @@ import java.util.stream.Stream
 
 class CodeGenTest {
 
-    val clock = Clock.fixed(Instant.ofEpochMilli(0), ZoneId.of("America/Sao_Paulo"))
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
     val typesPackageName = "$basePackageName.types"
     val dataFetcherPackageName = "$basePackageName.datafetchers"
@@ -850,6 +849,170 @@ class CodeGenTest {
     }
 
     @Test
+    fun `Skip generating a data class when the type is mapped`() {
+
+        val schema = """
+            type Query {
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+                birthDate: Date
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(Pair("Person", "mypackage.Person")),
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(0)
+    }
+
+    @Test
+    fun `Use mapped type name when the type is mapped`() {
+
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            type SearchResult {
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+                birthDate: Date
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(Pair("Person", "mypackage.Person")),
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].type.toString()).isEqualTo("mypackage.Person")
+    }
+
+    @Test
+    fun `Use mapped type name when the type is mapped for interface`() {
+
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            type SearchResult {
+                item: SomethingWithAName
+            }
+            
+            interface SomethingWithAName {
+                name: String
+            }
+            
+            type Person implements SomethingWithAName {
+                name: String
+            }
+        """.trimIndent()
+
+        val (dataTypes, javaInterfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    Pair("SomethingWithAName", "mypackage.SomethingWithAName"),
+                    Pair("Person", "mypackage.Person"),
+                ),
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].type.toString()).isEqualTo("mypackage.SomethingWithAName")
+
+        assertThat(javaInterfaces).isEmpty()
+    }
+
+    @Test
+    fun `Use mapped type name when the type is mapped for union`() {
+
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            union SearchResult = Actor | Movie
+                     
+            type Movie {
+                title: String
+            }
+            
+            type Actor {
+                name: String
+            }
+        """.trimIndent()
+
+        val (dataTypes, javaInterfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    Pair("SearchResult", "mypackage.SearchResult"),
+                    Pair("Movie", "mypackage.Movie"),
+                    Pair("Actor", "mypackage.Actor"),
+                ),
+            )
+        ).generate()
+
+        assertThat(dataTypes).isEmpty()
+        assertThat(javaInterfaces).isEmpty()
+    }
+
+    @Test
+    fun `Use mapped type name when a concrete type of a union is mapped`() {
+
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            union SearchResult = Actor | Movie
+                     
+            type Movie {
+                title: String
+            }
+            
+            type Actor {
+                name: String
+            }
+        """.trimIndent()
+
+        val (dataTypes, javaInterfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    Pair("Actor", "mypackage.Actor"),
+                ),
+            )
+        ).generate()
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(javaInterfaces).hasSize(1)
+        assertThat(dataTypes[0].typeSpec.name).isEqualTo("Movie")
+    }
+
+    @Test
     fun generateInputTypes() {
 
         val schema = """
@@ -1387,6 +1550,25 @@ class CodeGenTest {
         ).generate()
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
+    }
+
+    @Test
+    fun skipCodegenOnInterfaceFields() {
+        val schema = """
+            interface Person {
+                name: String
+                email: String @skipcodegen
+            }
+        """.trimIndent()
+
+        val (_, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+        assertThat(interfaces[0].typeSpec.name).isEqualTo("Person")
+        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getName")
     }
 
     @Test
