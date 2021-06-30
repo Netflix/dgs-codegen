@@ -16,33 +16,65 @@
  *
  */
 
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
+    }
+}
+
 plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.4.31' apply false
     id 'nebula.netflixoss' version '9.4.2'
     id 'org.jlleitschuh.gradle.ktlint' version '10.0.0'
 }
 
+description = 'Netflix GraphQL DGS Code Generation'
+
 allprojects {
     repositories {
         mavenCentral()
     }
+
+    apply plugin: 'nebula.netflixoss'
+    apply plugin: 'nebula.info'
+    apply plugin: 'org.jetbrains.kotlin.jvm'
+    apply plugin: 'license'
+
     group = 'com.netflix.graphql.dgs.codegen'
+
+    dependencies {
+        testImplementation platform('org.junit:junit-bom:5.7.+')
+        testImplementation 'org.assertj:assertj-core:3.19.+'
+        testImplementation 'org.junit.jupiter:junit-jupiter'
+        testImplementation 'org.junit.jupiter:junit-jupiter-params'
+    }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
       kotlinOptions {
         jvmTarget = "1.8"
       }
     }
+
+    license {
+        exclude('**/*.bin')
+        exclude('**/test-project/*')
+    }
+
+    test {
+        useJUnitPlatform()
+    }
+
+    sourceCompatibility = 1.8
 }
 
 subprojects {
     apply {
         plugin("org.jlleitschuh.gradle.ktlint")
     }
-
     ktlint {
         disabledRules = ["no-wildcard-imports"]
     }
 }
-
-description = 'Netflix GraphQL DGS Code Generation'

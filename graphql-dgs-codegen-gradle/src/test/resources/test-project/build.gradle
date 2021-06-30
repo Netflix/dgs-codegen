@@ -32,3 +32,5 @@ generateJava {
     generatedSourcesDir = "${projectDir}/build/graphql"
     typeMapping = [Date:"java.time.LocalDateTime"]
 }
+
+codegen.clientCoreConventionsEnabled = false

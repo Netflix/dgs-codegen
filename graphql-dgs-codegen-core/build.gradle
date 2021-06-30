@@ -16,58 +16,32 @@
  *
  */
 
-
-buildscript {
-    repositories {
-        mavenCentral()
-    }
-
-    dependencies {
-        classpath 'nl.javadude.gradle.plugins:license-gradle-plugin:0.10.0'
-    }
-}
-
 plugins {
     id 'java-library'
     id 'application'
 }
 
-apply plugin: 'nebula.netflixoss'
-apply plugin: 'org.jetbrains.kotlin.jvm'
-apply plugin: 'license'
-
-sourceCompatibility = 1.8
 
 dependencies {
-    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
-    implementation("com.netflix.graphql.dgs:graphql-dgs") { transitive = false }
-    implementation "com.netflix.graphql.dgs:graphql-dgs-client"
-    implementation "com.graphql-java:graphql-java"
-    implementation "com.fasterxml.jackson.core:jackson-annotations"
+    implementation platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release")
 
-    implementation "com.squareup:javapoet:1.13.+"
-    implementation "com.squareup:kotlinpoet:1.8.+"
-    implementation "com.github.ajalt.clikt:clikt:3.2.+"
-    implementation "commons-lang:commons-lang:2.6"
+    implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
+    implementation 'com.netflix.graphql.dgs:graphql-dgs-client'
+    implementation 'com.graphql-java:graphql-java'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations'
 
-    testImplementation "com.google.jimfs:jimfs:1.2"
-    testImplementation "com.google.testing.compile:compile-testing:0.+"
-    testImplementation "com.google.truth:truth:1.+"
-    testImplementation "org.assertj:assertj-core:3.19.+"
-    testImplementation "org.jetbrains.kotlin:kotlin-compiler-embeddable:1.4.31"
+    implementation 'com.squareup:javapoet:1.13.+'
+    implementation 'com.squareup:kotlinpoet:1.8.+'
+    implementation 'com.github.ajalt.clikt:clikt:3.2.+'
+    implementation 'commons-lang:commons-lang:2.6'
 
-    testImplementation(platform("org.junit:junit-bom:5.7.+"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testImplementation("org.junit.jupiter:junit-jupiter-params")
-}
-
-
-license {
-    exclude('**/*.bin')
-}
-
-test {
-    useJUnitPlatform()
+    testImplementation 'com.google.jimfs:jimfs:1.2'
+    testImplementation 'com.google.testing.compile:compile-testing:0.+'
+    testImplementation 'com.google.truth:truth:1.+'
+    testImplementation 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.4.31'
+    // The plugin will add the "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core" to the Project test classpath.
+    // We are adding it explicitly so we can write tests against it.
+    testImplementation project(":graphql-dgs-codegen-client-core")
 }
 
 application {

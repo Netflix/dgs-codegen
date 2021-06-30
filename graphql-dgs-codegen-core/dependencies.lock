@@ -139,6 +139,9 @@
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
+        "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {
+            "project": true
+        },
         "com.netflix.graphql.dgs:graphql-dgs": {
             "locked": "4.3.1"
         },
@@ -164,6 +167,9 @@
             "locked": "1.4.31"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "1.5.0"
         },
         "org.junit.jupiter:junit-jupiter": {
@@ -195,6 +201,9 @@
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
+        "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {
+            "project": true
+        },
         "com.netflix.graphql.dgs:graphql-dgs": {
             "locked": "4.3.1"
         },
@@ -220,6 +229,9 @@
             "locked": "1.4.31"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "1.4.32"
         },
         "org.junit.jupiter:junit-jupiter": {
@@ -251,6 +263,9 @@
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
+        "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {
+            "project": true
+        },
         "com.netflix.graphql.dgs:graphql-dgs": {
             "locked": "4.3.1"
         },
@@ -258,6 +273,9 @@
             "locked": "4.3.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "4.3.1"
         },
         "com.squareup:javapoet": {
@@ -276,6 +294,9 @@
             "locked": "1.4.31"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "1.5.0"
         },
         "org.junit.jupiter:junit-jupiter": {

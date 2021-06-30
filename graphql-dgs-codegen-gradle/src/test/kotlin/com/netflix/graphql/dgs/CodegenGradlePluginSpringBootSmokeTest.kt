@@ -116,6 +116,8 @@ plugins {
 test {
     useJUnitPlatform()
 }
+// Need to disable the core conventions since the artifacts are not yet visible.
+codegen.clientCoreConventionsEnabled = false
 """.trimMargin()
         )
 
@@ -207,6 +209,8 @@ plugins {
 test {
     useJUnitPlatform()
 }
+// Need to disable the core conventions since the artifacts are not yet visible.
+codegen.clientCoreConventionsEnabled = false
 """.trimMargin()
         )
 

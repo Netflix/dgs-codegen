@@ -16,7 +16,19 @@
  *
  */
 
-rootProject.name = 'graphql-dgs-codegen'
-include 'graphql-dgs-codegen-gradle'
-include 'graphql-dgs-codegen-core'
-include 'graphql-dgs-codegen-client-core'
+package com.netflix.graphql.dgs.client.codegen.exampleprojection
+
+import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
+
+class Movies_ReviewsProjection(parent: EntitiesMovieKeyProjection, root: EntitiesProjectionRoot) :
+    BaseSubProjectionNode<EntitiesMovieKeyProjection, EntitiesProjectionRoot>(parent, root) {
+    fun username(): Movies_ReviewsProjection {
+        fields["username"] = null
+        return this
+    }
+
+    fun score(): Movies_ReviewsProjection {
+        fields["score"] = null
+        return this
+    }
+}

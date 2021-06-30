@@ -16,7 +16,18 @@
  *
  */
 
-rootProject.name = 'graphql-dgs-codegen'
-include 'graphql-dgs-codegen-gradle'
-include 'graphql-dgs-codegen-core'
-include 'graphql-dgs-codegen-client-core'
+package com.netflix.graphql.dgs.codegen.gradle;
+
+import org.gradle.api.provider.Property;
+
+public abstract class CodegenPluginExtension {
+
+    @SuppressWarnings("UnstableApiUsage")
+    public CodegenPluginExtension() {
+        getClientCoreConventionsEnabled().convention(true);
+    }
+
+    public abstract Property<Boolean> getClientCoreConventionsEnabled();
+
+    public abstract Property<String> getClientCoreVersion();
+}

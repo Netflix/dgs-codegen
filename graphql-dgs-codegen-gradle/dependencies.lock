@@ -144,6 +144,9 @@
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.7.2"
         },
+        "org.junit.jupiter:junit-jupiter-params": {
+            "locked": "5.7.2"
+        },
         "org.junit:junit-bom": {
             "locked": "5.7.2"
         }
@@ -165,6 +168,9 @@
             "locked": "1.4.31"
         },
         "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.7.2"
+        },
+        "org.junit.jupiter:junit-jupiter-params": {
             "locked": "5.7.2"
         },
         "org.junit:junit-bom": {
@@ -242,6 +248,9 @@
             "locked": "1.5.0"
         },
         "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.7.2"
+        },
+        "org.junit.jupiter:junit-jupiter-params": {
             "locked": "5.7.2"
         },
         "org.junit:junit-bom": {
