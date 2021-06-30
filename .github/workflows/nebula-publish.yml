@@ -1,14 +1,13 @@
 name: "Publish to NetflixOSS and Maven Central"
-on:
 #  push:
   #    tags:
   #      - v*.*.*
   #      - v*.*.*-rc.*
+on:
   release:
     types:
-      - created
+      - released
       - prereleased
-
 jobs:
   build:
     runs-on: ubuntu-latest
