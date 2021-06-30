@@ -33,7 +33,7 @@ import javax.tools.JavaFileObject
 
 class ClientApiGenTest {
 
-    val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
+    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
 
     @Test
     fun generateQueryType() {
@@ -935,7 +935,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").doesNotContain("duration")
 
         val superclass = codeGenResult.clientProjections[3].typeSpec.superclass as ParameterizedTypeName
-        assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
+        assertThat(superclass.typeArguments[1]).extracting("simpleName").isEqualTo("SearchProjectionRoot")
 
         assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
     }
@@ -1025,11 +1025,11 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("name")
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
 
-        assertThat(codeGenResult.clientProjections[2].typeSpec.initializerBlock.isEmpty).isFalse()
-        assertThat(codeGenResult.clientProjections[3].typeSpec.initializerBlock.isEmpty).isFalse()
+        assertThat(codeGenResult.clientProjections[2].typeSpec.initializerBlock.isEmpty).isFalse
+        assertThat(codeGenResult.clientProjections[3].typeSpec.initializerBlock.isEmpty).isFalse
 
         val superclass = codeGenResult.clientProjections[3].typeSpec.superclass as ParameterizedTypeName
-        assertThat(superclass.typeArguments[1]).extracting("simpleName").containsExactly("SearchProjectionRoot")
+        assertThat(superclass.typeArguments[1]).extracting("simpleName").isEqualTo("SearchProjectionRoot")
 
         val searchResult = codeGenResult.javaInterfaces[0].typeSpec
 
@@ -1054,7 +1054,31 @@ class ClientApiGenTest {
                 |""".trimMargin()
         )
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        val compilation = assertCompilesJava(
+            codeGenResult.clientProjections
+                .plus(codeGenResult.javaQueryTypes)
+                .plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes)
+                .plus(codeGenResult.javaInterfaces)
+        )
+
+        // And assert the Search_Result_MovieProjection instance has a excplicit schemaType
+        val testClassLoader = codegenTestClassLoader(compilation, javaClass.classLoader)
+        // Projection class
+        val searchMovieProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.Search_Result_MovieProjection")
+        // Projection root and parent class
+        val searchProjectionRootClass =
+            testClassLoader.loadClass("$basePackageName.client.SearchProjectionRoot")
+        val searchResultProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.Search_ResultProjection")
+        // Fetch constructor
+        val searchMovieProjectionCtor = searchMovieProjectionClass.getDeclaredConstructor(searchResultProjectionClass, searchProjectionRootClass)
+        val searchMovieProjectionInstance = searchMovieProjectionCtor.newInstance(null, null)
+        val optionalProjectionSchemaType =
+            invokeMethod<java.util.Optional<String>>(searchMovieProjectionClass.getMethod("getSchemaType"), searchMovieProjectionInstance)
+        // assert we have the correct explicit type.
+        assertThat(optionalProjectionSchemaType).contains("Movie")
     }
 
     @Test
@@ -1620,6 +1644,7 @@ class ClientApiGenTest {
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
     }
 
+    // TODO[BGP] Migrate to [CodeGentTestClassLoader]
     private fun compileAndGetClass(dataTypes: List<JavaFile>, type: String): Class<*> {
         val packageNameAsUnixPath = basePackageName.replace(".", "/")
         val compilation = assertCompilesJava(dataTypes)
