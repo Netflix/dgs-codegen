@@ -30,12 +30,15 @@ import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.config.Services
+import org.junit.platform.commons.util.ReflectionUtils
 import java.io.File
+import java.lang.reflect.Method
 import java.nio.file.Files
 import java.nio.file.Path
 
 fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
     val result = javac().compile(javaFiles.map(JavaFile::toJavaFileObject))
+    result.generatedFiles()
     CompilationSubject.assertThat(result).succeededWithoutWarnings()
     return result
 }
@@ -70,4 +73,14 @@ fun assertCompilesKotlin(files: List<FileSpec>): Path {
     }
 
     return buildDir
+}
+
+fun codegenTestClassLoader(compilation: Compilation, parent: ClassLoader? = null): ClassLoader {
+    return CodegenTestClassLoader(compilation, parent)
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T> invokeMethod(method: Method, target: Any, vararg args: Any): T {
+    val result = ReflectionUtils.invokeMethod(method, target, *args)
+    return result as T
 }

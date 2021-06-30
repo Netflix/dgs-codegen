@@ -1953,18 +1953,18 @@ class CodeGenTest {
         val team = interfaces[0]
         assertThat(team.typeSpec.name).isEqualTo("ITeam")
         assertThat(team.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
-        assertThat(team.typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("String")
+        assertThat(team.typeSpec.methodSpecs[0].returnType).extracting("simpleName").isEqualTo("String")
 
         val player = interfaces[1]
         assertThat(player.typeSpec.name).isEqualTo("IPlayer")
         assertThat(player.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
-        assertThat(player.typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("String")
+        assertThat(player.typeSpec.methodSpecs[0].returnType).extracting("simpleName").isEqualTo("String")
 
         val standing = interfaces[2]
         assertThat(standing.typeSpec.name).isEqualTo("Standing")
         assertThat(standing.typeSpec.methodSpecs).extracting("name").containsExactly("getPosition", "getTeam")
         assertThat(standing.typeSpec.methodSpecs[0].returnType.toString()).contains("int")
-        assertThat(standing.typeSpec.methodSpecs[1].returnType).extracting("simpleName").containsExactly("ITeam")
+        assertThat(standing.typeSpec.methodSpecs[1].returnType).extracting("simpleName").isEqualTo("ITeam")
 
         assertCompilesJava(dataTypes.plus(interfaces))
     }
@@ -2034,22 +2034,22 @@ class CodeGenTest {
         val iMovie = interfaces[0]
         assertThat(iMovie.typeSpec.name).isEqualTo("IMovie")
         assertThat(iMovie.typeSpec.methodSpecs).extracting("name").containsExactly("getId", "getTitle", "getGenre", "getLanguage", "getTags", "getRating")
-        assertThat(iMovie.typeSpec.methodSpecs[0].returnType).extracting("simpleName").containsExactly("String")
-        assertThat(iMovie.typeSpec.methodSpecs[1].returnType).extracting("simpleName").containsExactly("String")
-        assertThat(iMovie.typeSpec.methodSpecs[2].returnType).extracting("simpleName").containsExactly("IGenre")
-        assertThat(iMovie.typeSpec.methodSpecs[3].returnType).extracting("simpleName").containsExactly("Language")
+        assertThat(iMovie.typeSpec.methodSpecs[0].returnType).extracting("simpleName").isEqualTo("String")
+        assertThat(iMovie.typeSpec.methodSpecs[1].returnType).extracting("simpleName").isEqualTo("String")
+        assertThat(iMovie.typeSpec.methodSpecs[2].returnType).extracting("simpleName").isEqualTo("IGenre")
+        assertThat(iMovie.typeSpec.methodSpecs[3].returnType).extracting("simpleName").isEqualTo("Language")
         var parameterizedTypeName = iMovie.typeSpec.methodSpecs[4].returnType as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
-        assertThat(iMovie.typeSpec.methodSpecs[5].returnType).extracting("simpleName").containsExactly("IRating")
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
+        assertThat(iMovie.typeSpec.methodSpecs[5].returnType).extracting("simpleName").isEqualTo("IRating")
 
         val iMoviePage = interfaces[1]
         assertThat(iMoviePage.typeSpec.name).isEqualTo("IMoviePage")
         assertThat(iMoviePage.typeSpec.methodSpecs).extracting("name").containsExactly("getItems")
         parameterizedTypeName = iMoviePage.typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
         val wildcardTypeName = parameterizedTypeName.typeArguments[0] as WildcardTypeName
-        assertThat(wildcardTypeName.upperBounds[0]).extracting("simpleName").containsExactly("IMovie")
+        assertThat(wildcardTypeName.upperBounds[0]).extracting("simpleName").isEqualTo("IMovie")
 
         val iGenre = interfaces[2]
         assertThat(iGenre.typeSpec.name).isEqualTo("IGenre")
@@ -2063,22 +2063,22 @@ class CodeGenTest {
         assertThat(movie.typeSpec.name).isEqualTo("Movie")
         assertThat(movie.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMovie")
         assertThat(movie.typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "language", "tags", "rating")
-        assertThat(movie.typeSpec.fieldSpecs[0].type).extracting("simpleName").containsExactly("String")
-        assertThat(movie.typeSpec.fieldSpecs[1].type).extracting("simpleName").containsExactly("String")
-        assertThat(movie.typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("IGenre")
-        assertThat(movie.typeSpec.fieldSpecs[3].type).extracting("simpleName").containsExactly("Language")
+        assertThat(movie.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
+        assertThat(movie.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("String")
+        assertThat(movie.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("IGenre")
+        assertThat(movie.typeSpec.fieldSpecs[3].type).extracting("simpleName").isEqualTo("Language")
         parameterizedTypeName = movie.typeSpec.fieldSpecs[4].type as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
-        assertThat(movie.typeSpec.fieldSpecs[5].type).extracting("simpleName").containsExactly("IRating")
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
+        assertThat(movie.typeSpec.fieldSpecs[5].type).extracting("simpleName").isEqualTo("IRating")
 
         val moviePage = dataTypes[1]
         assertThat(moviePage.typeSpec.name).isEqualTo("MoviePage")
         assertThat(moviePage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMoviePage")
         assertThat(moviePage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
         parameterizedTypeName = moviePage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("IMovie")
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("IMovie")
 
         val genre = dataTypes[2]
         assertThat(genre.typeSpec.name).isEqualTo("Genre")
@@ -2094,13 +2094,13 @@ class CodeGenTest {
         assertThat(movieFilter.typeSpec.name).isEqualTo("MovieFilter")
         assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(0)
         assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating")
-        assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").containsExactly("String")
-        assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").containsExactly("Genre")
-        assertThat(movieFilter.typeSpec.fieldSpecs[2].type).extracting("simpleName").containsExactly("Language")
+        assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
+        assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("Genre")
+        assertThat(movieFilter.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("Language")
         parameterizedTypeName = movieFilter.typeSpec.fieldSpecs[3].type as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("String")
-        assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").containsExactly("Rating")
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
+        assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").isEqualTo("Rating")
 
         assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
     }
@@ -2158,8 +2158,8 @@ class CodeGenTest {
         assertThat(iSearchResultPage.typeSpec.name).isEqualTo("ISearchResultPage")
         assertThat(iSearchResultPage.typeSpec.methodSpecs).extracting("name").containsExactly("getItems")
         var parameterizedTypeName = iSearchResultPage.typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("SearchResult")
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("SearchResult")
 
         assertThat(interfaces[3].typeSpec.name).isEqualTo("SearchResult")
         assertThat(interfaces[4].typeSpec.name).isEqualTo("Character")
@@ -2174,8 +2174,8 @@ class CodeGenTest {
         assertThat(searchResultPage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("ISearchResultPage")
         assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
         parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").containsExactly("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").containsExactly("SearchResult")
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("SearchResult")
 
         assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
     }

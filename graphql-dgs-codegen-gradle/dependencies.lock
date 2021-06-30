@@ -71,7 +71,7 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "3.1.0"
+            "locked": "3.2.0"
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
@@ -86,19 +86,19 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "4.0.1"
+            "locked": "4.3.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "4.0.1"
+            "locked": "4.3.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "4.0.1"
+            "locked": "4.3.1"
         },
         "com.squareup:javapoet": {
             "firstLevelTransitive": [
@@ -110,7 +110,7 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "1.7.2"
+            "locked": "1.8.0"
         },
         "commons-lang:commons-lang": {
             "firstLevelTransitive": [
@@ -122,18 +122,18 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "1.4.32"
+            "locked": "1.5.0"
         }
     },
     "testCompileClasspath": {
         "com.google.guava:guava": {
-            "locked": "30.1-jre"
+            "locked": "30.1.1-jre"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
         },
         "org.assertj:assertj-core": {
-            "locked": "3.11.1"
+            "locked": "3.19.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -150,13 +150,13 @@
     },
     "testImplementationDependenciesMetadata": {
         "com.google.guava:guava": {
-            "locked": "30.1-jre"
+            "locked": "30.1.1-jre"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
         },
         "org.assertj:assertj-core": {
-            "locked": "3.11.1"
+            "locked": "3.19.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -182,10 +182,10 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "3.1.0"
+            "locked": "3.2.0"
         },
         "com.google.guava:guava": {
-            "locked": "30.1-jre"
+            "locked": "30.1.1-jre"
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
@@ -200,19 +200,19 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "4.0.1"
+            "locked": "4.3.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "4.0.1"
+            "locked": "4.3.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "4.0.1"
+            "locked": "4.3.1"
         },
         "com.squareup:javapoet": {
             "firstLevelTransitive": [
@@ -224,7 +224,7 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "1.7.2"
+            "locked": "1.8.0"
         },
         "commons-lang:commons-lang": {
             "firstLevelTransitive": [
@@ -233,13 +233,13 @@
             "locked": "2.6"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.11.1"
+            "locked": "3.19.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "1.4.32"
+            "locked": "1.5.0"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.7.2"

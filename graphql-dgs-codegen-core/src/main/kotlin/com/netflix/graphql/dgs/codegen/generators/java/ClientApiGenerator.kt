@@ -392,12 +392,14 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val clazzName = "${prefix}Projection"
         if (generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
         val javaType = TypeSpec.classBuilder(clazzName)
-            .addModifiers(Modifier.PUBLIC).superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), parent.name), ClassName.get(getPackageName(), root.name)))
+            .addModifiers(Modifier.PUBLIC)
+            .superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), parent.name), ClassName.get(getPackageName(), root.name)))
             .addMethod(
                 MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(ParameterSpec.builder(ClassName.get(getPackageName(), parent.name), "parent").build())
-                    .addParameter(ParameterSpec.builder(ClassName.get(getPackageName(), root.name), "root").build()).addCode("super(parent, root);")
+                    .addParameter(ParameterSpec.builder(ClassName.get(getPackageName(), root.name), "root").build())
+                    .addCode("""super(parent, root, java.util.Optional.of("${type.name}"));""")
                     .build()
             )
 
