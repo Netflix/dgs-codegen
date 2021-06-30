@@ -1013,6 +1013,32 @@ class CodeGenTest {
     }
 
     @Test
+    fun `Use mapped type name for input type`() {
+
+        val schema = """
+            type Query {                
+                search(input: SearchInput): String
+            }
+            
+           input SearchInput {
+            title: String
+           }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    Pair("SearchInput", "mypackage.SearchInput"),
+                ),
+            )
+        ).generate()
+
+        assertThat(dataTypes).hasSize(0)
+    }
+
+    @Test
     fun generateInputTypes() {
 
         val schema = """

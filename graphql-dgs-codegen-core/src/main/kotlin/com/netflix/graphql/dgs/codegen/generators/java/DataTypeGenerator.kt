@@ -72,8 +72,12 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
     }
 }
 
-class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+class InputTypeGenerator(private val config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
+        if (definition.shouldSkip(config)) {
+            return CodeGenResult()
+        }
+
         val name = definition.name
 
         val fieldDefinitions = definition.inputValueDefinitions.map { it ->

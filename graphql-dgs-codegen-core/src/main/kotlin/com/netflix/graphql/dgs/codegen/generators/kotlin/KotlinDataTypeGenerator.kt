@@ -52,6 +52,9 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
 
 class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
+        if (definition.shouldSkip(config)) {
+            return CodeGenResult()
+        }
 
         val fields = definition.inputValueDefinitions
             .filter(ReservedKeywordFilter.filterInvalidNames)
