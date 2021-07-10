@@ -18,7 +18,16 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import graphql.language.*
+import graphql.language.Document
+import graphql.language.EnumTypeDefinition
+import graphql.language.FieldDefinition
+import graphql.language.InputObjectTypeDefinition
+import graphql.language.InputValueDefinition
+import graphql.language.Node
+import graphql.language.NodeTraverser
+import graphql.language.NodeVisitorStub
+import graphql.language.ObjectTypeDefinition
+import graphql.language.TypeName
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 
@@ -44,16 +53,45 @@ class RequiredTypeCollector(
             object : NodeVisitorStub() {
                 val visitedTypes = mutableSetOf<String>()
 
+                override fun visitObjectTypeDefinition(
+                    node: ObjectTypeDefinition,
+                    context: TraverserContext<Node<*>>
+                ): TraversalControl {
+                    node.fieldDefinitions
+                        .flatMap { it.inputValueDefinitions }
+                        .forEach {
+                            it.type.findTypeDefinition(document)?.accept(context, this)
+                        }
+
+                    node.fieldDefinitions
+                        .filter { !visitedTypes.contains("${node.name}.${it.name}") }
+                        .forEach {
+                            visitedTypes.add("${node.name}.${it.name}")
+                            it.type.findTypeDefinition(document)?.accept(context, this)
+                        }
+                    return TraversalControl.CONTINUE
+                }
+
+                override fun visitTypeName(
+                    node: TypeName,
+                    context: TraverserContext<Node<*>>
+                ): TraversalControl {
+                    node.findTypeDefinition(document)?.accept(context, this)
+                    return TraversalControl.CONTINUE
+                }
+
                 override fun visitInputObjectTypeDefinition(
                     node: InputObjectTypeDefinition,
                     context: TraverserContext<Node<Node<*>>>
                 ): TraversalControl {
                     required += node.name
 
-                    node.inputValueDefinitions.filter { !visitedTypes.contains(it.name) }.forEach {
-                        visitedTypes.add(it.name)
-                        it.type.findTypeDefinition(document)?.accept(context, this)
-                    }
+                    node.inputValueDefinitions
+                        .filter { !visitedTypes.contains("${node.name}.${it.name}") }
+                        .forEach {
+                            visitedTypes.add("${node.name}.${it.name}")
+                            it.type.findTypeDefinition(document)?.accept(context, this)
+                        }
                     return TraversalControl.CONTINUE
                 }
 

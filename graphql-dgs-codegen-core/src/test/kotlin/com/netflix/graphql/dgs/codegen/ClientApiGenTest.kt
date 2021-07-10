@@ -1062,7 +1062,7 @@ class ClientApiGenTest {
                 .plus(codeGenResult.javaInterfaces)
         )
 
-        // And assert the Search_Result_MovieProjection instance has a excplicit schemaType
+        // And assert the Search_Result_MovieProjection instance has an explicit schemaType
         val testClassLoader = codegenTestClassLoader(compilation, javaClass.classLoader)
         // Projection class
         val searchMovieProjectionClass =
@@ -1379,11 +1379,11 @@ class ClientApiGenTest {
             
             type Show {
                 title: String
+                tags(from: Int, to: Int, sourceType: SourceType): [ShowTag]
+                isLive(countryFilter: CountryFilter): Boolean
             }
             
-            enum ShouldNotInclude {
-                YES,NO
-            }
+            enum ShouldNotInclude { YES, NO }
             
             input NotUsed {
                 field: String
@@ -1392,7 +1392,7 @@ class ClientApiGenTest {
             input ShowFilter {
                 title: String
                 showType: ShowType
-                similarTo: SimilarityInput              
+                similarTo: SimilarityInput
             }
             
             input SimilarityInput {
@@ -1403,15 +1403,36 @@ class ClientApiGenTest {
                 MOVIE, SERIES
             }
             
+            input CountryFilter {
+                countriesToExclude: [String]
+            }
+                 
+            enum SourceType { FOO, BAR }
+           
             type Person {
                 name: String
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, includeQueries = setOf("shows"), generateDataTypes = false, writeToFiles = false)).generate()
-        assertThat(codeGenResult.javaDataTypes.size).isEqualTo(2)
-        assertThat(codeGenResult.javaDataTypes).extracting("typeSpec").extracting("name").containsExactly("ShowFilter", "SimilarityInput")
-        assertThat(codeGenResult.javaEnumTypes).extracting("typeSpec").extracting("name").containsExactly("ShowType")
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                includeQueries = setOf("shows"),
+                generateDataTypes = false,
+                writeToFiles = false
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaDataTypes)
+            .extracting("typeSpec").extracting("name").containsExactly("ShowFilter", "SimilarityInput", "CountryFilter")
+        assertThat(codeGenResult.javaEnumTypes)
+            .extracting("typeSpec").extracting("name").containsExactly("ShowType", "SourceType")
+        assertThat(codeGenResult.javaQueryTypes)
+            .extracting("typeSpec").extracting("name").containsExactly("ShowsGraphQLQuery")
+        assertThat(codeGenResult.clientProjections)
+            .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
     }
@@ -1644,7 +1665,7 @@ class ClientApiGenTest {
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
     }
 
-    // TODO[BGP] Migrate to [CodeGentTestClassLoader]
+    // TODO[BGP] Migrate to [CodegentTestClassLoader]
     private fun compileAndGetClass(dataTypes: List<JavaFile>, type: String): Class<*> {
         val packageNameAsUnixPath = basePackageName.replace(".", "/")
         val compilation = assertCompilesJava(dataTypes)
