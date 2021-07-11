@@ -28,6 +28,7 @@ import graphql.language.NodeTraverser
 import graphql.language.NodeVisitorStub
 import graphql.language.ObjectTypeDefinition
 import graphql.language.TypeName
+import graphql.language.UnionTypeDefinition
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 
@@ -69,6 +70,16 @@ class RequiredTypeCollector(
                             visitedTypes.add("${node.name}.${it.name}")
                             it.type.findTypeDefinition(document)?.accept(context, this)
                         }
+                    return TraversalControl.CONTINUE
+                }
+
+                override fun visitUnionTypeDefinition(
+                    node: UnionTypeDefinition,
+                    context: TraverserContext<Node<*>>
+                ): TraversalControl {
+                    node.memberTypes.forEach {
+                        it.findTypeDefinition(document)?.accept(context, this)
+                    }
                     return TraversalControl.CONTINUE
                 }
 
