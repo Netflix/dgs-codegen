@@ -91,7 +91,16 @@ class CodeGen(private val config: CodeGenConfig) {
         val entitiesRepresentationsTypes = generateJavaClientEntitiesRepresentations(definitions)
         val constantsClass = ConstantsGenerator(config, document).generate()
 
-        return dataTypesResult.merge(dataFetchersResult).merge(inputTypesResult).merge(unionsResult).merge(enumsResult).merge(interfacesResult).merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
+        return dataTypesResult
+            .merge(dataFetchersResult)
+            .merge(inputTypesResult)
+            .merge(unionsResult)
+            .merge(enumsResult)
+            .merge(interfacesResult)
+            .merge(client)
+            .merge(entitiesClient)
+            .merge(entitiesRepresentationsTypes)
+            .merge(constantsClass)
     }
 
     private fun generateJavaEnums(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -107,7 +116,6 @@ class CodeGen(private val config: CodeGenConfig) {
         if (!config.generateDataTypes) {
             return CodeGenResult()
         }
-
         return definitions.asSequence()
             .filterIsInstance<UnionTypeDefinition>()
             .excludeSchemaTypeExtension()
@@ -171,14 +179,11 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaDataType(definitions: Collection<Definition<*>>): CodeGenResult {
-        if (!config.generateDataTypes) {
-            return CodeGenResult()
-        }
-
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
             .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 DataTypeGenerator(config, document).generate(it, findTypeExtensions(it.name, definitions))
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }

@@ -30,53 +30,53 @@ class CodegenGradlePluginSpringBootSmokeTest {
     @TempDir
     lateinit var projectDir: File
 
-    val graphQLSchema =
+    private val graphQLSchema =
         """
-type Query {
-    result: Result!
-    find(filter: Filter!): Result!
-}
-
-type Result {
-    isSuccessful: Boolean
-    result: String
-}
-
-input Filter {
-    mandatoryString: String!
-    optionalString: String
-    mandatoryNumber: Int!
-    optionalNumber: Int
-}
-
-interface Audited {
-    lastUpdated: DateTime
-    lastUpdatedBy: String
-}
-
-interface MetaData implements Audited {
-    lastUpdated: DateTime
-    lastUpdatedBy: String
-}
-
-type JSONMetaData implements MetaData & Audited {
-    data: JSON
-    url: Url
-    lastUpdated: DateTime
-    lastUpdatedBy: String
-}
-
-type SimpleMetaData implements MetaData & Audited{
-    data: [String]
-    lastUpdated: DateTime
-    lastUpdatedBy: String
-}
-
-scalar Date 
-scalar DateTime
-scalar Time
-scalar JSON
-scalar Url
+            type Query {
+                result: Result!
+                find(filter: Filter!): Result!
+            }
+            
+            type Result {
+                isSuccessful: Boolean
+                result: String
+            }
+            
+            input Filter {
+                mandatoryString: String!
+                optionalString: String
+                mandatoryNumber: Int!
+                optionalNumber: Int
+            }
+            
+            interface Audited {
+                lastUpdated: DateTime
+                lastUpdatedBy: String
+            }
+            
+            interface MetaData implements Audited {
+                lastUpdated: DateTime
+                lastUpdatedBy: String
+            }
+            
+            type JSONMetaData implements MetaData & Audited {
+                data: JSON
+                url: Url
+                lastUpdated: DateTime
+                lastUpdatedBy: String
+            }
+            
+            type SimpleMetaData implements MetaData & Audited{
+                data: [String]
+                lastUpdated: DateTime
+                lastUpdatedBy: String
+            }
+            
+            scalar Date 
+            scalar DateTime
+            scalar Time
+            scalar JSON
+            scalar Url
             """.trimMargin()
 
     @Test
@@ -85,75 +85,75 @@ scalar Url
 
         prepareBuildGradleFile(
             """
-plugins {
-    id 'java'
-    id 'com.netflix.dgs.codegen'
-}
-
- repositories {
-	mavenCentral()
-}
-
- generateJava {
-     packageName = 'com.netflix.testproject.graphql'
-     typeMapping = [
-        DateTime:   "java.time.OffsetTime",
-        Time:       "java.time.OffsetDateTime",
-        Date:       "java.time.LocalDate",
-        JSON:       "java.lang.Object",
-        Url:        "java.net.URL"
-     ]
-     snakeCaseConstantNames = true
- }
- 
- dependencies {
-    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
-	implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
-	implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-}
-
-test {
-    useJUnitPlatform()
-}
-// Need to disable the core conventions since the artifacts are not yet visible.
-codegen.clientCoreConventionsEnabled = false
-""".trimMargin()
+                plugins {
+                    id 'java'
+                    id 'com.netflix.dgs.codegen'
+                }
+                
+                 repositories {
+                	mavenCentral()
+                }
+                
+                 generateJava {
+                     packageName = 'com.netflix.testproject.graphql'
+                     typeMapping = [
+                        DateTime:   "java.time.OffsetTime",
+                        Time:       "java.time.OffsetDateTime",
+                        Date:       "java.time.LocalDate",
+                        JSON:       "java.lang.Object",
+                        Url:        "java.net.URL"
+                     ]
+                     snakeCaseConstantNames = true
+                 }
+                 
+                 dependencies {
+                    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
+                	implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
+                	implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars")
+                	testImplementation("org.springframework.boot:spring-boot-starter-test")
+                }
+                
+                test {
+                    useJUnitPlatform()
+                }
+                // Need to disable the core conventions since the artifacts are not yet visible.
+                codegen.clientCoreConventionsEnabled = false
+            """.trimMargin()
         )
 
         writeProjectFile(
             "src/test/java/AppTest.java",
             """
-import org.springframework.context.annotation.Configuration;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.junit.jupiter.api.Test;
-
-import com.netflix.testproject.graphql.types.Filter;
-import com.netflix.testproject.graphql.types.Result;
-import com.netflix.testproject.graphql.types.JSONMetaData;
-import com.netflix.testproject.graphql.DgsConstants;
-import com.netflix.testproject.graphql.DgsConstants.QUERY;
-import com.netflix.testproject.graphql.DgsConstants.RESULT;
-import com.netflix.testproject.graphql.DgsConstants.FILTER;
-import com.netflix.testproject.graphql.DgsConstants.JSON_META_DATA;
-import com.netflix.testproject.graphql.DgsConstants.SIMPLE_META_DATA;
-
-
-@SpringBootTest(
-    classes = {AppTest.TestConf.class},
-    properties = { "debug=true" }
-)
-@EnableAutoConfiguration
-public class AppTest {
-
-    @Test
-    public void test(){
-    }
-
-    @Configuration
-    static class TestConf { }
-}
+                import org.springframework.context.annotation.Configuration;
+                import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+                import org.springframework.boot.test.context.SpringBootTest;
+                import org.junit.jupiter.api.Test;
+                
+                import com.netflix.testproject.graphql.types.Filter;
+                import com.netflix.testproject.graphql.types.Result;
+                import com.netflix.testproject.graphql.types.JSONMetaData;
+                import com.netflix.testproject.graphql.DgsConstants;
+                import com.netflix.testproject.graphql.DgsConstants.QUERY;
+                import com.netflix.testproject.graphql.DgsConstants.RESULT;
+                import com.netflix.testproject.graphql.DgsConstants.FILTER;
+                import com.netflix.testproject.graphql.DgsConstants.JSON_META_DATA;
+                import com.netflix.testproject.graphql.DgsConstants.SIMPLE_META_DATA;
+                
+                
+                @SpringBootTest(
+                    classes = {AppTest.TestConf.class},
+                    properties = { "debug=true" }
+                )
+                @EnableAutoConfiguration
+                public class AppTest {
+                
+                    @Test
+                    public void test(){
+                    }
+                
+                    @Configuration
+                    static class TestConf { }
+                }
             """.trimIndent()
         )
 
@@ -176,76 +176,76 @@ public class AppTest {
     fun `A Spring Boot project can generate the generated Kotlin classes and objects`() {
         prepareBuildGradleFile(
             """
-plugins {
-    id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.4.10' 
-    id 'com.netflix.dgs.codegen'
-}
-
- repositories {
-	mavenCentral()
-}
-
- generateJava {
-     packageName = 'com.netflix.testproject.graphql'
-     typeMapping = [
-        DateTime:   "java.time.OffsetTime",
-        Time:       "java.time.OffsetDateTime",
-        Date:       "java.time.LocalDate",
-        JSON:       "java.lang.Object",
-        Url:        "java.net.URL"
-     ]
-     language = "KOTLIN"
-     snakeCaseConstantNames = true
- }
- 
- dependencies {
-    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
-	implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
-	implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars")
-	testImplementation("org.springframework.boot:spring-boot-starter-test")
-}
-
-test {
-    useJUnitPlatform()
-}
-// Need to disable the core conventions since the artifacts are not yet visible.
-codegen.clientCoreConventionsEnabled = false
-""".trimMargin()
+                plugins {
+                    id 'java'
+                    id 'org.jetbrains.kotlin.jvm' version '1.4.10' 
+                    id 'com.netflix.dgs.codegen'
+                }
+                
+                 repositories {
+                	mavenCentral()
+                }
+                
+                 generateJava {
+                     packageName = 'com.netflix.testproject.graphql'
+                     typeMapping = [
+                        DateTime:   "java.time.OffsetTime",
+                        Time:       "java.time.OffsetDateTime",
+                        Date:       "java.time.LocalDate",
+                        JSON:       "java.lang.Object",
+                        Url:        "java.net.URL"
+                     ]
+                     language = "KOTLIN"
+                     snakeCaseConstantNames = true
+                 }
+                 
+                dependencies {
+                    implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release"))
+                	implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter")
+                	implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars")
+                	testImplementation("org.springframework.boot:spring-boot-starter-test")
+                }
+                
+                test {
+                    useJUnitPlatform()
+                }
+                // Need to disable the core conventions since the artifacts are not yet visible.
+                codegen.clientCoreConventionsEnabled = false
+            """.trimMargin()
         )
 
         writeProjectFile(
             "src/test/kotlin/AppTest.kt",
             """
-import org.springframework.context.annotation.Configuration
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.test.context.SpringBootTest
-import org.junit.jupiter.api.Test
-
-import com.netflix.testproject.graphql.types.Filter
-import com.netflix.testproject.graphql.types.Result
-import com.netflix.testproject.graphql.types.JSONMetaData
-import com.netflix.testproject.graphql.DgsConstants
-import com.netflix.testproject.graphql.DgsConstants.QUERY
-import com.netflix.testproject.graphql.DgsConstants.RESULT
-import com.netflix.testproject.graphql.DgsConstants.FILTER
-import com.netflix.testproject.graphql.DgsConstants.JSON_META_DATA
-import com.netflix.testproject.graphql.DgsConstants.SIMPLE_META_DATA
-
-
-@SpringBootTest(
-    classes=[AppTest.TestConf::class],
-    properties=["debug=true"]
-)
-@EnableAutoConfiguration
-internal class AppTest{
-
-    @Test
-    fun test() {}
-
-    @Configuration
-    open class TestConf { }
-}
+                import org.springframework.context.annotation.Configuration
+                import org.springframework.boot.autoconfigure.EnableAutoConfiguration
+                import org.springframework.boot.test.context.SpringBootTest
+                import org.junit.jupiter.api.Test
+                
+                import com.netflix.testproject.graphql.types.Filter
+                import com.netflix.testproject.graphql.types.Result
+                import com.netflix.testproject.graphql.types.JSONMetaData
+                import com.netflix.testproject.graphql.DgsConstants
+                import com.netflix.testproject.graphql.DgsConstants.QUERY
+                import com.netflix.testproject.graphql.DgsConstants.RESULT
+                import com.netflix.testproject.graphql.DgsConstants.FILTER
+                import com.netflix.testproject.graphql.DgsConstants.JSON_META_DATA
+                import com.netflix.testproject.graphql.DgsConstants.SIMPLE_META_DATA
+                
+                
+                @SpringBootTest(
+                    classes=[AppTest.TestConf::class],
+                    properties=["debug=true"]
+                )
+                @EnableAutoConfiguration
+                internal class AppTest{
+                
+                    @Test
+                    fun test() {}
+                
+                    @Configuration
+                    open class TestConf { }
+                }
             """.trimIndent()
         )
 
