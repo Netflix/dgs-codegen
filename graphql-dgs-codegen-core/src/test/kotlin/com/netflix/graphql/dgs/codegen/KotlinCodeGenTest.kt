@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen
 import com.google.common.truth.Truth
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import graphql.schema.DataFetchingEnvironment
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
@@ -33,6 +34,7 @@ class KotlinCodeGenTest {
 
     val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
     val typesPackageName = "$basePackageName.types"
+    val datafetchersPackageName = "$basePackageName.datafetchers"
 
     @Test
     fun generateDataClassWithStringProperties() {
@@ -66,6 +68,101 @@ class KotlinCodeGenTest {
         assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname")
 
         assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun generateDataFetcherInterfaceWithFunction() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val dataFetchers = (CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult).dataFetchers
+
+        assertThat(dataFetchers.size).isEqualTo(1)
+        assertThat(dataFetchers[0].name).isEqualTo("PeopleDatafetcher")
+        assertThat(dataFetchers[0].packageName).isEqualTo(datafetchersPackageName)
+        val type = dataFetchers[0].members[0] as TypeSpec
+
+        assertThat(type.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
+        assertThat(type.funSpecs).hasSize(1)
+            .anySatisfy { fn ->
+                assertThat(fn.name).isEqualTo("getPeople")
+                assertThat(fn.returnType)
+                    .satisfies { returnType ->
+                        returnType as ParameterizedTypeName
+                        assertThat(returnType.rawType.canonicalName).isEqualTo(List::class.qualifiedName)
+                        assertThat(returnType.typeArguments).hasSize(1)
+                            .allMatch { (it as ClassName).canonicalName == "$typesPackageName.Person" }
+                    }
+                assertThat(fn.parameters).hasSize(1)
+                    .allSatisfy {
+                        assertThat(it.name).isEqualTo("dataFetchingEnvironment")
+                        assertThat((it.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
+                    }
+            }
+    }
+
+
+    @Test
+    fun generateDataFetcherInterfaceWithArgument() {
+
+        val schema = """
+            type Query {
+                person(name: String): Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val dataFetchers = (CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate() as KotlinCodeGenResult).dataFetchers
+
+        assertThat(dataFetchers.size).isEqualTo(1)
+        assertThat(dataFetchers[0].name).isEqualTo("PersonDatafetcher")
+        assertThat(dataFetchers[0].packageName).isEqualTo(datafetchersPackageName)
+        val type = dataFetchers[0].members[0] as TypeSpec
+
+        assertThat(type.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
+        assertThat(type.funSpecs).hasSize(1)
+            .anySatisfy { fn ->
+                assertThat(fn.name).isEqualTo("getPerson")
+                assertThat(fn.returnType)
+                    .satisfies { returnType ->
+                        returnType as ClassName
+                        assertThat(returnType.canonicalName).isEqualTo("$typesPackageName.Person")
+                    }
+                assertThat(fn.parameters).hasSize(2);
+                assertThat(fn.parameters[0]).satisfies {
+                    assertThat(it.name).isEqualTo("name")
+                    assertThat((it.type as ClassName).canonicalName).isEqualTo(String::class.qualifiedName)
+                }
+                assertThat(fn.parameters[1]).satisfies {
+                    assertThat(it.name).isEqualTo("dataFetchingEnvironment")
+                    assertThat((it.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
+                }
+            }
     }
 
     @Test
