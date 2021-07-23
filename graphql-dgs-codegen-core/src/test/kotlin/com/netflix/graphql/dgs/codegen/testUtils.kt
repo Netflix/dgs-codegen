@@ -37,7 +37,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
-    val result = javac().compile(javaFiles.map(JavaFile::toJavaFileObject))
+    val result = javac().withOptions("-parameters").compile(javaFiles.map(JavaFile::toJavaFileObject))
     result.generatedFiles()
     CompilationSubject.assertThat(result).succeededWithoutWarnings()
     return result
