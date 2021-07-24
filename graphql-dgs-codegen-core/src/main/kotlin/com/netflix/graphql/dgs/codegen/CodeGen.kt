@@ -441,14 +441,15 @@ fun TypeDefinition<*>.fieldDefinitions(): List<FieldDefinition> {
 fun Type<*>.findTypeDefinition(
     document: Document,
     excludeExtensions: Boolean = false,
-    includeBaseTypes: Boolean = false
+    includeBaseTypes: Boolean = false,
+    includeScalarTypes: Boolean = false
 ): TypeDefinition<*>? {
     return when (this) {
         is NonNullType -> {
-            this.type.findTypeDefinition(document, excludeExtensions, includeBaseTypes)
+            this.type.findTypeDefinition(document, excludeExtensions, includeBaseTypes, includeScalarTypes)
         }
         is ListType -> {
-            this.type.findTypeDefinition(document, excludeExtensions, includeBaseTypes)
+            this.type.findTypeDefinition(document, excludeExtensions, includeBaseTypes, includeScalarTypes)
         }
         else -> {
             if (includeBaseTypes && this.isBaseType()) {
@@ -456,7 +457,7 @@ fun Type<*>.findTypeDefinition(
             } else {
                 document.definitions.asSequence().filterIsInstance<TypeDefinition<*>>().find {
                     if (it is ScalarTypeDefinition) {
-                        false
+                        includeScalarTypes && it.name == (this as TypeName).name
                     } else {
                         it.name == (this as TypeName).name && (!excludeExtensions || it !is ObjectTypeExtensionDefinition)
                     }

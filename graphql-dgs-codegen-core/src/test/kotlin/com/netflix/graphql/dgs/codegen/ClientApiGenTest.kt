@@ -18,8 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.jimfs.Configuration
-import com.google.common.jimfs.Jimfs
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.squareup.javapoet.JavaFile
@@ -27,10 +25,6 @@ import com.squareup.javapoet.ParameterizedTypeName
 import org.apache.commons.lang.ClassUtils.getPublicMethod
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.net.URL
-import java.net.URLClassLoader
-import java.nio.file.Files
-import javax.tools.JavaFileObject
 
 class ClientApiGenTest {
 
@@ -1055,16 +1049,8 @@ class ClientApiGenTest {
                 |""".trimMargin()
         )
 
-        val compilation = assertCompilesJava(
-            codeGenResult.clientProjections
-                .plus(codeGenResult.javaQueryTypes)
-                .plus(codeGenResult.javaEnumTypes)
-                .plus(codeGenResult.javaDataTypes)
-                .plus(codeGenResult.javaInterfaces)
-        )
-
         // And assert the Search_Result_MovieProjection instance has an explicit schemaType
-        val testClassLoader = codegenTestClassLoader(compilation, javaClass.classLoader)
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
         // Projection class
         val searchMovieProjectionClass =
             testClassLoader.loadClass("$basePackageName.client.Search_Result_MovieProjection")
@@ -1107,7 +1093,7 @@ class ClientApiGenTest {
         ).generate()
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1141,7 +1127,7 @@ class ClientApiGenTest {
         assertThat(projections[0].typeSpec.methodSpecs.size).isEqualTo(2)
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("name", "email")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1178,7 +1164,7 @@ class ClientApiGenTest {
         assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
         assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1215,7 +1201,7 @@ class ClientApiGenTest {
         assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
         assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1240,7 +1226,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieTitlesGraphQLQuery")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1265,7 +1251,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieTitleGraphQLQuery")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1296,7 +1282,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
         assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly("__", "_root", "_parent", "_import")
 
-        assertCompilesJava(codeGenResult.clientProjections)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1603,7 +1589,8 @@ class ClientApiGenTest {
             )
         ).generate()
 
-        val builderClass = compileAndGetClass(codeGenResult.javaQueryTypes, "FilterGraphQLQuery\$Builder")
+        val builderClass = assertCompilesJava(codeGenResult).toClassLoader().loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
+
         val buildMethod = builderClass.getMethod("build")
         val nameMethod = builderClass.getMethod("nameFilter", String::class.java)
 
@@ -1632,7 +1619,7 @@ class ClientApiGenTest {
             )
         ).generate()
 
-        val builderClass = compileAndGetClass(codeGenResult.javaQueryTypes, "FilterGraphQLQuery\$Builder")
+        val builderClass = assertCompilesJava(codeGenResult).toClassLoader().loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
         val buildMethod = builderClass.getMethod("build")
 
         // When the 'nameFilter' method is not invoked, it should not be included in the input map.
@@ -1736,15 +1723,7 @@ class ClientApiGenTest {
             )
         ).generate()
         // then
-        val compilation = assertCompilesJava(
-            codeGenResult.clientProjections
-                .plus(codeGenResult.javaQueryTypes)
-                .plus(codeGenResult.javaEnumTypes)
-                .plus(codeGenResult.javaDataTypes)
-                .plus(codeGenResult.javaInterfaces)
-        )
-        val testClassLoader = codegenTestClassLoader(compilation, javaClass.classLoader)
-
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
         // assert Type classes
         assertThat(testClassLoader.loadClass("$basePackageName.types.Foo")).isNotNull
         // assert root projection classes
@@ -1893,27 +1872,52 @@ class ClientApiGenTest {
             .containsExactly(0 to "arg")
     }
 
-    // TODO[BGP] Migrate to [CodegentTestClassLoader]
-    private fun compileAndGetClass(dataTypes: List<JavaFile>, type: String): Class<*> {
-        val packageNameAsUnixPath = basePackageName.replace(".", "/")
-        val compilation = assertCompilesJava(dataTypes)
-        val temporaryFilesystem = Jimfs.newFileSystem(Configuration.unix())
-        val classpath = compilation.generatedFiles()
-            .filter { it.kind == JavaFileObject.Kind.CLASS }
-            .map {
-                val destFile = temporaryFilesystem.getPath(it.toUri().path)
-                Files.createDirectories(destFile.parent)
-                it.openInputStream().use { input ->
-                    Files.newOutputStream(destFile).use { output ->
-                        input.copyTo(output)
-                    }
-                }
-                destFile.parent
-            }
-            .toSet()
-            .map { URL(it.toUri().toString().replace("$packageNameAsUnixPath.*".toRegex(), "")) }
-            .toTypedArray()
+    @Test
+    fun `The Query API should support sub-projects on fields with Scalars`() {
+        val schema = """
+          type Query {
+              someField: Foo
+          }
+          
+          type Foo {
+            ping(arg: Boolean): Long
+          }
+          
+          scalar Long
+        """.trimIndent()
 
-        return URLClassLoader(classpath).loadClass("$basePackageName.client.$type")
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            )
+        ).generate()
+        val projections = codeGenResult.clientProjections
+        assertThat(projections.size).isEqualTo(2)
+
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
+        // assert Type classes
+        assertThat(testClassLoader.loadClass("$basePackageName.types.Foo")).isNotNull
+        // assert root projection classes
+        val rootProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeFieldProjectionRoot")
+        assertThat(rootProjectionClass).isNotNull
+        assertThat(rootProjectionClass).hasPublicMethods("ping")
+        // scalar field
+        val scalarFieldProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeField_PingProjection")
+        assertThat(rootProjectionClass).isNotNull
+
+        assertThat(getPublicMethod(rootProjectionClass, "ping", arrayOf())).isNotNull.returns(rootProjectionClass) { it.returnType }
+
+        assertThat(
+            getPublicMethod(rootProjectionClass, "ping", arrayOf(java.lang.Boolean::class.java))
+        ).isNotNull
+            .returns(scalarFieldProjectionClass) { it.returnType }
+            .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
+            .asList()
+            .containsExactly(0 to "arg")
     }
 }

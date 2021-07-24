@@ -36,6 +36,16 @@ import java.lang.reflect.Method
 import java.nio.file.Files
 import java.nio.file.Path
 
+fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
+    return assertCompilesJava(
+        codeGenResult.clientProjections
+            .plus(codeGenResult.javaQueryTypes)
+            .plus(codeGenResult.javaEnumTypes)
+            .plus(codeGenResult.javaDataTypes)
+            .plus(codeGenResult.javaInterfaces)
+    )
+}
+
 fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
     val result = javac().withOptions("-parameters").compile(javaFiles.map(JavaFile::toJavaFileObject))
     result.generatedFiles()
@@ -77,6 +87,10 @@ fun assertCompilesKotlin(files: List<FileSpec>): Path {
 
 fun codegenTestClassLoader(compilation: Compilation, parent: ClassLoader? = null): ClassLoader {
     return CodegenTestClassLoader(compilation, parent)
+}
+
+fun Compilation.toClassLoader(): ClassLoader {
+    return codegenTestClassLoader(this, javaClass.classLoader)
 }
 
 @Suppress("UNCHECKED_CAST")
