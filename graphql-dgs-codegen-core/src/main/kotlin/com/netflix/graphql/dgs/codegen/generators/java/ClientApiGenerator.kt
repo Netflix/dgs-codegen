@@ -187,14 +187,15 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 val typeDefinition = it.type.findTypeDefinition(
                     document,
                     excludeExtensions = true,
-                    includeBaseTypes = it.inputValueDefinitions.isNotEmpty().and(it.type.isBaseType())
+                    includeBaseTypes = it.inputValueDefinitions.isNotEmpty(),
+                    includeScalarTypes = it.inputValueDefinitions.isNotEmpty()
                 )
                 if (typeDefinition != null) it to typeDefinition else null
             }
             .map { (fieldDef, typeDef) ->
                 val projectionName = "${prefix}_${fieldDef.name.capitalize()}Projection"
 
-                if (!fieldDef.type.isBaseType()) {
+                if (typeDef !is ScalarTypeDefinition) {
                     val noArgMethodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDef.name))
                         .returns(ClassName.get(getPackageName(), projectionName))
                         .addCode(
