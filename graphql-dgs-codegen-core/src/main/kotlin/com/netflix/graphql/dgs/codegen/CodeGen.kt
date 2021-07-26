@@ -438,20 +438,74 @@ fun TypeDefinition<*>.fieldDefinitions(): List<FieldDefinition> {
     }
 }
 
-fun Type<*>.findTypeDefinition(document: Document, excludeExtensions: Boolean = false): TypeDefinition<*>? {
+fun Type<*>.findTypeDefinition(
+    document: Document,
+    excludeExtensions: Boolean = false,
+    includeBaseTypes: Boolean = false,
+    includeScalarTypes: Boolean = false
+): TypeDefinition<*>? {
     return when (this) {
         is NonNullType -> {
-            this.type.findTypeDefinition(document, excludeExtensions)
+            this.type.findTypeDefinition(document, excludeExtensions, includeBaseTypes, includeScalarTypes)
         }
         is ListType -> {
-            this.type.findTypeDefinition(document, excludeExtensions)
+            this.type.findTypeDefinition(document, excludeExtensions, includeBaseTypes, includeScalarTypes)
         }
-        else -> document.definitions.asSequence().filterIsInstance<TypeDefinition<*>>().find {
-            if (it is ScalarTypeDefinition) {
-                false
+        else -> {
+            if (includeBaseTypes && this.isBaseType()) {
+                this.findBaseTypeDefinition()
             } else {
-                it.name == (this as TypeName).name && (!excludeExtensions || it !is ObjectTypeExtensionDefinition)
+                document.definitions.asSequence().filterIsInstance<TypeDefinition<*>>().find {
+                    if (it is ScalarTypeDefinition) {
+                        includeScalarTypes && it.name == (this as TypeName).name
+                    } else {
+                        it.name == (this as TypeName).name && (!excludeExtensions || it !is ObjectTypeExtensionDefinition)
+                    }
+                }
             }
+        }
+    }
+}
+
+fun Type<*>.isBaseType(): Boolean {
+    return when (this) {
+        is NonNullType -> {
+            this.type.isBaseType()
+        }
+        is ListType -> {
+            this.type.isBaseType()
+        }
+        is TypeName -> {
+            when (this.name) {
+                "String", "Boolean", "Float", "Int" -> true
+                else -> false
+            }
+        }
+        else -> {
+            false
+        }
+    }
+}
+
+fun Type<*>.findBaseTypeDefinition(): TypeDefinition<*>? {
+    return when (this) {
+        is NonNullType -> {
+            this.type.findBaseTypeDefinition()
+        }
+        is ListType -> {
+            this.type.findBaseTypeDefinition()
+        }
+        is TypeName -> {
+            when (this.name) {
+                "String" -> ScalarTypeDefinition.newScalarTypeDefinition().name("String").build()
+                "Boolean" -> ScalarTypeDefinition.newScalarTypeDefinition().name("Boolean").build()
+                "Float" -> ScalarTypeDefinition.newScalarTypeDefinition().name("Float").build()
+                "Int" -> ScalarTypeDefinition.newScalarTypeDefinition().name("Int").build()
+                else -> null
+            }
+        }
+        else -> {
+            null
         }
     }
 }

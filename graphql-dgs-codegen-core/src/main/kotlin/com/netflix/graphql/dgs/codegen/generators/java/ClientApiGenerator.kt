@@ -180,31 +180,41 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
 
-        val codeGenResult = fieldDefinitions.filterSkipped()
-            .mapNotNull { if (it.type.findTypeDefinition(document, true) != null) Pair(it, it.type.findTypeDefinition(document, true)) else null }
-            .map {
-                val projectionName = "${prefix}_${it.first.name.capitalize()}Projection"
+        val codeGenResult = fieldDefinitions
+            .filterSkipped()
+            .mapNotNull {
+                val typeDefinition = it.type.findTypeDefinition(
+                    document,
+                    excludeExtensions = true,
+                    includeBaseTypes = it.inputValueDefinitions.isNotEmpty(),
+                    includeScalarTypes = it.inputValueDefinitions.isNotEmpty()
+                )
+                if (typeDefinition != null) it to typeDefinition else null
+            }
+            .map { (fieldDef, typeDef) ->
+                val projectionName = "${prefix}_${fieldDef.name.capitalize()}Projection"
 
-                val noArgMethodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
-                    .returns(ClassName.get(getPackageName(), projectionName))
-                    .addCode(
-                        """
+                if (typeDef !is ScalarTypeDefinition) {
+                    val noArgMethodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDef.name))
+                        .returns(ClassName.get(getPackageName(), projectionName))
+                        .addCode(
+                            """
                         $projectionName projection = new $projectionName(this, this);    
-                        getFields().put("${it.first.name}", projection);
+                        getFields().put("${fieldDef.name}", projection);
                         return projection;
-                        """.trimIndent()
-                    )
-                    .addModifiers(Modifier.PUBLIC)
+                            """.trimIndent()
+                        )
+                        .addModifiers(Modifier.PUBLIC)
+                    javaType.addMethod(noArgMethodBuilder.build())
+                }
 
-                javaType.addMethod(noArgMethodBuilder.build())
-
-                if (it.first.inputValueDefinitions.isNotEmpty()) {
-                    addFieldSelectionMethodWithArguments(it.first, projectionName, javaType)
+                if (fieldDef.inputValueDefinitions.isNotEmpty()) {
+                    addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType)
                 }
 
                 val processedEdges = mutableSetOf<Pair<String, String>>()
-                processedEdges.add(Pair(it.second!!.name, type.name))
-                createSubProjection(it.second!!, javaType.build(), javaType.build(), "${prefix}_${it.first.name.capitalize()}", processedEdges, 1)
+                processedEdges.add(Pair(typeDef.name, type.name))
+                createSubProjection(typeDef, javaType.build(), javaType.build(), "${prefix}_${fieldDef.name.capitalize()}", processedEdges, 1)
             }
             .fold(CodeGenResult()) { total, current -> total.merge(current) }
 
@@ -256,7 +266,6 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC)
 
         fieldDefinition.inputValueDefinitions.forEach { input ->
-            println("addFieldSelectionMethodWithArguments: $fieldDefinition")
             methodBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
         }
         return javaType.addMethod(methodBuilder.build())

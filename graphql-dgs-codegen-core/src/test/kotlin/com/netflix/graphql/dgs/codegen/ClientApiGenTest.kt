@@ -18,18 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.jimfs.Configuration
-import com.google.common.jimfs.Jimfs
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
+import org.apache.commons.lang.ClassUtils.getPublicMethod
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import java.net.URL
-import java.net.URLClassLoader
-import java.nio.file.Files
-import javax.tools.JavaFileObject
 
 class ClientApiGenTest {
 
@@ -1054,16 +1049,8 @@ class ClientApiGenTest {
                 |""".trimMargin()
         )
 
-        val compilation = assertCompilesJava(
-            codeGenResult.clientProjections
-                .plus(codeGenResult.javaQueryTypes)
-                .plus(codeGenResult.javaEnumTypes)
-                .plus(codeGenResult.javaDataTypes)
-                .plus(codeGenResult.javaInterfaces)
-        )
-
         // And assert the Search_Result_MovieProjection instance has an explicit schemaType
-        val testClassLoader = codegenTestClassLoader(compilation, javaClass.classLoader)
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
         // Projection class
         val searchMovieProjectionClass =
             testClassLoader.loadClass("$basePackageName.client.Search_Result_MovieProjection")
@@ -1106,7 +1093,7 @@ class ClientApiGenTest {
         ).generate()
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1140,7 +1127,7 @@ class ClientApiGenTest {
         assertThat(projections[0].typeSpec.methodSpecs.size).isEqualTo(2)
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("name", "email")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1177,7 +1164,7 @@ class ClientApiGenTest {
         assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
         assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1214,7 +1201,7 @@ class ClientApiGenTest {
         assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
         assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1239,7 +1226,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieTitlesGraphQLQuery")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1264,7 +1251,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieTitleGraphQLQuery")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes))
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1295,7 +1282,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
         assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly("__", "_root", "_parent", "_import")
 
-        assertCompilesJava(codeGenResult.clientProjections)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1520,7 +1507,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes)
             .extracting("typeSpec").extracting("name").containsExactly("ShowsGraphQLQuery")
         assertThat(codeGenResult.clientProjections)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot")
+            .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot", "Shows_IsLiveProjection")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
     }
@@ -1602,7 +1589,8 @@ class ClientApiGenTest {
             )
         ).generate()
 
-        val builderClass = compileAndGetClass(codeGenResult.javaQueryTypes, "FilterGraphQLQuery\$Builder")
+        val builderClass = assertCompilesJava(codeGenResult).toClassLoader().loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
+
         val buildMethod = builderClass.getMethod("build")
         val nameMethod = builderClass.getMethod("nameFilter", String::class.java)
 
@@ -1631,7 +1619,7 @@ class ClientApiGenTest {
             )
         ).generate()
 
-        val builderClass = compileAndGetClass(codeGenResult.javaQueryTypes, "FilterGraphQLQuery\$Builder")
+        val builderClass = assertCompilesJava(codeGenResult).toClassLoader().loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
         val buildMethod = builderClass.getMethod("build")
 
         // When the 'nameFilter' method is not invoked, it should not be included in the input map.
@@ -1706,27 +1694,230 @@ class ClientApiGenTest {
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
     }
 
-    // TODO[BGP] Migrate to [CodegentTestClassLoader]
-    private fun compileAndGetClass(dataTypes: List<JavaFile>, type: String): Class<*> {
-        val packageNameAsUnixPath = basePackageName.replace(".", "/")
-        val compilation = assertCompilesJava(dataTypes)
-        val temporaryFilesystem = Jimfs.newFileSystem(Configuration.unix())
-        val classpath = compilation.generatedFiles()
-            .filter { it.kind == JavaFileObject.Kind.CLASS }
-            .map {
-                val destFile = temporaryFilesystem.getPath(it.toUri().path)
-                Files.createDirectories(destFile.parent)
-                it.openInputStream().use { input ->
-                    Files.newOutputStream(destFile).use { output ->
-                        input.copyTo(output)
-                    }
-                }
-                destFile.parent
+    @Test
+    fun `The Query API should support sub-projects on fields with Basic Types`() {
+        // given
+        val schema = """
+            type Query {
+                someField: Foo
             }
-            .toSet()
-            .map { URL(it.toUri().toString().replace("$packageNameAsUnixPath.*".toRegex(), "")) }
-            .toTypedArray()
+            
+            type Foo {
+                stringField(arg: Boolean): String
+                stringArrayField(arg: Boolean): [String]
+                intField(arg: Boolean): Int
+                intArrayField(arg: Boolean): [Int]
+                booleanField(arg: Boolean): Boolean
+                booleanArrayField(arg: Boolean): [Boolean]
+                floatField(arg: Boolean): Float
+                floatArrayField(arg: Boolean): [Float]
+            }
+        """.trimIndent()
+        // when
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                writeToFiles = true
+            )
+        ).generate()
+        // then
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
+        // assert Type classes
+        assertThat(testClassLoader.loadClass("$basePackageName.types.Foo")).isNotNull
+        // assert root projection classes
+        val rootProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeFieldProjectionRoot")
+        assertThat(rootProjectionClass).isNotNull
+        assertThat(rootProjectionClass).hasPublicMethods(
+            "stringField",
+            "stringArrayField",
+            "intField",
+            "intArrayField",
+            "booleanField",
+            "booleanArrayField",
+            "floatField",
+            "floatArrayField"
+        )
+        // fields projections
+        val stringFieldProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeField_StringFieldProjection")
+        assertThat(rootProjectionClass).isNotNull
+        // stringField
+        assertThat(
+            getPublicMethod(rootProjectionClass, "stringField", arrayOf())
+        ).isNotNull
+            .returns(rootProjectionClass) { it.returnType }
 
-        return URLClassLoader(classpath).loadClass("$basePackageName.client.$type")
+        assertThat(
+            getPublicMethod(
+                rootProjectionClass,
+                "stringField",
+                arrayOf(java.lang.Boolean::class.java)
+            )
+        ).isNotNull
+            .returns(stringFieldProjectionClass) { it.returnType }
+            .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
+            .asList()
+            .containsExactly(0 to "arg")
+        // stringArrayField
+        val stringArrayFieldProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeField_StringArrayFieldProjection")
+        assertThat(rootProjectionClass).isNotNull
+
+        assertThat(
+            getPublicMethod(rootProjectionClass, "stringArrayField", arrayOf())
+        ).isNotNull
+            .returns(rootProjectionClass) { it.returnType }
+
+        assertThat(
+            getPublicMethod(
+                rootProjectionClass,
+                "stringArrayField",
+                arrayOf(java.lang.Boolean::class.java)
+            )
+        ).isNotNull
+            .returns(stringArrayFieldProjectionClass) { it.returnType }
+            .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
+            .asList()
+            .containsExactly(0 to "arg")
+
+        // booleanField
+        val booleanFieldProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeField_BooleanFieldProjection")
+        assertThat(rootProjectionClass).isNotNull
+
+        assertThat(
+            getPublicMethod(rootProjectionClass, "booleanField", arrayOf())
+        ).isNotNull
+            .returns(rootProjectionClass) { it.returnType }
+
+        assertThat(
+            getPublicMethod(
+                rootProjectionClass,
+                "booleanField",
+                arrayOf(java.lang.Boolean::class.java)
+            )
+        ).isNotNull
+            .returns(booleanFieldProjectionClass) { it.returnType }
+            .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
+            .asList()
+            .containsExactly(0 to "arg")
+
+        // booleanArrayField
+        val booleanArrayFieldProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeField_BooleanArrayFieldProjection")
+        assertThat(rootProjectionClass).isNotNull
+
+        assertThat(
+            getPublicMethod(rootProjectionClass, "booleanArrayField", arrayOf())
+        ).isNotNull
+            .returns(rootProjectionClass) { it.returnType }
+
+        assertThat(
+            getPublicMethod(
+                rootProjectionClass,
+                "booleanArrayField",
+                arrayOf(java.lang.Boolean::class.java)
+            )
+        ).isNotNull
+            .returns(booleanArrayFieldProjectionClass) { it.returnType }
+            .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
+            .asList()
+            .containsExactly(0 to "arg")
+
+        // floatField
+        val floatFieldProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeField_FloatFieldProjection")
+        assertThat(rootProjectionClass).isNotNull
+
+        assertThat(
+            getPublicMethod(rootProjectionClass, "floatField", arrayOf())
+        ).isNotNull
+            .returns(rootProjectionClass) { it.returnType }
+
+        assertThat(
+            getPublicMethod(
+                rootProjectionClass,
+                "floatField",
+                arrayOf(java.lang.Boolean::class.java)
+            )
+        ).isNotNull
+            .returns(floatFieldProjectionClass) { it.returnType }
+            .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
+            .asList()
+            .containsExactly(0 to "arg")
+
+        // booleanArrayField
+        val floatArrayFieldProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeField_FloatArrayFieldProjection")
+        assertThat(rootProjectionClass).isNotNull
+
+        assertThat(
+            getPublicMethod(rootProjectionClass, "floatArrayField", arrayOf())
+        ).isNotNull
+            .returns(rootProjectionClass) { it.returnType }
+
+        assertThat(
+            getPublicMethod(
+                rootProjectionClass,
+                "floatArrayField",
+                arrayOf(java.lang.Boolean::class.java)
+            )
+        ).isNotNull
+            .returns(floatArrayFieldProjectionClass) { it.returnType }
+            .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
+            .asList()
+            .containsExactly(0 to "arg")
+    }
+
+    @Test
+    fun `The Query API should support sub-projects on fields with Scalars`() {
+        val schema = """
+          type Query {
+              someField: Foo
+          }
+          
+          type Foo {
+            ping(arg: Boolean): Long
+          }
+          
+          scalar Long
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            )
+        ).generate()
+        val projections = codeGenResult.clientProjections
+        assertThat(projections.size).isEqualTo(2)
+
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
+        // assert Type classes
+        assertThat(testClassLoader.loadClass("$basePackageName.types.Foo")).isNotNull
+        // assert root projection classes
+        val rootProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeFieldProjectionRoot")
+        assertThat(rootProjectionClass).isNotNull
+        assertThat(rootProjectionClass).hasPublicMethods("ping")
+        // scalar field
+        val scalarFieldProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeField_PingProjection")
+        assertThat(rootProjectionClass).isNotNull
+
+        assertThat(getPublicMethod(rootProjectionClass, "ping", arrayOf())).isNotNull.returns(rootProjectionClass) { it.returnType }
+
+        assertThat(
+            getPublicMethod(rootProjectionClass, "ping", arrayOf(java.lang.Boolean::class.java))
+        ).isNotNull
+            .returns(scalarFieldProjectionClass) { it.returnType }
+            .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
+            .asList()
+            .containsExactly(0 to "arg")
     }
 }
