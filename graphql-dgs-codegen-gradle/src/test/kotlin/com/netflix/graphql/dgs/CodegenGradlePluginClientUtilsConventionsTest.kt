@@ -97,6 +97,41 @@ dependencies { }
     }
 
     @Test
+    fun `Can define the cofiguration the graphql-dgs-codegen-client-core module will be added to`() {
+        // configuration
+        val configuration = "api"
+        // and a build file that configures the client core version to use such version
+        prepareBuildGradleFile(
+            """
+            plugins {
+                id 'java-library'
+                id 'com.netflix.dgs.codegen'
+            }
+            
+            repositories { mavenCentral() }
+            
+            dependencies { }
+            
+            codegen {
+                clientCoreScope = "$configuration"
+            }
+            """.trimMargin()
+        )
+        // when the build is executed
+        val runner = GradleRunner.create()
+            .withProjectDir(projectDir)
+            .withPluginClasspath()
+            .withPluginClasspath(emptyList())
+            .withDebug(true)
+            .withArguments("-q", "--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
+
+        val result = runner.build()
+        // then we assert that the dependency was resolved to the higher version.
+        assertThat(result.output)
+            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:${inferredVersion.get()}] to the $configuration dependencies.")
+    }
+
+    @Test
     fun `Can define the specific version for the graphql-dgs-codegen-client-core`() {
         // given a higher version
         val higherVersion = "123456"

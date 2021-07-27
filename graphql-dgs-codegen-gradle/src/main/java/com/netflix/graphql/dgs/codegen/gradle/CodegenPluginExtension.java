@@ -30,4 +30,10 @@ public abstract class CodegenPluginExtension {
     public abstract Property<Boolean> getClientCoreConventionsEnabled();
 
     public abstract Property<String> getClientCoreVersion();
+
+    /**
+     * Describes the configuration/scope that the client-core library is going to be added to.
+     * It defaults to {@link ClientUtilsConventions#GRADLE_CLASSPATH_CONFIGURATION}
+     */
+    public abstract Property<String> getClientCoreScope();
 }
