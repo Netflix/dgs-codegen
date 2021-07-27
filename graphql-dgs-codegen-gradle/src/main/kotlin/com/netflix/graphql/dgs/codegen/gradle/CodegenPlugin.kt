@@ -57,7 +57,11 @@ class CodegenPlugin : Plugin<Project> {
         project.afterEvaluate { p ->
             if (extensions.clientCoreConventionsEnabled.getOrElse(true)) {
                 logger.info("Applying CodegenPlugin Client Utils conventions.")
-                ClientUtilsConventions.apply(p, Optional.ofNullable(extensions.clientCoreVersion.orNull))
+                ClientUtilsConventions.apply(
+                    p,
+                    Optional.ofNullable(extensions.clientCoreVersion.orNull),
+                    Optional.ofNullable(extensions.clientCoreScope.orNull)
+                )
             }
         }
     }

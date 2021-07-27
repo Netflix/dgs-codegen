@@ -23,18 +23,23 @@ import org.gradle.api.logging.Logging
 import java.util.*
 
 object ClientUtilsConventions {
+    const val GRADLE_CLASSPATH_CONFIGURATION = "implementation"
 
     private const val CLIENT_UTILS_ARTIFACT_GROUP = "com.netflix.graphql.dgs.codegen"
     private const val CLIENT_UTILS_ARTIFACT_NAME = "graphql-dgs-codegen-client-core"
-    private const val GRADLE_CLASSPATH_CONFIGURATION = "implementation"
 
     private val logger = Logging.getLogger(ClientUtilsConventions::class.java)
 
-    fun apply(project: Project, optionalCodeUtilsVersion: Optional<String> = Optional.empty()) {
+    fun apply(
+        project: Project,
+        optionalCodeUtilsVersion: Optional<String> = Optional.empty(),
+        optionalCodeClientDependencyScope: Optional<String> = Optional.empty()
+    ) {
         clientCoreArtifact(optionalCodeUtilsVersion).ifPresent { dependencyString ->
-            val implementationClasspath = project.configurations.getByName(GRADLE_CLASSPATH_CONFIGURATION).dependencies
-            implementationClasspath.add(project.dependencies.create(dependencyString))
-            logger.lifecycle("DGS CodeGen added [$dependencyString] to the $GRADLE_CLASSPATH_CONFIGURATION classpath.")
+            val dependencyConfiguration = optionalCodeClientDependencyScope.orElse(GRADLE_CLASSPATH_CONFIGURATION)
+            val configurationDependencies = project.configurations.getByName(dependencyConfiguration).dependencies
+            configurationDependencies.add(project.dependencies.create(dependencyString))
+            logger.lifecycle("DGS CodeGen added [$dependencyString] to the $dependencyConfiguration dependencies.")
         }
     }
 
