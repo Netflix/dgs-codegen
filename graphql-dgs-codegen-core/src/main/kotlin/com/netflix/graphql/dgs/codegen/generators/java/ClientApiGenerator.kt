@@ -24,6 +24,7 @@ import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
 import com.netflix.graphql.dgs.codegen.generators.shared.ClassnameShortener
 import com.squareup.javapoet.*
+import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.*
 import javax.lang.model.element.Modifier
 
@@ -352,10 +353,15 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
 
-        javaType.addInitializerBlock(
-            CodeBlock.builder()
-                .build()
-        )
+        // We don't need the typename added for fragments in the entities projection
+        // This affects deserialization when use directly with generated classes
+        if (prefix != "Entities${type.name.capitalize()}Key") {
+            javaType.addInitializerBlock(
+                CodeBlock.builder()
+                    .addStatement("getFields().put(\$S, null)", TypeNameMetaFieldDef.name)
+                    .build()
+            )
+        }
 
         javaType.addMethod(
             MethodSpec.methodBuilder("toString")
