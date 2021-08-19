@@ -278,24 +278,23 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
-        val codeGenResult = federatedTypes
-            .map {
-                javaType.addMethod(
-                    MethodSpec.methodBuilder("on${it.name}")
-                        .addModifiers(Modifier.PUBLIC)
-                        .returns(ClassName.get(getPackageName(), "Entities${it.name.capitalize()}KeyProjection"))
-                        .addCode(
-                            """
-                                Entities${it.name.capitalize()}KeyProjection fragment = new Entities${it.name.capitalize()}KeyProjection(this, this);
+        val codeGenResult = federatedTypes.map { objTypeDef ->
+            javaType.addMethod(
+                MethodSpec.methodBuilder("on${objTypeDef.name}")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(ClassName.get(getPackageName(), "Entities${objTypeDef.name.capitalize()}KeyProjection"))
+                    .addCode(
+                        """
+                                Entities${objTypeDef.name.capitalize()}KeyProjection fragment = new Entities${objTypeDef.name.capitalize()}KeyProjection(this, this);
                                 getFragments().add(fragment);
                                 return fragment;
-                            """.trimIndent()
-                        )
-                        .build()
-                )
-                val processedEdges = mutableSetOf<Pair<String, String>>()
-                createFragment(it, javaType.build(), javaType.build(), "Entities${it.name.capitalize()}Key", processedEdges, 0)
-            }.fold(CodeGenResult()) { total, current -> total.merge(current) }
+                        """.trimIndent()
+                    )
+                    .build()
+            )
+            val processedEdges = mutableSetOf<Pair<String, String>>()
+            createFragment(objTypeDef, javaType.build(), javaType.build(), "Entities${objTypeDef.name.capitalize()}Key", processedEdges, 0)
+        }.fold(CodeGenResult()) { total, current -> total.merge(current) }
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
@@ -353,7 +352,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
 
-        // We don't need the typename added for fragments in the entities projection
+        // We don't need the typename added for fragments in the entities' projection.
         // This affects deserialization when use directly with generated classes
         if (prefix != "Entities${type.name.capitalize()}Key") {
             javaType.addInitializerBlock(
@@ -416,34 +415,74 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .build()
             )
 
-        val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
+        val fieldDefinitions = type.fieldDefinitions() +
+            document.definitions
+                .filterIsInstance<ObjectTypeExtensionDefinition>()
+                .filter { it.name == type.name }
+                .flatMap { it.fieldDefinitions }
+
         val codeGenResult = if (queryDepth < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
-            fieldDefinitions.filterSkipped()
-                .mapNotNull { if (it.type.findTypeDefinition(document) != null) Pair(it, it.type.findTypeDefinition(document)) else null }
-                .filter { !processedEdges.contains(Pair(it.second!!.name, type.name)) }
-                .map {
-                    val projectionName = "${truncatePrefix(prefix)}_${it.first.name.capitalize()}Projection"
+            fieldDefinitions
+                .filterSkipped()
+                .mapNotNull {
+                    val typeDefinition = it.type.findTypeDefinition(document)
+                    if (typeDefinition != null) Pair(it, typeDefinition) else null
+                }
+                .filter { (_, typeDef) -> !processedEdges.contains(Pair(typeDef.name, type.name)) }
+                .map { (fieldDef, typeDef) ->
+                    val projectionName = "${truncatePrefix(prefix)}_${fieldDef.name.capitalize()}Projection"
+                    val methodName = ReservedKeywordSanitizer.sanitize(fieldDef.name)
                     javaType.addMethod(
-                        MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(it.first.name))
+                        MethodSpec.methodBuilder(methodName)
                             .returns(ClassName.get(getPackageName(), projectionName))
                             .addCode(
                                 """
-                            $projectionName projection = new $projectionName(this, getRoot());    
-                            getFields().put("${it.first.name}", projection);
-                            return projection;
+                                $projectionName projection = new $projectionName(this, getRoot());
+                                getFields().put("${fieldDef.name}", projection);
+                                return projection;
                                 """.trimIndent()
                             )
                             .addModifiers(Modifier.PUBLIC)
                             .build()
                     )
 
+                    if (fieldDef.inputValueDefinitions.isNotEmpty()) {
+                        val methodWithInputArgumentsBuilder = MethodSpec.methodBuilder(methodName)
+                            .returns(ClassName.get(getPackageName(), javaType.build().name))
+                            .addCode(
+                                """
+                                $projectionName projection = new $projectionName(this, getRoot());
+                                getFields().put("${fieldDef.name}", projection);
+                                getInputArguments().computeIfAbsent("${fieldDef.name}", k -> new ${'$'}T<>());
+                                ${
+                                fieldDef.inputValueDefinitions.joinToString("\n") { input ->
+                                    """
+                                        InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                                        getInputArguments().get("${fieldDef.name}").add(${input.name}Arg);
+                                    """.trimIndent()
+                                }
+                                }
+                                return this;
+                                """.trimIndent(),
+                                ArrayList::class.java
+                            )
+                            .addModifiers(Modifier.PUBLIC)
+
+                        fieldDef.inputValueDefinitions.forEach { input ->
+                            methodWithInputArgumentsBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
+                        }
+                        javaType.addMethod(methodWithInputArgumentsBuilder.build())
+                    }
+
                     val updatedProcessedEdges = processedEdges.toMutableSet()
-                    updatedProcessedEdges.add(Pair(it.second!!.name, type.name))
-                    createSubProjection(it.second!!, javaType.build(), root, "${truncatePrefix(prefix)}_${it.first.name.capitalize()}", updatedProcessedEdges, queryDepth + 1)
-                }.fold(CodeGenResult()) { total, current -> total.merge(current) }
+                    updatedProcessedEdges.add(Pair(typeDef.name, type.name))
+                    createSubProjection(typeDef, javaType.build(), root, "${truncatePrefix(prefix)}_${fieldDef.name.capitalize()}", updatedProcessedEdges, queryDepth + 1)
+                }
+                .fold(CodeGenResult()) { total, current -> total.merge(current) }
         } else CodeGenResult()
 
-        fieldDefinitions.filterSkipped()
+        fieldDefinitions
+            .filterSkipped()
             .forEach {
                 val objectTypeDefinition = it.type.findTypeDefinition(document)
                 if (objectTypeDefinition == null) {
@@ -465,17 +504,17 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .returns(ClassName.get(getPackageName(), javaType.build().name))
                             .addCode(
                                 """
-                        getFields().put("${it.name}", null);
-                        getInputArguments().computeIfAbsent("${it.name}", k -> new ${'$'}T<>());                      
-                            ${
+                                getFields().put("${it.name}", null);
+                                getInputArguments().computeIfAbsent("${it.name}", k -> new ${'$'}T<>());
+                                ${
                                 it.inputValueDefinitions.joinToString("\n") { input ->
-                                    """InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
-                                getInputArguments().get("${it.name}").add(${input.name}Arg);
+                                    """
+                                        InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                                        getInputArguments().get("${it.name}").add(${input.name}Arg);
                                     """.trimIndent()
                                 }
                                 }
-                        
-                        return this;
+                                return this;
                                 """.trimIndent(),
                                 ArrayList::class.java
                             )
