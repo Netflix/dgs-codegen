@@ -361,4 +361,32 @@ class EntitiesClientApiGenTest {
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
         assertThat(projections).isEmpty()
     }
+
+    @Test
+    fun generateProjectionsForEntitiesKey() {
+        val schema = """
+            type Foo @key(fields:"id") {
+              id: ID
+              stringField: String
+              barField: Bar
+              mStringField(arg: [String!]): [String!]
+              mBarField(arg: [String!]): [Bar!]
+            }
+
+            type Bar {
+              id: ID
+              name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate()
+        // then
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
+    }
 }

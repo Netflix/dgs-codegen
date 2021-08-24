@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import org.apache.commons.lang.ClassUtils.getPublicMethod
@@ -1668,13 +1669,18 @@ class ClientApiGenTest {
             type Query {
                 movies: [Movie]
             }
-            
+
             type Movie {
                 actors: [Actor]
+                awards(oscarsOnly: Boolean): [Award!]
             }
-            
+
             type Actor {
-                awards(oscarsOnly: Boolean): String
+                awards(oscarsOnly: Boolean): [Award!]
+            }
+
+            type Award {
+                name: String
             }
         """.trimIndent()
 
@@ -1689,8 +1695,9 @@ class ClientApiGenTest {
 
         val methodSpecs = codeGenResult.clientProjections[1].typeSpec.methodSpecs
         val methodWithArgs = methodSpecs.filter { !it.isConstructor }.find { it.parameters.size > 0 }
-        assertThat(methodWithArgs).isNotNull
-        assertThat(methodWithArgs!!.parameters[0].name).isEqualTo("oscarsOnly")
+        assertThat(methodWithArgs!!).isNotNull
+        assertThat(methodWithArgs.returnType).extracting { (it as ClassName).simpleName() }.isEqualTo("Movies_ActorsProjection")
+        assertThat(methodWithArgs.parameters[0].name).isEqualTo("oscarsOnly")
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
     }
 
