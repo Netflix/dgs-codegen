@@ -469,7 +469,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .addModifiers(Modifier.PUBLIC)
 
                         fieldDef.inputValueDefinitions.forEach { input ->
-                            methodWithInputArgumentsBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
+                            addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType)
                         }
                         javaType.addMethod(methodWithInputArgumentsBuilder.build())
                     }
