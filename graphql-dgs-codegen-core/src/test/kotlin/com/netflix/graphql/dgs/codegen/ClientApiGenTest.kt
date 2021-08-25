@@ -1696,7 +1696,7 @@ class ClientApiGenTest {
         val methodSpecs = codeGenResult.clientProjections[1].typeSpec.methodSpecs
         val methodWithArgs = methodSpecs.filter { !it.isConstructor }.find { it.parameters.size > 0 }
         assertThat(methodWithArgs!!).isNotNull
-        assertThat(methodWithArgs.returnType).extracting { (it as ClassName).simpleName() }.isEqualTo("Movies_ActorsProjection")
+        assertThat(methodWithArgs.returnType).extracting { (it as ClassName).simpleName() }.isEqualTo("Movies_Actors_AwardsProjection")
         assertThat(methodWithArgs.parameters[0].name).isEqualTo("oscarsOnly")
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
     }

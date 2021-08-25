@@ -71,9 +71,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .addAnnotation(Override::class.java)
                 .addCode(
                     """
-                                    return "${it.name}";
-                                    
-                    """.trimIndent()
+                    | return "${it.name}";
+                    |                
+                    """.trimMargin()
                 ).build()
         )
 
@@ -88,12 +88,12 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .addCode(
                         if (it.inputValueDefinitions.isNotEmpty())
                             """
-                                     return new ${it.name.capitalize()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, fieldsSet);
-                                     
-                            """.trimIndent() else
+                            |return new ${it.name.capitalize()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, fieldsSet);
+                            |         
+                            """.trimMargin() else
                             """
-                             return new ${it.name.capitalize()}GraphQLQuery();                                     
-                            """.trimIndent()
+                            |return new ${it.name.capitalize()}GraphQLQuery();                                     
+                            """.trimMargin()
                     )
                     .build()
             ).addField(FieldSpec.builder(setOfStringType, "fieldsSet", Modifier.PRIVATE).initializer("new \$T<>()", ClassName.get(HashSet::class.java)).build())
@@ -102,9 +102,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC)
         constructorBuilder.addCode(
             """
-                super("${operation.toLowerCase()}");
-                
-            """.trimIndent()
+            |super("${operation.toLowerCase()}");
+            |
+            """.trimMargin()
         )
 
         it.inputValueDefinitions.forEach { inputValue ->
@@ -115,10 +115,10 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .addModifiers(Modifier.PUBLIC)
                 .addCode(
                     """
-                                this.${ReservedKeywordSanitizer.sanitize(inputValue.name)} = ${ReservedKeywordSanitizer.sanitize(inputValue.name)};
-                                this.fieldsSet.add("${inputValue.name}");
-                                return this;
-                    """.trimIndent()
+                    |this.${ReservedKeywordSanitizer.sanitize(inputValue.name)} = ${ReservedKeywordSanitizer.sanitize(inputValue.name)};
+                    |this.fieldsSet.add("${inputValue.name}");
+                    |return this;
+                    """.trimMargin()
                 )
 
             if (inputValue.description != null) {
@@ -132,16 +132,16 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             if (findReturnType.isPrimitive) {
                 constructorBuilder.addCode(
                     """
-                    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});                   
-                    """.trimIndent()
+                    |getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});                   
+                    """.trimMargin()
                 )
             } else {
                 constructorBuilder.addCode(
                     """
-                    if (${inputValue.name} != null || fieldsSet.contains("${inputValue.name}")) {
-                        getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
-                    }
-                    """.trimIndent()
+                    |if (${inputValue.name} != null || fieldsSet.contains("${inputValue.name}")) {
+                    |    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
+                    |}
+                    """.trimMargin()
                 )
             }
         }
@@ -200,17 +200,17 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                         .returns(ClassName.get(getPackageName(), projectionName))
                         .addCode(
                             """
-                        $projectionName projection = new $projectionName(this, this);    
-                        getFields().put("${fieldDef.name}", projection);
-                        return projection;
-                            """.trimIndent()
+                            |$projectionName projection = new $projectionName(this, this);    
+                            |getFields().put("${fieldDef.name}", projection);
+                            |return projection;
+                            """.trimMargin()
                         )
                         .addModifiers(Modifier.PUBLIC)
                     javaType.addMethod(noArgMethodBuilder.build())
                 }
 
                 if (fieldDef.inputValueDefinitions.isNotEmpty()) {
-                    addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType)
+                    addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "this")
                 }
 
                 val processedEdges = mutableSetOf<Pair<String, String>>()
@@ -228,9 +228,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                         .returns(ClassName.get(getPackageName(), javaType.build().name))
                         .addCode(
                             """
-                        getFields().put("${it.name}", null);
-                        return this;
-                            """.trimIndent()
+                            |getFields().put("${it.name}", null);
+                            |return this;
+                            """.trimMargin()
                         )
                         .addModifiers(Modifier.PUBLIC)
                         .build()
@@ -245,23 +245,29 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
     }
 
-    private fun addFieldSelectionMethodWithArguments(fieldDefinition: FieldDefinition, projectionName: String, javaType: TypeSpec.Builder): TypeSpec.Builder? {
+    private fun addFieldSelectionMethodWithArguments(
+        fieldDefinition: FieldDefinition,
+        projectionName: String,
+        javaType: TypeSpec.Builder,
+        projectionRoot: String
+    ): TypeSpec.Builder? {
         val methodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
             .returns(ClassName.get(getPackageName(), projectionName))
             .addCode(
                 """
-                            $projectionName projection = new $projectionName(this, this);    
-                            getFields().put("${fieldDefinition.name}", projection);
-                            getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());                      
-                            ${
+                |$projectionName projection = new $projectionName(this, $projectionRoot);    
+                |getFields().put("${fieldDefinition.name}", projection);
+                |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());                      
+                |${
                 fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
-                    """InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
-                                getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
-                    """.trimIndent()
+                    """
+                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                     |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
+                     """.trimMargin()
                 }
                 }
-                            return projection;
-                """.trimIndent(),
+                |return projection;
+                """.trimMargin(),
                 ArrayList::class.java
             )
             .addModifiers(Modifier.PUBLIC)
@@ -285,10 +291,10 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .returns(ClassName.get(getPackageName(), "Entities${objTypeDef.name.capitalize()}KeyProjection"))
                     .addCode(
                         """
-                                Entities${objTypeDef.name.capitalize()}KeyProjection fragment = new Entities${objTypeDef.name.capitalize()}KeyProjection(this, this);
-                                getFragments().add(fragment);
-                                return fragment;
-                        """.trimIndent()
+                        | Entities${objTypeDef.name.capitalize()}KeyProjection fragment = new Entities${objTypeDef.name.capitalize()}KeyProjection(this, this);
+                        | getFragments().add(fragment);
+                        | return fragment;
+                        """.trimMargin()
                     )
                     .build()
             )
@@ -335,10 +341,10 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .returns(ClassName.get(getPackageName(), projectionName))
                 .addCode(
                     """
-                                    $projectionName fragment = new $projectionName(this, $rootRef);
-                                    getFragments().add(fragment);
-                                    return fragment;
-                    """.trimIndent()
+                    |$projectionName fragment = new $projectionName(this, $rootRef);
+                    |getFragments().add(fragment);
+                    |return fragment;
+                    """.trimMargin()
                 )
                 .build()
         )
@@ -369,18 +375,18 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .addModifiers(Modifier.PUBLIC)
                 .addCode(
                     """
-                    StringBuilder builder = new StringBuilder();
-                    builder.append("... on ${type.name} {");
-                    getFields().forEach((k, v) -> {
-                        builder.append(" ").append(k);
-                        if(v != null) {
-                            builder.append(" ").append(v.toString());
-                        }
-                    });
-                    builder.append("}");
-            
-                    return builder.toString();
-                    """.trimIndent()
+                    |StringBuilder builder = new StringBuilder();
+                    |builder.append("... on ${type.name} {");
+                    |getFields().forEach((k, v) -> {
+                    |    builder.append(" ").append(k);
+                    |    if(v != null) {
+                    |        builder.append(" ").append(v.toString());
+                    |    }
+                    |});
+                    |builder.append("}");
+                    | 
+                    |return builder.toString();
+                    """.trimMargin()
                 )
                 .build()
         )
@@ -437,41 +443,17 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .returns(ClassName.get(getPackageName(), projectionName))
                             .addCode(
                                 """
-                                $projectionName projection = new $projectionName(this, getRoot());
-                                getFields().put("${fieldDef.name}", projection);
-                                return projection;
-                                """.trimIndent()
+                                    | $projectionName projection = new $projectionName(this, getRoot());
+                                    | getFields().put("${fieldDef.name}", projection);
+                                    | return projection;
+                                    """.trimMargin()
                             )
                             .addModifiers(Modifier.PUBLIC)
                             .build()
                     )
 
                     if (fieldDef.inputValueDefinitions.isNotEmpty()) {
-                        val methodWithInputArgumentsBuilder = MethodSpec.methodBuilder(methodName)
-                            .returns(ClassName.get(getPackageName(), javaType.build().name))
-                            .addCode(
-                                """
-                                $projectionName projection = new $projectionName(this, getRoot());
-                                getFields().put("${fieldDef.name}", projection);
-                                getInputArguments().computeIfAbsent("${fieldDef.name}", k -> new ${'$'}T<>());
-                                ${
-                                fieldDef.inputValueDefinitions.joinToString("\n") { input ->
-                                    """
-                                        InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
-                                        getInputArguments().get("${fieldDef.name}").add(${input.name}Arg);
-                                    """.trimIndent()
-                                }
-                                }
-                                return this;
-                                """.trimIndent(),
-                                ArrayList::class.java
-                            )
-                            .addModifiers(Modifier.PUBLIC)
-
-                        fieldDef.inputValueDefinitions.forEach { input ->
-                            methodWithInputArgumentsBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
-                        }
-                        javaType.addMethod(methodWithInputArgumentsBuilder.build())
+                        addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
                     }
 
                     val updatedProcessedEdges = processedEdges.toMutableSet()
@@ -491,9 +473,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .returns(ClassName.get(getPackageName(), javaType.build().name))
                             .addCode(
                                 """
-                        getFields().put("${it.name}", null);
-                        return this;
-                                """.trimIndent()
+                                |getFields().put("${it.name}", null);
+                                |return this;
+                                """.trimMargin()
                             )
                             .addModifiers(Modifier.PUBLIC)
                             .build()
@@ -504,18 +486,17 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                             .returns(ClassName.get(getPackageName(), javaType.build().name))
                             .addCode(
                                 """
-                                getFields().put("${it.name}", null);
-                                getInputArguments().computeIfAbsent("${it.name}", k -> new ${'$'}T<>());
-                                ${
+                                |getFields().put("${it.name}", null);
+                                |getInputArguments().computeIfAbsent("${it.name}", k -> new ${'$'}T<>());
+                                |${
                                 it.inputValueDefinitions.joinToString("\n") { input ->
                                     """
-                                        InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
-                                        getInputArguments().get("${it.name}").add(${input.name}Arg);
-                                    """.trimIndent()
-                                }
-                                }
-                                return this;
-                                """.trimIndent(),
+                                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                                     |getInputArguments().get("${it.name}").add(${input.name}Arg);
+                                     """.trimMargin()
+                                }}
+                                |return this;
+                                """.trimMargin(),
                                 ArrayList::class.java
                             )
                             .addModifiers(Modifier.PUBLIC)

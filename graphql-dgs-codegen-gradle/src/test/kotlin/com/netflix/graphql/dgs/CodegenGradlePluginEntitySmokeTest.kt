@@ -25,7 +25,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
-class CodegenGradlePluginFooSmokeTest {
+class CodegenGradlePluginEntitySmokeTest {
 
     @TempDir
     lateinit var projectDir: File
