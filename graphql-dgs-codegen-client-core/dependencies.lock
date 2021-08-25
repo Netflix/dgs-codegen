@@ -11,9 +11,6 @@
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
-        "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.5.1"
-        },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "locked": "4.5.1"
         },
@@ -31,9 +28,6 @@
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
-        "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.5.1"
-        },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "locked": "4.5.1"
         },
@@ -47,9 +41,6 @@
         },
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
-        },
-        "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "locked": "4.5.1"
@@ -103,9 +94,6 @@
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
-        "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.5.1"
-        },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
             "locked": "4.5.1"
         },
@@ -135,9 +123,6 @@
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
-        "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.5.1"
-        },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
             "locked": "4.5.1"
         },
@@ -166,9 +151,6 @@
     "testRuntimeClasspath": {
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
-        },
-        "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
             "locked": "4.5.1"

@@ -29,6 +29,7 @@ import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
+import java.util.*
 
 open class GenerateJavaTask : DefaultTask() {
     @Input
@@ -125,7 +126,7 @@ open class GenerateJavaTask : DefaultTask() {
             subPackageNameClient = subPackageNameClient,
             subPackageNameDatafetchers = subPackageNameDatafetchers,
             subPackageNameTypes = subPackageNameTypes,
-            language = Language.valueOf(language.toUpperCase()),
+            language = Language.valueOf(language.uppercase(Locale.getDefault())),
             generateBoxedTypes = generateBoxedTypes,
             generateClientApi = generateClient,
             generateInterfaces = generateInterfaces,

@@ -15,7 +15,7 @@
             "project": true
         },
         "org.jetbrains.kotlin:kotlin-gradle-plugin": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -26,12 +26,12 @@
     },
     "compileOnly": {
         "org.jetbrains.kotlin:kotlin-gradle-plugin": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "compileOnlyDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-gradle-plugin": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "implementationDependenciesMetadata": {

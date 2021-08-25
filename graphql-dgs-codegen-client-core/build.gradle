@@ -23,13 +23,10 @@ plugins {
 dependencies {
     implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release')
     compileOnly platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release')
-
-    compileOnly 'com.netflix.graphql.dgs:graphql-dgs-client'
     compileOnly 'com.graphql-java:graphql-java'
     compileOnly 'com.fasterxml.jackson.core:jackson-databind'
     compileOnly 'org.springframework:spring-core'
 
-    testImplementation 'com.netflix.graphql.dgs:graphql-dgs-client'
     testImplementation 'com.netflix.graphql.dgs:graphql-dgs-extended-scalars'
     testImplementation 'com.graphql-java:graphql-java'
     testImplementation 'org.springframework:spring-core'
