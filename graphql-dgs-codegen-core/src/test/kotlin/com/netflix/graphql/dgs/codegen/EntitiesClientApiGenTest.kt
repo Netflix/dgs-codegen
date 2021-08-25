@@ -18,12 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import org.apache.commons.lang.ClassUtils.getPublicMethod
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class EntitiesClientApiGenTest {
 
-    val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
+    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
 
     @Test
     fun generateForEntities() {
@@ -112,7 +113,9 @@ class EntitiesClientApiGenTest {
         assertThat(representations[1].typeSpec.name).isEqualTo("IActorRepresentation")
         assertThat(representations[1].typeSpec.fieldSpecs).extracting("name").containsExactlyInAnyOrder("__typename", "name")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces)
+        )
     }
 
     @Test
@@ -369,13 +372,13 @@ class EntitiesClientApiGenTest {
               id: ID
               stringField: String
               barField: Bar
-              mStringField(arg: [String!]): [String!]
-              mBarField(arg: [String!]): [Bar!]
+              mStringField(arg1: Int, arg2: String): [String!]
+              mBarField(arg1: Int, arg2: String): [Bar!]
             }
-
+            
             type Bar {
-              id: ID
-              name: String
+                id: ID
+                baz: String
             }
         """.trimIndent()
 
@@ -388,5 +391,43 @@ class EntitiesClientApiGenTest {
         ).generate()
         // then
         val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
+        // assert projection classes
+        val (entityRootProjectionClass, entitiesFooKeyProjectionClass, entitiesFooKey_BarFieldProjectionClass, entitiesFooKey_MBarFieldProjection) =
+            arrayOf(
+                "EntitiesProjectionRoot",
+                "EntitiesFooKeyProjection",
+                "EntitiesFooKey_BarFieldProjection",
+                "EntitiesFooKey_MBarFieldProjection"
+            ).map {
+                val clazzCanonicalName = "$basePackageName.client.$it"
+                val clazz = testClassLoader.loadClass(clazzCanonicalName)
+                assertThat(clazz).describedAs(clazzCanonicalName).isNotNull
+                clazz
+            }
+
+        // assert classes methods...
+        assertThat(entityRootProjectionClass).isNotNull.hasPublicMethods("onFoo")
+
+        assertThat(entitiesFooKeyProjectionClass).isNotNull.hasPublicMethods("id", "stringField", "barField", "mStringField", "mBarField")
+        // entitiesFooKeyProjectionClass methods
+        mapOf(
+            "id" to entitiesFooKeyProjectionClass,
+            "stringField" to entitiesFooKeyProjectionClass,
+            "barField" to entitiesFooKey_BarFieldProjectionClass,
+            "mStringField" to entitiesFooKeyProjectionClass,
+            "mBarField" to entitiesFooKey_MBarFieldProjection
+        ).forEach { (name, returnClass) ->
+            assertThat(getPublicMethod(entitiesFooKeyProjectionClass, name, arrayOf()))
+                .describedAs("${entitiesFooKeyProjectionClass.name} method: $name").isNotNull.returns(returnClass) { it.returnType }
+        }
+
+        mapOf(
+            "mBarField" to (arrayOf(Integer::class.java, String::class.java) to entitiesFooKey_MBarFieldProjection),
+            "mStringField" to (arrayOf(Integer::class.java, String::class.java) to entitiesFooKeyProjectionClass),
+        ).forEach { (name, p) ->
+            val (args, returnClass) = p
+            assertThat(getPublicMethod(entitiesFooKeyProjectionClass, name, args))
+                .describedAs("method: $name").isNotNull.returns(returnClass) { it.returnType }
+        }
     }
 }
