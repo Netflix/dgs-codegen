@@ -1,32 +1,37 @@
 {
     "apiDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "compileClasspath": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "implementationDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "kotlinCompilerClasspath": {
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
-    "kotlinCompilerPluginClasspath": {
+    "kotlinCompilerPluginClasspathMain": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
+        }
+    },
+    "kotlinCompilerPluginClasspathTest": {
+        "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
+            "locked": "1.5.30"
         }
     },
     "kotlinKlibCommonizerClasspath": {
         "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "ktlint": {
@@ -36,15 +41,15 @@
     },
     "runtimeClasspath": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "testCompileClasspath": {
         "org.assertj:assertj-core": {
-            "locked": "3.19.0"
+            "locked": "3.20.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.7.2"
@@ -58,10 +63,10 @@
     },
     "testImplementationDependenciesMetadata": {
         "org.assertj:assertj-core": {
-            "locked": "3.19.0"
+            "locked": "3.20.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.7.2"
@@ -75,10 +80,10 @@
     },
     "testRuntimeClasspath": {
         "org.assertj:assertj-core": {
-            "locked": "3.19.0"
+            "locked": "3.20.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.7.2"

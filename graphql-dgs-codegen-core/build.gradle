@@ -26,22 +26,17 @@ dependencies {
     implementation platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release")
 
     implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-client'
+    implementation(project(":graphql-dgs-codegen-client-core"))
     implementation 'com.graphql-java:graphql-java'
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
 
     implementation 'com.squareup:javapoet:1.13.+'
     implementation 'com.squareup:kotlinpoet:1.9.+'
     implementation 'com.github.ajalt.clikt:clikt:3.2.+'
-    implementation 'commons-lang:commons-lang:2.6'
 
     testImplementation 'com.google.jimfs:jimfs:1.2'
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
-    testImplementation 'com.google.truth:truth:1.+'
-    testImplementation 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.4.31'
-    // The plugin will add the "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core" to the Project test classpath.
-    // We are adding it explicitly so we can write tests against it.
-    testImplementation project(":graphql-dgs-codegen-client-core")
+    testImplementation 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.5.30'
 }
 
 application {
