@@ -141,9 +141,6 @@
         "com.google.testing.compile:compile-testing": {
             "locked": "0.19"
         },
-        "com.google.truth:truth": {
-            "locked": "1.1.3"
-        },
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
@@ -197,9 +194,6 @@
         "com.google.testing.compile:compile-testing": {
             "locked": "0.19"
         },
-        "com.google.truth:truth": {
-            "locked": "1.1.3"
-        },
         "com.graphql-java:graphql-java": {
             "locked": "16.2"
         },
@@ -252,9 +246,6 @@
         },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.19"
-        },
-        "com.google.truth:truth": {
-            "locked": "1.1.3"
         },
         "com.graphql-java:graphql-java": {
             "locked": "16.2"

@@ -18,7 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
@@ -1028,7 +1027,7 @@ class ClientApiGenTest {
 
         val searchResult = codeGenResult.javaInterfaces[0].typeSpec
 
-        Truth.assertThat(JavaFile.builder("$basePackageName.types", searchResult).build().toString()).isEqualTo(
+        assertThat(JavaFile.builder("$basePackageName.types", searchResult).build().toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
