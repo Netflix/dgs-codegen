@@ -18,7 +18,8 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
-import org.apache.commons.lang.StringUtils
+import java.util.*
+import kotlin.collections.ArrayList
 
 object CodeGeneratorUtils {
 
@@ -33,12 +34,45 @@ object CodeGeneratorUtils {
      * @see StringUtils.splitByCharacterTypeCamelCase
      * */
     fun camelCasetoSnakeCase(input: String, case: Case = Case.LOWERCASE): String {
-        val parts = StringUtils.splitByCharacterTypeCamelCase(input)
+        val parts = splitByCharacterTypeCamelCase(input)
         return parts.joinToString(separator = "_") {
             when (case) {
                 Case.LOWERCASE -> it.toLowerCase()
                 Case.UPPERCASE -> it.toUpperCase()
             }
         }
+    }
+
+    /**
+     * Mostly copied from Apache Commons StringUtils.splitByCharacterType
+     */
+    private fun splitByCharacterTypeCamelCase(str: String): Array<String> {
+
+        if (str.isNullOrEmpty()) {
+            return emptyArray()
+        }
+        val c = str.toCharArray()
+        val list: MutableList<String> = ArrayList()
+        var tokenStart = 0
+        var currentType = Character.getType(c[tokenStart])
+        for (pos in tokenStart + 1 until c.size) {
+            val type = Character.getType(c[pos])
+            if (type == currentType) {
+                continue
+            }
+            if (type == Character.LOWERCASE_LETTER.toInt() && currentType == Character.UPPERCASE_LETTER.toInt()) {
+                val newTokenStart = pos - 1
+                if (newTokenStart != tokenStart) {
+                    list.add(String(c, tokenStart, newTokenStart - tokenStart))
+                    tokenStart = newTokenStart
+                }
+            } else {
+                list.add(String(c, tokenStart, pos - tokenStart))
+                tokenStart = pos
+            }
+            currentType = type
+        }
+        list.add(String(c, tokenStart, c.size - tokenStart))
+        return list.toTypedArray()
     }
 }

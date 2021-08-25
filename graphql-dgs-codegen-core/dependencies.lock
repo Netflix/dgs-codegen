@@ -29,9 +29,6 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.9.0"
         },
-        "commons-lang:commons-lang": {
-            "locked": "2.6"
-        },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
@@ -63,9 +60,6 @@
         },
         "com.squareup:kotlinpoet": {
             "locked": "1.9.0"
-        },
-        "commons-lang:commons-lang": {
-            "locked": "2.6"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -127,9 +121,6 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.9.0"
         },
-        "commons-lang:commons-lang": {
-            "locked": "2.6"
-        },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
@@ -170,9 +161,6 @@
         },
         "com.squareup:kotlinpoet": {
             "locked": "1.9.0"
-        },
-        "commons-lang:commons-lang": {
-            "locked": "2.6"
         },
         "org.assertj:assertj-core": {
             "locked": "3.20.2"
@@ -229,9 +217,6 @@
         },
         "com.squareup:kotlinpoet": {
             "locked": "1.9.0"
-        },
-        "commons-lang:commons-lang": {
-            "locked": "2.6"
         },
         "org.assertj:assertj-core": {
             "locked": "3.20.2"
@@ -291,9 +276,6 @@
         },
         "com.squareup:kotlinpoet": {
             "locked": "1.9.0"
-        },
-        "commons-lang:commons-lang": {
-            "locked": "2.6"
         },
         "org.assertj:assertj-core": {
             "locked": "3.20.2"

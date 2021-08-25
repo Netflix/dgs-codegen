@@ -23,7 +23,6 @@ import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
-import org.apache.commons.lang.ClassUtils.getPublicMethod
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -1753,15 +1752,13 @@ class ClientApiGenTest {
         assertThat(rootProjectionClass).isNotNull
         // stringField
         assertThat(
-            getPublicMethod(rootProjectionClass, "stringField", arrayOf())
+            rootProjectionClass.getMethod("stringField")
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
-            getPublicMethod(
-                rootProjectionClass,
-                "stringField",
-                arrayOf(java.lang.Boolean::class.java)
+            rootProjectionClass.getMethod(
+                "stringField", java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(stringFieldProjectionClass) { it.returnType }
@@ -1774,15 +1771,14 @@ class ClientApiGenTest {
         assertThat(rootProjectionClass).isNotNull
 
         assertThat(
-            getPublicMethod(rootProjectionClass, "stringArrayField", arrayOf())
+            rootProjectionClass.getMethod("stringArrayField")
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
-            getPublicMethod(
-                rootProjectionClass,
+            rootProjectionClass.getMethod(
                 "stringArrayField",
-                arrayOf(java.lang.Boolean::class.java)
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(stringArrayFieldProjectionClass) { it.returnType }
@@ -1796,15 +1792,14 @@ class ClientApiGenTest {
         assertThat(rootProjectionClass).isNotNull
 
         assertThat(
-            getPublicMethod(rootProjectionClass, "booleanField", arrayOf())
+            rootProjectionClass.getMethod("booleanField")
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
-            getPublicMethod(
-                rootProjectionClass,
+            rootProjectionClass.getMethod(
                 "booleanField",
-                arrayOf(java.lang.Boolean::class.java)
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(booleanFieldProjectionClass) { it.returnType }
@@ -1818,15 +1813,13 @@ class ClientApiGenTest {
         assertThat(rootProjectionClass).isNotNull
 
         assertThat(
-            getPublicMethod(rootProjectionClass, "booleanArrayField", arrayOf())
+            rootProjectionClass.getMethod("booleanArrayField")
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
-            getPublicMethod(
-                rootProjectionClass,
-                "booleanArrayField",
-                arrayOf(java.lang.Boolean::class.java)
+            rootProjectionClass.getMethod(
+                "booleanArrayField", java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(booleanArrayFieldProjectionClass) { it.returnType }
@@ -1840,15 +1833,13 @@ class ClientApiGenTest {
         assertThat(rootProjectionClass).isNotNull
 
         assertThat(
-            getPublicMethod(rootProjectionClass, "floatField", arrayOf())
+            rootProjectionClass.getMethod("floatField")
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
-            getPublicMethod(
-                rootProjectionClass,
-                "floatField",
-                arrayOf(java.lang.Boolean::class.java)
+            rootProjectionClass.getMethod(
+                "floatField", java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(floatFieldProjectionClass) { it.returnType }
@@ -1862,15 +1853,13 @@ class ClientApiGenTest {
         assertThat(rootProjectionClass).isNotNull
 
         assertThat(
-            getPublicMethod(rootProjectionClass, "floatArrayField", arrayOf())
+            rootProjectionClass.getMethod("floatArrayField")
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
-            getPublicMethod(
-                rootProjectionClass,
-                "floatArrayField",
-                arrayOf(java.lang.Boolean::class.java)
+            rootProjectionClass.getMethod(
+                "floatArrayField", java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(floatArrayFieldProjectionClass) { it.returnType }
@@ -1917,10 +1906,10 @@ class ClientApiGenTest {
             testClassLoader.loadClass("$basePackageName.client.SomeField_PingProjection")
         assertThat(rootProjectionClass).isNotNull
 
-        assertThat(getPublicMethod(rootProjectionClass, "ping", arrayOf())).isNotNull.returns(rootProjectionClass) { it.returnType }
+        assertThat(rootProjectionClass.getMethod("ping")).isNotNull.returns(rootProjectionClass) { it.returnType }
 
         assertThat(
-            getPublicMethod(rootProjectionClass, "ping", arrayOf(java.lang.Boolean::class.java))
+            rootProjectionClass.getMethod("ping", java.lang.Boolean::class.java)
         ).isNotNull
             .returns(scalarFieldProjectionClass) { it.returnType }
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }

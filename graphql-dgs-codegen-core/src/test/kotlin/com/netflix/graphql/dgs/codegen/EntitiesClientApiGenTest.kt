@@ -18,7 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import org.apache.commons.lang.ClassUtils.getPublicMethod
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -417,7 +416,7 @@ class EntitiesClientApiGenTest {
             "mStringField" to entitiesFooKeyProjectionClass,
             "mBarField" to entitiesFooKey_MBarFieldProjection
         ).forEach { (name, returnClass) ->
-            assertThat(getPublicMethod(entitiesFooKeyProjectionClass, name, arrayOf()))
+            assertThat(entitiesFooKeyProjectionClass.getMethod(name))
                 .describedAs("${entitiesFooKeyProjectionClass.name} method: $name").isNotNull.returns(returnClass) { it.returnType }
         }
 
@@ -426,7 +425,7 @@ class EntitiesClientApiGenTest {
             "mStringField" to (arrayOf(Integer::class.java, String::class.java) to entitiesFooKeyProjectionClass),
         ).forEach { (name, p) ->
             val (args, returnClass) = p
-            assertThat(getPublicMethod(entitiesFooKeyProjectionClass, name, args))
+            assertThat(entitiesFooKeyProjectionClass.getMethod(name))
                 .describedAs("method: $name").isNotNull.returns(returnClass) { it.returnType }
         }
     }
