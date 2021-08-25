@@ -1,7 +1,7 @@
 {
     "apiDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "compileClasspath": {
@@ -12,13 +12,30 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.32"
+            "locked": "1.5.30"
+        },
+        "org.springframework:spring-core": {
+            "locked": "5.2.13.RELEASE"
+        }
+    },
+    "compileOnly": {
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.12.3"
+        },
+        "com.graphql-java:graphql-java": {
+            "locked": "16.2"
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-client": {
+            "locked": "4.5.1"
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "4.5.1"
         },
         "org.springframework:spring-core": {
             "locked": "5.2.13.RELEASE"
@@ -32,10 +49,10 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "org.springframework:spring-core": {
             "locked": "5.2.13.RELEASE"
@@ -43,25 +60,30 @@
     },
     "implementationDependenciesMetadata": {
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "kotlinCompilerClasspath": {
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
-    "kotlinCompilerPluginClasspath": {
+    "kotlinCompilerPluginClasspathMain": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
+        }
+    },
+    "kotlinCompilerPluginClasspathTest": {
+        "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
+            "locked": "1.5.30"
         }
     },
     "kotlinKlibCommonizerClasspath": {
         "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "ktlint": {
@@ -71,10 +93,10 @@
     },
     "runtimeClasspath": {
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.31"
+            "locked": "1.5.30"
         }
     },
     "testCompileClasspath": {
@@ -82,19 +104,19 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.19.0"
+            "locked": "3.20.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.32"
+            "locked": "1.5.30"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.7.2"
@@ -114,19 +136,19 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.19.0"
+            "locked": "3.20.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.32"
+            "locked": "1.5.30"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.7.2"
@@ -146,19 +168,19 @@
             "locked": "16.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-client": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.3.1"
+            "locked": "4.5.1"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.19.0"
+            "locked": "3.20.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.4.32"
+            "locked": "1.5.30"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.7.2"

@@ -26,7 +26,7 @@ dependencies {
     implementation platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release")
 
     implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
-    implementation 'com.netflix.graphql.dgs:graphql-dgs-client'
+    implementation(project(":graphql-dgs-codegen-client-core"))
     implementation 'com.graphql-java:graphql-java'
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
 
