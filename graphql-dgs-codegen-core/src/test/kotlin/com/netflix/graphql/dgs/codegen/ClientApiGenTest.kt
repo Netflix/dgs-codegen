@@ -1915,4 +1915,43 @@ class ClientApiGenTest {
             .asList()
             .containsExactly(0 to "arg")
     }
+
+    @Test
+    fun `Should be able to generate a valid client when java keywords are used as field names`() {
+        val schema = """
+          type Query {
+              someField: Foo
+          }
+          
+          type Foo {
+            ping(arg: Boolean): Long
+            protected: Boolean
+            volatile: Boolean
+          }
+          
+          scalar Long
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+            )
+        ).generate()
+        val projections = codeGenResult.clientProjections
+        assertThat(projections.size).isEqualTo(2)
+
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
+        // assert Type classes
+        assertThat(testClassLoader.loadClass("$basePackageName.types.Foo")).isNotNull
+        // assert root projection classes
+        val rootProjectionClass =
+            testClassLoader.loadClass("$basePackageName.client.SomeFieldProjectionRoot")
+        assertThat(rootProjectionClass).isNotNull
+        assertThat(rootProjectionClass).hasPublicMethods("ping")
+        assertThat(rootProjectionClass).hasPublicMethods("_protected")
+        assertThat(rootProjectionClass).hasPublicMethods("_volatile")
+    }
 }
