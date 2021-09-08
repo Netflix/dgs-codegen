@@ -1266,6 +1266,7 @@ class ClientApiGenTest {
                 root: String
                 parent: String
                 import: String
+                short: Integer
             }
         """.trimIndent()
 
@@ -1279,7 +1280,7 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly("__", "_root", "_parent", "_import")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly("__", "_root", "_parent", "_import", "_short")
 
         assertCompilesJava(codeGenResult)
     }
@@ -1301,6 +1302,7 @@ class ClientApiGenTest {
                 root: String
                 parent: String
                 import: String
+                short: String
             }
         """.trimIndent()
 
@@ -1315,7 +1317,7 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         val weirdType = codeGenResult.clientProjections.find { it.typeSpec.name == "NormalType_WeirdTypeProjection" }
 
-        assertThat(weirdType?.typeSpec?.methodSpecs).extracting("name").contains("__", "_root", "_parent", "_import")
+        assertThat(weirdType?.typeSpec?.methodSpecs).extracting("name").contains("__", "_root", "_parent", "_import", "_short")
 
         assertCompilesJava(codeGenResult.clientProjections)
     }
