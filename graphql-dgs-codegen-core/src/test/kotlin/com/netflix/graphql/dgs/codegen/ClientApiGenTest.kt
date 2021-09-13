@@ -94,6 +94,93 @@ class ClientApiGenTest {
     }
 
     @Test
+    fun generateSubscriptionType() {
+
+        val schema = """
+            type Subscription {
+                movie(movieId: ID, title: String): Movie
+            }
+            
+            type Movie {
+                movieId: ID
+                title: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLQuery")
+
+        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes))
+    }
+
+    @Test
+    fun generateSubscriptionWithInputType() {
+
+        val schema = """
+            type Mutation {
+                movie(movie: MovieDescription): Movie
+            }
+            
+            input MovieDescription {
+                movieId: ID
+                title: String
+                actors: [String]
+            }
+            
+            type Movie {
+                movieId: ID
+                lastname: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLQuery")
+
+        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes))
+    }
+
+    @Test
+    fun includeSubscriptionConfig() {
+
+        val schema = """
+            type Subscription {
+                movieTitle: String
+                addActorName: Boolean
+            }           
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                includeSubscriptions = setOf("movieTitle"),
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieTitleGraphQLQuery")
+
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
     fun generateMutationType() {
 
         val schema = """
