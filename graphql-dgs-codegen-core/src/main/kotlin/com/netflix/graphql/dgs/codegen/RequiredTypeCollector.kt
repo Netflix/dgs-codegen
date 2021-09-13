@@ -35,7 +35,8 @@ import graphql.util.TraverserContext
 class RequiredTypeCollector(
     private val document: Document,
     queries: Set<String> = emptySet(),
-    mutations: Set<String> = emptySet()
+    mutations: Set<String> = emptySet(),
+    subscriptions: Set<String> = emptySet()
 ) {
     val requiredTypes: Set<String> = LinkedHashSet()
 
@@ -45,6 +46,7 @@ class RequiredTypeCollector(
             when (definition.name) {
                 "Query" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in queries }
                 "Mutation" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in mutations }
+                "Subscription" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in subscriptions }
             }
         }
 

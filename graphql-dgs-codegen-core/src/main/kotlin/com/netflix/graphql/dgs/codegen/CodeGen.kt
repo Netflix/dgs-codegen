@@ -78,7 +78,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateForSchema(schema: String): CodeGenResult {
         document = Parser.parse(schema)
-        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
+        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations, subscriptions = config.includeSubscriptions)
         val definitions = document.definitions
         val dataTypesResult = generateJavaDataType(definitions)
         val inputTypesResult = generateJavaInputType(definitions)
@@ -142,7 +142,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return if (config.generateClientApi) {
             definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.name == "Query" || it.name == "Mutation" }
+                .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
                 .map { ClientApiGenerator(config, document).generate(it) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
@@ -203,7 +203,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateKotlinForSchema(schema: String): CodeGenResult {
         document = Parser.parse(schema)
-        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations)
+        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations, subscriptions = config.includeSubscriptions)
         val definitions = document.definitions
 
         val datatypesResult = generateKotlinDataTypes(definitions)
@@ -300,6 +300,7 @@ data class CodeGenConfig(
     val typeMapping: Map<String, String> = emptyMap(),
     val includeQueries: Set<String> = emptySet(),
     val includeMutations: Set<String> = emptySet(),
+    val includeSubscriptions: Set<String> = emptySet(),
     val skipEntityQueries: Boolean = false,
     val shortProjectionNames: Boolean = false,
     val generateDataTypes: Boolean = true,
@@ -408,6 +409,13 @@ fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config:
                 this
             } else {
                 this.filter { it.name in config.includeMutations }
+            }
+        }
+        "Subscription" -> {
+            if (config.includeSubscriptions.isNullOrEmpty()) {
+                this
+            } else {
+                this.filter { it.name in config.includeSubscriptions }
             }
         }
         else -> this
