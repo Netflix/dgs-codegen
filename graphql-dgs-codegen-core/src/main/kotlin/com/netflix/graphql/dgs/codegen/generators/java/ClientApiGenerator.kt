@@ -322,7 +322,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
     private fun createUnionTypes(type: TypeDefinition<*>, javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>, queryDepth: Int): CodeGenResult {
         return if (type is UnionTypeDefinition) {
-            val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document) }.toList()
+            val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document, true) }.toList()
             memberTypes.map {
                 addFragmentProjectionMethod(javaType, rootType, prefix, it, processedEdges, queryDepth)
             }.fold(CodeGenResult()) { total, current -> total.merge(current) }
@@ -431,7 +431,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             fieldDefinitions
                 .filterSkipped()
                 .mapNotNull {
-                    val typeDefinition = it.type.findTypeDefinition(document)
+                    val typeDefinition = it.type.findTypeDefinition(document, true)
                     if (typeDefinition != null) Pair(it, typeDefinition) else null
                 }
                 .filter { (_, typeDef) -> !processedEdges.contains(Pair(typeDef.name, type.name)) }
