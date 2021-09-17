@@ -443,7 +443,11 @@ class CodeGenTest {
                |public interface Person {
                |  String getFirstname();
                |
+               |  void setFirstname(String firstname);
+               |
                |  String getLastname();
+               |
+               |  void setLastname(String lastname);
                |}
                |""".trimMargin()
         )
@@ -510,9 +514,15 @@ class CodeGenTest {
                 |public interface Pet {
                 |  String getId();
                 |
+                |  void setId(String id);
+                |
                 |  String getName();
                 |
+                |  void setName(String name);
+                |
                 |  List<String> getAddress();
+                |
+                |  void setAddress(List<String> address);
                 |}
             |""".trimMargin()
         )
@@ -566,6 +576,8 @@ class CodeGenTest {
                 |@JsonSubTypes(@JsonSubTypes.Type(value = Dog.class, name = "Dog"))
                 |public interface Pet {
                 |  String getName();
+                |
+                |  void setName(String name);
                 |}
             |""".trimMargin()
         )
@@ -628,7 +640,11 @@ class CodeGenTest {
                |public interface Person {
                |  String getFirstname();
                |
+               |  void setFirstname(String firstname);
+               |
                |  String getLastname();
+               |
+               |  void setLastname(String lastname);
                |}
                |""".trimMargin()
         )
@@ -1594,7 +1610,7 @@ class CodeGenTest {
             )
         ).generate()
         assertThat(interfaces[0].typeSpec.name).isEqualTo("Person")
-        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+        assertThat(interfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getName", "setName")
     }
 
     @Test
@@ -1676,7 +1692,11 @@ class CodeGenTest {
                |public interface Person {
                |  String getFirstname();
                |
+               |  void setFirstname(String firstname);
+               |
                |  String getLastname();
+               |
+               |  void setLastname(String lastname);
                |}
                |""".trimMargin()
         )
@@ -1699,9 +1719,15 @@ class CodeGenTest {
                |public interface Employee {
                |  String getFirstname();
                |
+               |  void setFirstname(String firstname);
+               |
                |  String getLastname();
                |
+               |  void setLastname(String lastname);
+               |
                |  String getCompany();
+               |
+               |  void setCompany(String company);
                |}
                |""".trimMargin()
         )
@@ -1868,8 +1894,9 @@ class CodeGenTest {
         ).generate()
 
         assertThat(result.javaInterfaces).hasSize(1)
-        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs).hasSize(3)
-        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs).extracting("name").containsExactly("getFirstname", "getLastname", "getAge")
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs).hasSize(6)
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs).extracting("name")
+            .containsExactly("getFirstname", "setFirstname", "getLastname", "setLastname", "getAge", "setAge")
     }
 
     @Test
@@ -1931,7 +1958,7 @@ class CodeGenTest {
 
         val fruit = interfaces[2]
         assertThat(fruit.typeSpec.name).isEqualTo("Fruit")
-        assertThat(fruit.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+        assertThat(fruit.typeSpec.methodSpecs).extracting("name").containsExactly("getName", "setName")
 
         val apple = dataTypes[0]
         assertThat(apple.typeSpec.name).isEqualTo("Apple")
@@ -1988,9 +2015,9 @@ class CodeGenTest {
 
         val standing = interfaces[2]
         assertThat(standing.typeSpec.name).isEqualTo("Standing")
-        assertThat(standing.typeSpec.methodSpecs).extracting("name").containsExactly("getPosition", "getTeam")
+        assertThat(standing.typeSpec.methodSpecs).extracting("name").containsExactly("getPosition", "setPosition", "getTeam", "setTeam")
         assertThat(standing.typeSpec.methodSpecs[0].returnType.toString()).contains("int")
-        assertThat(standing.typeSpec.methodSpecs[1].returnType).extracting("simpleName").isEqualTo("ITeam")
+        assertThat(standing.typeSpec.methodSpecs[2].returnType).extracting("simpleName").isEqualTo("ITeam")
 
         assertCompilesJava(dataTypes.plus(interfaces))
     }

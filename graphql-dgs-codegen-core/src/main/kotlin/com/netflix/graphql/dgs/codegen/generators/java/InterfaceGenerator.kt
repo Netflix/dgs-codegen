@@ -98,14 +98,19 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType)
 
         val fieldName = fieldDefinition.name
-        val builder = MethodSpec.methodBuilder("get${fieldName.capitalize()}")
+        val getterBuilder = MethodSpec.methodBuilder("get${fieldName.capitalize()}")
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .returns(returnType)
 
+        val setterBuilder = MethodSpec.methodBuilder("set${fieldName.capitalize()}")
+            .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+            .addParameter(returnType, fieldName)
         if (fieldDefinition.description != null) {
-            builder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+            getterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+            setterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
         }
 
-        javaType.addMethod(builder.build())
+        javaType.addMethod(getterBuilder.build())
+        javaType.addMethod(setterBuilder.build())
     }
 }
