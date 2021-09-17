@@ -71,7 +71,7 @@ class ClientApiGenTest {
             type Person {
                 firstname: String
                 lastname: String
-            }
+            }           
         """.trimIndent()
 
         val codeGenResult = CodeGen(
@@ -91,6 +91,51 @@ class ClientApiGenTest {
         )
 
         assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes))
+    }
+
+    @Test
+    fun generateQueryTypesWithTypeExtensions() {
+
+        val schema = """
+            extend type Person {
+                preferences: Preferences
+            }
+            
+            type Preferences {
+                userId: ID!
+            }
+            
+            type Query @extends {
+                getPerson: Person
+            }
+        
+            type Person {
+                personId: ID!
+                linkedIdentities: LinkedIdentities
+            }
+           
+           type LinkedIdentities {
+               employee: Employee
+           }
+           
+           type Employee {
+                id: ID!
+                person: Person!
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("GetPersonGraphQLQuery")
+
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
