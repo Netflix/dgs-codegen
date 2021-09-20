@@ -38,7 +38,7 @@ allprojects {
 
     dependencies {
         testImplementation platform('org.junit:junit-bom:5.8.+')
-        testImplementation 'org.assertj:assertj-core:3.20.+'
+        testImplementation 'org.assertj:assertj-core:3.21.+'
         testImplementation 'org.junit.jupiter:junit-jupiter'
         testImplementation 'org.junit.jupiter:junit-jupiter-params'
     }
