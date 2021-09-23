@@ -101,16 +101,20 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         val getterBuilder = MethodSpec.methodBuilder("get${fieldName.capitalize()}")
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .returns(returnType)
-
-        val setterBuilder = MethodSpec.methodBuilder("set${fieldName.capitalize()}")
-            .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-            .addParameter(returnType, fieldName)
         if (fieldDefinition.description != null) {
             getterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
-            setterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
         }
-
         javaType.addMethod(getterBuilder.build())
-        javaType.addMethod(setterBuilder.build())
+
+        if (config.generateInterfaceSetters) {
+            val setterBuilder = MethodSpec.methodBuilder("set${fieldName.capitalize()}")
+                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                .addParameter(returnType, fieldName)
+
+            if (fieldDefinition.description != null) {
+                setterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+            }
+            javaType.addMethod(setterBuilder.build())
+        }
     }
 }

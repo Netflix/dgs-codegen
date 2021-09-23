@@ -1870,6 +1870,49 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInterfacesWithoutSetters() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            interface Person {
+                firstname: String!
+                lastname: String
+            }
+
+        """.trimIndent()
+
+        val (dataTypes, interfaces) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateInterfaceSetters = false,
+                )
+            ).generate()
+
+        assertThat(interfaces).hasSize(1)
+
+        val person = interfaces[0]
+        Truth.assertThat(person.toString()).isEqualTo(
+            """
+               |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+               |
+               |import java.lang.String;
+               |
+               |public interface Person {
+               |  String getFirstname();
+               |
+               |  String getLastname();
+               |}
+               |""".trimMargin()
+        )
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateConstantsWithExtendedInterface() {
         val schema = """
             type Query {
