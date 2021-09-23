@@ -61,24 +61,22 @@ jobs:
       #     report_paths: '**/build/test-results/test/TEST-*.xml'
 
       # ====================================
-      # Disabling additional verificaiton until we can figure out why the build
-      # is not able to read from maven local.
-      # - name: Clone dgs-examples-java
-      #   uses: actions/checkout@master
-      #   with:
-      #     repository: Netflix/dgs-examples-java
-      #     path: build/examples/dgs-examples-java
+       - name: Clone dgs-examples-java
+         uses: actions/checkout@master
+         with:
+           repository: Netflix/dgs-examples-java
+           path: build/examples/dgs-examples-java
 
-      # - name: Clone dgs-examples-kotlin
-      #   uses: actions/checkout@master
-      #   with:
-      #     repository: Netflix/dgs-examples-kotlin
-      #     path: build/examples/dgs-examples-kotlin
+       - name: Clone dgs-examples-kotlin
+         uses: actions/checkout@master
+         with:
+           repository: Netflix/dgs-examples-kotlin
+           path: build/examples/dgs-examples-kotlin
 
-      # - name: Build Examples
-      #   run: |
-      #     find /home/runner/.m2/repository/ -type f -name "*graphql-dgs-codegen-gradle*"
-      #     ./scripts/test-examples.py -v -k --path=./build/examples
+       - name: Build Examples
+         run: |
+           find /home/runner/.m2/repository/ -type f -name "*graphql-dgs-codegen-gradle*"
+           ./scripts/test-examples.py -v -k --path=./build/examples
       # ====================================
 
       # - name: Publish Examples Test Report
