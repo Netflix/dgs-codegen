@@ -30,13 +30,13 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
         val kotlinType = TypeSpec.classBuilder(definition.name).addModifiers(KModifier.ENUM)
 
         if (definition.description != null) {
-            kotlinType.addKdoc(definition.description.content.lines().joinToString("\n"))
+            kotlinType.addKdoc("%L", definition.description.content.lines().joinToString("\n"))
         }
 
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
         mergedEnumDefinitions.forEach {
             if (it.description != null) {
-                kotlinType.addEnumConstant(it.name, TypeSpec.enumBuilder(it.name).addKdoc(it.description.content.lines().joinToString("\n")).build())
+                kotlinType.addEnumConstant(it.name, TypeSpec.enumBuilder(it.name).addKdoc("%L", it.description.content.lines().joinToString("\n")).build())
             } else {
                 kotlinType.addEnumConstant(it.name)
             }

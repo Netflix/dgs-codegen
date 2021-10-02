@@ -1937,7 +1937,7 @@ It takes a title and such.
         
             type Movie {
                 ""${'"'}
-                The original, non localized title.
+                The original, non localized title with some specials characters : %!({[*$,.:;.
                 ""${'"'}
                 title: String
             }
@@ -1963,7 +1963,7 @@ It takes a title and such.
         val inputType = dataTypes[1].members[0] as TypeSpec
 
         assertThat(type.propertySpecs[0].kdoc.toString()).isEqualTo(
-            """The original, non localized title.
+            """The original, non localized title with some specials characters : %!({[*$,.:;.
             """.trimIndent()
         )
 
