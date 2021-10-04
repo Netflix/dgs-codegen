@@ -682,6 +682,7 @@ class KotlinCodeGenTest {
         assertThat(type.name).isEqualTo("EmployeeTypes")
         assertThat(type.enumConstants.size).isEqualTo(3)
         assertThat(type.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
+        assertThat(type.typeSpecs[0].isCompanion).isTrue()
 
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinEnumTypes)
     }
