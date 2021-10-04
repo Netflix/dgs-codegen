@@ -107,7 +107,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return definitions.asSequence()
             .filterIsInstance<EnumTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
+            .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
             .map { EnumTypeGenerator(config).generate(it, findEnumExtensions(it.name, definitions)) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
@@ -183,7 +183,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
             .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
-            .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
+            .filter { config.generateInterfaces || config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 DataTypeGenerator(config, document).generate(it, findTypeExtensions(it.name, definitions))
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
