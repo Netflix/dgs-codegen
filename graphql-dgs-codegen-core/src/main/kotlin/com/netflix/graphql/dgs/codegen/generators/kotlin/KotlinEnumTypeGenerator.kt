@@ -42,6 +42,8 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
             }
         }
 
+        kotlinType.addType(TypeSpec.companionObjectBuilder().build())
+
         val typeSpec = kotlinType.build()
         val fileSpec = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()
         return CodeGenResult(kotlinEnumTypes = listOf(fileSpec))
