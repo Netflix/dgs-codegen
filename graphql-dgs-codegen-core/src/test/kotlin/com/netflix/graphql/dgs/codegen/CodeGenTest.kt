@@ -2202,6 +2202,101 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateObjectTypeInterfaceWithoutDataTypes() {
+        val schema = """
+            type Query {
+                movie(id: ID): Movie
+                movies(filter: MovieFilter): MoviePage
+            }
+
+            input MovieFilter {
+                title: String
+                genre: Genre
+                language: Language
+                tags: [String]
+            }
+
+            type Movie {
+                id: ID
+                title: String
+                genre: Genre
+                language: Language
+                tags: [String]
+            }
+
+            type MoviePage {
+                items: [Movie]
+            }
+
+            type Genre {
+                name: String
+            }
+            
+            type Rating {
+                name: String
+            }
+            
+            enum Language {
+                ENGLISH
+            }
+            
+            extend input MovieFilter {
+                rating: Rating
+            }
+            
+            extend type Movie {
+                rating: Rating
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true,
+                generateDataTypes = false
+
+            )
+        ).generate()
+
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
+
+        assertThat(interfaces).hasSize(4) // IMovie, IMoviePage, IGenre, IRating
+        assertThat(dataTypes).hasSize(0) // Movie, MoviePage, Genre, Rating, MovieFilter
+
+        val iMovie = interfaces[0]
+        assertThat(iMovie.typeSpec.name).isEqualTo("IMovie")
+        assertThat(iMovie.typeSpec.methodSpecs).extracting("name").containsExactly("getId", "getTitle", "getGenre", "getLanguage", "getTags", "getRating")
+        assertThat(iMovie.typeSpec.methodSpecs[0].returnType).extracting("simpleName").isEqualTo("String")
+        assertThat(iMovie.typeSpec.methodSpecs[1].returnType).extracting("simpleName").isEqualTo("String")
+        assertThat(iMovie.typeSpec.methodSpecs[2].returnType).extracting("simpleName").isEqualTo("IGenre")
+        assertThat(iMovie.typeSpec.methodSpecs[3].returnType).extracting("simpleName").isEqualTo("Language")
+        var parameterizedTypeName = iMovie.typeSpec.methodSpecs[4].returnType as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
+        assertThat(iMovie.typeSpec.methodSpecs[5].returnType).extracting("simpleName").isEqualTo("IRating")
+
+        val iMoviePage = interfaces[1]
+        assertThat(iMoviePage.typeSpec.name).isEqualTo("IMoviePage")
+        assertThat(iMoviePage.typeSpec.methodSpecs).extracting("name").containsExactly("getItems")
+        parameterizedTypeName = iMoviePage.typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
+        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+        val wildcardTypeName = parameterizedTypeName.typeArguments[0] as WildcardTypeName
+        assertThat(wildcardTypeName.upperBounds[0]).extracting("simpleName").isEqualTo("IMovie")
+
+        val iGenre = interfaces[2]
+        assertThat(iGenre.typeSpec.name).isEqualTo("IGenre")
+        assertThat(iGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+
+        val iRating = interfaces[3]
+        assertThat(iRating.typeSpec.name).isEqualTo("IRating")
+        assertThat(iRating.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+
+        assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
+    }
+
+    @Test
     fun generateInterfacesSupportingUnionTypes() {
         val schema = """
             type Query {

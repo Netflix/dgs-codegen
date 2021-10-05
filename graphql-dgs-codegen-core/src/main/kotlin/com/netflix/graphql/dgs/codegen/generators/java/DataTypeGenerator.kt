@@ -60,15 +60,33 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
             interfaceCodeGenResult = generateInterface(interfaceName, superInterfaces, fieldDefinitions)
         }
 
-        val fieldDefinitions = definition.fieldDefinitions
-            .filterSkipped()
-            .map {
-                Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter, description = it.description)
-            }
-            .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType), overrideGetter = overrideGetter, description = it.description) })
+        if (config.generateDataTypes) {
+            val fieldDefinitions = definition.fieldDefinitions
+                .filterSkipped()
+                .map {
+                    Field(
+                        it.name,
+                        typeUtils.findReturnType(it.type, useInterfaceType),
+                        overrideGetter = overrideGetter,
+                        description = it.description
+                    )
+                }
+                .plus(
+                    extensions.flatMap { it.fieldDefinitions }.filterSkipped().map {
+                        Field(
+                            it.name,
+                            typeUtils.findReturnType(it.type, useInterfaceType),
+                            overrideGetter = overrideGetter,
+                            description = it.description
+                        )
+                    }
+                )
 
-        return generate(name, unionTypes.plus(implements), fieldDefinitions, false, definition.description)
-            .merge(interfaceCodeGenResult)
+            return generate(name, unionTypes.plus(implements), fieldDefinitions, false, definition.description)
+                .merge(interfaceCodeGenResult)
+        }
+
+        return interfaceCodeGenResult
     }
 }
 
