@@ -29,16 +29,14 @@ object CodeGeneratorUtils {
     }
 
     /**
-     * Transforms the input string, that should express a camel case notation, into one that expresses a snake case notation.
-     *
-     * @see StringUtils.splitByCharacterTypeCamelCase
+     * Transforms the input string expressing camel-case notation into one that expresses a snake-case notation.
      * */
-    fun camelCasetoSnakeCase(input: String, case: Case = Case.LOWERCASE): String {
+    fun camelCaseToSnakeCase(input: String, case: Case = Case.LOWERCASE): String {
         val parts = splitByCharacterTypeCamelCase(input)
         return parts.joinToString(separator = "_") {
             when (case) {
-                Case.LOWERCASE -> it.toLowerCase()
-                Case.UPPERCASE -> it.toUpperCase()
+                Case.LOWERCASE -> it.lowercase(Locale.getDefault())
+                Case.UPPERCASE -> it.uppercase(Locale.getDefault())
             }
         }
     }

@@ -47,6 +47,10 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header")
     )
 
+    fun qualifyName(name: String): String {
+        return "$packageName.$name"
+    }
+
     fun findReturnType(fieldType: Type<*>, useInterfaceType: Boolean = false, useWildcardType: Boolean = false): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {

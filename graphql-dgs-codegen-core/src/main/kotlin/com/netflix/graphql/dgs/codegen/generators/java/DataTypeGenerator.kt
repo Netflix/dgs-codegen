@@ -133,7 +133,13 @@ internal data class Field(val name: String, val type: com.squareup.javapoet.Type
 abstract class BaseDataTypeGenerator(internal val packageName: String, private val config: CodeGenConfig, document: Document) {
     internal val typeUtils = TypeUtils(packageName, config, document)
 
-    internal fun generate(name: String, interfaces: List<String>, fields: List<Field>, isInputType: Boolean, description: Description? = null): CodeGenResult {
+    internal fun generate(
+        name: String,
+        interfaces: List<String>,
+        fields: List<Field>,
+        isInputType: Boolean,
+        description: Description? = null
+    ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
 
@@ -312,8 +318,16 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
 
         javaType.addMethod(getterMethodBuilder.build())
 
-        val setterName = "set${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
-        javaType.addMethod(MethodSpec.methodBuilder(setterName).addModifiers(Modifier.PUBLIC).addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name), ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).build())
+        val setterName = "set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}"
+        javaType.addMethod(
+            MethodSpec.methodBuilder(setterName)
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                .addStatement(
+                    "this.\$N = \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
+                    ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
+                ).build()
+        )
     }
 
     private fun addAbstractGetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
