@@ -37,7 +37,7 @@ dependencies {
 
     testImplementation 'com.google.jimfs:jimfs:1.2'
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
-    testImplementation 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.5.30'
+    testImplementation 'org.jetbrains.kotlin:kotlin-compiler-embeddable:1.5.31'
 }
 
 application {
