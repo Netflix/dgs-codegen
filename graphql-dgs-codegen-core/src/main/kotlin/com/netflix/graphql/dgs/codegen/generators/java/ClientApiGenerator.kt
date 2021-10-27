@@ -26,7 +26,10 @@ import com.netflix.graphql.dgs.codegen.generators.shared.ClassnameShortener
 import com.squareup.javapoet.*
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.*
+import java.util.*
 import javax.lang.model.element.Modifier
+import kotlin.collections.ArrayList
+import kotlin.collections.HashSet
 
 class ClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
     private val generatedClasses = mutableSetOf<String>()
@@ -36,8 +39,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
             val javaFile = createQueryClass(it, definition.name)
 
-            val rootProjection = it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) }
-                ?: CodeGenResult()
+            val rootProjection =
+                it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalize()) }
+                    ?: CodeGenResult()
             CodeGenResult(javaQueryTypes = listOf(javaFile)).merge(rootProjection)
         }.fold(CodeGenResult()) { total, current -> total.merge(current) }
     }
@@ -526,5 +530,16 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
     private fun getDatatypesPackageName(): String {
         return config.packageNameTypes
+    }
+
+    companion object {
+
+        /**
+         * Kotlin 1.5 deprecates the [kotlin.text.capitalize] method. To still support a String extension of this kind
+         * we are adding an explicit _Kotlin extension_ with the same name and suggested implementation per the Kotlin 1.5 docs.
+         * */
+        private fun String.capitalize(): String {
+            return replaceFirstChar { if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString() }
+        }
     }
 }

@@ -111,7 +111,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
     private fun createConstantTypeBuilder(conf: CodeGenConfig, name: String): TypeSpec.Builder {
         val className =
             if (conf.snakeCaseConstantNames)
-                CodeGeneratorUtils.camelCasetoSnakeCase(name, CodeGeneratorUtils.Case.UPPERCASE)
+                CodeGeneratorUtils.camelCaseToSnakeCase(name, CodeGeneratorUtils.Case.UPPERCASE)
             else
                 name.toUpperCase()
 

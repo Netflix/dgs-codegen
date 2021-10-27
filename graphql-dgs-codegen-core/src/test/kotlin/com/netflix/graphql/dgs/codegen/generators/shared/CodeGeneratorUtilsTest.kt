@@ -29,7 +29,7 @@ internal class CodeGeneratorUtilsTest {
     @ParameterizedTest(name = "{index} => {0}, expected {1}")
     @MethodSource("toSnakeCaseData")
     fun toSnakeCase(input: String, output: String) {
-        assertThat(CodeGeneratorUtils.camelCasetoSnakeCase(input)).isEqualTo(output)
+        assertThat(CodeGeneratorUtils.camelCaseToSnakeCase(input)).isEqualTo(output)
     }
 
     companion object {

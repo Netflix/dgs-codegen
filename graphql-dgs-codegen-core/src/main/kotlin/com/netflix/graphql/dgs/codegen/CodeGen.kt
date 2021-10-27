@@ -51,7 +51,10 @@ class CodeGen(private val config: CodeGenConfig) {
             .toList()
 
         val joinedSchema = inputSchemas.joinToString("\n")
-        val codeGenResult = if (config.language == Language.JAVA) generateForSchema(joinedSchema) else generateKotlinForSchema(joinedSchema)
+        val codeGenResult =
+            if (config.language == Language.JAVA) generateForSchema(joinedSchema)
+            else generateKotlinForSchema(joinedSchema)
+
         if (config.writeToFiles) {
             codeGenResult.javaDataTypes.forEach { it.writeTo(config.outputDir) }
             codeGenResult.javaInterfaces.forEach { it.writeTo(config.outputDir) }
@@ -78,18 +81,27 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateForSchema(schema: String): CodeGenResult {
         document = Parser.parse(schema)
-        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations, subscriptions = config.includeSubscriptions)
+        requiredTypeCollector = RequiredTypeCollector(
+            document,
+            queries = config.includeQueries,
+            mutations = config.includeMutations,
+            subscriptions = config.includeSubscriptions
+        )
+
         val definitions = document.definitions
+        // data types
         val dataTypesResult = generateJavaDataType(definitions)
         val inputTypesResult = generateJavaInputType(definitions)
         val interfacesResult = generateJavaInterfaces(definitions)
         val unionsResult = generateJavaUnions(definitions)
         val enumsResult = generateJavaEnums(definitions)
-        val dataFetchersResult = generateJavaDataFetchers(definitions)
+        val constantsClass = ConstantsGenerator(config, document).generate()
+        // Client
         val client = generateJavaClientApi(definitions)
         val entitiesClient = generateJavaClientEntitiesApi(definitions)
         val entitiesRepresentationsTypes = generateJavaClientEntitiesRepresentations(definitions)
-        val constantsClass = ConstantsGenerator(config, document).generate()
+        // Data Fetchers
+        val dataFetchersResult = generateJavaDataFetchers(definitions)
 
         return dataTypesResult
             .merge(dataFetchersResult)
@@ -203,7 +215,13 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateKotlinForSchema(schema: String): CodeGenResult {
         document = Parser.parse(schema)
-        requiredTypeCollector = RequiredTypeCollector(document, queries = config.includeQueries, mutations = config.includeMutations, subscriptions = config.includeSubscriptions)
+        requiredTypeCollector = RequiredTypeCollector(
+            document,
+            queries = config.includeQueries,
+            mutations = config.includeMutations,
+            subscriptions = config.includeSubscriptions,
+        )
+
         val definitions = document.definitions
 
         val datatypesResult = generateKotlinDataTypes(definitions)
@@ -243,7 +261,8 @@ class CodeGen(private val config: CodeGenConfig) {
         val entitiesClient = generateJavaClientEntitiesApi(definitions)
         val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
 
-        return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult).merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
+        return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult)
+            .merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
     }
 
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -389,6 +408,27 @@ data class CodeGenResult(
             kotlinDataFetchers = kotlinDataFetchers,
             kotlinConstants = kotlinConstants
         )
+    }
+
+    fun javaSources(): List<JavaFile> {
+        return javaDataTypes
+            .asSequence()
+            .plus(javaInterfaces)
+            .plus(javaEnumTypes)
+            .plus(javaDataFetchers)
+            .plus(javaQueryTypes)
+            .plus(clientProjections)
+            .plus(javaConstants)
+            .toList()
+    }
+
+    fun kotlinSources(): List<FileSpec> {
+        return kotlinDataTypes
+            .asSequence()
+            .plus(kotlinInterfaces)
+            .plus(kotlinEnumTypes)
+            .plus(kotlinConstants)
+            .toList()
     }
 }
 

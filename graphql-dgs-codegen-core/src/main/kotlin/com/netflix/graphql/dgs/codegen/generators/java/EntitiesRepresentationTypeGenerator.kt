@@ -24,54 +24,102 @@ import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
 import graphql.language.*
+import org.slf4j.LoggerFactory
 
 @Suppress("UNCHECKED_CAST")
-class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
+class EntitiesRepresentationTypeGenerator(
+    val config: CodeGenConfig,
+    private val document: Document
+) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
+
     fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
         if (config.skipEntityQueries) {
             return CodeGenResult()
         }
-
-        val name = "${definition.name}Representation"
-        if (generatedRepresentations.containsKey(name)) {
+        val representationName = toRepresentationName(definition)
+        if (generatedRepresentations.containsKey(representationName)) {
             return CodeGenResult()
         }
-        val directiveArg = definition.getDirectives("key").map { it.argumentsByName["fields"]?.value as StringValue }.map { it.value }
+        val directiveArg =
+            definition
+                .getDirectives("key")
+                .map { it.argumentsByName["fields"]?.value as StringValue }
+                .map { it.value }
+
         val keyFields = parseKeyDirectiveValue(directiveArg)
-        return generateRepresentations(definition.name, definition.fieldDefinitions, generatedRepresentations, keyFields)
+        return generateRepresentations(
+            definition.name,
+            representationName,
+            definition.fieldDefinitions,
+            generatedRepresentations,
+            keyFields
+        )
     }
 
     private fun generateRepresentations(
         definitionName: String,
+        representationName: String,
         fields: List<FieldDefinition>,
         generatedRepresentations: MutableMap<String, Any>,
         keyFields: Map<String, Any>
     ): CodeGenResult {
-        val name = "${definitionName}Representation"
-        if (generatedRepresentations.containsKey(name)) {
+        if (generatedRepresentations.containsKey(representationName)) {
             return CodeGenResult()
         }
-        var result = CodeGenResult()
+        var fieldsCodeGenAccumulator = CodeGenResult()
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", ClassName.get(String::class.java), CodeBlock.of("\$S", definitionName))
-        val fieldDefinitions = fields
-            .filter {
-                keyFields.containsKey(it.name)
-            }
-            .map {
-                val type = findType(it.type, document)
-                if (type != null && (type is ObjectTypeDefinition || type is InterfaceTypeDefinition)) {
-                    val representationType = typeUtils.findReturnType(it.type).toString().replace(type.name, "${type.name}Representation")
-                    if (!generatedRepresentations.containsKey(name)) {
-                        result = generateRepresentations(type.name, type.fieldDefinitions(), generatedRepresentations, keyFields[it.name] as Map<String, Any>)
+        val fieldDefinitions =
+            fields
+                .filter { keyFields.containsKey(it.name) }
+                .map {
+                    val type = findType(it.type, document)
+
+                    if (type != null &&
+                        (
+                            type is ObjectTypeDefinition ||
+                                type is InterfaceTypeDefinition ||
+                                type is EnumTypeDefinition
+                            )
+                    ) {
+                        val fieldTypeRepresentationName = toRepresentationName(type)
+                        val fieldRepresentationType =
+                            typeUtils
+                                .findReturnType(it.type)
+                                .toString()
+                                .replace(type.name, fieldTypeRepresentationName)
+
+                        if (generatedRepresentations.containsKey(fieldTypeRepresentationName)) {
+                            logger.trace("Representation fo $fieldTypeRepresentationName was already generated.")
+                        } else {
+                            logger.debug("Generating entity representation {} ...", fieldTypeRepresentationName)
+                            val fieldTypeRepresentation = generateRepresentations(
+                                type.name,
+                                fieldTypeRepresentationName,
+                                type.fieldDefinitions(),
+                                generatedRepresentations,
+                                keyFields[it.name] as Map<String, Any>
+                            )
+                            fieldsCodeGenAccumulator = fieldsCodeGenAccumulator.merge(fieldTypeRepresentation)
+                            generatedRepresentations[fieldTypeRepresentationName] = fieldRepresentationType
+                        }
+                        Field(it.name, ClassName.get("", fieldRepresentationType))
+                    } else {
+                        val returnType = typeUtils.findReturnType(it.type)
+                        Field(it.name, returnType)
                     }
-                    generatedRepresentations["${type.name}Representation"] = representationType
-                    Field(it.name, ClassName.get("", representationType))
-                } else {
-                    Field(it.name, typeUtils.findReturnType(it.type))
                 }
-            }
-        return generate(name, emptyList(), fieldDefinitions.plus(typeName), true).merge(result)
+        // Generate base type representation...
+        val parentRepresentationCodeGen = super.generate(
+            name = representationName,
+            interfaces = emptyList(),
+            fields = fieldDefinitions.plus(typeName),
+            isInputType = true,
+            description = null
+        )
+        generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
+        // Merge all results.
+        return parentRepresentationCodeGen.merge(fieldsCodeGenAccumulator)
     }
 
     private fun findType(typeName: Type<*>, document: Document): TypeDefinition<*>? {
@@ -82,7 +130,8 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
             is ListType -> {
                 findType(typeName.type, document)
             }
-            else -> document.definitions.filterIsInstance<TypeDefinition<*>>().find { it.name == (typeName as TypeName).name }
+            else -> document.definitions.filterIsInstance<TypeDefinition<*>>()
+                .find { it.name == (typeName as TypeName).name }
         }
     }
 
@@ -122,5 +171,12 @@ class EntitiesRepresentationTypeGenerator(val config: CodeGenConfig, private val
                 }
             }
         return mappedKeyTypes
+    }
+
+    companion object {
+        private val logger: org.slf4j.Logger =
+            LoggerFactory.getLogger(EntitiesRepresentationTypeGenerator::class.java)
+
+        private fun toRepresentationName(definition: TypeDefinition<*>) = "${definition.name}Representation"
     }
 }

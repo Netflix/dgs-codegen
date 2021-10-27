@@ -27,8 +27,11 @@ import javax.lang.model.element.Modifier
 
 class EnumTypeGenerator(private val config: CodeGenConfig) {
     fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
-        val javaType = TypeSpec.enumBuilder(definition.name)
-            .addModifiers(Modifier.PUBLIC)
+        val javaType =
+            TypeSpec
+                .enumBuilder(definition.name)
+                .addModifiers(Modifier.PUBLIC)
+
         if (definition.description != null) {
             javaType.addJavadoc(definition.description.content.lines().joinToString("\n"))
         }
@@ -44,7 +47,7 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
         return CodeGenResult(javaEnumTypes = listOf(javaFile))
     }
 
-    fun getPackageName(): String {
+    private fun getPackageName(): String {
         return config.packageNameTypes
     }
 }
