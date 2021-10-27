@@ -43,7 +43,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
 
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
         if (definition.description != null) {
-            interfaceBuilder.addKdoc(definition.description.content.lines().joinToString("\n"))
+            interfaceBuilder.addKdoc("%L", definition.description.content.lines().joinToString("\n"))
         }
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
@@ -52,7 +52,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
             val returnType = typeUtils.findReturnType(field.type)
             val propertySpec = PropertySpec.builder(field.name, returnType)
             if (field.description != null) {
-                propertySpec.addKdoc(field.description.content.lines().joinToString("\n"))
+                propertySpec.addKdoc("%L", field.description.content.lines().joinToString("\n"))
             }
 
             interfaceBuilder.addProperty(propertySpec.build())
