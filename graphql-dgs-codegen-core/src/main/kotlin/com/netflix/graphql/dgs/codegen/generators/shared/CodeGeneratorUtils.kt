@@ -35,8 +35,8 @@ object CodeGeneratorUtils {
         val parts = splitByCharacterTypeCamelCase(input)
         return parts.joinToString(separator = "_") {
             when (case) {
-                Case.LOWERCASE -> it.lowercase(Locale.getDefault())
-                Case.UPPERCASE -> it.uppercase(Locale.getDefault())
+                Case.LOWERCASE -> it.toLowerCase()
+                Case.UPPERCASE -> it.toUpperCase()
             }
         }
     }

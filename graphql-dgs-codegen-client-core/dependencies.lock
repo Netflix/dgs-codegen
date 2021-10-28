@@ -1,7 +1,7 @@
 {
     "apiDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         }
     },
     "compileClasspath": {
@@ -9,27 +9,13 @@
             "locked": "2.12.3"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "16.2"
+            "locked": "17.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.5.30"
-        },
-        "org.springframework:spring-core": {
-            "locked": "5.2.13.RELEASE"
-        }
-    },
-    "compileOnly": {
-        "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.12.3"
-        },
-        "com.graphql-java:graphql-java": {
-            "locked": "16.2"
-        },
-        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.5.1"
+            "locked": "1.5.31"
         },
         "org.springframework:spring-core": {
             "locked": "5.2.13.RELEASE"
@@ -40,10 +26,10 @@
             "locked": "2.12.3"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "16.2"
+            "locked": "17.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "org.springframework:spring-core": {
             "locked": "5.2.13.RELEASE"
@@ -51,69 +37,64 @@
     },
     "implementationDependenciesMetadata": {
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         }
     },
     "kotlinCompilerClasspath": {
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         }
     },
     "kotlinCompilerPluginClasspathMain": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         }
     },
     "kotlinCompilerPluginClasspathTest": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         }
     },
     "kotlinKlibCommonizerClasspath": {
         "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable": {
-            "locked": "1.5.30"
-        }
-    },
-    "ktlint": {
-        "com.pinterest:ktlint": {
-            "locked": "0.40.0"
+            "locked": "1.5.31"
         }
     },
     "runtimeClasspath": {
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         }
     },
     "testCompileClasspath": {
         "com.graphql-java:graphql-java": {
-            "locked": "16.2"
+            "locked": "17.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.20.2"
+            "locked": "3.21.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.springframework:spring-core": {
             "locked": "5.2.13.RELEASE"
@@ -121,28 +102,28 @@
     },
     "testImplementationDependenciesMetadata": {
         "com.graphql-java:graphql-java": {
-            "locked": "16.2"
+            "locked": "17.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.20.2"
+            "locked": "3.21.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.springframework:spring-core": {
             "locked": "5.2.13.RELEASE"
@@ -150,28 +131,28 @@
     },
     "testRuntimeClasspath": {
         "com.graphql-java:graphql-java": {
-            "locked": "16.2"
+            "locked": "17.3"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.5.1"
+            "locked": "4.9.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.20.2"
+            "locked": "3.21.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.5.30"
+            "locked": "1.5.31"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.7.2"
+            "locked": "5.8.1"
         },
         "org.springframework:spring-core": {
             "locked": "5.2.13.RELEASE"
