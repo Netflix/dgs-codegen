@@ -21,7 +21,22 @@ package com.netflix.graphql.dgs.codegen.generators.java
 class ReservedKeywordSanitizer {
 
     companion object {
-        private val reservedKeywords = setOf("import", "_", "root", "parent", "interface", "boolean", "enum", "volatile", "protected", "short")
+        private val reservedKeywords =
+            setOf(
+                "_",
+                "boolean",
+                "default",
+                "enum",
+                "import",
+                "interface",
+                "package",
+                "parent",
+                "protected",
+                "root",
+                "short",
+                "volatile",
+            )
+
         private const val prefix = "_"
 
         fun sanitize(originalName: String): String {
