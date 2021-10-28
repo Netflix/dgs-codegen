@@ -403,13 +403,13 @@ class ClientApiGenTest {
         assert(
             initMethod.contains(
                 "super(\"mutation\");\n" +
-                        "if (movie != null || fieldsSet.contains(\"movie\")) {\n" +
-                        "    getInput().put(\"movie\", movie);\n" +
-                        "}if (reviews != null || fieldsSet.contains(\"reviews\")) {\n" +
-                        "    getInput().put(\"reviews\", reviews);\n" +
-                        "}if (uuid != null || fieldsSet.contains(\"uuid\")) {\n" +
-                        "    getInput().put(\"uuid\", uuid);\n" +
-                        "}"
+                    "if (movie != null || fieldsSet.contains(\"movie\")) {\n" +
+                    "    getInput().put(\"movie\", movie);\n" +
+                    "}if (reviews != null || fieldsSet.contains(\"reviews\")) {\n" +
+                    "    getInput().put(\"reviews\", reviews);\n" +
+                    "}if (uuid != null || fieldsSet.contains(\"uuid\")) {\n" +
+                    "    getInput().put(\"uuid\", uuid);\n" +
+                    "}"
             )
         )
         assertCompilesJava(
