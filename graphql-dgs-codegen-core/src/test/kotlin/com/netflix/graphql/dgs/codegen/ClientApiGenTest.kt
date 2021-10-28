@@ -197,7 +197,9 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLQuery")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes)
+        )
     }
 
     @Test
@@ -284,7 +286,9 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes)
+        )
     }
 
     @Test
@@ -322,7 +326,9 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].javadoc.toString()).isEqualTo("Some movie description")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes)
+        )
     }
 
     @Test
@@ -397,16 +403,18 @@ class ClientApiGenTest {
         assert(
             initMethod.contains(
                 "super(\"mutation\");\n" +
-                    "if (movie != null || fieldsSet.contains(\"movie\")) {\n" +
-                    "    getInput().put(\"movie\", movie);\n" +
-                    "}if (reviews != null || fieldsSet.contains(\"reviews\")) {\n" +
-                    "    getInput().put(\"reviews\", reviews);\n" +
-                    "}if (uuid != null || fieldsSet.contains(\"uuid\")) {\n" +
-                    "    getInput().put(\"uuid\", uuid);\n" +
-                    "}"
+                        "if (movie != null || fieldsSet.contains(\"movie\")) {\n" +
+                        "    getInput().put(\"movie\", movie);\n" +
+                        "}if (reviews != null || fieldsSet.contains(\"reviews\")) {\n" +
+                        "    getInput().put(\"reviews\", reviews);\n" +
+                        "}if (uuid != null || fieldsSet.contains(\"uuid\")) {\n" +
+                        "    getInput().put(\"uuid\", uuid);\n" +
+                        "}"
             )
         )
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes)
+        )
     }
 
     @Test
@@ -437,7 +445,9 @@ class ClientApiGenTest {
                 .contains("super(\"mutation\");\ngetInput().put(\"movieId\", movieId);")
         )
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaDataTypes)
+        )
     }
 
     @Test
@@ -537,7 +547,10 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("Search_Movie_Details_ShowProjection")
         assertThat(codeGenResult.clientProjections[4].typeSpec.name).isEqualTo("Search_Movie_Details_Show_MovieProjection")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces)
+        )
     }
 
     @Test
@@ -565,7 +578,13 @@ class ClientApiGenTest {
             
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true)).generate()
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true
+            )
+        ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(7)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -576,7 +595,10 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[5].typeSpec.name).isEqualTo("Search_Movie_Related_Video_ShowProjection")
         assertThat(codeGenResult.clientProjections[6].typeSpec.name).isEqualTo("Search_Movie_Related_Video_MovieProjection")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces)
+        )
     }
 
     @Test
@@ -808,7 +830,9 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("index")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+        )
     }
 
     @Test
@@ -841,7 +865,10 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PersonSearchGraphQLQuery")
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("index")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes)
+        )
     }
 
     @Test
@@ -875,7 +902,10 @@ class ClientApiGenTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PersonsGraphQLQuery")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes)
+        )
     }
 
     @Test
@@ -919,7 +949,10 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("Search_SeriesProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[2].name).isEqualTo("episodes")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces)
+        )
     }
 
     @Test
@@ -963,7 +996,10 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("shows")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("name")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces)
+        )
     }
 
     @Test
@@ -1003,13 +1039,18 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("Search_MovieProjection")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("duration")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").doesNotContain("episodes")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name")
+            .doesNotContain("episodes")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("Search_SeriesProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("episodes")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("duration")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name")
+            .doesNotContain("duration")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces)
+        )
     }
 
     @Test
@@ -1054,16 +1095,21 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("Search_Show_MovieProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("duration")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("episodes")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name")
+            .doesNotContain("episodes")
         assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("Search_Show_SeriesProjection")
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("episodes")
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").doesNotContain("duration")
+        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name")
+            .doesNotContain("duration")
 
         val superclass = codeGenResult.clientProjections[3].typeSpec.superclass as ParameterizedTypeName
         assertThat(superclass.typeArguments[1]).extracting("simpleName").isEqualTo("SearchProjectionRoot")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces)
+        )
     }
 
     @Test
@@ -1103,7 +1149,10 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("name")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
 
-        assertCompilesJava(codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes).plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces))
+        assertCompilesJava(
+            codeGenResult.clientProjections.plus(codeGenResult.javaQueryTypes).plus(codeGenResult.javaEnumTypes)
+                .plus(codeGenResult.javaDataTypes).plus(codeGenResult.javaInterfaces)
+        )
     }
 
     @Test
@@ -1191,10 +1240,14 @@ class ClientApiGenTest {
         val searchResultProjectionClass =
             testClassLoader.loadClass("$basePackageName.client.Search_ResultProjection")
         // Fetch constructor
-        val searchMovieProjectionCtor = searchMovieProjectionClass.getDeclaredConstructor(searchResultProjectionClass, searchProjectionRootClass)
+        val searchMovieProjectionCtor =
+            searchMovieProjectionClass.getDeclaredConstructor(searchResultProjectionClass, searchProjectionRootClass)
         val searchMovieProjectionInstance = searchMovieProjectionCtor.newInstance(null, null)
         val optionalProjectionSchemaType =
-            invokeMethod<java.util.Optional<String>>(searchMovieProjectionClass.getMethod("getSchemaType"), searchMovieProjectionInstance)
+            invokeMethod<java.util.Optional<String>>(
+                searchMovieProjectionClass.getMethod("getSchemaType"),
+                searchMovieProjectionInstance
+            )
         // assert we have the correct explicit type.
         assertThat(optionalProjectionSchemaType).contains("Movie")
     }
@@ -1412,7 +1465,8 @@ class ClientApiGenTest {
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").containsExactly("__", "_root", "_parent", "_import", "_short")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name")
+            .containsExactly("__", "_root", "_parent", "_import", "_short")
 
         assertCompilesJava(codeGenResult)
     }
@@ -1449,7 +1503,8 @@ class ClientApiGenTest {
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         val weirdType = codeGenResult.clientProjections.find { it.typeSpec.name == "NormalType_WeirdTypeProjection" }
 
-        assertThat(weirdType?.typeSpec?.methodSpecs).extracting("name").contains("__", "_root", "_parent", "_import", "_short")
+        assertThat(weirdType?.typeSpec?.methodSpecs).extracting("name")
+            .contains("__", "_root", "_parent", "_import", "_short")
 
         assertCompilesJava(codeGenResult.clientProjections)
     }
@@ -1479,11 +1534,20 @@ class ClientApiGenTest {
             }                     
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, generateClientApi = true, writeToFiles = false)).generate()
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                writeToFiles = false
+            )
+        ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(6)
-        val workshopAssetsReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "Workshop_Assets_ReviewsProjection" }!!
-        val workshopReviewsProjection = codeGenResult.clientProjections.find { it.typeSpec.name == "Workshop_ReviewsProjection" }!!
+        val workshopAssetsReviewsProjection =
+            codeGenResult.clientProjections.find { it.typeSpec.name == "Workshop_Assets_ReviewsProjection" }!!
+        val workshopReviewsProjection =
+            codeGenResult.clientProjections.find { it.typeSpec.name == "Workshop_ReviewsProjection" }!!
 
         assertThat(workshopReviewsProjection.typeSpec.methodSpecs).extracting("name").contains("edges")
         assertThat(workshopAssetsReviewsProjection.typeSpec.methodSpecs).extracting("name").contains("edges")
@@ -1722,7 +1786,8 @@ class ClientApiGenTest {
             )
         ).generate()
 
-        val builderClass = assertCompilesJava(codeGenResult).toClassLoader().loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
+        val builderClass = assertCompilesJava(codeGenResult).toClassLoader()
+            .loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
 
         val buildMethod = builderClass.getMethod("build")
         val nameMethod = builderClass.getMethod("nameFilter", String::class.java)
@@ -1752,7 +1817,8 @@ class ClientApiGenTest {
             )
         ).generate()
 
-        val builderClass = assertCompilesJava(codeGenResult).toClassLoader().loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
+        val builderClass = assertCompilesJava(codeGenResult).toClassLoader()
+            .loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
         val buildMethod = builderClass.getMethod("build")
 
         // When the 'nameFilter' method is not invoked, it should not be included in the input map.
@@ -1828,7 +1894,8 @@ class ClientApiGenTest {
         val methodSpecs = codeGenResult.clientProjections[1].typeSpec.methodSpecs
         val methodWithArgs = methodSpecs.filter { !it.isConstructor }.find { it.parameters.size > 0 }
         assertThat(methodWithArgs!!).isNotNull
-        assertThat(methodWithArgs.returnType).extracting { (it as ClassName).simpleName() }.isEqualTo("Movies_Actors_AwardsProjection")
+        assertThat(methodWithArgs.returnType).extracting { (it as ClassName).simpleName() }
+            .isEqualTo("Movies_Actors_AwardsProjection")
         assertThat(methodWithArgs.parameters[0].name).isEqualTo("oscarsOnly")
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
     }
@@ -2059,7 +2126,16 @@ class ClientApiGenTest {
           
           type Foo {
             ping(arg: Boolean): Long
+            boolean: Boolean
+            default: Boolean
+            enum: Boolean
+            import: Boolean
+            interface: Boolean
+            package: Boolean
+            parent: Boolean
             protected: Boolean
+            root: Boolean
+            short: Boolean
             volatile: Boolean
           }
           
@@ -2085,7 +2161,18 @@ class ClientApiGenTest {
             testClassLoader.loadClass("$basePackageName.client.SomeFieldProjectionRoot")
         assertThat(rootProjectionClass).isNotNull
         assertThat(rootProjectionClass).hasPublicMethods("ping")
-        assertThat(rootProjectionClass).hasPublicMethods("_protected")
-        assertThat(rootProjectionClass).hasPublicMethods("_volatile")
+        assertThat(rootProjectionClass).hasPublicMethods(
+            "_boolean",
+            "_default",
+            "_enum",
+            "_import",
+            "_interface",
+            "_package",
+            "_parent",
+            "_protected",
+            "_root",
+            "_short",
+            "_volatile",
+        )
     }
 }
