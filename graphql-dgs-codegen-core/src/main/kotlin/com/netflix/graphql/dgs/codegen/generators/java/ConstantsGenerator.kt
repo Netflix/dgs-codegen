@@ -30,7 +30,6 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
 import graphql.language.*
-import java.util.Locale
 import javax.lang.model.element.Modifier
 
 class ConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
@@ -114,7 +113,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             if (conf.snakeCaseConstantNames)
                 CodeGeneratorUtils.camelCaseToSnakeCase(name, CodeGeneratorUtils.Case.UPPERCASE)
             else
-                name.uppercase(Locale.getDefault())
+                name.toUpperCase()
 
         return TypeSpec
             .classBuilder(className)
