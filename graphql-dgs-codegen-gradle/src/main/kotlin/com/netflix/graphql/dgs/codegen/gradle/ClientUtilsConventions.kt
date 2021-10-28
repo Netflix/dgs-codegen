@@ -39,7 +39,7 @@ object ClientUtilsConventions {
             val dependencyConfiguration = optionalCodeClientDependencyScope.orElse(GRADLE_CLASSPATH_CONFIGURATION)
             val configurationDependencies = project.configurations.getByName(dependencyConfiguration).dependencies
             configurationDependencies.add(project.dependencies.create(dependencyString))
-            logger.lifecycle("DGS CodeGen added [$dependencyString] to the $dependencyConfiguration dependencies.")
+            logger.info("DGS CodeGen added [$dependencyString] to the $dependencyConfiguration dependencies.")
         }
     }
 
