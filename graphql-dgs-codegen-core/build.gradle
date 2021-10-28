@@ -32,7 +32,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api'
 
     implementation 'com.squareup:javapoet:1.13.+'
-    implementation 'com.squareup:kotlinpoet:1.9.+'
+    implementation 'com.squareup:kotlinpoet:1.10.+'
     implementation 'com.github.ajalt.clikt:clikt:3.3.+'
 
     testImplementation 'com.google.jimfs:jimfs:1.2'
