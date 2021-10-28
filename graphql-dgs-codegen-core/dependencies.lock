@@ -27,7 +27,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.10.2"
+            "locked": "1.9.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -62,7 +62,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.10.2"
+            "locked": "1.9.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -120,7 +120,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.10.2"
+            "locked": "1.9.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -161,7 +161,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.10.2"
+            "locked": "1.9.0"
         },
         "org.assertj:assertj-core": {
             "locked": "3.21.0"
@@ -217,7 +217,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.10.2"
+            "locked": "1.9.0"
         },
         "org.assertj:assertj-core": {
             "locked": "3.21.0"
@@ -276,7 +276,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.10.2"
+            "locked": "1.9.0"
         },
         "org.assertj:assertj-core": {
             "locked": "3.21.0"
