@@ -47,13 +47,14 @@ fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
 }
 
 fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
-    val result = javac().withOptions("-parameters").compile(javaFiles.map(JavaFile::toJavaFileObject))
-    result.generatedFiles()
+    val result = javac()
+        .withOptions("-parameters")
+        .compile(javaFiles.map(JavaFile::toJavaFileObject))
     CompilationSubject.assertThat(result).succeededWithoutWarnings()
     return result
 }
 
-fun assertCompilesKotlin(files: List<FileSpec>): Path {
+fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")
     files.forEach { it.writeTo(srcDir) }

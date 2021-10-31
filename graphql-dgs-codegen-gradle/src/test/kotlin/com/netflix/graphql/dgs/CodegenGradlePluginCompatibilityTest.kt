@@ -41,7 +41,7 @@ class CodegenGradlePluginCompatibilityTest {
 
     @ParameterizedTest
     @ValueSource(strings = ["6.8.1", "7.0.2", "7.1.1", "7.2"])
-    fun `Test generateJava against multiple Gralde Versions`(gradleVersion: String) {
+    fun `Test generateJava against multiple Gradle Versions`(gradleVersion: String) {
         prepareBuildGraphQLSchema(
             """
                  type Query {
@@ -83,14 +83,18 @@ class CodegenGradlePluginCompatibilityTest {
                  repositories {
                 	mavenCentral()
                 }
-                
+
+                sourceCompatibility = 1.8
+                targetCompatibility = 1.8
+
                  generateJava {
                      packageName = 'com.netflix.testproject.graphql'
                      generateClient = true
                      typeMapping = [
                         Long:   "java.lang.Long",
                      ]
-                } 
+                }
+
                 // Need to disable the core conventions since the artifacts are not yet visible.
                 codegen.clientCoreConventionsEnabled = false
             """.trimMargin()

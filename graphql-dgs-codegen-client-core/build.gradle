@@ -23,6 +23,7 @@ plugins {
 dependencies {
     implementation platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release')
     compileOnly platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release')
+    implementation "org.jetbrains.kotlin:kotlin-reflect"
     compileOnly 'com.graphql-java:graphql-java'
     compileOnly 'com.fasterxml.jackson.core:jackson-databind'
     compileOnly 'org.springframework:spring-core'

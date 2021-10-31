@@ -21,12 +21,18 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
-import graphql.language.*
+import graphql.language.Document
+import graphql.language.FieldDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.InterfaceTypeExtensionDefinition
+import graphql.language.ObjectTypeDefinition
+import graphql.language.TypeName
 import javax.lang.model.element.Modifier
 
 class InterfaceGenerator(private val config: CodeGenConfig, private val document: Document) {
@@ -45,7 +51,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC)
 
         if (definition.description != null) {
-            javaType.addJavadoc(definition.description.content.lines().joinToString("\n"))
+            javaType.addJavadoc(definition.description.content.lineSequence().joinToString("\n"))
         }
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
@@ -67,7 +73,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
             // implementation classes. This is not an issue if the overridden field has the same base type,
             // however.
             // Ref: https://github.com/graphql/graphql-js/issues/776
-            if (! isFieldAnInterface(it)) {
+            if (!isFieldAnInterface(it)) {
                 addInterfaceMethod(it, javaType)
             }
         }
@@ -88,9 +94,8 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun isFieldAnInterface(fieldDefinition: FieldDefinition): Boolean {
-        return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java).asSequence()
-            .filter { node -> node.name == typeUtils.findInnerType(fieldDefinition.type).name }
-            .toList().isNotEmpty()
+        return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+            .any { node -> node.name == typeUtils.findInnerType(fieldDefinition.type).name }
     }
 
     private fun addInterfaceMethod(fieldDefinition: FieldDefinition, javaType: TypeSpec.Builder) {
@@ -98,7 +103,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType)
 
         val fieldName = fieldDefinition.name
-        val getterBuilder = MethodSpec.methodBuilder("get${fieldName.capitalize()}")
+        val getterBuilder = MethodSpec.methodBuilder("get${fieldName.capitalized()}")
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .returns(returnType)
         if (fieldDefinition.description != null) {
@@ -107,7 +112,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         javaType.addMethod(getterBuilder.build())
 
         if (config.generateInterfaceSetters) {
-            val setterBuilder = MethodSpec.methodBuilder("set${fieldName.capitalize()}")
+            val setterBuilder = MethodSpec.methodBuilder("set${fieldName.capitalized()}")
                 .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                 .addParameter(returnType, fieldName)
 

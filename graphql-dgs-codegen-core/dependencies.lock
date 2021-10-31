@@ -122,6 +122,12 @@
         "com.squareup:kotlinpoet": {
             "locked": "1.10.2"
         },
+        "org.jetbrains.kotlin:kotlin-reflect": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
+            "locked": "1.5.31"
+        },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
@@ -273,6 +279,12 @@
             "locked": "3.21.0"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.5.31"
+        },
+        "org.jetbrains.kotlin:kotlin-reflect": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "1.5.31"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {

@@ -18,7 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
-import graphql.language.*
+import graphql.language.Definition
+import graphql.language.EnumTypeExtensionDefinition
+import graphql.language.InputObjectTypeExtensionDefinition
+import graphql.language.InterfaceTypeExtensionDefinition
+import graphql.language.NamedNode
+import graphql.language.ObjectTypeExtensionDefinition
+import graphql.language.UnionTypeExtensionDefinition
 
 object SchemaExtensionsUtils {
     fun findTypeExtensions(name: String, definitions: Collection<Definition<*>>) =
@@ -43,7 +49,7 @@ object SchemaExtensionsUtils {
             .toList()
 }
 
-fun <T> List<T>.excludeSchemaTypeExtension(): List<T> {
+fun <T> Collection<T>.excludeSchemaTypeExtension(): Collection<T> {
     return this.filter { !isSchemaTypeExtension(it) }
 }
 

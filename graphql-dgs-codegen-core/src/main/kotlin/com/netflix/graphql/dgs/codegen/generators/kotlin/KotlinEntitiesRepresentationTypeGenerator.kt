@@ -21,12 +21,22 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.fieldDefinitions
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
-import graphql.language.*
+import graphql.language.Document
+import graphql.language.FieldDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.ListType
+import graphql.language.NonNullType
+import graphql.language.ObjectTypeDefinition
+import graphql.language.StringValue
+import graphql.language.Type
+import graphql.language.TypeDefinition
+import graphql.language.TypeName
 
 class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameClient, config) {
 
@@ -40,7 +50,7 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
         return generateRepresentations(definition.name, definition.fieldDefinitions, generatedRepresentations, keyFields)
     }
 
-    fun generateRepresentations(
+    private fun generateRepresentations(
         definitionName: String,
         fields: List<FieldDefinition>,
         generatedRepresentations: MutableMap<String, Any>,
@@ -68,16 +78,16 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
                     }
                     generatedRepresentations["${type.name}Representation"] = representationType
                     if (fieldType is ParameterizedTypeName && fieldType.rawType.simpleName == "List") {
-                        Field(it.name, LIST.parameterizedBy(com.squareup.kotlinpoet.ClassName(getPackageName(), "${type.name}Representation")), typeUtils.isNullable(it.type))
+                        Field(it.name, LIST.parameterizedBy(ClassName(getPackageName(), "${type.name}Representation")), typeUtils.isNullable(it.type))
                     } else {
-                        Field(it.name, com.squareup.kotlinpoet.ClassName(getPackageName(), representationType), typeUtils.isNullable(it.type))
+                        Field(it.name, ClassName(getPackageName(), representationType), typeUtils.isNullable(it.type))
                     }
                 } else {
                     Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type))
                 }
             }
 
-        return generate(name, fieldDefinitions.plus(typeName), emptyList(), true, document).merge(result)
+        return generate(name, fieldDefinitions + typeName, emptyList(), document).merge(result)
     }
 
     override fun getPackageName(): String {

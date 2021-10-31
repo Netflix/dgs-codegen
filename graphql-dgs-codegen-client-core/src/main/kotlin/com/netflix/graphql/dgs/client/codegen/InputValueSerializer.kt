@@ -37,31 +37,30 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
         )
     }
 
-    fun serialize(input: Any?): String? {
+    fun serialize(input: Any?): String {
         if (input == null) {
             return "null"
         }
 
         val type = input::class.java
 
-        return if (scalars.contains(type)) {
-            """"${scalars[type]!!.serialize(input)}""""
+        return if (type in scalars) {
+            """"${scalars.getValue(type).serialize(input)}""""
         } else if (type.isPrimitive || type.isAssignableFrom(java.lang.Integer::class.java) || type.isAssignableFrom(java.lang.Long::class.java) || type.isAssignableFrom(java.lang.Double::class.java) || type.isAssignableFrom(java.lang.Float::class.java) || type.isAssignableFrom(java.lang.Boolean::class.java) || type.isAssignableFrom(java.lang.Short::class.java) || type.isAssignableFrom(java.lang.Byte::class.java) || type.isEnum) {
             input.toString()
-        } else if (toStringClasses.contains(type)) {
+        } else if (type in toStringClasses) {
             // Call toString for known types, in case no scalar is found. This is for backward compatibility.
             """"${input.toString().replace("\\", "\\\\").replace("\"", "\\\"")}""""
         } else if (input is List<*>) {
-            """[${input.filterNotNull().joinToString(", ") { listItem -> serialize(listItem) ?: "" }}]"""
+            """[${input.filterNotNull().joinToString(", ") { listItem -> serialize(listItem) }}]"""
         } else if (input is Map<*, *>) {
-            input.map {
-                entry ->
-                if (entry.value != null) {
-                    """${entry.key}: ${serialize(entry.value)}"""
+            input.entries.joinToString(", ", "{ ", " }") { (key, value) ->
+                if (value != null) {
+                    """$key: ${serialize(value)}"""
                 } else {
-                    """${entry.key}: null"""
+                    """$key: null"""
                 }
-            }.joinToString(", ", "{ ", " }")
+            }
         } else {
             val fields = LinkedList<Field>()
             ReflectionUtils.doWithFields(input.javaClass) {

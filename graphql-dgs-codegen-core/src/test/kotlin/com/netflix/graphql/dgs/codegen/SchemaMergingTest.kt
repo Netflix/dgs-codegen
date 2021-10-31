@@ -39,7 +39,7 @@ class SchemaMergingTest {
         val result = codeGen.generate()
 
         Assertions.assertThat(result.javaDataTypes.size).isEqualTo(2)
-        Assertions.assertThat(result.javaDataTypes.find { it.typeSpec.name == "Person" }!!.typeSpec.fieldSpecs).extracting("name").contains("name", "movies")
+        Assertions.assertThat(result.javaDataTypes.single { it.typeSpec.name == "Person" }.typeSpec.fieldSpecs).extracting("name").contains("name", "movies")
 
         val movieType = result.javaDataTypes.find { it.typeSpec.name == "Movie" }
         Assertions.assertThat(movieType).isNotNull
@@ -59,12 +59,12 @@ class SchemaMergingTest {
             )
         )
         val result = codeGen.generate()
-        val type = result.kotlinDataTypes.find { it.name == "Person" }!!.members[0] as TypeSpec
+        val type = result.kotlinDataTypes.single { it.name == "Person" }.members[0] as TypeSpec
 
         Assertions.assertThat(result.kotlinDataTypes.size).isEqualTo(2)
         Assertions.assertThat(type.propertySpecs).extracting("name").contains("name", "movies")
 
-        val movieType = result.kotlinDataTypes.find { it.name == "Movie" }!!.members[0] as TypeSpec
+        val movieType = result.kotlinDataTypes.single { it.name == "Movie" }.members[0] as TypeSpec
         Assertions.assertThat(movieType).isNotNull
     }
 }

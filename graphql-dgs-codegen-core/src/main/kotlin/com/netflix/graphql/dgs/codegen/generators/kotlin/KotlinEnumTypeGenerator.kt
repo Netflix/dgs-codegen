@@ -49,7 +49,7 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
         return CodeGenResult(kotlinEnumTypes = listOf(fileSpec))
     }
 
-    fun getPackageName(): String {
+    private fun getPackageName(): String {
         return config.packageNameTypes
     }
 }

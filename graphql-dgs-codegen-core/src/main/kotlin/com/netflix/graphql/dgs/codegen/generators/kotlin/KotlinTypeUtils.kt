@@ -19,20 +19,38 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.BOOLEAN
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.DOUBLE
+import com.squareup.kotlinpoet.INT
+import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import graphql.language.*
+import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.asTypeName
+import graphql.language.ListType
+import graphql.language.Node
+import graphql.language.NodeTraverser
+import graphql.language.NodeVisitorStub
+import graphql.language.NonNullType
+import graphql.language.ScalarTypeDefinition
+import graphql.language.StringValue
+import graphql.language.Type
+import graphql.language.TypeName
 import graphql.parser.Parser
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-import java.time.*
-import java.util.*
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.util.Currency
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig) {
 
-    private val commonScalars = mutableMapOf<String, KtTypeName>(
+    private val commonScalars = mapOf<String, KtTypeName>(
         "LocalTime" to LocalTime::class.asTypeName(),
         "LocalDate" to LocalDate::class.asTypeName(),
         "LocalDateTime" to LocalDateTime::class.asTypeName(),
@@ -86,8 +104,8 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             return ClassName.bestGuess(config.schemaTypeMapping.getValue(name))
         }
 
-        if (commonScalars.containsKey(name)) {
-            return commonScalars[name]!!
+        if (name in commonScalars) {
+            return commonScalars.getValue(name)
         }
 
         return when (name) {
@@ -104,15 +122,6 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             else -> ClassName.bestGuess("$packageName.$name")
         }
     }
-    fun isStringInput(name: com.squareup.kotlinpoet.TypeName): Boolean {
-        if (config.typeMapping.containsValue(name.toString())) return when (name.copy(false)) {
-            INT -> false
-            DOUBLE -> false
-            BOOLEAN -> false
-            else -> true
-        }
-        return name.copy(false) == STRING || commonScalars.containsValue(name.copy(false))
-    }
 
     private val CodeGenConfig.schemaTypeMapping: Map<String, String>
         get() {
@@ -124,12 +133,12 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
 
             return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
                 it.getDirectives("javaType").isNullOrEmpty()
-            }.map {
+            }.associate {
                 val javaType = it.getDirectives("javaType").singleOrNull()
                     ?: throw IllegalArgumentException("multiple @javaType directives are defined")
                 val value = javaType.argumentsByName["name"]?.value
                     ?: throw IllegalArgumentException("@javaType directive must contains name argument")
                 it.name to (value as StringValue).value
-            }.toMap()
+            }
         }
 }

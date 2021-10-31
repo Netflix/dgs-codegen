@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen
 
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.Test
 
 class EntitiesClientApiGenTest {
@@ -56,7 +57,7 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("onMovie")
         assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
@@ -64,10 +65,10 @@ class EntitiesClientApiGenTest {
         assertThat(projections[3].typeSpec.name).isEqualTo("EntitiesMovieKey_ActorProjection")
         assertThat(projections[4].typeSpec.name).isEqualTo("EntitiesMovieKey_Actor_FriendsProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
-        assertThat(representations.size).isEqualTo(1)
-        assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
-        assertThat(representations[0].typeSpec.fieldSpecs).extracting("name")
+        val representation = codeGenResult.javaDataTypes.single { "Representation" in it.typeSpec.name }
+
+        assertThat(representation.typeSpec.name).isEqualTo("MovieRepresentation")
+        assertThat(representation.typeSpec.fieldSpecs).extracting("name")
             .containsExactlyInAnyOrder("__typename", "movieId")
 
         assertCompilesJava(codeGenResult.javaSources())
@@ -100,17 +101,16 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("onMovie")
         assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieKey_ActorProjection")
         assertThat(projections[3].typeSpec.name).isEqualTo("EntitiesMovieKey_Actor_FriendsProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
-        assertThat(representations.size).isEqualTo(1)
-        assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
-        assertThat(representations[0].typeSpec.fieldSpecs).extracting("name")
+        val representation = codeGenResult.javaDataTypes.single { "Representation" in it.typeSpec.name }
+        assertThat(representation.typeSpec.name).isEqualTo("MovieRepresentation")
+        assertThat(representation.typeSpec.fieldSpecs).extracting("name")
             .containsExactlyInAnyOrder("__typename", "movieId")
 
         assertCompilesJava(codeGenResult.javaSources())
@@ -147,14 +147,14 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("onMovie")
         assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieKey_ActorProjection")
         assertThat(projections[3].typeSpec.name).isEqualTo("EntitiesMovieKey_Actor_ActorProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations.size).isEqualTo(2)
         assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
         assertThat(representations[0].typeSpec.fieldSpecs).extracting("name")
@@ -192,13 +192,13 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("onMovie", "onActor")
         assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieKey_ActorsProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations.size).isEqualTo(2)
         assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
         assertThat(representations[0].typeSpec.fieldSpecs).extracting("name")
@@ -243,7 +243,7 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name")
             .containsExactlyInAnyOrder("onMovie", "onMovieCast")
@@ -254,7 +254,7 @@ class EntitiesClientApiGenTest {
         assertThat(projections[5].typeSpec.name).isEqualTo("EntitiesMovieCastKey_Movie_ActorProjection")
         assertThat(projections[6].typeSpec.name).isEqualTo("EntitiesMovieCastKey_ActorProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations.size).isEqualTo(3)
         assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
         assertThat(representations[0].typeSpec.fieldSpecs).extracting("name")
@@ -297,7 +297,7 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name")
             .containsExactlyInAnyOrder("onMovie", "onMovieActor")
@@ -305,7 +305,7 @@ class EntitiesClientApiGenTest {
         assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieKey_ActorProjection")
         assertThat(projections[3].typeSpec.name).isEqualTo("EntitiesMovieActorKeyProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations.size).isEqualTo(2)
         assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
         assertThat(representations[0].typeSpec.fieldSpecs).extracting("name")
@@ -344,13 +344,13 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactlyInAnyOrder("onMovie")
         assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieKey_ActorProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations.size).isEqualTo(2)
         assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
         assertThat(representations[0].typeSpec.fieldSpecs).extracting("name")
@@ -391,13 +391,13 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactlyInAnyOrder("onMovie")
         assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieKey_GenreProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations.size).isEqualTo(2)
         assertThat(representations[0].typeSpec.name).isEqualTo("MovieRepresentation")
         assertThat(representations[0].typeSpec.fieldSpecs).extracting("name")
@@ -446,7 +446,7 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactlyInAnyOrder("onMovie")
         assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
@@ -455,7 +455,7 @@ class EntitiesClientApiGenTest {
         assertThat(projections[4].typeSpec.name).isEqualTo("EntitiesMovieKey_Actor_RoleProjection")
         assertThat(projections[5].typeSpec.name).isEqualTo("EntitiesMovieKey_LocationProjection")
 
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations.map { it.typeSpec.name })
             .containsExactlyInAnyOrder(
                 "MovieRepresentation",
@@ -468,8 +468,8 @@ class EntitiesClientApiGenTest {
             .extracting("name").containsExactlyInAnyOrder("__typename", "id", "actor", "genre", "location")
 
         val movieRepresentationType = representations.find { it.typeSpec.name == "MovieRepresentation" }
-        assertThat(movieRepresentationType).isNotNull
-        assertThat(movieRepresentationType?.typeSpec?.fieldSpecs?.map { it.name to it.type.toString() })
+            ?: fail("MovieRepresentation type not found")
+        assertThat(movieRepresentationType.typeSpec.fieldSpecs.map { it.name to it.type.toString() })
             .containsExactlyInAnyOrder(
                 "id" to "java.lang.String",
                 "genre" to "com.netflix.graphql.dgs.codegen.tests.generated.client.MovieGenreRepresentation",
@@ -507,10 +507,10 @@ class EntitiesClientApiGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                typeMapping = mapOf(Pair("Long", "java.lang.Long")),
+                typeMapping = mapOf("Long" to "java.lang.Long"),
             )
         ).generate()
-        val representations = codeGenResult.javaDataTypes.filter { it.typeSpec.name.contains("Representation") }
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations.size).isEqualTo(1)
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(3)
@@ -545,7 +545,7 @@ class EntitiesClientApiGenTest {
             )
         ).generate()
 
-        val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.contains("Entities") }
+        val projections = codeGenResult.clientProjections.filter { "Entities" in it.typeSpec.name }
         assertThat(projections).isEmpty()
     }
 

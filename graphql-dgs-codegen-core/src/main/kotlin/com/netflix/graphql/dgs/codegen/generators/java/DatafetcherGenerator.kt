@@ -22,7 +22,12 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
-import com.squareup.javapoet.*
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.squareup.javapoet.AnnotationSpec
+import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.MethodSpec
+import com.squareup.javapoet.ParameterSpec
+import com.squareup.javapoet.TypeSpec
 import graphql.language.Document
 import graphql.language.FieldDefinition
 import graphql.language.ObjectTypeDefinition
@@ -32,13 +37,13 @@ import javax.lang.model.element.Modifier
 class DatafetcherGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(query: ObjectTypeDefinition): CodeGenResult {
 
-        return query.fieldDefinitions.map { field ->
+        return query.fieldDefinitions.asSequence().map { field ->
             createDatafetcher(field)
         }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
     private fun createDatafetcher(field: FieldDefinition): CodeGenResult {
-        val fieldName = field.name.substring(0, 1).toUpperCase() + field.name.substring(1)
+        val fieldName = field.name.capitalized()
         val clazzName = fieldName + "Datafetcher"
 
         val returnType = TypeUtils(config.packageNameTypes, config, document).findReturnType(field.type)
@@ -69,7 +74,7 @@ class DatafetcherGenerator(private val config: CodeGenConfig, private val docume
         return CodeGenResult(javaDataFetchers = listOf(javaFile))
     }
 
-    fun getPackageName(): String {
+    private fun getPackageName(): String {
         return config.packageNameDatafetchers
     }
 }

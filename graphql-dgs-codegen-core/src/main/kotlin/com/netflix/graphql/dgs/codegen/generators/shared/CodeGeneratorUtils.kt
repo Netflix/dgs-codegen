@@ -18,9 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
-import java.util.*
-import kotlin.collections.ArrayList
-
 object CodeGeneratorUtils {
 
     enum class Case {
@@ -35,22 +32,24 @@ object CodeGeneratorUtils {
         val parts = splitByCharacterTypeCamelCase(input)
         return parts.joinToString(separator = "_") {
             when (case) {
-                Case.LOWERCASE -> it.toLowerCase()
-                Case.UPPERCASE -> it.toUpperCase()
+                Case.LOWERCASE -> it.lowercase()
+                Case.UPPERCASE -> it.uppercase()
             }
         }
     }
+
+    fun String.capitalized(): String = replaceFirstChar(Character::toTitleCase)
 
     /**
      * Mostly copied from Apache Commons StringUtils.splitByCharacterType
      */
     private fun splitByCharacterTypeCamelCase(str: String): Array<String> {
 
-        if (str.isNullOrEmpty()) {
+        if (str.isEmpty()) {
             return emptyArray()
         }
         val c = str.toCharArray()
-        val list: MutableList<String> = ArrayList()
+        val list = mutableListOf<String>()
         var tokenStart = 0
         var currentType = Character.getType(c[tokenStart])
         for (pos in tokenStart + 1 until c.size) {
