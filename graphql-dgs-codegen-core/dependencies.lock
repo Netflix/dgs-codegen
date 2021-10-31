@@ -27,7 +27,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.9.0"
+            "locked": "1.10.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -62,7 +62,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.9.0"
+            "locked": "1.10.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -120,7 +120,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.9.0"
+            "locked": "1.10.2"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -138,9 +138,6 @@
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.3.0"
-        },
-        "com.google.jimfs:jimfs": {
-            "locked": "1.2"
         },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.19"
@@ -161,13 +158,13 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.9.0"
+            "locked": "1.10.2"
         },
         "org.assertj:assertj-core": {
             "locked": "3.21.0"
         },
-        "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.5.30"
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.5.31"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -195,9 +192,6 @@
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.3.0"
         },
-        "com.google.jimfs:jimfs": {
-            "locked": "1.2"
-        },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.19"
         },
@@ -217,13 +211,13 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.9.0"
+            "locked": "1.10.2"
         },
         "org.assertj:assertj-core": {
             "locked": "3.21.0"
         },
-        "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.5.30"
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.5.31"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
@@ -251,9 +245,6 @@
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.3.0"
         },
-        "com.google.jimfs:jimfs": {
-            "locked": "1.2"
-        },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.19"
         },
@@ -276,13 +267,13 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.9.0"
+            "locked": "1.10.2"
         },
         "org.assertj:assertj-core": {
             "locked": "3.21.0"
         },
-        "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.5.30"
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.5.31"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "firstLevelTransitive": [
