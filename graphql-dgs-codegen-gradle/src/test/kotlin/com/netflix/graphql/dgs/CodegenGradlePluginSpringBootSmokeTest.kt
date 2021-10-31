@@ -113,6 +113,9 @@ class CodegenGradlePluginSpringBootSmokeTest {
                 	testImplementation("org.springframework.boot:spring-boot-starter-test")
                 }
                 
+                sourceCompatibility = 1.8
+                targetCompatibility = 1.8
+
                 test {
                     useJUnitPlatform()
                 }
@@ -206,6 +209,9 @@ class CodegenGradlePluginSpringBootSmokeTest {
                 	testImplementation("org.springframework.boot:spring-boot-starter-test")
                 }
                 
+                sourceCompatibility = 1.8
+                targetCompatibility = 1.8
+
                 test {
                     useJUnitPlatform()
                 }
