@@ -22,17 +22,34 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.WildcardTypeName
-import graphql.language.*
+import graphql.language.Document
+import graphql.language.EnumTypeDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.ListType
+import graphql.language.Node
+import graphql.language.NodeTraverser
+import graphql.language.NodeVisitorStub
+import graphql.language.NonNullType
+import graphql.language.ObjectTypeDefinition
+import graphql.language.ScalarTypeDefinition
+import graphql.language.StringValue
+import graphql.language.Type
+import graphql.language.TypeName
+import graphql.language.UnionTypeDefinition
 import graphql.parser.Parser
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-import java.time.*
-import java.util.*
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.util.Currency
 import com.squareup.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
-    private val commonScalars = mutableMapOf<String, com.squareup.javapoet.TypeName>(
+    private val commonScalars = mapOf<String, JavaTypeName>(
         "LocalTime" to ClassName.get(LocalTime::class.java),
         "LocalDate" to ClassName.get(LocalDate::class.java),
         "LocalDateTime" to ClassName.get(LocalDateTime::class.java),
@@ -125,8 +142,8 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             return ClassName.bestGuess(mappedType)
         }
 
-        if (commonScalars.containsKey(name)) {
-            return commonScalars[name]!!
+        if (name in commonScalars) {
+            return commonScalars.getValue(name)
         }
 
         return when (name) {
@@ -155,7 +172,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
     }
 
     // Return the raw type for nullable, non-nullable and parameterized fields
-    fun findInnerType(fieldType: Type<*>, useInterfaceType: Boolean = false, useWildcardType: Boolean = false): TypeName {
+    fun findInnerType(fieldType: Type<*>): TypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 context.setAccumulate(node)
@@ -179,43 +196,27 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         return NodeTraverser().postOrder(visitor, fieldType) as TypeName
     }
 
-    fun isStringInput(name: com.squareup.javapoet.TypeName): Boolean {
-        if (config.typeMapping.containsValue(name.toString())) {
-            return when (name) {
-                JavaTypeName.INT -> false
-                JavaTypeName.DOUBLE -> false
-                JavaTypeName.BOOLEAN -> false
-                JavaTypeName.INT.box() -> false
-                JavaTypeName.DOUBLE.box() -> false
-                JavaTypeName.BOOLEAN.box() -> false
-                else -> true
-            }
-        }
-        return (name == ClassName.get(String::class.java) || commonScalars.containsValue(name))
-    }
-
     private val CodeGenConfig.schemaTypeMapping: Map<String, String>
         get() {
-            val inputSchemas = this.schemaFiles.flatMap { it.walkTopDown().toList().filter { file -> file.isFile } }
-                .map { it.readText() }
-                .plus(this.schemas)
+            val inputSchemas = this.schemaFiles.asSequence()
+                .flatMap { it.walkTopDown().toList().filter { file -> file.isFile } }
+                .map { it.readText() } + this.schemas
             val joinedSchema = inputSchemas.joinToString("\n")
             val document = Parser().parseDocument(joinedSchema)
 
             return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
                 it.getDirectives("javaType").isNullOrEmpty()
-            }.map {
+            }.associate {
                 val javaType = it.getDirectives("javaType").singleOrNull()
                     ?: throw IllegalArgumentException("multiple @javaType directives are defined")
                 val value = javaType.argumentsByName["name"]?.value
                     ?: throw IllegalArgumentException("@javaType directive must contains name argument")
                 it.name to (value as StringValue).value
-            }.toMap()
+            }
         }
 
-    fun isFieldTypeAnInterface(fieldDefinitionType: TypeName): Boolean {
-        return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java).asSequence()
-            .filter { node -> node.name == findInnerType(fieldDefinitionType).name }
-            .toList().isNotEmpty()
+    private fun isFieldTypeAnInterface(fieldDefinitionType: TypeName): Boolean {
+        return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+            .any { node -> node.name == findInnerType(fieldDefinitionType).name }
     }
 }

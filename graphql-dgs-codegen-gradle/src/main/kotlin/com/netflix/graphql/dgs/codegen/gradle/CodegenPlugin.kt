@@ -24,7 +24,7 @@ import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.tasks.SourceSet
-import java.util.*
+import java.util.Optional
 
 class CodegenPlugin : Plugin<Project> {
 

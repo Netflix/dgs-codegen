@@ -36,7 +36,7 @@ import java.nio.file.Paths
 
 class CodeGen(private val config: CodeGenConfig) {
     lateinit var document: Document
-    lateinit var requiredTypeCollector: RequiredTypeCollector
+    private lateinit var requiredTypeCollector: RequiredTypeCollector
 
     @Suppress("DuplicatedCode")
     fun generate(): CodeGenResult {
@@ -439,21 +439,21 @@ fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
 fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
     return when (definitionName) {
         "Query" -> {
-            if (config.includeQueries.isNullOrEmpty()) {
+            if (config.includeQueries.isEmpty()) {
                 this
             } else {
                 this.filter { it.name in config.includeQueries }
             }
         }
         "Mutation" -> {
-            if (config.includeMutations.isNullOrEmpty()) {
+            if (config.includeMutations.isEmpty()) {
                 this
             } else {
                 this.filter { it.name in config.includeMutations }
             }
         }
         "Subscription" -> {
-            if (config.includeSubscriptions.isNullOrEmpty()) {
+            if (config.includeSubscriptions.isEmpty()) {
                 this
             } else {
                 this.filter { it.name in config.includeSubscriptions }

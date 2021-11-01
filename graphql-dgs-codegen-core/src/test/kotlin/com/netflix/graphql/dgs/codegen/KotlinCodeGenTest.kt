@@ -19,20 +19,25 @@
 package com.netflix.graphql.dgs.codegen
 
 import com.google.common.truth.Truth
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.net.URLClassLoader
 import java.util.stream.Stream
 
 class KotlinCodeGenTest {
 
-    val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
-    val typesPackageName = "$basePackageName.types"
+    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
+    private val typesPackageName = "$basePackageName.types"
 
     @Test
     fun generateDataClassWithStringProperties() {
@@ -554,18 +559,18 @@ class KotlinCodeGenTest {
         assertThat(type.propertySpecs.size).isEqualTo(3)
         assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname", "company")
         assertThat(type.primaryConstructor?.parameters?.get(0)?.modifiers).contains(KModifier.OVERRIDE)
-        assertThat(type.primaryConstructor?.parameters?.get(0)?.type?.isNullable).isFalse()
-        assertThat(type.primaryConstructor?.parameters?.get(1)?.type?.isNullable).isFalse()
-        assertThat(type.primaryConstructor?.parameters?.get(2)?.type?.isNullable).isTrue()
+        assertThat(type.primaryConstructor?.parameters?.get(0)?.type?.isNullable).isFalse
+        assertThat(type.primaryConstructor?.parameters?.get(1)?.type?.isNullable).isFalse
+        assertThat(type.primaryConstructor?.parameters?.get(2)?.type?.isNullable).isTrue
 
         // Check interface
         assertThat(interfaces.size).isEqualTo(1)
         val interfaceType = interfaces[0].members[0] as TypeSpec
         assertThat(interfaceType.name).isEqualTo("Person")
         assertThat(interfaceType.propertySpecs.size).isEqualTo(3)
-        assertThat(interfaceType.propertySpecs[0].type.isNullable).isEqualTo(false)
-        assertThat(interfaceType.propertySpecs[1].type.isNullable).isEqualTo(false)
-        assertThat(interfaceType.propertySpecs[2].type.isNullable).isEqualTo(true)
+        assertThat(interfaceType.propertySpecs[0].type.isNullable).isFalse
+        assertThat(interfaceType.propertySpecs[1].type.isNullable).isFalse
+        assertThat(interfaceType.propertySpecs[2].type.isNullable).isTrue
 
         assertCompilesKotlin(dataTypes + interfaces)
     }
@@ -682,7 +687,7 @@ class KotlinCodeGenTest {
         assertThat(type.name).isEqualTo("EmployeeTypes")
         assertThat(type.enumConstants.size).isEqualTo(3)
         assertThat(type.enumConstants).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
-        assertThat(type.typeSpecs[0].isCompanion).isTrue()
+        assertThat(type.typeSpecs[0].isCompanion).isTrue
 
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinEnumTypes)
     }
@@ -743,7 +748,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                typeMapping = mapOf(Pair("Date", "java.time.LocalDateTime"))
+                typeMapping = mapOf("Date" to "java.time.LocalDateTime")
             )
         ).generate().kotlinDataTypes
         val type = dataTypes[0].members[0] as TypeSpec
@@ -783,7 +788,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                typeMapping = mapOf(Pair("Person", "mypackage.Person")),
+                typeMapping = mapOf("Person" to "mypackage.Person"),
             )
         ).generate().kotlinDataTypes
 
@@ -818,8 +823,8 @@ class KotlinCodeGenTest {
                 packageName = basePackageName,
                 language = Language.KOTLIN,
                 typeMapping = mapOf(
-                    Pair("SomethingWithAName", "mypackage.SomethingWithAName"),
-                    Pair("Person", "mypackage.Person"),
+                    "SomethingWithAName" to "mypackage.SomethingWithAName",
+                    "Person" to "mypackage.Person",
                 ),
             )
         ).generate()
@@ -858,9 +863,9 @@ class KotlinCodeGenTest {
                 packageName = basePackageName,
                 language = Language.KOTLIN,
                 typeMapping = mapOf(
-                    Pair("SearchResult", "mypackage.SearchResult"),
-                    Pair("Movie", "mypackage.Movie"),
-                    Pair("Actor", "mypackage.Actor"),
+                    "SearchResult" to "mypackage.SearchResult",
+                    "Movie" to "mypackage.Movie",
+                    "Actor" to "mypackage.Actor",
                 ),
             )
         ).generate()
@@ -897,7 +902,7 @@ class KotlinCodeGenTest {
                 packageName = basePackageName,
                 language = Language.KOTLIN,
                 typeMapping = mapOf(
-                    Pair("Actor", "mypackage.Actor"),
+                    "Actor" to "mypackage.Actor",
                 ),
             )
         ).generate()
@@ -2100,12 +2105,5 @@ It takes a title and such.
         )
 
         assertCompilesKotlin(enums)
-    }
-
-    private fun compileAndGetConstructor(dataTypes: List<FileSpec>, type: String): ClassConstructor {
-        val buildDir = assertCompilesKotlin(dataTypes)
-
-        val clazz = URLClassLoader(arrayOf(buildDir.toUri().toURL())).loadClass("$basePackageName.types.$type")
-        return ClassConstructor(clazz)
     }
 }

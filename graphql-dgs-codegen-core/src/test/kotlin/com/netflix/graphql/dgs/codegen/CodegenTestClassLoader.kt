@@ -20,16 +20,16 @@ package com.netflix.graphql.dgs.codegen
 
 import com.google.testing.compile.Compilation
 import java.io.ByteArrayOutputStream
-import java.util.*
+import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import javax.tools.JavaFileObject
 
 internal class CodegenTestClassLoader(private val compilation: Compilation, parent: ClassLoader?) : ClassLoader(parent) {
 
-    private val seenClasses = ConcurrentHashMap<String, Class<*>?>()
+    private val seenClasses = ConcurrentHashMap<String, Class<*>>()
 
     @Throws(ClassNotFoundException::class)
-    override fun loadClass(name: String): Class<*>? {
+    override fun loadClass(name: String): Class<*> {
         val packageNameAsUnixPath = name.replace(".", "/")
         val normalizedName = "/CLASS_OUTPUT/$packageNameAsUnixPath.class"
 
@@ -39,15 +39,11 @@ internal class CodegenTestClassLoader(private val compilation: Compilation, pare
                     .generatedFiles()
                     .find { it.kind == JavaFileObject.Kind.CLASS && it.name == normalizedName }
             ).map { fileObject ->
-                val input = fileObject.openInputStream()
-                val buffer = ByteArrayOutputStream()
-                var data: Int = input.read()
-                while (data != -1) {
-                    buffer.write(data)
-                    data = input.read()
+                val classData = fileObject.openInputStream().use { inputStream ->
+                    val buffer = ByteArrayOutputStream()
+                    inputStream.copyTo(buffer)
+                    buffer.toByteArray()
                 }
-                input.close()
-                val classData: ByteArray = buffer.toByteArray()
                 defineClass(name, classData, 0, classData.size)
             }.orElse(super.loadClass(name))
         }

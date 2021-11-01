@@ -22,7 +22,6 @@ import org.gradle.api.provider.Property;
 
 public abstract class CodegenPluginExtension {
 
-    @SuppressWarnings("UnstableApiUsage")
     public CodegenPluginExtension() {
         getClientCoreConventionsEnabled().convention(true);
     }

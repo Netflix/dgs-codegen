@@ -36,7 +36,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
         val name = definition.name
 
         val unionTypes = document.getDefinitionsOfType(UnionTypeDefinition::class.java).filter { union ->
-            union.memberTypes.map { it as TypeName }.map { it.name }.contains(name)
+            union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
         }.map { it.name }
 
         var implements = definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
@@ -82,7 +82,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                     }
                 )
 
-            return generate(name, unionTypes.plus(implements), fieldDefinitions, false, definition.description)
+            return generate(name, unionTypes + implements, fieldDefinitions, definition.description)
                 .merge(interfaceCodeGenResult)
         }
 
@@ -98,7 +98,7 @@ class InputTypeGenerator(private val config: CodeGenConfig, document: Document) 
 
         val name = definition.name
 
-        val fieldDefinitions = definition.inputValueDefinitions.map { it ->
+        val fieldDefinitions = definition.inputValueDefinitions.map {
             val defaultValue = it.defaultValue?.let { defVal ->
                 when (defVal) {
                     is BooleanValue -> CodeBlock.of("\$L", defVal.isValue)
@@ -124,20 +124,19 @@ class InputTypeGenerator(private val config: CodeGenConfig, document: Document) 
             }
             Field(name = it.name, type = typeUtils.findReturnType(it.type), initialValue = defaultValue, description = it.description)
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
-        return generate(name, emptyList(), fieldDefinitions, true, definition.description)
+        return generate(name, emptyList(), fieldDefinitions, definition.description)
     }
 }
 
 internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null)
 
-abstract class BaseDataTypeGenerator(internal val packageName: String, private val config: CodeGenConfig, document: Document) {
+abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig, document: Document) {
     internal val typeUtils = TypeUtils(packageName, config, document)
 
     internal fun generate(
         name: String,
         interfaces: List<String>,
         fields: List<Field>,
-        isInputType: Boolean,
         description: Description? = null
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
@@ -306,7 +305,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
 
         javaType.addField(field)
 
-        val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
+        val getterName = "get${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}"
         val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
         if (fieldDefinition.overrideGetter) {
             getterMethodBuilder.addAnnotation(Override::class.java)
@@ -331,7 +330,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, private v
     }
 
     private fun addAbstractGetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
-        val getterName = "get${fieldDefinition.name[0].toUpperCase()}${fieldDefinition.name.substring(1)}"
+        val getterName = "get${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}"
         javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT).returns(returnType).build())
     }
 

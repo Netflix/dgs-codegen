@@ -104,7 +104,7 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
  * ```
  */
 fun jsonPropertyAnnotation(name: String): AnnotationSpec {
-    return AnnotationSpec.builder(JsonProperty::class.java)
+    return AnnotationSpec.builder(JsonProperty::class)
         .addMember("%S", name)
         .build()
 }

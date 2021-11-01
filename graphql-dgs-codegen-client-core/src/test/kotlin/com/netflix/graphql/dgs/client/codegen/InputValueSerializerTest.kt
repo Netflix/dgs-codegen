@@ -132,7 +132,7 @@ class InputValueSerializerTest {
     }
 
     data class MyDataWithCompanion(val title: String) {
-        public companion object {}
+        companion object
     }
 
     open class MyBaseClass(private val name: String)

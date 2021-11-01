@@ -74,16 +74,51 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
 
         val generate = CodeGen(
             if (packageName != null) {
-                CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), packageName = packageName!!, subPackageNameClient = subPackageNameClient, subPackageNameDatafetchers = subPackageNameDatafetchers, subPackageNameTypes = subPackageNameTypes, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames, generateDataTypes = generateDataTypes, generateInterfaces = generateInterfaces, generateInterfaceSetters = generateInterfaceSetters)
+                CodeGenConfig(
+                    schemaFiles = inputSchemas,
+                    writeToFiles = writeFiles,
+                    outputDir = output.toPath(),
+                    packageName = packageName!!,
+                    subPackageNameClient = subPackageNameClient,
+                    subPackageNameDatafetchers = subPackageNameDatafetchers,
+                    subPackageNameTypes = subPackageNameTypes,
+                    language = Language.valueOf(language.uppercase()),
+                    generateBoxedTypes = generateBoxedTypes,
+                    generateClientApi = generateClient,
+                    includeQueries = includeQueries,
+                    includeMutations = includeMutations,
+                    skipEntityQueries = skipEntityQueries,
+                    typeMapping = typeMapping,
+                    shortProjectionNames = shortProjectionNames,
+                    generateDataTypes = generateDataTypes,
+                    generateInterfaces = generateInterfaces,
+                    generateInterfaceSetters = generateInterfaceSetters
+                )
             } else {
-                CodeGenConfig(schemaFiles = inputSchemas, writeToFiles = writeFiles, outputDir = output.toPath(), subPackageNameClient = subPackageNameClient, subPackageNameDatafetchers = subPackageNameDatafetchers, subPackageNameTypes = subPackageNameTypes, language = Language.valueOf(language.toUpperCase()), generateBoxedTypes = generateBoxedTypes, generateClientApi = generateClient, includeQueries = includeQueries, includeMutations = includeMutations, skipEntityQueries = skipEntityQueries, typeMapping = typeMapping, shortProjectionNames = shortProjectionNames, generateDataTypes = generateDataTypes, generateInterfaces = generateInterfaces, generateInterfaceSetters = generateInterfaceSetters)
+                CodeGenConfig(
+                    schemaFiles = inputSchemas,
+                    writeToFiles = writeFiles,
+                    outputDir = output.toPath(),
+                    subPackageNameClient = subPackageNameClient,
+                    subPackageNameDatafetchers = subPackageNameDatafetchers,
+                    subPackageNameTypes = subPackageNameTypes,
+                    language = Language.valueOf(language.uppercase()),
+                    generateBoxedTypes = generateBoxedTypes,
+                    generateClientApi = generateClient,
+                    includeQueries = includeQueries,
+                    includeMutations = includeMutations,
+                    skipEntityQueries = skipEntityQueries,
+                    typeMapping = typeMapping,
+                    shortProjectionNames = shortProjectionNames,
+                    generateDataTypes = generateDataTypes,
+                    generateInterfaces = generateInterfaces,
+                    generateInterfaceSetters = generateInterfaceSetters
+                )
             }
         ).generate()
 
         if (writeFiles) {
-            when (generate) {
-                is CodeGenResult -> echo("${(generate.javaDataTypes + generate.javaInterfaces + generate.javaEnumTypes + generate.javaQueryTypes + generate.clientProjections + generate.javaConstants).size} files written to ${output.absoluteFile}")
-            }
+            echo("${(generate.javaDataTypes + generate.javaInterfaces + generate.javaEnumTypes + generate.javaQueryTypes + generate.clientProjections + generate.javaConstants).size} files written to ${output.absoluteFile}")
         } else {
             echo(generate)
         }

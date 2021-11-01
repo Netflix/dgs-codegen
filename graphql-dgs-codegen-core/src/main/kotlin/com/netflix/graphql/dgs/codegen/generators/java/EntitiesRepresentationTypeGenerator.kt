@@ -114,7 +114,6 @@ class EntitiesRepresentationTypeGenerator(
             name = representationName,
             interfaces = emptyList(),
             fields = fieldDefinitions.plus(typeName),
-            isInputType = true,
             description = null
         )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)

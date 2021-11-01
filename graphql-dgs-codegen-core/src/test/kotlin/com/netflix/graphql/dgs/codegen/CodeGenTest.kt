@@ -29,14 +29,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
-import java.time.*
 import java.util.stream.Stream
 
 class CodeGenTest {
 
-    val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
-    val typesPackageName = "$basePackageName.types"
-    val dataFetcherPackageName = "$basePackageName.datafetchers"
+    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
+    private val typesPackageName = "$basePackageName.types"
+    private val dataFetcherPackageName = "$basePackageName.datafetchers"
 
     @Test
     fun generateDataClassWithStringProperties() {
@@ -178,7 +177,7 @@ class CodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         val toString = assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn("name", "toString")
-        toString.extracting("code").allMatch { it.toString().contains("return \"Person{") }
+        toString.extracting("code").allMatch { "return \"Person{" in it.toString() }
 
         assertCompilesJava(dataTypes)
     }
@@ -850,7 +849,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                typeMapping = mapOf(Pair("Date", "java.time.LocalDateTime")),
+                typeMapping = mapOf("Date" to "java.time.LocalDateTime"),
             )
         ).generate()
 
@@ -883,7 +882,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                typeMapping = mapOf(Pair("Person", "mypackage.Person")),
+                typeMapping = mapOf("Person" to "mypackage.Person"),
             )
         ).generate()
 
@@ -913,7 +912,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                typeMapping = mapOf(Pair("Person", "mypackage.Person")),
+                typeMapping = mapOf("Person" to "mypackage.Person"),
             )
         ).generate()
 
@@ -947,8 +946,8 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 typeMapping = mapOf(
-                    Pair("SomethingWithAName", "mypackage.SomethingWithAName"),
-                    Pair("Person", "mypackage.Person"),
+                    "SomethingWithAName" to "mypackage.SomethingWithAName",
+                    "Person" to "mypackage.Person",
                 ),
             )
         ).generate()
@@ -983,9 +982,9 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 typeMapping = mapOf(
-                    Pair("SearchResult", "mypackage.SearchResult"),
-                    Pair("Movie", "mypackage.Movie"),
-                    Pair("Actor", "mypackage.Actor"),
+                    "SearchResult" to "mypackage.SearchResult",
+                    "Movie" to "mypackage.Movie",
+                    "Actor" to "mypackage.Actor",
                 ),
             )
         ).generate()
@@ -1018,7 +1017,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 typeMapping = mapOf(
-                    Pair("Actor", "mypackage.Actor"),
+                    "Actor" to "mypackage.Actor",
                 ),
             )
         ).generate()
@@ -1046,7 +1045,7 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 typeMapping = mapOf(
-                    Pair("SearchInput", "mypackage.SearchInput"),
+                    "SearchInput" to "mypackage.SearchInput",
                 ),
             )
         ).generate()
@@ -2013,7 +2012,7 @@ class CodeGenTest {
         assertThat((basket.typeSpec.methodSpecs[0].returnType as ClassName).simpleName()).isEqualTo("Fruit")
         assertThat(basket.typeSpec.methodSpecs).extracting("name").contains("getFruit")
 
-        assertCompilesJava(dataTypes.plus(interfaces))
+        assertCompilesJava(dataTypes + interfaces)
     }
 
     @Test
@@ -2062,7 +2061,7 @@ class CodeGenTest {
         assertThat(standing.typeSpec.methodSpecs[0].returnType.toString()).contains("int")
         assertThat(standing.typeSpec.methodSpecs[2].returnType).extracting("simpleName").isEqualTo("ITeam")
 
-        assertCompilesJava(dataTypes.plus(interfaces))
+        assertCompilesJava(dataTypes + interfaces)
     }
 
     @Test
@@ -2198,7 +2197,7 @@ class CodeGenTest {
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
         assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").isEqualTo("Rating")
 
-        assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
+        assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
     }
 
     @Test
@@ -2293,7 +2292,7 @@ class CodeGenTest {
         assertThat(iRating.typeSpec.name).isEqualTo("IRating")
         assertThat(iRating.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
 
-        assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
+        assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
     }
 
     @Test
@@ -2368,7 +2367,7 @@ class CodeGenTest {
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("SearchResult")
 
-        assertCompilesJava(dataTypes.plus(interfaces).plus(result.javaEnumTypes))
+        assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
     }
 
     @Test

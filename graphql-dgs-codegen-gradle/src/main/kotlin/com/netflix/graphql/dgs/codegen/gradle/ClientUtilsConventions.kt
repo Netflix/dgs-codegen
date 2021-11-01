@@ -20,7 +20,9 @@ package com.netflix.graphql.dgs.codegen.gradle
 
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
-import java.util.*
+import java.io.FileNotFoundException
+import java.util.Optional
+import java.util.Properties
 
 object ClientUtilsConventions {
     const val GRADLE_CLASSPATH_CONFIGURATION = "implementation"
@@ -39,13 +41,15 @@ object ClientUtilsConventions {
             val dependencyConfiguration = optionalCodeClientDependencyScope.orElse(GRADLE_CLASSPATH_CONFIGURATION)
             val configurationDependencies = project.configurations.getByName(dependencyConfiguration).dependencies
             configurationDependencies.add(project.dependencies.create(dependencyString))
-            logger.info("DGS CodeGen added [$dependencyString] to the $dependencyConfiguration dependencies.")
+            logger.info("DGS CodeGen added [{}] to the {} dependencies.", dependencyString, dependencyConfiguration)
         }
     }
 
     private val pluginProperties: Optional<Properties> = try {
         val props = Properties()
-        props.load(this.javaClass.classLoader.getResourceAsStream("META-INF/graphql-dgs-codegen-core.properties"))
+        val inputStream = this.javaClass.classLoader.getResourceAsStream("META-INF/graphql-dgs-codegen-core.properties")
+            ?: throw FileNotFoundException("property file not found in the classpath")
+        inputStream.use { props.load(it) }
         Optional.of(props)
     } catch (e: Exception) {
         logger.error("Unable to resolve the graphql-dgs-codegen-gradle.properties properties.")
