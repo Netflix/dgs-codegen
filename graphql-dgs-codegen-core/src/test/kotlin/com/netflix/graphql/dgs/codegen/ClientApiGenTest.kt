@@ -2131,17 +2131,60 @@ class ClientApiGenTest {
           
           type Foo {
             ping(arg: Boolean): Long
-            boolean: Boolean
-            default: Boolean
-            enum: Boolean
-            import: Boolean
-            interface: Boolean
-            package: Boolean
+            # ---
             parent: Boolean
-            protected: Boolean
             root: Boolean
-            short: Boolean
-            volatile: Boolean
+            # --- 
+            abstract: Boolean 
+            assert: Boolean   
+            boolean: Boolean  
+            break: Boolean    
+            byte: Boolean     
+            case: Boolean     
+            catch: Boolean    
+            char: Boolean     
+            # class: Boolean -- not supported
+            const: Boolean    
+            continue: Boolean     
+            default: Boolean      
+            do: Boolean           
+            double: Boolean       
+            else: Boolean         
+            enum: Boolean         
+            extends: Boolean      
+            final: Boolean        
+            finally: Boolean      
+            float: Boolean        
+            for: Boolean          
+            goto: Boolean         
+            if: Boolean           
+            implements: Boolean   
+            import: Boolean       
+            instanceof: Boolean   
+            int: Boolean          
+            interface: Boolean    
+            long: Boolean         
+            native: Boolean      
+            new: Boolean          
+            package: Boolean      
+            private: Boolean      
+            protected: Boolean    
+            public: Boolean       
+            return: Boolean       
+            short: Boolean        
+            static: Boolean       
+            strictfp: Boolean     
+            super: Boolean        
+            switch: Boolean
+            synchronized: Boolean   
+            this: Boolean           
+            throw: Boolean          
+            throws: Boolean         
+            transient: Boolean      
+            try: Boolean            
+            void: Boolean           
+            volatile: Boolean       
+            while: Boolean          
           }
           
           scalar Long
@@ -2151,6 +2194,7 @@ class ClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
+                generateDataTypes = true,
                 generateClientApi = true,
                 typeMapping = mapOf("Long" to "java.lang.Long"),
             )
@@ -2167,17 +2211,58 @@ class ClientApiGenTest {
         assertThat(rootProjectionClass).isNotNull
         assertThat(rootProjectionClass).hasPublicMethods("ping")
         assertThat(rootProjectionClass).hasPublicMethods(
-            "_boolean",
-            "_default",
-            "_enum",
-            "_import",
-            "_interface",
-            "_package",
             "_parent",
-            "_protected",
             "_root",
+            // ----
+            "_abstract",
+            "_assert",
+            "_boolean",
+            "_break",
+            "_byte",
+            "_case",
+            "_catch",
+            "_char",
+            "_const",
+            "_continue",
+            "_default",
+            "_do",
+            "_double",
+            "_else",
+            "_enum",
+            "_extends",
+            "_final",
+            "_finally",
+            "_float",
+            "_for",
+            "_goto",
+            "_if",
+            "_implements",
+            "_import",
+            "_instanceof",
+            "_int",
+            "_interface",
+            "_long",
+            "_native",
+            "_new",
+            "_package",
+            "_private",
+            "_protected",
+            "_public",
+            "_return",
             "_short",
+            "_static",
+            "_strictfp",
+            "_super",
+            "_switch",
+            "_synchronized",
+            "_this",
+            "_throw",
+            "_throws",
+            "_transient",
+            "_try",
+            "_void",
             "_volatile",
+            "_while"
         )
     }
 }
