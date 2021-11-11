@@ -458,6 +458,8 @@ class KotlinCodeGenTest {
                 |  public val firstname: String?
                 |
                 |  public val lastname: String?
+                |
+                |  public companion object
                 |}
                 |""".trimMargin()
         )
@@ -1683,6 +1685,8 @@ class KotlinCodeGenTest {
                 |  public val firstname: String?
                 |
                 |  public val lastname: String?
+                |
+                |  public companion object
                 |}
                 |""".trimMargin()
         )
@@ -1710,6 +1714,8 @@ class KotlinCodeGenTest {
                 |  public val lastname: String?
                 |
                 |  public val company: String?
+                |
+                |  public companion object
                 |}
                 |""".trimMargin()
         )
@@ -1812,6 +1818,8 @@ class KotlinCodeGenTest {
                 |  public val father: Pet?
                 |
                 |  public val parents: List<Pet?>?
+                |
+                |  public companion object
                 |}
                 |""".trimMargin()
         )
@@ -1873,6 +1881,8 @@ class KotlinCodeGenTest {
                 |  public val name: String?
                 |
                 |  public val diet: Diet?
+                |
+                |  public companion object
                 |}
             |""".trimMargin()
         )
