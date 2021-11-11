@@ -30,6 +30,7 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
 import graphql.language.*
 import graphql.parser.Parser
+import graphql.parser.ParserOptions
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -80,6 +81,12 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateForSchema(schema: String): CodeGenResult {
+        val SDL_MAX_ALLOWED_SCHEMA_TOKENS: Int = Int.MAX_VALUE
+        val parserOptions = ParserOptions.getDefaultParserOptions()
+            .transform {
+                it.maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
+            }
+        ParserOptions.setDefaultParserOptions(parserOptions)
         document = Parser.parse(schema)
         requiredTypeCollector = RequiredTypeCollector(
             document,
