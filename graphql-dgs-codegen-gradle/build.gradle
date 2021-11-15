@@ -24,7 +24,7 @@ apply plugin: 'java-gradle-plugin'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
-    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.5.31"
+    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:1.6.0"
 
     testApi gradleTestKit()
     testImplementation("com.google.guava:guava:31.0.1-jre")
