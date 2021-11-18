@@ -17,7 +17,7 @@
 package com.netflix.graphql.dgs.client.codegen
 
 import graphql.schema.Coercing
-import org.springframework.util.ReflectionUtils
+import org.reflections.ReflectionUtils
 import java.lang.reflect.Field
 import java.time.*
 import java.util.*
@@ -63,9 +63,9 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
             }
         } else {
             val fields = LinkedList<Field>()
-            ReflectionUtils.doWithFields(input.javaClass) {
+            ReflectionUtils.getAllFields(input.javaClass).forEach {
                 if (!it.isSynthetic) {
-                    ReflectionUtils.makeAccessible(it)
+                    it.isAccessible = true
                     fields.add(it)
                 }
             }
