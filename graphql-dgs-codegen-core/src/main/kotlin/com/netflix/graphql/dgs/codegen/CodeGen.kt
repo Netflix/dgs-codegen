@@ -470,20 +470,21 @@ fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config:
     }
 }
 
-fun ObjectTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean {
-    return this.directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey(this.name)
-}
+fun ObjectTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean = shouldSkip(this, config)
 
-fun InputObjectTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean {
-    return this.directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey(this.name)
-}
+fun InputObjectTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean = shouldSkip(this, config)
 
-fun InterfaceTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean {
-    return this.directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey(this.name)
-}
+fun InterfaceTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean = shouldSkip(this, config)
 
-fun UnionTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean {
-    return this.directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey(this.name)
+fun UnionTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean = shouldSkip(this, config)
+
+fun EnumTypeDefinition.shouldSkip(config: CodeGenConfig): Boolean = shouldSkip(this, config)
+
+private fun <T : DirectivesContainer<*>> shouldSkip(
+    typeDefinition: DirectivesContainer<T>,
+    config: CodeGenConfig
+): Boolean {
+    return typeDefinition.directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey((typeDefinition as NamedNode<*>).name)
 }
 
 fun TypeDefinition<*>.fieldDefinitions(): List<FieldDefinition> {
