@@ -34,6 +34,7 @@ import java.util.*
 import com.squareup.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
+
     private val commonScalars = mapOf<String, JavaTypeName>(
         "LocalTime" to ClassName.get(LocalTime::class.java),
         "LocalDate" to ClassName.get(LocalDate::class.java),

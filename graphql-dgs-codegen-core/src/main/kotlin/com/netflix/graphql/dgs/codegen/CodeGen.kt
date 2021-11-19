@@ -88,6 +88,9 @@ class CodeGen(private val config: CodeGenConfig) {
             }
         ParserOptions.setDefaultParserOptions(parserOptions)
         document = Parser.parse(schema)
+        if (config.generateDgsPaginationTypes) {
+            generateDgsPaginationTypes()
+        }
         requiredTypeCollector = RequiredTypeCollector(
             document,
             queries = config.includeQueries,
@@ -222,6 +225,9 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateKotlinForSchema(schema: String): CodeGenResult {
         document = Parser.parse(schema)
+        if (config.generateDgsPaginationTypes) {
+            generateDgsPaginationTypes()
+        }
         requiredTypeCollector = RequiredTypeCollector(
             document,
             queries = config.includeQueries,
@@ -307,6 +313,57 @@ class CodeGen(private val config: CodeGenConfig) {
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
+
+    private fun createConnection(type: String): ObjectTypeDefinition {
+        return ObjectTypeDefinition.newObjectTypeDefinition()
+            .name(type + "Connection")
+            .fieldDefinition(FieldDefinition("edges", ListType(TypeName(type + "Edge"))))
+            .fieldDefinition(FieldDefinition("pageInfo", TypeName("PageInfo")))
+            .build()
+    }
+
+    private fun createEdge(type: String): ObjectTypeDefinition {
+        return ObjectTypeDefinition.newObjectTypeDefinition()
+            .name(type + "Edge")
+            .fieldDefinition(FieldDefinition("cursor", TypeName("String")))
+            .fieldDefinition(FieldDefinition("node", TypeName(type)))
+            .build()
+    }
+
+    private fun createPageInfo(): ObjectTypeDefinition {
+        return ObjectTypeDefinition.newObjectTypeDefinition()
+            .name("PageInfo")
+            .fieldDefinition(FieldDefinition("hasPreviousPage", NonNullType(TypeName("Boolean"))))
+            .fieldDefinition(FieldDefinition("hasNextPage", NonNullType(TypeName("Boolean"))))
+            .fieldDefinition(FieldDefinition("startCursor", TypeName("String")))
+            .fieldDefinition(FieldDefinition("endCursor", TypeName("String")))
+            .build()
+    }
+
+    private fun generateDgsPaginationTypes() {
+        var types = document.definitions.filterIsInstance<TypeDefinition<*>>()
+        if (types.any {
+            it.hasDirective("connection")
+        } &&
+            ! types.any { it.name == "PageInfo" }
+        ) {
+            document.transform {
+                document = it.definitions(document.definitions + createPageInfo()).build()
+            }
+        }
+        document.transform { builder ->
+            document = builder.definitions(
+                document.definitions +
+                types.filter {
+                    it.hasDirective("connection")
+                }.flatMap {
+                    listOf(
+                        createEdge(it.name), createConnection(it.name)
+                    )
+                }
+            ).build()
+        }
+    }
 }
 
 data class CodeGenConfig(
@@ -336,6 +393,7 @@ data class CodeGenConfig(
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
+    val generateDgsPaginationTypes: Boolean = false,
 ) {
     val packageNameClient: String
         get() = "$packageName.$subPackageNameClient"
@@ -364,6 +422,7 @@ data class CodeGenConfig(
             ${typeMapping.map { "--type-mapping ${it.key}=${it.value}" }.joinToString("\n")}           
             ${if (shortProjectionNames) "--short-projection-names" else ""}
             ${schemas.joinToString(" ")}
+            ${if (generateDgsPaginationTypes) "--generate-dgs-pagination-types" else ""}
         """.trimIndent()
     }
 }

@@ -54,6 +54,24 @@ fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
     return result
 }
 
+fun assertDoesNotCompileJava(codeGenResult: CodeGenResult): Compilation {
+    return assertDoesNotCompileJava(
+        codeGenResult.clientProjections
+            .plus(codeGenResult.javaQueryTypes)
+            .plus(codeGenResult.javaEnumTypes)
+            .plus(codeGenResult.javaDataTypes)
+            .plus(codeGenResult.javaInterfaces)
+    )
+}
+
+fun assertDoesNotCompileJava(javaFiles: Collection<JavaFile>): Compilation {
+    val result = javac()
+        .withOptions("-parameters")
+        .compile(javaFiles.map(JavaFile::toJavaFileObject))
+    CompilationSubject.assertThat(result).failed()
+    return result
+}
+
 fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")
@@ -81,6 +99,38 @@ fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
             }
         )
         assertThat(exitCode).isEqualTo(ExitCode.OK)
+    }
+
+    return buildDir
+}
+
+fun assertDoesNotCompileKotlin(files: Collection<FileSpec>): Path {
+    val srcDir = Files.createTempDirectory("src")
+    val buildDir = Files.createTempDirectory("build")
+    files.forEach { it.writeTo(srcDir) }
+
+    K2JVMCompiler().run {
+        val exitCode = execImpl(
+            PrintingMessageCollector(
+                System.out,
+                MessageRenderer.WITHOUT_PATHS,
+                false,
+            ),
+            Services.EMPTY,
+            K2JVMCompilerArguments().apply {
+                freeArgs = listOf(srcDir.toAbsolutePath().toString())
+                destination = buildDir.toAbsolutePath().toString()
+                classpath = System.getProperty("java.class.path")
+                    .split(System.getProperty("path.separator"))
+                    .filter {
+                        File(it).exists() && File(it).canRead()
+                    }.joinToString(":")
+                noStdlib = true
+                noReflect = true
+                skipRuntimeVersionCheck = true
+            }
+        )
+        assertThat(exitCode).isNotEqualTo(ExitCode.OK)
     }
 
     return buildDir

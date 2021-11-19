@@ -28,6 +28,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
+import org.assertj.core.api.InstanceOfAssertFactories
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
@@ -1976,6 +1977,134 @@ class KotlinCodeGenTest {
             |""".trimMargin()
         )
         assertCompilesKotlin(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generatePaginatedTypeForDgsPagination() {
+
+        val schema = """
+            type Query {
+                people: PersonConnection
+            }
+            
+            type Person @connection {
+                firstname: String
+                lastname: String
+                friends: PersonConnection
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDgsPaginationTypes = true
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes.size).isEqualTo(4)
+        assertThat(dataTypes).flatExtracting("members").asInstanceOf(InstanceOfAssertFactories
+            .collection(TypeSpec.javaClass))
+            .extracting("name")
+            .contains(
+            "Person", "PersonConnection", "PersonEdge", "PageInfo"
+        )
+        assertThat(dataTypes.all { it.packageName == typesPackageName })
+
+        var typeSpec = dataTypes.find { (it.members[0] as TypeSpec).name == "Person" }!!.members[0]
+                as TypeSpec
+        assertThat(typeSpec.propertySpecs.size).isEqualTo(3)
+        assertThat(typeSpec.propertySpecs).extracting("name").contains(
+            "firstname", "lastname",
+            "friends"
+        )
+        assertThat(typeSpec.propertySpecs.find { it.name == "friends" }!!.type.toString())
+            .isEqualTo(
+                "com.netflix.graphql.dgs.codegen.tests.generated.types.PersonConnection?"
+            )
+
+        typeSpec = dataTypes.find { (it.members[0] as TypeSpec).name == "PersonConnection" }!!
+            .members[0]
+                as TypeSpec
+        assertThat(typeSpec.propertySpecs.size).isEqualTo(2)
+        assertThat(typeSpec.propertySpecs).extracting("name").contains(
+            "edges", "pageInfo"
+        )
+        assertThat(typeSpec.propertySpecs.find { it.name == "edges" }!!.type.toString())
+            .isEqualTo(
+                "kotlin.collections.List<com.netflix.graphql.dgs.codegen.tests.generated.types.PersonEdge?>?"
+            )
+        assertThat(typeSpec.propertySpecs.find { it.name == "pageInfo" }!!.type.toString())
+            .isEqualTo(
+                "graphql.relay.PageInfo?"
+            )
+
+        typeSpec = dataTypes.find { (it.members[0] as TypeSpec).name == "PersonEdge" }!!.members[0]
+                as TypeSpec
+        assertThat(typeSpec.propertySpecs.size).isEqualTo(2)
+        assertThat(typeSpec.propertySpecs).extracting("name").contains(
+            "node", "cursor"
+        )
+        assertThat(typeSpec.propertySpecs.find { it.name == "node" }!!.type.toString())
+            .isEqualTo(
+                "com.netflix.graphql.dgs.codegen.tests.generated.types.Person?"
+            )
+        assertThat(typeSpec.propertySpecs.find { it.name == "cursor" }!!.type.toString())
+            .isEqualTo(
+                "kotlin.String?"
+            )
+
+        typeSpec = dataTypes.find { (it.members[0] as TypeSpec).name == "PageInfo" }!!.members[0]
+                as TypeSpec
+        assertThat(typeSpec.propertySpecs.size).isEqualTo(4)
+        assertThat(typeSpec.propertySpecs).extracting("name").contains(
+            "hasPreviousPage", "hasNextPage", "startCursor", "endCursor"
+        )
+        assertThat(typeSpec.propertySpecs.find { it.name == "hasPreviousPage" }!!.type.toString())
+            .isEqualTo(
+                "kotlin.Boolean"
+            )
+        assertThat(typeSpec.propertySpecs.find { it.name == "hasNextPage" }!!.type.toString())
+            .isEqualTo(
+                "kotlin.Boolean"
+            )
+        assertThat(typeSpec.propertySpecs.find { it.name == "startCursor" }!!.type.toString())
+            .isEqualTo(
+                "kotlin.String?"
+            )
+        assertThat(typeSpec.propertySpecs.find { it.name == "endCursor" }!!.type.toString())
+            .isEqualTo(
+                "kotlin.String?"
+            )
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun paginatedCodeDoesNotCompileWithoutEnablingOption() {
+
+        val schema = """
+            type Query {
+                people: PersonConnection
+            }
+            
+            type Person @connection {
+                firstname: String
+                lastname: String
+                friends: PersonConnection
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        assertDoesNotCompileKotlin(dataTypes)
     }
 
     @Test

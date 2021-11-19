@@ -112,6 +112,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var snakeCaseConstantNames = false
 
+    @Input
+    var generateDgsPaginationTypes = false
+
     @TaskAction
     fun generate() {
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
@@ -147,7 +150,8 @@ open class GenerateJavaTask : DefaultTask() {
             omitNullInputFields = omitNullInputFields,
             maxProjectionDepth = maxProjectionDepth,
             kotlinAllFieldsOptional = kotlinAllFieldsOptional,
-            snakeCaseConstantNames = snakeCaseConstantNames
+            snakeCaseConstantNames = snakeCaseConstantNames,
+            generateDgsPaginationTypes = generateDgsPaginationTypes
         )
 
         logger.info("Codegen config: {}", config)

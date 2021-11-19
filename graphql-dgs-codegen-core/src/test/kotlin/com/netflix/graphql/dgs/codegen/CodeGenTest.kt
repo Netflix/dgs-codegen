@@ -2474,6 +2474,125 @@ class CodeGenTest {
     }
 
     @Test
+    fun generatePaginatedTypeForDgsPagination() {
+
+        val schema = """
+            type Query {
+                people: PersonConnection
+            }
+            
+            type Person @connection {
+                firstname: String
+                lastname: String
+                friends: PersonConnection
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateDgsPaginationTypes = true
+            )
+        ).generate()
+
+        val dataTypes = result.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(4)
+        assertThat(dataTypes).extracting("typeSpec.name").contains(
+            "Person", "PersonConnection", "PersonEdge", "PageInfo"
+        )
+        assertThat(dataTypes.all { it.packageName.equals(typesPackageName) })
+
+        var typeSpec = dataTypes.find { it.typeSpec.name.equals("Person") }!!.typeSpec
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(3)
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains(
+            "firstname", "lastname",
+            "friends"
+        )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("friends") }!!.type.toString())
+            .isEqualTo(
+                "com.netflix.graphql.dgs.codegen.tests.generated.types.PersonConnection"
+            )
+
+        typeSpec = dataTypes.find { it.typeSpec.name.equals("PersonConnection") }!!.typeSpec
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains(
+            "edges", "pageInfo"
+        )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("edges") }!!.type.toString())
+            .isEqualTo(
+                "java.util.List<com.netflix.graphql.dgs.codegen.tests.generated.types.PersonEdge>"
+            )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("pageInfo") }!!.type.toString())
+            .isEqualTo(
+                "graphql.relay.PageInfo"
+            )
+
+        typeSpec = dataTypes.find { it.typeSpec.name.equals("PersonEdge") }!!.typeSpec
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains(
+            "node", "cursor"
+        )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("node") }!!.type.toString())
+            .isEqualTo(
+                "com.netflix.graphql.dgs.codegen.tests.generated.types.Person"
+            )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("cursor") }!!.type.toString())
+            .isEqualTo(
+                "java.lang.String"
+            )
+
+        typeSpec = dataTypes.find { it.typeSpec.name.equals("PageInfo") }!!.typeSpec
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(4)
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains(
+            "hasPreviousPage", "hasNextPage", "startCursor", "endCursor"
+        )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("hasPreviousPage") }!!.type.toString())
+            .isEqualTo(
+                "boolean"
+            )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("hasNextPage") }!!.type.toString())
+            .isEqualTo(
+                "boolean"
+            )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("startCursor") }!!.type.toString())
+            .isEqualTo(
+                "java.lang.String"
+            )
+        assertThat(typeSpec.fieldSpecs.find { it.name.equals("endCursor") }!!.type.toString())
+            .isEqualTo(
+                "java.lang.String"
+            )
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun paginatedCodeDoesNotCompileWithoutEnablingOption() {
+
+        val schema = """
+            type Query {
+                people: PersonConnection
+            }
+            
+            type Person @connection {
+                firstname: String
+                lastname: String
+                friends: PersonConnection
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        assertDoesNotCompileJava(result)
+    }
+
+    @Test
     fun generateClassJavaDoc() {
         val schema = """
             type Query {
