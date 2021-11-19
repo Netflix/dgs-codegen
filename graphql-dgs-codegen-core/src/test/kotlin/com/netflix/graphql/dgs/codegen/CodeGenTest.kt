@@ -33,10 +33,6 @@ import java.util.stream.Stream
 
 class CodeGenTest {
 
-    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
-    private val typesPackageName = "$basePackageName.types"
-    private val dataFetcherPackageName = "$basePackageName.datafetchers"
-
     @Test
     fun generateDataClassWithStringProperties() {
 

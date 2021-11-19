@@ -24,8 +24,6 @@ import org.junit.jupiter.api.Test
 
 class EntitiesClientApiGenTest {
 
-    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
-
     @Test
     fun `We can have federated entities`() {
         val schema = """
