@@ -134,6 +134,12 @@
             ],
             "locked": "1.5.31"
         },
+        "org.reflections:reflections": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
+            "locked": "0.10.2"
+        },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30"
         }
@@ -301,6 +307,12 @@
         },
         "org.junit:junit-bom": {
             "locked": "5.8.1"
+        },
+        "org.reflections:reflections": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
+            "locked": "0.10.2"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30"
