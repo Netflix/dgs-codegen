@@ -36,9 +36,6 @@ import java.util.stream.Stream
 
 class KotlinCodeGenTest {
 
-    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
-    private val typesPackageName = "$basePackageName.types"
-
     @Test
     fun generateDataClassWithStringProperties() {
 

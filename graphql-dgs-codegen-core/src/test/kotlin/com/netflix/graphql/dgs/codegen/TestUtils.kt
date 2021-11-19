@@ -99,3 +99,7 @@ fun <T> invokeMethod(method: Method, target: Any, vararg args: Any): T {
     val result = ReflectionUtils.invokeMethod(method, target, *args)
     return result as T
 }
+
+const val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
+const val typesPackageName = "$basePackageName.types"
+const val dataFetcherPackageName = "$basePackageName.datafetchers"
