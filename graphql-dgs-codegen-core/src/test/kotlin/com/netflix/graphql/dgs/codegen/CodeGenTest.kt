@@ -2226,9 +2226,19 @@ class CodeGenTest {
             type MoviePage {
                 items: [Movie]
             }
-
-            type Genre {
+            
+            interface Genre {
                 name: String
+            }
+
+            type ActionGenre implements Genre {
+                name: String
+                heroes: Int
+            }
+            
+            type ComedyGenre implements Genre {
+                name: String
+                jokes: Int
             }
             
             type Rating {
@@ -2261,15 +2271,15 @@ class CodeGenTest {
         val interfaces = result.javaInterfaces
         val dataTypes = result.javaDataTypes
 
-        assertThat(interfaces).hasSize(4) // IMovie, IMoviePage, IGenre, IRating
-        assertThat(dataTypes).hasSize(0) // Movie, MoviePage, Genre, Rating, MovieFilter
+        assertThat(interfaces).hasSize(6) // IMovie, IMoviePage, IGenre, IActionGenre, IComedyGenre, IRating
+        assertThat(dataTypes).hasSize(0)
 
         val iMovie = interfaces[0]
         assertThat(iMovie.typeSpec.name).isEqualTo("IMovie")
         assertThat(iMovie.typeSpec.methodSpecs).extracting("name").containsExactly("getId", "getTitle", "getGenre", "getLanguage", "getTags", "getRating")
         assertThat(iMovie.typeSpec.methodSpecs[0].returnType).extracting("simpleName").isEqualTo("String")
         assertThat(iMovie.typeSpec.methodSpecs[1].returnType).extracting("simpleName").isEqualTo("String")
-        assertThat(iMovie.typeSpec.methodSpecs[2].returnType).extracting("simpleName").isEqualTo("IGenre")
+        assertThat(iMovie.typeSpec.methodSpecs[2].returnType).extracting("simpleName").isEqualTo("Genre")
         assertThat(iMovie.typeSpec.methodSpecs[3].returnType).extracting("simpleName").isEqualTo("Language")
         var parameterizedTypeName = iMovie.typeSpec.methodSpecs[4].returnType as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
@@ -2284,13 +2294,21 @@ class CodeGenTest {
         val wildcardTypeName = parameterizedTypeName.typeArguments[0] as WildcardTypeName
         assertThat(wildcardTypeName.upperBounds[0]).extracting("simpleName").isEqualTo("IMovie")
 
-        val iGenre = interfaces[2]
-        assertThat(iGenre.typeSpec.name).isEqualTo("IGenre")
-        assertThat(iGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+        val iActionGenre = interfaces[2]
+        assertThat(iActionGenre.typeSpec.name).isEqualTo("IActionGenre")
+        assertThat(iActionGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName", "getHeroes")
 
-        val iRating = interfaces[3]
+        val iComedyGenre = interfaces[3]
+        assertThat(iComedyGenre.typeSpec.name).isEqualTo("IComedyGenre")
+        assertThat(iComedyGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName", "getJokes")
+
+        val iRating = interfaces[4]
         assertThat(iRating.typeSpec.name).isEqualTo("IRating")
         assertThat(iRating.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+
+        val iGenre = interfaces[5]
+        assertThat(iGenre.typeSpec.name).isEqualTo("Genre")
+        assertThat(iGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName", "setName")
 
         assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
     }

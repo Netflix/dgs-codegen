@@ -143,7 +143,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaInterfaces(definitions: Collection<Definition<*>>): CodeGenResult {
-        if (!config.generateDataTypes) {
+        if (!config.generateDataTypes && !config.generateInterfaces) {
             return CodeGenResult()
         }
 

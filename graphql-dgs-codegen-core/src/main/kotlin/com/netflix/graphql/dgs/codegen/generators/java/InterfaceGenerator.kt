@@ -27,12 +27,7 @@ import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
-import graphql.language.Document
-import graphql.language.FieldDefinition
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.InterfaceTypeExtensionDefinition
-import graphql.language.ObjectTypeDefinition
-import graphql.language.TypeName
+import graphql.language.*
 import javax.lang.model.element.Modifier
 
 class InterfaceGenerator(private val config: CodeGenConfig, private val document: Document) {
@@ -80,7 +75,10 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
 
         val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
             .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
-            .map { node -> ClassName.get(packageName, node.name) }
+            .map { node ->
+                val nodeName = if (config.generateInterfaces) "I${node.name}" else node.name
+                ClassName.get(packageName, nodeName)
+            }
             .toList()
 
         if (implementations.isNotEmpty()) {
