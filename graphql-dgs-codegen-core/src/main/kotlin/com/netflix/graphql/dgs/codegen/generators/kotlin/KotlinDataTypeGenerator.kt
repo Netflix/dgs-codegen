@@ -149,7 +149,7 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, config: Code
         }
 
         if (description != null) {
-            kotlinType.addKdoc("%L", description.content.lineSequence().joinToString("\n"))
+            kotlinType.addKdoc("%L", description.sanitizeKdoc())
         }
 
         val constructorBuilder = FunSpec.constructorBuilder()
@@ -190,7 +190,7 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, config: Code
             constructorBuilder.addParameter(parameterSpec.build())
             val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
             if (field.description != null) {
-                propertySpecBuilder.addKdoc("%L", field.description.content.lineSequence().joinToString("\n"))
+                propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
             }
             propertySpecBuilder.initializer(field.name)
             kotlinType.addProperty(propertySpecBuilder.build())

@@ -81,7 +81,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(GraphQLQuery::class.java))
 
         if (it.description != null) {
-            javaType.addJavadoc(it.description.content.lines().joinToString("\n"))
+            javaType.addJavadoc(it.description.sanitizeJavaDoc())
         }
         javaType.addMethod(
             MethodSpec.methodBuilder("getOperationName")
@@ -141,7 +141,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 )
 
             if (inputValue.description != null) {
-                methodBuilder.addJavadoc(inputValue.description.content.lineSequence().joinToString("\n"))
+                methodBuilder.addJavadoc(inputValue.description.sanitizeJavaDoc())
             }
             builderClass.addMethod(methodBuilder.build())
                 .addField(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)

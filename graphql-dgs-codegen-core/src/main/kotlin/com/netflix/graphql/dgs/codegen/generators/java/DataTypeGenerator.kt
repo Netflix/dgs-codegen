@@ -143,7 +143,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
             .addModifiers(Modifier.PUBLIC)
 
         if (description != null) {
-            javaType.addJavadoc(description.content.lines().joinToString("\n"))
+            javaType.addJavadoc(description.sanitizeJavaDoc())
         }
 
         interfaces.forEach {
@@ -298,7 +298,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         }
 
         if (fieldDefinition.description != null) {
-            fieldBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+            fieldBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
         }
 
         val field = fieldBuilder.build()
@@ -312,7 +312,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         }
 
         if (fieldDefinition.description != null) {
-            getterMethodBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+            getterMethodBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
         }
 
         javaType.addMethod(getterMethodBuilder.build())

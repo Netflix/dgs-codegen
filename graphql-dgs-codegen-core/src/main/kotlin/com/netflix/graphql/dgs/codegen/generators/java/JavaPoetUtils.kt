@@ -23,6 +23,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ClassName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
+import graphql.language.Description
 
 /**
  * Generate a [JsonTypeInfo] annotation, which allows for Jackson
@@ -89,4 +90,12 @@ fun jsonSubTypeAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
     }
 
     return annotationSpec.build()
+}
+
+/**
+ * Javapoet treats $ as a reference
+ * https://github.com/square/javapoet/issues/670
+ */
+fun Description.sanitizeJavaDoc(): String {
+    return this.content.lines().joinToString("\n").replace("$", "$$")
 }

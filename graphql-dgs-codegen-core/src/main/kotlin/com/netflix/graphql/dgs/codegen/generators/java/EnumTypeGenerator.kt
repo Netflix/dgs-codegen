@@ -33,7 +33,7 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
                 .addModifiers(Modifier.PUBLIC)
 
         if (definition.description != null) {
-            javaType.addJavadoc(definition.description.content.lines().joinToString("\n"))
+            javaType.addJavadoc(definition.description.sanitizeJavaDoc())
         }
 
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
