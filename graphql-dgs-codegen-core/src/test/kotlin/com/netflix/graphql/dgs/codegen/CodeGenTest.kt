@@ -2426,7 +2426,7 @@ It takes a title and such.
         
             type Movie {
                 ""${'"'}
-                The original, non localized title.
+                The original, non localized title with some specials characters : %!({[*$,.:;.
                 ""${'"'}
                 title: String
             }
@@ -2448,7 +2448,7 @@ It takes a title and such.
         ).generate()
 
         assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[0].javadoc.toString()).isEqualTo(
-            """The original, non localized title.
+            """The original, non localized title with some specials characters : %!({[*$,.:;.
             """.trimIndent()
         )
 

@@ -51,7 +51,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC)
 
         if (definition.description != null) {
-            javaType.addJavadoc(definition.description.content.lineSequence().joinToString("\n"))
+            javaType.addJavadoc(definition.description.sanitizeJavaDoc())
         }
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
@@ -107,7 +107,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .returns(returnType)
         if (fieldDefinition.description != null) {
-            getterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+            getterBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
         }
         javaType.addMethod(getterBuilder.build())
 

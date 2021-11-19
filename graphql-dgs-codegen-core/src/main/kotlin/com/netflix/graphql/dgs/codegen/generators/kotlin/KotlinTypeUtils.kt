@@ -19,33 +19,16 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.squareup.kotlinpoet.BOOLEAN
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.DOUBLE
-import com.squareup.kotlinpoet.INT
-import com.squareup.kotlinpoet.LIST
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.STRING
-import com.squareup.kotlinpoet.asTypeName
-import graphql.language.ListType
-import graphql.language.Node
-import graphql.language.NodeTraverser
-import graphql.language.NodeVisitorStub
-import graphql.language.NonNullType
-import graphql.language.ScalarTypeDefinition
-import graphql.language.StringValue
-import graphql.language.Type
+import graphql.language.*
 import graphql.language.TypeName
 import graphql.parser.Parser
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.util.Currency
+import java.time.*
+import java.util.*
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig) {
@@ -141,4 +124,8 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
                 it.name to (value as StringValue).value
             }
         }
+}
+
+fun Description.sanitizeKdoc(): String {
+    return this.content.lineSequence().joinToString("\n")
 }
