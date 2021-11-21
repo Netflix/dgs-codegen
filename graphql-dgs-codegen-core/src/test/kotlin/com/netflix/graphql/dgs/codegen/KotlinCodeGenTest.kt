@@ -18,7 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.truth.Truth
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
@@ -435,7 +434,7 @@ class KotlinCodeGenTest {
         assertThat(interfaces.size).isEqualTo(1)
         val interfaceType = interfaces[0].members[0] as TypeSpec
 
-        Truth.assertThat(FileSpec.get("$basePackageName.types", interfaceType).toString()).isEqualTo(
+        assertThat(FileSpec.get("$basePackageName.types", interfaceType).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -461,7 +460,7 @@ class KotlinCodeGenTest {
                 |""".trimMargin()
         )
 
-        Truth.assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
+        assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -1449,7 +1448,7 @@ class KotlinCodeGenTest {
 
         assertThat(interfaces.size).isEqualTo(1)
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -1598,7 +1597,7 @@ class KotlinCodeGenTest {
 
         assertThat(interfaces.size).isEqualTo(1)
         val searchResult = interfaces[0].members[0] as TypeSpec
-        Truth.assertThat(FileSpec.get("$basePackageName.types", searchResult).toString()).contains(
+        assertThat(FileSpec.get("$basePackageName.types", searchResult).toString()).contains(
             """
                 |@JsonTypeInfo(
                 |  use = JsonTypeInfo.Id.NAME,
@@ -1613,7 +1612,7 @@ class KotlinCodeGenTest {
         )
 
         // This ensures deserializability in the absence of __typename
-        Truth.assertThat(FileSpec.get("$basePackageName.types", human).toString()).contains("@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)")
+        assertThat(FileSpec.get("$basePackageName.types", human).toString()).contains("@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)")
     }
 
     @Test
@@ -1672,7 +1671,7 @@ class KotlinCodeGenTest {
         assertThat(interfaces.size).isEqualTo(2)
 
         val personInterfaceType = interfaces[0].members[0] as TypeSpec
-        Truth.assertThat(FileSpec.get("$basePackageName.types", personInterfaceType).toString()).isEqualTo(
+        assertThat(FileSpec.get("$basePackageName.types", personInterfaceType).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -1689,7 +1688,7 @@ class KotlinCodeGenTest {
         )
 
         val employeeInterfaceType = interfaces[1].members[0] as TypeSpec
-        Truth.assertThat(FileSpec.get("$basePackageName.types", employeeInterfaceType).toString()).isEqualTo(
+        assertThat(FileSpec.get("$basePackageName.types", employeeInterfaceType).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -1717,7 +1716,7 @@ class KotlinCodeGenTest {
                 |""".trimMargin()
         )
 
-        Truth.assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
+        assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -1785,7 +1784,7 @@ class KotlinCodeGenTest {
         val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -1858,7 +1857,7 @@ class KotlinCodeGenTest {
         val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |

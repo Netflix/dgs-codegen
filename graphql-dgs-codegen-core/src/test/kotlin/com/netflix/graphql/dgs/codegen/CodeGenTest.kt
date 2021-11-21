@@ -18,7 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
@@ -418,10 +417,10 @@ class CodeGenTest {
         assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
 
         val annotation = employee.annotations.single()
-        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
 
         val person = interfaces[0]
-        Truth.assertThat(person.toString()).isEqualTo(
+        assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
@@ -488,7 +487,7 @@ class CodeGenTest {
             )
         ).generate()
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -555,7 +554,7 @@ class CodeGenTest {
             )
         ).generate()
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -615,10 +614,10 @@ class CodeGenTest {
         assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
 
         val annotation = employee.annotations.single()
-        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
 
         val person = interfaces[0]
-        Truth.assertThat(person.toString()).isEqualTo(
+        assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
@@ -1523,7 +1522,7 @@ class CodeGenTest {
         assertThat(result.javaDataTypes[2].typeSpec.name).isEqualTo("Rating")
         assertThat(result.javaInterfaces[0].typeSpec.name).isEqualTo("SearchResult")
 
-        Truth.assertThat(result.javaInterfaces[0].toString()).isEqualTo(
+        assertThat(result.javaInterfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -1673,12 +1672,12 @@ class CodeGenTest {
             .contains("firstname", "lastname", "company", "imdbProfile")
 
         val annotation = talent.annotations.single()
-        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
 
         assertThat(interfaces).hasSize(2)
 
         val person = interfaces[0]
-        Truth.assertThat(person.toString()).isEqualTo(
+        assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
@@ -1697,7 +1696,7 @@ class CodeGenTest {
         )
 
         val employee = interfaces[1]
-        Truth.assertThat(employee.toString()).isEqualTo(
+        assertThat(employee.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
@@ -1727,7 +1726,7 @@ class CodeGenTest {
                |""".trimMargin()
         )
 
-        Truth.assertThat(JavaFile.builder("$basePackageName.types", talent).build().toString()).isEqualTo(
+        assertThat(JavaFile.builder("$basePackageName.types", talent).build().toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -1891,7 +1890,7 @@ class CodeGenTest {
         assertThat(interfaces).hasSize(1)
 
         val person = interfaces[0]
-        Truth.assertThat(person.toString()).isEqualTo(
+        assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
