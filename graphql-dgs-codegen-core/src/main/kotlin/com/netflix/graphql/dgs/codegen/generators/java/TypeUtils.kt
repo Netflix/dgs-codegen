@@ -19,33 +19,18 @@
 package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.WildcardTypeName
-import graphql.language.Document
-import graphql.language.EnumTypeDefinition
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.ListType
-import graphql.language.Node
-import graphql.language.NodeTraverser
-import graphql.language.NodeVisitorStub
-import graphql.language.NonNullType
-import graphql.language.ObjectTypeDefinition
-import graphql.language.ScalarTypeDefinition
-import graphql.language.StringValue
-import graphql.language.Type
+import graphql.language.*
 import graphql.language.TypeName
-import graphql.language.UnionTypeDefinition
 import graphql.parser.Parser
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
-import java.time.Instant
-import java.time.LocalDate
-import java.time.LocalDateTime
-import java.time.LocalTime
-import java.time.OffsetDateTime
-import java.util.Currency
+import java.time.*
+import java.util.*
 import com.squareup.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
@@ -68,7 +53,11 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         return "$packageName.$name"
     }
 
-    fun findReturnType(fieldType: Type<*>, useInterfaceType: Boolean = false, useWildcardType: Boolean = false): JavaTypeName {
+    fun findReturnType(
+        fieldType: Type<*>,
+        useInterfaceType: Boolean = false,
+        useWildcardType: Boolean = false
+    ): JavaTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = node.toJavaTypeName(useInterfaceType)
@@ -76,6 +65,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 context.setAccumulate(boxed)
                 return TraversalControl.CONTINUE
             }
+
             override fun visitListType(node: ListType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = context.getCurrentAccumulate<JavaTypeName>()
                 val boxed = boxType(typeName)
@@ -98,7 +88,11 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 context.setAccumulate(parameterizedTypeName)
                 return TraversalControl.CONTINUE
             }
-            override fun visitNonNullType(node: NonNullType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
+
+            override fun visitNonNullType(
+                node: NonNullType,
+                context: TraverserContext<Node<Node<*>>>
+            ): TraversalControl {
                 val typeName = context.getCurrentAccumulate<JavaTypeName>()
                 val accumulate = if (config.generateBoxedTypes) {
                     boxType(typeName)
@@ -108,6 +102,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 context.setAccumulate(accumulate)
                 return TraversalControl.CONTINUE
             }
+
             override fun visitNode(node: Node<*>, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 throw AssertionError("Unknown field type: $node")
             }
@@ -134,12 +129,23 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
     private fun TypeName.toJavaTypeName(useInterfaceType: Boolean): JavaTypeName {
         if (name in config.typeMapping) {
             val mappedType = config.typeMapping.getValue(name)
-            return ClassName.bestGuess(mappedType)
+
+            return parseMappedType(
+                mappedType = mappedType,
+                toTypeName = String::toTypeName,
+                parameterize = { current ->
+                    ParameterizedTypeName.get(
+                        current.first as ClassName,
+                        *current.second.toTypedArray()
+                    )
+                },
+                onCloseBracketCallBack = { current, typeString -> current.second.add(typeString.toTypeName(true)) }
+            )
         }
 
         if (name in config.schemaTypeMapping) {
             val mappedType = config.schemaTypeMapping.getValue(name)
-            return ClassName.bestGuess(mappedType)
+            return mappedType.toTypeName()
         }
 
         if (name in commonScalars) {
@@ -178,17 +184,23 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 context.setAccumulate(node)
                 return TraversalControl.CONTINUE
             }
+
             override fun visitListType(node: ListType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 val typeName = context.getCurrentAccumulate<TypeName>()
 
                 context.setAccumulate(typeName)
                 return TraversalControl.CONTINUE
             }
-            override fun visitNonNullType(node: NonNullType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
+
+            override fun visitNonNullType(
+                node: NonNullType,
+                context: TraverserContext<Node<Node<*>>>
+            ): TraversalControl {
                 val typeName = context.getCurrentAccumulate<TypeName>()
                 context.setAccumulate(typeName)
                 return TraversalControl.CONTINUE
             }
+
             override fun visitNode(node: Node<*>, context: TraverserContext<Node<Node<*>>>): TraversalControl {
                 throw AssertionError("Unknown field type: $node")
             }

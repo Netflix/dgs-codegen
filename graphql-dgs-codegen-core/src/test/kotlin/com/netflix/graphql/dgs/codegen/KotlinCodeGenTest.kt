@@ -28,10 +28,13 @@ import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
 
 class KotlinCodeGenTest {
@@ -793,6 +796,96 @@ class KotlinCodeGenTest {
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[0].type.toString()).isEqualTo("mypackage.Person?")
+    }
+
+    @Nested
+    inner class GenerateDataClassesWithParameterizedMappedTypes {
+        private val schema = """
+            type Query {
+                data: JSON
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                data: JSON
+            }
+        """.trimIndent()
+
+        @Nested
+        inner class ValidCases {
+            @ParameterizedTest
+            @ValueSource(
+                strings = [
+                    "kotlin.collections.Map<*, *>",
+                    "kotlin.collections.Map<String, kotlin.Any?>",
+                    "kotlin.collections.List<String>",
+                    "kotlin.collections.List<*>",
+                    "kotlin.collections.List<kotlin.collections.List<String>>",
+                    "kotlin.collections.List<kotlin.collections.List<String?>?>",
+                    "kotlin.collections.List<kotlin.collections.List<kotlin.collections.List<String?>?>?>",
+                    "kotlin.collections.Map<kotlin.collections.List<*>, kotlin.collections.Map<String, kotlin.Any?>>",
+                    "kotlin.collections.Map<kotlin.collections.List<String>, kotlin.collections.Map<String, kotlin.Any?>>",
+                    "kotlin.collections.Map<kotlin.collections.Map<String, kotlin.Any>, kotlin.collections.Map<String, kotlin.Any?>>",
+                ]
+            )
+            fun verifyValidCase(mappedTypeAsString: String) {
+                val dataTypes = CodeGen(
+                    CodeGenConfig(
+                        schemas = setOf(schema),
+                        packageName = basePackageName,
+                        language = Language.KOTLIN,
+                        typeMapping = mapOf("JSON" to mappedTypeAsString),
+                    )
+                ).generate().kotlinDataTypes
+
+                assertThat(dataTypes).hasSize(1)
+
+                assertThat((dataTypes[0].members[0] as TypeSpec).name).isEqualTo("Person")
+                assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs).hasSize(2)
+                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs).extracting("name")
+                    .contains("firstname", "data")
+
+                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[1].type.toString()).isEqualTo(
+                    "$mappedTypeAsString?"
+                )
+
+                assertCompilesKotlin(dataTypes)
+            }
+        }
+
+        @Nested
+        inner class WrongCases {
+            @ParameterizedTest
+            @ValueSource(
+                strings = [
+                    "",
+                    "*",
+                    "?",
+                    "kotlin.collections.Map<",
+                    "kotlin.collections.Map>",
+                    "kotlin.collections.Map<>",
+                    "kotlin.collections.Map<String, kotlin.collections.ArrayList<>",
+                    "kotlin.collections.Map<<String, kotlin.collections.ArrayList<String>>",
+                    "kotlin.collections.Map<String, kotlin.collections.ArrayList<>>>",
+                    "kotlin.collections.Map<**>",
+                ]
+            )
+            fun testWrongCase(mappedTypeAsString: String) {
+                assertThrows<IllegalArgumentException> {
+                    CodeGen(
+                        CodeGenConfig(
+                            schemas = setOf(schema),
+                            packageName = basePackageName,
+                            language = Language.KOTLIN,
+                            typeMapping = mapOf("JSON" to mappedTypeAsString),
+                        )
+                    ).generate()
+                }
+            }
+        }
     }
 
     @Test

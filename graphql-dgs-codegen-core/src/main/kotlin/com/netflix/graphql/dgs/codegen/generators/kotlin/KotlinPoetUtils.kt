@@ -21,10 +21,9 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.squareup.kotlinpoet.AnnotationSpec
-import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.*
 import graphql.introspection.Introspection
-
+import graphql.language.Description
 /**
  * Generate a [JsonTypeInfo] annotation, which allows for Jackson
  * polymorphic type handling when deserializing from JSON.
@@ -107,4 +106,21 @@ fun jsonPropertyAnnotation(name: String): AnnotationSpec {
     return AnnotationSpec.builder(JsonProperty::class)
         .addMember("%S", name)
         .build()
+}
+
+fun Description.sanitizeKdoc(): String {
+    return this.content.lineSequence().joinToString("\n")
+}
+
+fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
+    val normalizedClassName = this.trim()
+
+    if (!isGenericParam)
+        ClassName.bestGuess(normalizedClassName)
+
+    return when {
+        normalizedClassName == "*" -> STAR
+        normalizedClassName.endsWith("?") -> ClassName.bestGuess(normalizedClassName.dropLast(1)).copy(nullable = true)
+        else -> ClassName.bestGuess(normalizedClassName)
+    }
 }
