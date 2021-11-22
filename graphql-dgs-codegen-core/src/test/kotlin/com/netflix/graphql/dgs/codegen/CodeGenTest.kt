@@ -24,10 +24,14 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.WildcardTypeName
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.Arguments.of
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
 
 class CodeGenTest {
@@ -858,6 +862,108 @@ class CodeGenTest {
         assertCompilesJava(dataTypes)
     }
 
+    @Nested
+    inner class GenerateDataClassesWithParameterizedMappedTypes {
+        private val schema = """
+            type Query {
+                data: JSON
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                data: JSON
+            }
+        """.trimIndent()
+
+        @Nested
+        inner class ValidCases {
+            @ParameterizedTest
+            @ValueSource(
+                strings = [
+                    "java.util.Map",
+                    "java.util.ArrayList<String>",
+                    "java.util.Map<String, Object>",
+                    "java.util.ArrayList<? extends Number>",
+                    "java.util.ArrayList<? super Integer>",
+                    "java.util.Map<? extends Number, ? super Integer>",
+                    "java.util.ArrayList<java.util.ArrayList<String>>",
+                    "java.util.ArrayList<java.util.ArrayList<java.util.ArrayList<java.util.ArrayList<String>>>>",
+                    "java.util.Map<java.util.ArrayList, java.util.Map<String, Object>>",
+                    "java.util.Map<java.util.ArrayList<String>, java.util.Map<String, Object>>",
+                    "java.util.Map<java.util.Map<Object, String>, java.util.Map<String, Object>>",
+                ]
+            )
+            fun testValidCase(mappedTypeAsString: String) {
+                verifyValidCase(mappedTypeAsString)
+            }
+
+            @Test
+            fun testGenericQuestionTurnsToObject() {
+                verifyValidCase("java.util.ArrayList<?>", "java.util.ArrayList<java.lang.Object>")
+            }
+
+            @Test
+            fun testTwoGenericQuestionsTurnToObject() {
+                verifyValidCase("java.util.Map<?, ?>", "java.util.Map<java.lang.Object, java.lang.Object>")
+            }
+
+            private fun verifyValidCase(mappedTypeAsString: String, expectedTypeAsString: String = mappedTypeAsString) {
+                val (dataTypes) = CodeGen(
+                    CodeGenConfig(
+                        schemas = setOf(schema),
+                        packageName = basePackageName,
+                        typeMapping = mapOf("JSON" to mappedTypeAsString),
+                    )
+                ).generate()
+
+                assertThat(dataTypes.size).isEqualTo(1)
+                assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
+                assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+                assertThat(dataTypes[0].typeSpec.fieldSpecs).hasSize(2)
+                assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "data")
+
+                assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).isEqualTo(expectedTypeAsString)
+
+                assertCompilesJava(dataTypes)
+            }
+        }
+
+        @Nested
+        inner class WrongCases {
+            @ParameterizedTest
+            @ValueSource(
+                strings = [
+                    "",
+                    "java.util.Map<",
+                    "java.util.Map>",
+                    "java.util.Map><",
+                    "java.util.Map<>",
+                    "java.util.Map<String, java.util.ArrayList<>",
+                    "java.util.Map<<String, java.util.ArrayList<String>>",
+                    "java.util.Map<String, java.util.ArrayList<>>>",
+                    "java.util.Map<? extends>",
+                    "java.util.Map<? super>",
+                    "java.util.Map<extends>",
+                    "java.util.Map<super>",
+                    "?",
+                ]
+            )
+            fun testWrongCase(mappedTypeAsString: String) {
+                assertThrows<IllegalArgumentException> {
+                    CodeGen(
+                        CodeGenConfig(
+                            schemas = setOf(schema),
+                            packageName = basePackageName,
+                            typeMapping = mapOf("JSON" to mappedTypeAsString),
+                        )
+                    ).generate()
+                }
+            }
+        }
+    }
+
     @Test
     fun `Skip generating a data class when the type is mapped`() {
 
@@ -1320,22 +1426,6 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("DgsConstants")
         assertThat(type.typeSpecs).extracting("name").containsExactlyElementsOf(constantNames)
         assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People")
-    }
-
-    companion object {
-        @JvmStatic
-        fun generateConstantsArguments(): Stream<Arguments> {
-            return Stream.of(
-                Arguments.of(
-                    true,
-                    listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
-                ),
-                Arguments.of(
-                    false,
-                    listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
-                ),
-            )
-        }
     }
 
     @Test
@@ -2545,4 +2635,25 @@ It takes a title and such.
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
         get() = javaDataTypes + javaInterfaces + javaEnumTypes + javaDataFetchers + javaQueryTypes + clientProjections + javaConstants
+
+    companion object {
+        @JvmStatic
+        fun generateConstantsArguments(): Stream<Arguments> {
+            return Stream.of(
+                of(
+                    true,
+                    listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
+                ),
+                of(
+                    false,
+                    listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
+                ),
+            )
+        }
+
+        @JvmStatic
+        fun generateDataClassesWithParameterizedMappedTypesWrongCases() = Stream.of(
+            of("java.util.Map<String,String,>"),
+        )
+    }
 }
