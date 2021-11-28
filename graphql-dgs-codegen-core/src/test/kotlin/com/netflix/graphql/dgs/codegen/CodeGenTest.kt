@@ -1155,6 +1155,34 @@ class CodeGenTest {
     }
 
     @Test
+    fun `Use mapped type name for enum`() {
+
+        val schema = """
+            type Query {                
+                state: State
+            }
+            
+           enum State {
+                ACTIVE, 
+                TERMINATED
+           }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "State" to "mypackage.State",
+                ),
+            )
+        ).generate()
+
+        assertThat(result.javaDataTypes).isEmpty()
+        assertThat(result.javaEnumTypes).isEmpty()
+    }
+
+    @Test
     fun generateInputTypes() {
 
         val schema = """

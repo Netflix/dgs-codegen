@@ -969,6 +969,35 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `Use mapped type name for enum`() {
+
+        val schema = """
+            type Query {                
+                state: State
+            }
+            
+           enum State {
+                ACTIVE, 
+                TERMINATED
+           }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    "State" to "mypackage.State",
+                ),
+            )
+        ).generate()
+
+        assertThat(result.kotlinDataTypes).isEmpty()
+        assertThat(result.kotlinInterfaces).isEmpty()
+    }
+
+    @Test
     fun `Use mapped type name when a concrete type of a union is mapped`() {
 
         val schema = """
