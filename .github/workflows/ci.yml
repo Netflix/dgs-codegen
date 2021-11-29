@@ -26,7 +26,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi
 
-      - uses: actions/cache@v2.1.6
+      - uses: actions/cache@v2.1.7
         id: gradle-wrapper-cache
         with:
           path: ~/.gradle/wrapper
@@ -34,14 +34,14 @@ jobs:
           restore-keys: ${{ runner.os }}-gradlewrapper-
 
       - name: Cache Gradle packages
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
 
       - name: Maven cache
-        uses: actions/cache@v2.1.6
+        uses: actions/cache@v2.1.7
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
