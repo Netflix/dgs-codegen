@@ -2073,6 +2073,40 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateObjectTypeInterfaceShouldNotRedeclareFields() {
+        val schema = """
+            interface Fruit {
+              seeds: [Seed]
+            }
+
+            type Apple implements Fruit {
+              seeds: [Seed]
+            }
+
+            type Seed {
+              shape: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true
+            )
+        ).generate()
+
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
+
+        val iapple = interfaces[0]
+        assertThat(iapple.typeSpec.name).isEqualTo("IApple")
+        assertThat(iapple.typeSpec.fieldSpecs).isEmpty()
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateObjectTypeInterfaceWithInterfaceInheritance() {
         val schema = """
         
@@ -2104,7 +2138,7 @@ class CodeGenTest {
         assertThat(iapple.typeSpec.name).isEqualTo("IApple")
         assertThat(iapple.typeSpec.superinterfaces.size).isEqualTo(1)
         assertThat((iapple.typeSpec.superinterfaces[0] as ClassName).simpleName()).isEqualTo("Fruit")
-        assertThat(iapple.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+        assertThat(iapple.typeSpec.methodSpecs).isEmpty()
 
         val ibasket = interfaces[1]
         assertThat(ibasket.typeSpec.name).isEqualTo("IBasket")
@@ -2409,11 +2443,11 @@ class CodeGenTest {
 
         val iActionGenre = interfaces[2]
         assertThat(iActionGenre.typeSpec.name).isEqualTo("IActionGenre")
-        assertThat(iActionGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName", "getHeroes")
+        assertThat(iActionGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getHeroes")
 
         val iComedyGenre = interfaces[3]
         assertThat(iComedyGenre.typeSpec.name).isEqualTo("IComedyGenre")
-        assertThat(iComedyGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName", "getJokes")
+        assertThat(iComedyGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getJokes")
 
         val iRating = interfaces[4]
         assertThat(iRating.typeSpec.name).isEqualTo("IRating")
