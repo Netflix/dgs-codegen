@@ -36,7 +36,10 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
     private val typeUtils = TypeUtils(packageName, config, document)
     private val useInterfaceType = config.generateInterfaces
 
-    fun generate(definition: InterfaceTypeDefinition, extensions: List<InterfaceTypeExtensionDefinition>): CodeGenResult {
+    fun generate(
+        definition: InterfaceTypeDefinition,
+        extensions: List<InterfaceTypeExtensionDefinition>
+    ): CodeGenResult {
 
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
@@ -48,6 +51,12 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         if (definition.description != null) {
             javaType.addJavadoc(definition.description.sanitizeJavaDoc())
         }
+
+        definition.implements
+            .filterIsInstance<TypeName>()
+            .forEach {
+                javaType.addSuperinterface(ClassName.get(packageName, it.name))
+            }
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 

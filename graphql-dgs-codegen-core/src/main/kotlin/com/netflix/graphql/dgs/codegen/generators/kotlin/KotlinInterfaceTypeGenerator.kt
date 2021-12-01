@@ -21,11 +21,9 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.shouldSkip
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.*
 import graphql.language.*
+import graphql.language.TypeName
 
 class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
 
@@ -46,6 +44,11 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
             interfaceBuilder.addKdoc("%L", definition.description.sanitizeKdoc())
         }
 
+        superInterfacesNames(definition)
+            .forEach {
+                interfaceBuilder.addSuperinterface(ClassName(packageName, it))
+            }
+
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
         mergedFieldDefinitions.forEach { field ->
@@ -53,6 +56,21 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
             val propertySpec = PropertySpec.builder(field.name, returnType)
             if (field.description != null) {
                 propertySpec.addKdoc("%L", field.description.sanitizeKdoc())
+            }
+
+            if (definition.implements.isNotEmpty()) {
+                val superInterfaceFields = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+                    .filter {
+                        superInterfacesNames(definition).contains(it.name)
+                    }
+                    .asSequence()
+                    .flatMap { it.fieldDefinitions }
+                    .map { it.name }
+                    .toSet()
+
+                if (field.name in superInterfaceFields) {
+                    propertySpec.addModifiers(KModifier.OVERRIDE)
+                }
             }
 
             interfaceBuilder.addProperty(propertySpec.build())
@@ -72,5 +90,11 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
 
         val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
         return CodeGenResult(kotlinInterfaces = listOf(fileSpec))
+    }
+
+    private fun superInterfacesNames(definition: InterfaceTypeDefinition): List<String> {
+        return definition.implements
+            .filterIsInstance<TypeName>()
+            .map { it.name }
     }
 }

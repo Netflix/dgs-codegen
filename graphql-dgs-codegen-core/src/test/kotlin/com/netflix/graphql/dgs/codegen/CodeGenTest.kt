@@ -1828,7 +1828,7 @@ class CodeGenTest {
                |    property = "__typename"
                |)
                |@JsonSubTypes(@JsonSubTypes.Type(value = Talent.class, name = "Talent"))
-               |public interface Employee {
+               |public interface Employee extends Person {
                |  String getFirstname();
                |
                |  void setFirstname(String firstname);
@@ -2158,6 +2158,45 @@ class CodeGenTest {
         assertThat(basket.typeSpec.name).isEqualTo("Basket")
         assertThat((basket.typeSpec.methodSpecs[0].returnType as ClassName).simpleName()).isEqualTo("Fruit")
         assertThat(basket.typeSpec.methodSpecs).extracting("name").contains("getFruit")
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateInterfaceWithInterfaceInheritance() {
+        val schema = """
+            type Query {
+                fruits: [Fruit]
+            }
+            
+            type Seed {
+                name: String
+            }
+
+            interface Fruit {
+              seeds: [Seed]
+            }
+            
+            interface StoneFruit implements Fruit {
+              seeds: [Seed]
+              fuzzy: Boolean
+            }
+
+        """.trimIndent()
+
+        val (dataTypes, interfaces) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName
+                )
+            ).generate()
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(interfaces).hasSize(2)
+
+        assertThat(interfaces[1].typeSpec.superinterfaces).hasSize(1)
+        assertThat((interfaces[1].typeSpec.superinterfaces[0] as ClassName).simpleName()).isEqualTo("Fruit")
 
         assertCompilesJava(dataTypes + interfaces)
     }

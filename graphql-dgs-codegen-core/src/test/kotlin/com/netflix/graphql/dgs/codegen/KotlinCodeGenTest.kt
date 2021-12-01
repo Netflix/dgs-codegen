@@ -18,14 +18,8 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.LIST
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.STRING
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -1738,6 +1732,50 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateInterfaceWithInterfaceInheritance() {
+        val schema = """
+            type Query {
+                fruits: [Fruit]
+            }
+            
+            type Seed {
+                name: String
+            }
+
+            interface Fruit {
+              seeds: [Seed]
+            }
+            
+            interface StoneFruit implements Fruit {
+              seeds: [Seed]
+              fuzzy: Boolean
+            }
+
+        """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN
+                )
+            ).generate()
+
+        val dataTypes = codeGenResult.kotlinDataTypes
+        val interfaces = codeGenResult.kotlinInterfaces
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(interfaces).hasSize(2)
+
+        val stoneFruitInterface = (interfaces[1].members[0] as TypeSpec)
+        assertThat(stoneFruitInterface.superinterfaces).hasSize(1)
+        assertThat((stoneFruitInterface.superinterfaces.entries.first().key as ClassName).simpleName).isEqualTo("Fruit")
+
+        assertCompilesKotlin(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateDataClassWithInterfaceInheritance() {
 
         val schema = """
@@ -1826,10 +1864,10 @@ class KotlinCodeGenTest {
                 |@JsonSubTypes(value = [
                 |  JsonSubTypes.Type(value = Talent::class, name = "Talent")
                 |])
-                |public interface Employee {
-                |  public val firstname: String?
+                |public interface Employee : Person {
+                |  public override val firstname: String?
                 |
-                |  public val lastname: String?
+                |  public override val lastname: String?
                 |
                 |  public val company: String?
                 |
