@@ -18,24 +18,23 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.truth.Truth
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.WildcardTypeName
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.Arguments.of
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
 
 class CodeGenTest {
-
-    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
-    private val typesPackageName = "$basePackageName.types"
-    private val dataFetcherPackageName = "$basePackageName.datafetchers"
 
     @Test
     fun generateDataClassWithStringProperties() {
@@ -422,10 +421,10 @@ class CodeGenTest {
         assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
 
         val annotation = employee.annotations.single()
-        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
 
         val person = interfaces[0]
-        Truth.assertThat(person.toString()).isEqualTo(
+        assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
@@ -492,7 +491,7 @@ class CodeGenTest {
             )
         ).generate()
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -559,7 +558,7 @@ class CodeGenTest {
             )
         ).generate()
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -619,10 +618,10 @@ class CodeGenTest {
         assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
 
         val annotation = employee.annotations.single()
-        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
 
         val person = interfaces[0]
-        Truth.assertThat(person.toString()).isEqualTo(
+        assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
@@ -863,6 +862,108 @@ class CodeGenTest {
         assertCompilesJava(dataTypes)
     }
 
+    @Nested
+    inner class GenerateDataClassesWithParameterizedMappedTypes {
+        private val schema = """
+            type Query {
+                data: JSON
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                data: JSON
+            }
+        """.trimIndent()
+
+        @Nested
+        inner class ValidCases {
+            @ParameterizedTest
+            @ValueSource(
+                strings = [
+                    "java.util.Map",
+                    "java.util.ArrayList<String>",
+                    "java.util.Map<String, Object>",
+                    "java.util.ArrayList<? extends Number>",
+                    "java.util.ArrayList<? super Integer>",
+                    "java.util.Map<? extends Number, ? super Integer>",
+                    "java.util.ArrayList<java.util.ArrayList<String>>",
+                    "java.util.ArrayList<java.util.ArrayList<java.util.ArrayList<java.util.ArrayList<String>>>>",
+                    "java.util.Map<java.util.ArrayList, java.util.Map<String, Object>>",
+                    "java.util.Map<java.util.ArrayList<String>, java.util.Map<String, Object>>",
+                    "java.util.Map<java.util.Map<Object, String>, java.util.Map<String, Object>>",
+                ]
+            )
+            fun testValidCase(mappedTypeAsString: String) {
+                verifyValidCase(mappedTypeAsString)
+            }
+
+            @Test
+            fun testGenericQuestionTurnsToObject() {
+                verifyValidCase("java.util.ArrayList<?>", "java.util.ArrayList<java.lang.Object>")
+            }
+
+            @Test
+            fun testTwoGenericQuestionsTurnToObject() {
+                verifyValidCase("java.util.Map<?, ?>", "java.util.Map<java.lang.Object, java.lang.Object>")
+            }
+
+            private fun verifyValidCase(mappedTypeAsString: String, expectedTypeAsString: String = mappedTypeAsString) {
+                val (dataTypes) = CodeGen(
+                    CodeGenConfig(
+                        schemas = setOf(schema),
+                        packageName = basePackageName,
+                        typeMapping = mapOf("JSON" to mappedTypeAsString),
+                    )
+                ).generate()
+
+                assertThat(dataTypes.size).isEqualTo(1)
+                assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
+                assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+                assertThat(dataTypes[0].typeSpec.fieldSpecs).hasSize(2)
+                assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "data")
+
+                assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).isEqualTo(expectedTypeAsString)
+
+                assertCompilesJava(dataTypes)
+            }
+        }
+
+        @Nested
+        inner class WrongCases {
+            @ParameterizedTest
+            @ValueSource(
+                strings = [
+                    "",
+                    "java.util.Map<",
+                    "java.util.Map>",
+                    "java.util.Map><",
+                    "java.util.Map<>",
+                    "java.util.Map<String, java.util.ArrayList<>",
+                    "java.util.Map<<String, java.util.ArrayList<String>>",
+                    "java.util.Map<String, java.util.ArrayList<>>>",
+                    "java.util.Map<? extends>",
+                    "java.util.Map<? super>",
+                    "java.util.Map<extends>",
+                    "java.util.Map<super>",
+                    "?",
+                ]
+            )
+            fun testWrongCase(mappedTypeAsString: String) {
+                assertThrows<IllegalArgumentException> {
+                    CodeGen(
+                        CodeGenConfig(
+                            schemas = setOf(schema),
+                            packageName = basePackageName,
+                            typeMapping = mapOf("JSON" to mappedTypeAsString),
+                        )
+                    ).generate()
+                }
+            }
+        }
+    }
+
     @Test
     fun `Skip generating a data class when the type is mapped`() {
 
@@ -1051,6 +1152,34 @@ class CodeGenTest {
         ).generate()
 
         assertThat(dataTypes).hasSize(0)
+    }
+
+    @Test
+    fun `Use mapped type name for enum`() {
+
+        val schema = """
+            type Query {                
+                state: State
+            }
+            
+           enum State {
+                ACTIVE, 
+                TERMINATED
+           }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "State" to "mypackage.State",
+                ),
+            )
+        ).generate()
+
+        assertThat(result.javaDataTypes).isEmpty()
+        assertThat(result.javaEnumTypes).isEmpty()
     }
 
     @Test
@@ -1327,22 +1456,6 @@ class CodeGenTest {
         assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People")
     }
 
-    companion object {
-        @JvmStatic
-        fun generateConstantsArguments(): Stream<Arguments> {
-            return Stream.of(
-                Arguments.of(
-                    true,
-                    listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
-                ),
-                Arguments.of(
-                    false,
-                    listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
-                ),
-            )
-        }
-    }
-
     @Test
     fun generateConstantsForInputTypes() {
         val schema = """
@@ -1527,7 +1640,7 @@ class CodeGenTest {
         assertThat(result.javaDataTypes[2].typeSpec.name).isEqualTo("Rating")
         assertThat(result.javaInterfaces[0].typeSpec.name).isEqualTo("SearchResult")
 
-        Truth.assertThat(result.javaInterfaces[0].toString()).isEqualTo(
+        assertThat(result.javaInterfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -1677,7 +1790,7 @@ class CodeGenTest {
             .contains("firstname", "lastname", "company", "imdbProfile")
 
         val annotation = talent.annotations.single()
-        Truth.assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
 
         assertThat(interfaces).hasSize(2)
 
@@ -1895,7 +2008,7 @@ class CodeGenTest {
         assertThat(interfaces).hasSize(1)
 
         val person = interfaces[0]
-        Truth.assertThat(person.toString()).isEqualTo(
+        assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
@@ -1960,6 +2073,40 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateObjectTypeInterfaceShouldNotRedeclareFields() {
+        val schema = """
+            interface Fruit {
+              seeds: [Seed]
+            }
+
+            type Apple implements Fruit {
+              seeds: [Seed]
+            }
+
+            type Seed {
+              shape: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true
+            )
+        ).generate()
+
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
+
+        val iapple = interfaces[0]
+        assertThat(iapple.typeSpec.name).isEqualTo("IApple")
+        assertThat(iapple.typeSpec.fieldSpecs).isEmpty()
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateObjectTypeInterfaceWithInterfaceInheritance() {
         val schema = """
         
@@ -1991,7 +2138,7 @@ class CodeGenTest {
         assertThat(iapple.typeSpec.name).isEqualTo("IApple")
         assertThat(iapple.typeSpec.superinterfaces.size).isEqualTo(1)
         assertThat((iapple.typeSpec.superinterfaces[0] as ClassName).simpleName()).isEqualTo("Fruit")
-        assertThat(iapple.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+        assertThat(iapple.typeSpec.methodSpecs).isEmpty()
 
         val ibasket = interfaces[1]
         assertThat(ibasket.typeSpec.name).isEqualTo("IBasket")
@@ -2335,11 +2482,11 @@ class CodeGenTest {
 
         val iActionGenre = interfaces[2]
         assertThat(iActionGenre.typeSpec.name).isEqualTo("IActionGenre")
-        assertThat(iActionGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName", "getHeroes")
+        assertThat(iActionGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getHeroes")
 
         val iComedyGenre = interfaces[3]
         assertThat(iComedyGenre.typeSpec.name).isEqualTo("IComedyGenre")
-        assertThat(iComedyGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getName", "getJokes")
+        assertThat(iComedyGenre.typeSpec.methodSpecs).extracting("name").containsExactly("getJokes")
 
         val iRating = interfaces[4]
         assertThat(iRating.typeSpec.name).isEqualTo("IRating")
@@ -2589,4 +2736,25 @@ It takes a title and such.
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
         get() = javaDataTypes + javaInterfaces + javaEnumTypes + javaDataFetchers + javaQueryTypes + clientProjections + javaConstants
+
+    companion object {
+        @JvmStatic
+        fun generateConstantsArguments(): Stream<Arguments> {
+            return Stream.of(
+                of(
+                    true,
+                    listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
+                ),
+                of(
+                    false,
+                    listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
+                ),
+            )
+        }
+
+        @JvmStatic
+        fun generateDataClassesWithParameterizedMappedTypesWrongCases() = Stream.of(
+            of("java.util.Map<String,String,>"),
+        )
+    }
 }

@@ -47,9 +47,15 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
 
         if (config.generateInterfaces) {
             useInterfaceType = true
+            val fieldsFromSuperTypes = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+                .filter { ClassName.get(packageName, it.name).toString() in implements }
+                .flatMap { it.fieldDefinitions }
+                .map { it.name }
+
             overrideGetter = true
             val fieldDefinitions = definition.fieldDefinitions
                 .filterSkipped()
+                .filter { it.name !in fieldsFromSuperTypes }
                 .map {
                     Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true))
                 }

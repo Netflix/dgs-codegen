@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
 import graphql.language.EnumTypeDefinition
@@ -27,6 +28,10 @@ import javax.lang.model.element.Modifier
 
 class EnumTypeGenerator(private val config: CodeGenConfig) {
     fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
+        if (definition.shouldSkip(config)) {
+            return CodeGenResult()
+        }
+
         val javaType =
             TypeSpec
                 .enumBuilder(definition.name)

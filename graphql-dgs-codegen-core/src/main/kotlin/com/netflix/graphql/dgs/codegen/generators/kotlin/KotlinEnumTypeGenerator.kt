@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.TypeSpec
@@ -27,6 +28,10 @@ import graphql.language.EnumTypeDefinition
 
 class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
     fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
+        if (definition.shouldSkip(config)) {
+            return CodeGenResult()
+        }
+
         val kotlinType = TypeSpec.classBuilder(definition.name).addModifiers(KModifier.ENUM)
 
         if (definition.description != null) {

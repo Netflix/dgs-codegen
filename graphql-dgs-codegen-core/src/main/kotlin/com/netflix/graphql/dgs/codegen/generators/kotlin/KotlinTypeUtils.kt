@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import graphql.language.*
@@ -33,7 +34,7 @@ import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig) {
 
-    private val commonScalars = mapOf<String, KtTypeName>(
+    private val commonScalars = mapOf(
         "LocalTime" to LocalTime::class.asTypeName(),
         "LocalDate" to LocalDate::class.asTypeName(),
         "LocalDateTime" to LocalDateTime::class.asTypeName(),
@@ -44,8 +45,8 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
         "DateTime" to OffsetDateTime::class.asTypeName(),
         "RelayPageInfo" to PageInfo::class.asTypeName(),
         "PageInfo" to PageInfo::class.asTypeName(),
-        "PresignedUrlResponse" to ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse"),
-        "Header" to ClassName.bestGuess("com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header")
+        "PresignedUrlResponse" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse".toKtTypeName(),
+        "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName(),
     )
 
     fun findReturnType(fieldType: Type<*>): KtTypeName {
@@ -80,11 +81,25 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
 
     private fun TypeName.toKtTypeName(): KtTypeName {
         if (name in config.typeMapping) {
-            return ClassName.bestGuess(config.typeMapping.getValue(name))
+            val mappedType = config.typeMapping.getValue(name)
+
+            return parseMappedType(
+                mappedType = mappedType,
+                toTypeName = String::toKtTypeName,
+                parameterize = { (it.first as ClassName).parameterizedBy(it.second) },
+                onCloseBracketCallBack = { current, typeString ->
+                    if (typeString.trim() == "?") {
+                        val last = current.second.removeLast()
+                        current.second.add(last.copy(nullable = true))
+                    } else {
+                        current.second.add(typeString.toKtTypeName(true))
+                    }
+                }
+            )
         }
 
         if (name in config.schemaTypeMapping) {
-            return ClassName.bestGuess(config.schemaTypeMapping.getValue(name))
+            return config.schemaTypeMapping.getValue(name).toKtTypeName()
         }
 
         if (name in commonScalars) {
@@ -102,7 +117,7 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             "BooleanValue" -> BOOLEAN
             "ID" -> STRING
             "IDValue" -> STRING
-            else -> ClassName.bestGuess("$packageName.$name")
+            else -> "$packageName.$name".toKtTypeName()
         }
     }
 
@@ -124,8 +139,4 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
                 it.name to (value as StringValue).value
             }
         }
-}
-
-fun Description.sanitizeKdoc(): String {
-    return this.content.lineSequence().joinToString("\n")
 }

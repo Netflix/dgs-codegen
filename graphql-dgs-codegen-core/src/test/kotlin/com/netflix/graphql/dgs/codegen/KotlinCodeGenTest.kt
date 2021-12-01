@@ -18,20 +18,19 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.google.common.truth.Truth
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
 
 class KotlinCodeGenTest {
-
-    private val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
-    private val typesPackageName = "$basePackageName.types"
 
     @Test
     fun generateDataClassWithStringProperties() {
@@ -432,7 +431,7 @@ class KotlinCodeGenTest {
         assertThat(interfaces.size).isEqualTo(1)
         val interfaceType = interfaces[0].members[0] as TypeSpec
 
-        Truth.assertThat(FileSpec.get("$basePackageName.types", interfaceType).toString()).isEqualTo(
+        assertThat(FileSpec.get("$basePackageName.types", interfaceType).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -458,7 +457,7 @@ class KotlinCodeGenTest {
                 |""".trimMargin()
         )
 
-        Truth.assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
+        assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -792,6 +791,96 @@ class KotlinCodeGenTest {
         assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[0].type.toString()).isEqualTo("mypackage.Person?")
     }
 
+    @Nested
+    inner class GenerateDataClassesWithParameterizedMappedTypes {
+        private val schema = """
+            type Query {
+                data: JSON
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                data: JSON
+            }
+        """.trimIndent()
+
+        @Nested
+        inner class ValidCases {
+            @ParameterizedTest
+            @ValueSource(
+                strings = [
+                    "kotlin.collections.Map<*, *>",
+                    "kotlin.collections.Map<String, kotlin.Any?>",
+                    "kotlin.collections.List<String>",
+                    "kotlin.collections.List<*>",
+                    "kotlin.collections.List<kotlin.collections.List<String>>",
+                    "kotlin.collections.List<kotlin.collections.List<String?>?>",
+                    "kotlin.collections.List<kotlin.collections.List<kotlin.collections.List<String?>?>?>",
+                    "kotlin.collections.Map<kotlin.collections.List<*>, kotlin.collections.Map<String, kotlin.Any?>>",
+                    "kotlin.collections.Map<kotlin.collections.List<String>, kotlin.collections.Map<String, kotlin.Any?>>",
+                    "kotlin.collections.Map<kotlin.collections.Map<String, kotlin.Any>, kotlin.collections.Map<String, kotlin.Any?>>",
+                ]
+            )
+            fun verifyValidCase(mappedTypeAsString: String) {
+                val dataTypes = CodeGen(
+                    CodeGenConfig(
+                        schemas = setOf(schema),
+                        packageName = basePackageName,
+                        language = Language.KOTLIN,
+                        typeMapping = mapOf("JSON" to mappedTypeAsString),
+                    )
+                ).generate().kotlinDataTypes
+
+                assertThat(dataTypes).hasSize(1)
+
+                assertThat((dataTypes[0].members[0] as TypeSpec).name).isEqualTo("Person")
+                assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs).hasSize(2)
+                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs).extracting("name")
+                    .contains("firstname", "data")
+
+                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[1].type.toString()).isEqualTo(
+                    "$mappedTypeAsString?"
+                )
+
+                assertCompilesKotlin(dataTypes)
+            }
+        }
+
+        @Nested
+        inner class WrongCases {
+            @ParameterizedTest
+            @ValueSource(
+                strings = [
+                    "",
+                    "*",
+                    "?",
+                    "kotlin.collections.Map<",
+                    "kotlin.collections.Map>",
+                    "kotlin.collections.Map<>",
+                    "kotlin.collections.Map<String, kotlin.collections.ArrayList<>",
+                    "kotlin.collections.Map<<String, kotlin.collections.ArrayList<String>>",
+                    "kotlin.collections.Map<String, kotlin.collections.ArrayList<>>>",
+                    "kotlin.collections.Map<**>",
+                ]
+            )
+            fun testWrongCase(mappedTypeAsString: String) {
+                assertThrows<IllegalArgumentException> {
+                    CodeGen(
+                        CodeGenConfig(
+                            schemas = setOf(schema),
+                            packageName = basePackageName,
+                            language = Language.KOTLIN,
+                            typeMapping = mapOf("JSON" to mappedTypeAsString),
+                        )
+                    ).generate()
+                }
+            }
+        }
+    }
+
     @Test
     fun `Use mapped type name when the type is mapped for interface`() {
 
@@ -871,6 +960,35 @@ class KotlinCodeGenTest {
 
         assertThat(dataTypes).isEmpty()
         assertThat(interfaces).isEmpty()
+    }
+
+    @Test
+    fun `Use mapped type name for enum`() {
+
+        val schema = """
+            type Query {                
+                state: State
+            }
+            
+           enum State {
+                ACTIVE, 
+                TERMINATED
+           }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    "State" to "mypackage.State",
+                ),
+            )
+        ).generate()
+
+        assertThat(result.kotlinDataTypes).isEmpty()
+        assertThat(result.kotlinInterfaces).isEmpty()
     }
 
     @Test
@@ -1446,7 +1564,7 @@ class KotlinCodeGenTest {
 
         assertThat(interfaces.size).isEqualTo(1)
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -1595,7 +1713,7 @@ class KotlinCodeGenTest {
 
         assertThat(interfaces.size).isEqualTo(1)
         val searchResult = interfaces[0].members[0] as TypeSpec
-        Truth.assertThat(FileSpec.get("$basePackageName.types", searchResult).toString()).contains(
+        assertThat(FileSpec.get("$basePackageName.types", searchResult).toString()).contains(
             """
                 |@JsonTypeInfo(
                 |  use = JsonTypeInfo.Id.NAME,
@@ -1610,7 +1728,7 @@ class KotlinCodeGenTest {
         )
 
         // This ensures deserializability in the absence of __typename
-        Truth.assertThat(FileSpec.get("$basePackageName.types", human).toString()).contains("@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)")
+        assertThat(FileSpec.get("$basePackageName.types", human).toString()).contains("@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)")
     }
 
     @Test
@@ -1826,7 +1944,7 @@ class KotlinCodeGenTest {
         val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |
@@ -1899,7 +2017,7 @@ class KotlinCodeGenTest {
         val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
 
-        Truth.assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types
                 |

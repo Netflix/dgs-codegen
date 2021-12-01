@@ -22,6 +22,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.TypeName
+import com.squareup.javapoet.WildcardTypeName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.Description
 
@@ -98,4 +100,21 @@ fun jsonSubTypeAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
  */
 fun Description.sanitizeJavaDoc(): String {
     return this.content.lines().joinToString("\n").replace("$", "$$")
+}
+
+fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
+    val normalizedClassName = this.trim()
+
+    if (!isGenericParam)
+        return ClassName.bestGuess(this.trim())
+
+    val superKeyword = normalizedClassName.split(" super ")
+    val extendsKeyword = normalizedClassName.split(" extends ")
+
+    return when {
+        normalizedClassName == "?" -> WildcardTypeName.get(Object::class.java)
+        superKeyword.size == 2 -> WildcardTypeName.supertypeOf(superKeyword[1].toTypeName())
+        extendsKeyword.size == 2 -> WildcardTypeName.subtypeOf(extendsKeyword[1].toTypeName())
+        else -> ClassName.bestGuess(this.trim())
+    }
 }
