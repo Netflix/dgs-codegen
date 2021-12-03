@@ -1581,7 +1581,9 @@ class KotlinCodeGenTest {
                 |  JsonSubTypes.Type(value = Actor::class, name = "Actor"),
                 |  JsonSubTypes.Type(value = Rating::class, name = "Rating")
                 |])
-                |public interface SearchResult
+                |public interface SearchResult {
+                |  public companion object
+                |}
 
         """.trimMargin()
         )
