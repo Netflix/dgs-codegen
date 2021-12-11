@@ -116,11 +116,42 @@ fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
     if (!isGenericParam)
-        ClassName.bestGuess(normalizedClassName)
+        ktTypeClassBestGuess(normalizedClassName)
 
     return when {
         normalizedClassName == "*" -> STAR
-        normalizedClassName.endsWith("?") -> ClassName.bestGuess(normalizedClassName.dropLast(1)).copy(nullable = true)
-        else -> ClassName.bestGuess(normalizedClassName)
+        normalizedClassName.endsWith("?") -> ktTypeClassBestGuess(normalizedClassName.dropLast(1)).copy(nullable = true)
+        else -> ktTypeClassBestGuess(normalizedClassName)
+    }
+}
+
+private fun ktTypeClassBestGuess(name: String): ClassName {
+    return when (name) {
+        STRING.simpleName -> STRING
+        INT.simpleName -> INT
+        LONG.simpleName -> LONG
+        CHAR.simpleName -> CHAR
+        FLOAT.simpleName -> FLOAT
+        DOUBLE.simpleName -> DOUBLE
+        CHAR_SEQUENCE.simpleName -> CHAR_SEQUENCE
+        BOOLEAN.simpleName -> BOOLEAN
+        ANY.simpleName -> ANY
+        SHORT.simpleName -> SHORT
+        NUMBER.simpleName -> NUMBER
+        LIST.simpleName -> LIST
+        SET.simpleName -> SET
+        MAP.simpleName -> MAP
+        "BigDecimal" -> ClassName("java.math", "BigDecimal")
+        MUTABLE_LIST.simpleName -> MUTABLE_LIST
+        MUTABLE_SET.simpleName -> MUTABLE_SET
+        MUTABLE_MAP.simpleName -> MUTABLE_MAP
+        BYTE_ARRAY.simpleName -> BYTE_ARRAY
+        CHAR_ARRAY.simpleName -> CHAR_ARRAY
+        SHORT_ARRAY.simpleName -> SHORT_ARRAY
+        INT_ARRAY.simpleName -> INT_ARRAY
+        LONG_ARRAY.simpleName -> LONG_ARRAY
+        FLOAT_ARRAY.simpleName -> FLOAT_ARRAY
+        DOUBLE_ARRAY.simpleName -> DOUBLE_ARRAY
+        else -> ClassName.bestGuess(name)
     }
 }
