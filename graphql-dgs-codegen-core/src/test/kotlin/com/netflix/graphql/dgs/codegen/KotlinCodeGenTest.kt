@@ -24,11 +24,12 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
-import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
+import org.junit.jupiter.params.provider.*
+import org.junit.jupiter.params.provider.Arguments.arguments
 import java.util.stream.Stream
+import java.util.stream.Stream.of
 
 class KotlinCodeGenTest {
 
@@ -723,43 +724,6 @@ class KotlinCodeGenTest {
     }
 
     @Test
-    fun generateDataClassesWithMappedTypes() {
-
-        val schema = """
-            type Query {
-                now: Date
-                person: Person
-            }
-
-            type Person {
-                firstname: String
-                lastname: String
-                birthDate: Date
-            }
-        """.trimIndent()
-
-        val dataTypes = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                language = Language.KOTLIN,
-                typeMapping = mapOf("Date" to "java.time.LocalDateTime")
-            )
-        ).generate().kotlinDataTypes
-        val type = dataTypes[0].members[0] as TypeSpec
-
-        assertThat(dataTypes.size).isEqualTo(1)
-        assertThat(type.name).isEqualTo("Person")
-        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
-
-        assertThat(type.propertySpecs.size).isEqualTo(3)
-        assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname", "birthDate")
-        assertThat(type.propertySpecs[2].type.toString()).isEqualTo("java.time.LocalDateTime?")
-
-        assertCompilesKotlin(dataTypes)
-    }
-
-    @Test
     fun `Use mapped type name when the type is mapped`() {
 
         val schema = """
@@ -791,8 +755,45 @@ class KotlinCodeGenTest {
         assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[0].type.toString()).isEqualTo("mypackage.Person?")
     }
 
+    class MappedTypesTestCases : ArgumentsProvider {
+        override fun provideArguments(context: ExtensionContext): Stream<out Arguments> = of(
+            arguments("java.time.LocalDateTime", "java.time.LocalDateTime"),
+            arguments("String", "kotlin.String"),
+            arguments("BigDecimal", "java.math.BigDecimal"),
+            arguments("Map<*, *>", "kotlin.collections.Map<*, *>"),
+            arguments("List<*>", "kotlin.collections.List<*>"),
+            arguments(
+                "Map<List<String>, Map<String, Any?>>",
+                "kotlin.collections.Map<kotlin.collections.List<kotlin.String>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>",
+            ),
+            arguments(
+                "List<List<String>>",
+                "kotlin.collections.List<kotlin.collections.List<kotlin.String>>",
+            ),
+            arguments("kotlin.String", "kotlin.String"),
+            arguments("kotlin.collections.Map<*, *>", "kotlin.collections.Map<*, *>"),
+            arguments("kotlin.collections.List<*>", "kotlin.collections.List<*>"),
+            arguments(
+                "kotlin.collections.List<kotlin.collections.List<String?>?>",
+                "kotlin.collections.List<kotlin.collections.List<kotlin.String?>?>"
+            ),
+            arguments(
+                "kotlin.collections.List<kotlin.collections.List<kotlin.collections.List<String?>?>?>",
+                "kotlin.collections.List<kotlin.collections.List<kotlin.collections.List<kotlin.String?>?>?>"
+            ),
+            arguments(
+                "kotlin.collections.Map<kotlin.collections.List<*>, kotlin.collections.Map<String, Any?>>",
+                "kotlin.collections.Map<kotlin.collections.List<*>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>",
+            ),
+            arguments(
+                "Map<Map<String, Any>, Map<String, Any?>>",
+                "kotlin.collections.Map<kotlin.collections.Map<kotlin.String, kotlin.Any>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>",
+            ),
+        )
+    }
+
     @Nested
-    inner class GenerateDataClassesWithParameterizedMappedTypes {
+    inner class GenerateDataClassesWithMappedTypes {
         private val schema = """
             type Query {
                 data: JSON
@@ -802,47 +803,41 @@ class KotlinCodeGenTest {
             type Person {
                 firstname: String
                 data: JSON
+                dataNotNullable: JSON!
             }
         """.trimIndent()
 
         @Nested
         inner class ValidCases {
             @ParameterizedTest
-            @ValueSource(
-                strings = [
-                    "kotlin.collections.Map<*, *>",
-                    "kotlin.collections.Map<String, kotlin.Any?>",
-                    "kotlin.collections.List<String>",
-                    "kotlin.collections.List<*>",
-                    "kotlin.collections.List<kotlin.collections.List<String>>",
-                    "kotlin.collections.List<kotlin.collections.List<String?>?>",
-                    "kotlin.collections.List<kotlin.collections.List<kotlin.collections.List<String?>?>?>",
-                    "kotlin.collections.Map<kotlin.collections.List<*>, kotlin.collections.Map<String, kotlin.Any?>>",
-                    "kotlin.collections.Map<kotlin.collections.List<String>, kotlin.collections.Map<String, kotlin.Any?>>",
-                    "kotlin.collections.Map<kotlin.collections.Map<String, kotlin.Any>, kotlin.collections.Map<String, kotlin.Any?>>",
-                ]
-            )
-            fun verifyValidCase(mappedTypeAsString: String) {
-                val dataTypes = CodeGen(
+            @ArgumentsSource(MappedTypesTestCases::class)
+            fun verifyValidCase(given: String, expected: String) {
+                val generated = CodeGen(
                     CodeGenConfig(
                         schemas = setOf(schema),
                         packageName = basePackageName,
                         language = Language.KOTLIN,
-                        typeMapping = mapOf("JSON" to mappedTypeAsString),
+                        typeMapping = mapOf("JSON" to given),
                     )
-                ).generate().kotlinDataTypes
+                ).generate()
+                val dataTypes = generated.kotlinDataTypes
 
                 assertThat(dataTypes).hasSize(1)
 
-                assertThat((dataTypes[0].members[0] as TypeSpec).name).isEqualTo("Person")
+                val personType = dataTypes[0].members[0] as TypeSpec
+
+                assertThat(personType.name).isEqualTo("Person")
                 assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
-                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs).hasSize(2)
-                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs).extracting("name")
-                    .contains("firstname", "data")
+                assertThat(personType.propertySpecs).hasSize(3)
+                assertThat(personType.propertySpecs).extracting("name")
+                    .contains("firstname", "data", "dataNotNullable")
 
-                assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[1].type.toString()).isEqualTo(
-                    "$mappedTypeAsString?"
+                assertThat(personType.propertySpecs[1].type.toString()).isEqualTo(
+                    "$expected?"
+                )
+                assertThat(personType.propertySpecs[2].type.toString()).isEqualTo(
+                    expected
                 )
 
                 assertCompilesKotlin(dataTypes)
@@ -1379,7 +1374,7 @@ class KotlinCodeGenTest {
     companion object {
         @JvmStatic
         fun generateConstantsArguments(): Stream<Arguments> {
-            return Stream.of(
+            return of(
                 Arguments.of(
                     true,
                     listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")

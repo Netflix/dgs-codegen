@@ -106,7 +106,7 @@ fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
     if (!isGenericParam)
-        return ClassName.bestGuess(this.trim())
+        return typeClassBestGuess(normalizedClassName)
 
     val superKeyword = normalizedClassName.split(" super ")
     val extendsKeyword = normalizedClassName.split(" extends ")
@@ -115,6 +115,33 @@ fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
         normalizedClassName == "?" -> WildcardTypeName.get(Object::class.java)
         superKeyword.size == 2 -> WildcardTypeName.supertypeOf(superKeyword[1].toTypeName())
         extendsKeyword.size == 2 -> WildcardTypeName.subtypeOf(extendsKeyword[1].toTypeName())
-        else -> ClassName.bestGuess(this.trim())
+        else -> typeClassBestGuess(normalizedClassName)
+    }
+}
+
+private fun typeClassBestGuess(name: String): TypeName {
+    return when (name) {
+        "String" -> ClassName.get("java.lang", "String")
+        "Integer" -> ClassName.get("java.lang", "Integer")
+        "Long" -> ClassName.get("java.lang", "Long")
+        "Float" -> ClassName.get("java.lang", "Float")
+        "Double" -> ClassName.get("java.lang", "Double")
+        "Character" -> ClassName.get("java.lang", "Character")
+        "Short" -> ClassName.get("java.lang", "Short")
+        "Byte" -> ClassName.get("java.lang", "Byte")
+        "Number" -> ClassName.get("java.lang", "Number")
+        "Boolean" -> ClassName.get("java.lang", "Boolean")
+        "Object" -> ClassName.get("java.lang", "Object")
+        "BigDecimal" -> ClassName.get("java.math", "BigDecimal")
+        "List" -> ClassName.get("java.util", "List")
+        "ArrayList" -> ClassName.get("java.util", "ArrayList")
+        "LinkedList" -> ClassName.get("java.util", "LinkedList")
+        "Map" -> ClassName.get("java.util", "Map")
+        "HashMap" -> ClassName.get("java.util", "HashMap")
+        "Set" -> ClassName.get("java.util", "Set")
+        "HashSet" -> ClassName.get("java.util", "HashSet")
+        "Queue" -> ClassName.get("java.util", "Queue")
+        "TreeMap" -> ClassName.get("java.util", "TreeMap")
+        else -> ClassName.bestGuess(name)
     }
 }

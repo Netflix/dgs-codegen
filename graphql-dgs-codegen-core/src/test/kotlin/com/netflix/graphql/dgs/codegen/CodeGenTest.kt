@@ -27,11 +27,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.*
+import org.junit.jupiter.params.provider.Arguments.arguments
 import org.junit.jupiter.params.provider.Arguments.of
-import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
 
 class CodeGenTest {
@@ -828,42 +828,29 @@ class CodeGenTest {
         assertCompilesJava(dataFetchers + dataTypes)
     }
 
-    @Test
-    fun generateDataClassesWithMappedTypes() {
-
-        val schema = """
-            type Query {
-                now: Date
-                person: Person
-            }
-            
-            type Person {
-                firstname: String
-                lastname: String
-                birthDate: Date
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                typeMapping = mapOf("Date" to "java.time.LocalDateTime"),
-            )
-        ).generate()
-
-        assertThat(dataTypes.size).isEqualTo(1)
-        assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
-        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
-
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(3)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "birthDate")
-        dataTypes[0].writeTo(System.out)
-        assertCompilesJava(dataTypes)
+    class MappedTypesTestCases : ArgumentsProvider {
+        override fun provideArguments(context: ExtensionContext): Stream<out Arguments> = Stream.of(
+            arguments("java.time.LocalDateTime", "java.time.LocalDateTime"),
+            arguments("String", "java.lang.String"),
+            arguments("BigDecimal", "java.math.BigDecimal"),
+            arguments("Map", "java.util.Map"),
+            arguments("ArrayList", "java.util.ArrayList"),
+            arguments("ArrayList<String>", "java.util.ArrayList<java.lang.String>"),
+            arguments("java.util.Map", "java.util.Map"),
+            arguments("java.lang.String", "java.lang.String"),
+            arguments("Map<String, Object>", "java.util.Map<java.lang.String, java.lang.Object>",),
+            arguments("ArrayList<? extends Number>", "java.util.ArrayList<? extends java.lang.Number>"),
+            arguments("ArrayList<? super Integer>", "java.util.ArrayList<? super java.lang.Integer>"),
+            arguments("Map<? extends Double, ? super Float>", "java.util.Map<? extends java.lang.Double, ? super java.lang.Float>"),
+            arguments("ArrayList<LinkedList<Set<HashSet<String>>>>", "java.util.ArrayList<java.util.LinkedList<java.util.Set<java.util.HashSet<java.lang.String>>>>"),
+            arguments("Map<Map<Byte, Short>, Map<Long, Boolean>>", "java.util.Map<java.util.Map<java.lang.Byte, java.lang.Short>, java.util.Map<java.lang.Long, java.lang.Boolean>>"),
+            arguments("ArrayList<?>", "java.util.ArrayList<java.lang.Object>"),
+            arguments("Map<?, ?>", "java.util.Map<java.lang.Object, java.lang.Object>"),
+        )
     }
 
     @Nested
-    inner class GenerateDataClassesWithParameterizedMappedTypes {
+    inner class GenerateDataClassesWithMappedTypes {
         private val schema = """
             type Query {
                 data: JSON
@@ -873,42 +860,15 @@ class CodeGenTest {
             type Person {
                 firstname: String
                 data: JSON
+                dataNotNullable: JSON!
             }
         """.trimIndent()
 
         @Nested
         inner class ValidCases {
             @ParameterizedTest
-            @ValueSource(
-                strings = [
-                    "java.util.Map",
-                    "java.util.ArrayList<String>",
-                    "java.util.Map<String, Object>",
-                    "java.util.ArrayList<? extends Number>",
-                    "java.util.ArrayList<? super Integer>",
-                    "java.util.Map<? extends Number, ? super Integer>",
-                    "java.util.ArrayList<java.util.ArrayList<String>>",
-                    "java.util.ArrayList<java.util.ArrayList<java.util.ArrayList<java.util.ArrayList<String>>>>",
-                    "java.util.Map<java.util.ArrayList, java.util.Map<String, Object>>",
-                    "java.util.Map<java.util.ArrayList<String>, java.util.Map<String, Object>>",
-                    "java.util.Map<java.util.Map<Object, String>, java.util.Map<String, Object>>",
-                ]
-            )
-            fun testValidCase(mappedTypeAsString: String) {
-                verifyValidCase(mappedTypeAsString)
-            }
-
-            @Test
-            fun testGenericQuestionTurnsToObject() {
-                verifyValidCase("java.util.ArrayList<?>", "java.util.ArrayList<java.lang.Object>")
-            }
-
-            @Test
-            fun testTwoGenericQuestionsTurnToObject() {
-                verifyValidCase("java.util.Map<?, ?>", "java.util.Map<java.lang.Object, java.lang.Object>")
-            }
-
-            private fun verifyValidCase(mappedTypeAsString: String, expectedTypeAsString: String = mappedTypeAsString) {
+            @ArgumentsSource(MappedTypesTestCases::class)
+            fun testValidCase(mappedTypeAsString: String, expected: String) {
                 val (dataTypes) = CodeGen(
                     CodeGenConfig(
                         schemas = setOf(schema),
@@ -916,16 +876,14 @@ class CodeGenTest {
                         typeMapping = mapOf("JSON" to mappedTypeAsString),
                     )
                 ).generate()
-
                 assertThat(dataTypes.size).isEqualTo(1)
                 assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
                 assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
-
-                assertThat(dataTypes[0].typeSpec.fieldSpecs).hasSize(2)
-                assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "data")
-
-                assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).isEqualTo(expectedTypeAsString)
-
+                assertThat(dataTypes[0].typeSpec.fieldSpecs).hasSize(3)
+                assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name")
+                    .contains("firstname", "data", "dataNotNullable")
+                assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).isEqualTo(expected)
+                assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo(expected)
                 assertCompilesJava(dataTypes)
             }
         }

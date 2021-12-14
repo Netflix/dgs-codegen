@@ -37,23 +37,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
-import graphql.language.ArrayValue
-import graphql.language.BooleanValue
-import graphql.language.Description
-import graphql.language.Document
-import graphql.language.EnumValue
-import graphql.language.FloatValue
-import graphql.language.InputObjectTypeDefinition
-import graphql.language.InputObjectTypeExtensionDefinition
-import graphql.language.IntValue
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.NamedNode
-import graphql.language.ObjectTypeDefinition
-import graphql.language.ObjectTypeExtensionDefinition
-import graphql.language.StringValue
-import graphql.language.Type
-import graphql.language.UnionTypeDefinition
-import graphql.language.Value
+import graphql.language.*
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {

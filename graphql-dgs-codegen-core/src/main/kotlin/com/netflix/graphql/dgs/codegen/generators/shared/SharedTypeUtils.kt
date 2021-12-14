@@ -103,7 +103,7 @@ internal fun <T> parseMappedType(
                 if (iterator.getLastSymbolIndex() + 1 <= symbolAhead.index) {
                     val typeString = mappedType.substring(iterator.getLastSymbolIndex() + 1, symbolAhead.index)
                     if (typeString.trim().isNotEmpty()) {
-                        onCloseBracketCallBack?.let { it(current, typeString) }
+                        onCloseBracketCallBack.let { it(current, typeString) }
                     }
                 }
 

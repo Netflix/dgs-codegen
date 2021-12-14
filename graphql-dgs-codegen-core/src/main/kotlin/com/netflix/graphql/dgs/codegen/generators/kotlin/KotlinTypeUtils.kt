@@ -107,13 +107,13 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
         }
 
         return when (name) {
-            "String" -> STRING
+            STRING.simpleName -> STRING
             "StringValue" -> STRING
-            "Int" -> INT
+            INT.simpleName -> INT
             "IntValue" -> INT
-            "Float" -> DOUBLE
+            FLOAT.simpleName -> DOUBLE
             "FloatValue" -> DOUBLE
-            "Boolean" -> BOOLEAN
+            BOOLEAN.simpleName -> BOOLEAN
             "BooleanValue" -> BOOLEAN
             "ID" -> STRING
             "IDValue" -> STRING
