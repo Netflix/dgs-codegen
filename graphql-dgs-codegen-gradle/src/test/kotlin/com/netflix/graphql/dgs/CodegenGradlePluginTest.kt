@@ -115,7 +115,7 @@ class CodegenGradlePluginTest {
     }
 
     companion object {
-        const val EXPECTED_PATH = "src/test/resources/test-project/build/graphql/generated/com/netflix/testproject/graphql/types/"
-        const val EXPECTED_DEFAULT_PATH = "src/test/resources/test-project/build/generated/com/netflix/testproject/graphql/types/"
+        const val EXPECTED_PATH = "src/test/resources/test-project/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
+        const val EXPECTED_DEFAULT_PATH = "src/test/resources/test-project/build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
     }
 }

@@ -80,12 +80,12 @@ open class GenerateJavaTask : DefaultTask() {
 
     @OutputDirectory
     fun getOutputDir(): File {
-        return Paths.get("$generatedSourcesDir/generated").toFile()
+        return Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
     }
 
     @OutputDirectory
     fun getExampleOutputDir(): File {
-        return Paths.get("$generatedSourcesDir/generated-examples").toFile()
+        return Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen-generated-examples").toFile()
     }
 
     @Input
