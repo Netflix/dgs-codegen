@@ -95,6 +95,9 @@ open class GenerateJavaTask : DefaultTask() {
     var includeMutations = mutableListOf<String>()
 
     @Input
+    var includeSubscriptions = mutableListOf<String>()
+
+    @Input
     var skipEntityQueries = false
 
     @Input
@@ -141,6 +144,7 @@ open class GenerateJavaTask : DefaultTask() {
             typeMapping = typeMapping,
             includeQueries = includeQueries.toSet(),
             includeMutations = includeMutations.toSet(),
+            includeSubscriptions = includeSubscriptions.toSet(),
             skipEntityQueries = skipEntityQueries,
             shortProjectionNames = shortProjectionNames,
             generateDataTypes = generateDataTypes,
