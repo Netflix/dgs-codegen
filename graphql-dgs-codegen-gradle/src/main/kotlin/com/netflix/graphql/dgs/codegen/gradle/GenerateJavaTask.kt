@@ -39,7 +39,7 @@ open class GenerateJavaTask : DefaultTask() {
     var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
 
     @Input
-    var packageName = "com.netflix.dgs.codgen.generated"
+    var packageName = "com.netflix.dgs.codegen.generated"
 
     @Input
     var subPackageNameClient = "client"
