@@ -25,6 +25,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import graphql.language.*
 import graphql.language.TypeName
 import graphql.parser.Parser
+import graphql.parser.ParserOptions
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
@@ -127,7 +128,11 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
                 .map { it.readText() }
                 .plus(this.schemas)
             val joinedSchema = inputSchemas.joinToString("\n")
-            val document = Parser().parseDocument(joinedSchema)
+            val options = ParserOptions
+                .getDefaultParserOptions()
+                .transform { o -> o.maxTokens(Integer.MAX_VALUE) }
+
+            val document = Parser().parseDocument(joinedSchema, options)
 
             return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
                 it.getDirectives("javaType").isNullOrEmpty()
