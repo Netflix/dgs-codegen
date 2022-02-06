@@ -29,11 +29,19 @@ import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtens
 import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
 import graphql.language.*
+import graphql.language.Field
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
+import graphql.schema.GraphQLSchema
+import graphql.schema.idl.RuntimeWiring
+import graphql.schema.idl.SchemaGenerator
+import graphql.schema.idl.SchemaParser
+import graphql.schema.idl.TypeDefinitionRegistry
+import graphql.validation.Validator
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
+
 
 class CodeGen(private val config: CodeGenConfig) {
     lateinit var document: Document
@@ -94,6 +102,18 @@ class CodeGen(private val config: CodeGenConfig) {
             mutations = config.includeMutations,
             subscriptions = config.includeSubscriptions
         )
+        /*val typeRegistry: TypeDefinitionRegistry = SchemaParser().parse(schema)
+        val wiring: RuntimeWiring = RuntimeWiring.newRuntimeWiring().build()
+        val graphQLSchema: GraphQLSchema = SchemaGenerator().makeExecutableSchema(typeRegistry, wiring)
+
+        // temporary code to test out validation without a runtime
+        val validator = Validator()
+        val queryDoc = Parser.parse("""query {
+                persons {
+                  name
+                }
+            }""")
+        val error =  validator.validateDocument(graphQLSchema, queryDoc)*/
 
         val definitions = document.definitions
         // data types
@@ -322,6 +342,7 @@ data class CodeGenConfig(
     val language: Language = Language.JAVA,
     val generateBoxedTypes: Boolean = false,
     val generateClientApi: Boolean = false,
+    val generateClientApiForDefinedQuery: Boolean = false,
     val generateInterfaces: Boolean = false,
     val typeMapping: Map<String, String> = emptyMap(),
     val includeQueries: Set<String> = emptySet(),
@@ -442,6 +463,52 @@ data class CodeGenResult(
 fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
     return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
 }
+
+fun List<FieldDefinition>.filterSelectedFields(operationDefinition: OperationDefinition, config: CodeGenConfig) : List<FieldDefinition> {
+    val fields: MutableList<FieldDefinition> = mutableListOf()
+    return if (config.generateClientApiForDefinedQuery) {
+        this.forEach {
+            val field = operationDefinition.selectionSet.selections.find { iter -> (iter as Field).name == it.name }
+            if (field != null) fields.add(it)
+        }
+        fields
+    } else this
+}
+
+fun List<FieldDefinition>.filterSelectedFields(parent: Field?, config: CodeGenConfig) : List<FieldDefinition> {
+    return if (parent != null && config.generateClientApiForDefinedQuery) {
+        val fields: MutableList<FieldDefinition> = mutableListOf()
+        this.forEach {
+            val field = parent.selectionSet.selections
+                .filterIsInstance<Field>()
+                .find { iter -> iter.name == it.name }
+            if (field != null) fields.add(it)
+        }
+        fields
+    } else this
+}
+
+fun getSelectionSetField(selectionSet: List<Field>, name: String) : Field? {
+        return selectionSet.find{ it.name == name }
+}
+
+private fun getOperation(operation: String) : OperationDefinition.Operation? {
+    when(operation) {
+        "Query" -> return OperationDefinition.Operation.QUERY
+        "Mutation" -> return OperationDefinition.Operation.MUTATION
+        "Subscription" -> return OperationDefinition.Operation.SUBSCRIPTION
+    }
+    return null
+}
+
+fun getOperationDefinition(document: Document, name: String) : OperationDefinition? {
+    return document.definitions.asSequence()
+        .filterIsInstance<OperationDefinition>()
+        .filter { it.operation == getOperation(name) }
+        .toList().getOrNull(0)
+}
+
+
 
 fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
     return when (definitionName) {

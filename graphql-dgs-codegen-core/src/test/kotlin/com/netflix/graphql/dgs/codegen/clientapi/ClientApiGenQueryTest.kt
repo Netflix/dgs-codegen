@@ -434,6 +434,16 @@ class ClientApiGenQueryTest {
                 episodes: Int
             }
             
+            query {
+                search {
+                    ... On Movie {
+                        title
+                    }
+                    ... On Series {
+                       episodes
+                    }
+                }
+            }
         """.trimIndent()
 
         val codeGenResult = CodeGen(
