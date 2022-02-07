@@ -488,6 +488,32 @@ fun List<FieldDefinition>.filterSelectedFields(parent: Field?, config: CodeGenCo
     } else this
 }
 
+fun List<ObjectTypeDefinition>.filterSelectedConcreteTypes(parent: Field?, config: CodeGenConfig) : List<ObjectTypeDefinition> {
+    return if (parent != null && config.generateClientApiForDefinedQuery) {
+        val types: MutableList<ObjectTypeDefinition> = mutableListOf()
+        this.forEach {
+            val field = parent.selectionSet.selections
+                .filterIsInstance<Field>()
+                .find { iter -> iter.name == it.name }
+            if (field != null) types.add(it)
+        }
+        types
+    } else this
+}
+
+fun List<TypeDefinition<*>>.filterSelectedUnionTypes(parent: Field?, config: CodeGenConfig) : List<TypeDefinition<*>> {
+    return if (parent != null && config.generateClientApiForDefinedQuery) {
+        val types: MutableList<TypeDefinition<*>> = mutableListOf()
+        this.forEach {
+            val field = parent.selectionSet.selections
+                .filterIsInstance<Field>()
+                .find { iter -> iter.name == it.name }
+            if (field != null) types.add(it)
+        }
+        types
+    } else this
+}
+
 fun getSelectionSetField(selectionSet: List<Field>, name: String) : Field? {
         return selectionSet.find{ it.name == name }
 }
