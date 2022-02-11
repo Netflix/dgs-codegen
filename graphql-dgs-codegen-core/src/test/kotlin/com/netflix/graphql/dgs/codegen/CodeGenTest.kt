@@ -2621,6 +2621,38 @@ It takes a title and such.
     }
 
     @Test
+    fun generateUsingSchemaDefinitions() {
+        val schema = """
+            schema {
+                query: SomeQuery
+                mutation: SomeMutation
+            }
+            type SomeQuery {
+                people: [Person]
+            }
+            type SomeMutation {
+                addPerson: Boolean
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Person")
+    }
+
+    @Test
     fun generateInterfaceJavaDoc() {
         val schema = """           
             ""${'"'}

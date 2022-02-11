@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.OperationTypes
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
@@ -99,15 +100,15 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
                 baseConstantsType.addType(constantsType.build())
             }
 
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Query" }) {
+        if (document.definitions.any { it is ObjectTypeDefinition && it.name == OperationTypes.query }) {
             baseConstantsType.addProperty(PropertySpec.builder("QUERY_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Query"""").build())
         }
 
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Mutation" }) {
+        if (document.definitions.any { it is ObjectTypeDefinition && it.name == OperationTypes.mutation }) {
             baseConstantsType.addProperty(PropertySpec.builder("Mutation_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Mutation"""").build())
         }
 
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Subscription" }) {
+        if (document.definitions.any { it is ObjectTypeDefinition && it.name == OperationTypes.subscription }) {
             baseConstantsType.addProperty(PropertySpec.builder("Subscription_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Subscription"""").build())
         }
 

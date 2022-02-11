@@ -161,7 +161,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return if (config.generateClientApi) {
             definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
+                .filter { OperationTypes.isOperationType(it.name) }
                 .map { ClientApiGenerator(config, document).generate(it) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
@@ -192,7 +192,7 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun generateJavaDataFetchers(definitions: Collection<Definition<*>>): CodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
-            .filter { it.name == "Query" }
+            .filter { it.name == OperationTypes.query }
             .map { DatafetcherGenerator(config, document).generate(it) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
@@ -201,7 +201,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filter { it.name != OperationTypes.query && it.name != OperationTypes.mutation && it.name != "RelayPageInfo" }
             .filter { config.generateInterfaces || config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 DataTypeGenerator(config, document).generate(it, findTypeExtensions(it.name, definitions))
@@ -299,7 +299,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filter { it.name != OperationTypes.query && it.name != OperationTypes.mutation && it.name != "RelayPageInfo" }
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 val extensions = findTypeExtensions(it.name, definitions)
@@ -445,21 +445,21 @@ fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
 
 fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
     return when (definitionName) {
-        "Query" -> {
+        OperationTypes.query -> {
             if (config.includeQueries.isEmpty()) {
                 this
             } else {
                 this.filter { it.name in config.includeQueries }
             }
         }
-        "Mutation" -> {
+        OperationTypes.mutation -> {
             if (config.includeMutations.isEmpty()) {
                 this
             } else {
                 this.filter { it.name in config.includeMutations }
             }
         }
-        "Subscription" -> {
+        OperationTypes.subscription -> {
             if (config.includeSubscriptions.isEmpty()) {
                 this
             } else {

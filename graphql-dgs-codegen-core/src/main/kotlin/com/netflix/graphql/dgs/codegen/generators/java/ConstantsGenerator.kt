@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.OperationTypes
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
@@ -103,13 +104,13 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
                 constantsType.addField(FieldSpec.builder(TypeName.get(String::class.java), "TYPE_NAME").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""${it.name}"""").build())
             }
 
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Query" }) {
+        if (document.definitions.any { it is ObjectTypeDefinition && it.name == OperationTypes.query }) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "QUERY_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Query"""").build())
         }
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "MUTATION" }) {
+        if (document.definitions.any { it is ObjectTypeDefinition && it.name == OperationTypes.mutation }) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "MUTATION_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Mutation"""").build())
         }
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Subscription" }) {
+        if (document.definitions.any { it is ObjectTypeDefinition && it.name == OperationTypes.subscription }) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "SUBSCRIPTION_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Subscription"""").build())
         }
 

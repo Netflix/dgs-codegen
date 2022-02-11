@@ -47,6 +47,7 @@ fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
 }
 
 fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
+    println(javaFiles.map { it.toString() })
     val result = javac()
         .withOptions("-parameters")
         .compile(javaFiles.map(JavaFile::toJavaFileObject))

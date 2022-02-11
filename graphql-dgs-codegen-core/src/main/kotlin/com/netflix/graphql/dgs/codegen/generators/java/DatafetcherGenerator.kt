@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.OperationTypes
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.JavaFile
@@ -60,7 +61,7 @@ class DatafetcherGenerator(private val config: CodeGenConfig, private val docume
         val methodSpec = MethodSpec.methodBuilder("get$fieldName")
             .returns(returnType)
             .addModifiers(Modifier.PUBLIC)
-            .addAnnotation(AnnotationSpec.builder(DgsData::class.java).addMember("parentType", "\$S", "Query").addMember("field", "\$S", field.name).build())
+            .addAnnotation(AnnotationSpec.builder(DgsData::class.java).addMember("parentType", "\$S", OperationTypes.query).addMember("field", "\$S", field.name).build())
             .addParameter(ParameterSpec.builder(DataFetchingEnvironment::class.java, "dataFetchingEnvironment").build())
             .addStatement("return $returnValue")
 
