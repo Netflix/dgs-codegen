@@ -190,11 +190,18 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaDataFetchers(definitions: Collection<Definition<*>>): CodeGenResult {
-        return definitions.asSequence()
-            .filterIsInstance<ObjectTypeDefinition>()
-            .filter { it.name == OperationTypes.query }
-            .map { DatafetcherGenerator(config, document).generate(it) }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        return if (config.generateDataFetchersAsInterfaces) {
+            definitions.asSequence()
+                .filterIsInstance<ObjectTypeDefinition>()
+                .map { DataFetcherInterfaceGenerator(config, document).generate(it) }
+                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        } else {
+            definitions.asSequence()
+                .filterIsInstance<ObjectTypeDefinition>()
+                .filter { it.name == OperationTypes.query }
+                .map { DatafetcherGenerator(config, document).generate(it) }
+                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        }
     }
 
     private fun generateJavaDataType(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -336,6 +343,7 @@ data class CodeGenConfig(
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
+    val generateDataFetchersAsInterfaces: Boolean = false,
 ) {
     val packageNameClient: String
         get() = "$packageName.$subPackageNameClient"
