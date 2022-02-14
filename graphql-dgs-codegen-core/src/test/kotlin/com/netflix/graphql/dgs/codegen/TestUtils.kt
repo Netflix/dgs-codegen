@@ -56,6 +56,7 @@ fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
 }
 
 fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
+    println(files.map { it.toString() })
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")
     files.forEach { it.writeTo(srcDir) }

@@ -18,6 +18,11 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
+import graphql.language.ListType
+import graphql.language.NonNullType
+import graphql.language.Type
+import graphql.language.TypeName
+
 internal sealed class GenericSymbol(open val index: Int) {
     class OpenBracket(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf("<", startFrom))
     class CloseBracket(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf(">", startFrom))
@@ -119,4 +124,13 @@ internal fun <T> parseMappedType(
 
     if (stack.isNotEmpty()) throw IllegalArgumentException("Wrong mapped type $mappedType")
     return mappedType.toTypeName(true)
+}
+
+fun Type<*>.isID(): Boolean {
+    return when (this) {
+        is TypeName -> this.name == "ID"
+        is NonNullType -> this.type.isID()
+        is ListType -> false
+        else -> false
+    }
 }

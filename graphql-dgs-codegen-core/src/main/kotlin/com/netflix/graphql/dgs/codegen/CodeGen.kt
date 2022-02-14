@@ -269,13 +269,22 @@ class CodeGen(private val config: CodeGenConfig) {
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
+        val dataFetcherResult = if (config.generateDataFetchersAsInterfaces) {
+            definitions.asSequence()
+                .filterIsInstance<ObjectTypeDefinition>()
+                .map { KotlinDataFetcherInterfaceGenerator(config).generate(it) }
+                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        } else {
+            CodeGenResult()
+        }
+
         val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
         val client = generateJavaClientApi(definitions)
         val entitiesClient = generateJavaClientEntitiesApi(definitions)
         val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
 
-        return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult)
+        return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult).merge(dataFetcherResult)
             .merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
     }
 
@@ -306,7 +315,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != OperationTypes.query && it.name != OperationTypes.mutation && it.name != "RelayPageInfo" }
+            .filter { !OperationTypes.isOperationType(it.name) && it.name != "RelayPageInfo" }
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 val extensions = findTypeExtensions(it.name, definitions)

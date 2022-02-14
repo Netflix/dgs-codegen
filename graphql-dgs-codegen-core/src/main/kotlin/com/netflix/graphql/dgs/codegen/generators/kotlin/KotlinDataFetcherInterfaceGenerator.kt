@@ -16,7 +16,7 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.generators.java
+package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.*
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
@@ -25,17 +25,16 @@ import com.netflix.graphql.dgs.codegen.OperationTypes
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.isID
 import com.netflix.graphql.dgs.codegen.isBaseType
-import com.squareup.javapoet.*
+import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import graphql.execution.UnknownOperationException
-import graphql.language.Document
 import graphql.language.FieldDefinition
 import graphql.language.InputValueDefinition
 import graphql.language.ObjectTypeDefinition
 import org.reactivestreams.Publisher
 import java.util.concurrent.CompletableFuture
-import javax.lang.model.element.Modifier
 
-class DataFetcherInterfaceGenerator(private val config: CodeGenConfig, private val document: Document) {
+class KotlinDataFetcherInterfaceGenerator(private val config: CodeGenConfig) {
     fun generate(objectTypeDefinition: ObjectTypeDefinition): CodeGenResult {
         val isOperationType = OperationTypes.isOperationType(objectTypeDefinition.name)
         val fields = if (!isOperationType) {
@@ -64,66 +63,69 @@ class DataFetcherInterfaceGenerator(private val config: CodeGenConfig, private v
 
     private fun createDataFetcherInterface(
         objectTypeDefinition: ObjectTypeDefinition,
-        methods: List<MethodSpec>
+        methods: List<FunSpec>
     ): CodeGenResult {
-        val javaType = TypeSpec.interfaceBuilder(objectTypeDefinition.name.capitalized() + "DataFetcher")
-            .addModifiers(Modifier.PUBLIC)
-            .addMethods(methods)
+        val kotlinType = TypeSpec.interfaceBuilder(objectTypeDefinition.name.capitalized() + "DataFetcher")
+            .addModifiers(KModifier.PUBLIC)
+            .addFunctions(methods)
+            .build()
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val kotlinFile = FileSpec.builder(getPackageName(), objectTypeDefinition.name.capitalized() + "DataFetcher")
+            .addType(kotlinType)
+            .build()
 
-        return CodeGenResult(javaDataFetchers = listOf(javaFile))
+        return CodeGenResult(kotlinDataFetchers = listOf(kotlinFile))
     }
 
-    private fun createDataFetcherInterfaceMethodForOperation(field: FieldDefinition, parent: ObjectTypeDefinition): MethodSpec {
-        val returnType = TypeUtils(config.packageNameTypes, config, document).findReturnType(field.type)
+    private fun createDataFetcherInterfaceMethodForOperation(field: FieldDefinition, parent: ObjectTypeDefinition): FunSpec {
+        val returnType = KotlinTypeUtils(config.packageNameTypes, config).findReturnType(field.type)
 
-        val methodSpec = MethodSpec.methodBuilder(field.name)
+        val methodSpec = FunSpec.builder(field.name)
             .returns(
                 if (parent.name == OperationTypes.subscription)
-                    ParameterizedTypeName.get(ClassName.get(Publisher::class.java), returnType)
+                    Publisher::class.asTypeName().parameterizedBy(returnType)
                 else
                     returnType
             )
-            .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+            .addModifiers(KModifier.PUBLIC, KModifier.ABSTRACT)
             .addAnnotation(
                 when (parent.name) {
                     OperationTypes.query -> AnnotationSpec
-                        .builder(DgsQuery::class.java)
-                        .addMember(DgsQuery::field.name, "\$S", field.name)
+                        .builder(DgsQuery::class)
+                        .addMember("%L = %S", DgsQuery::field.name, field.name)
                         .build()
                     OperationTypes.mutation -> AnnotationSpec
-                        .builder(DgsMutation::class.java)
-                        .addMember(DgsMutation::field.name, "\$S", field.name)
+                        .builder(DgsMutation::class)
+                        .addMember("%L = %S", DgsMutation::field.name, field.name)
                         .build()
                     OperationTypes.subscription -> AnnotationSpec
-                        .builder(DgsSubscription::class.java)
-                        .addMember(DgsSubscription::field.name, "\$S", field.name)
+                        .builder(DgsSubscription::class)
+                        .addMember("%L = %S", DgsSubscription::field.name, field.name)
                         .build()
                     else -> throw UnknownOperationException(parent.name)
                 }
             )
-            .addParameter(ParameterSpec.builder(DgsDataFetchingEnvironment::class.java, "dataFetchingEnvironment").build())
+            .addParameter(ParameterSpec.builder("dataFetchingEnvironment", DgsDataFetchingEnvironment::class).build())
 
         generateInputParameter(field.inputValueDefinitions).forEach(methodSpec::addParameter)
 
         return methodSpec.build()
     }
 
-    private fun createDataFetcherInterfaceMethodForType(field: FieldDefinition, parent: ObjectTypeDefinition): MethodSpec {
-        val returnType = TypeUtils(config.packageNameTypes, config, document).findReturnType(field.type)
+    private fun createDataFetcherInterfaceMethodForType(field: FieldDefinition, parent: ObjectTypeDefinition): FunSpec {
+        val returnType = KotlinTypeUtils(config.packageNameTypes, config).findReturnType(field.type)
 
-        val methodSpec = MethodSpec.methodBuilder(field.name)
-            .returns(ParameterizedTypeName.get(ClassName.get(CompletableFuture::class.java), returnType))
-            .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+        val methodSpec = FunSpec.builder(field.name)
+            .returns(CompletableFuture::class.asTypeName().parameterizedBy(returnType))
+            .addModifiers(KModifier.PUBLIC, KModifier.ABSTRACT)
             .addAnnotation(
-                AnnotationSpec.builder(DgsData::class.java)
-                    .addMember(DgsData::field.name, "\$S", field.name)
-                    .addMember(DgsData::parentType.name, "\$S", parent.name)
+                AnnotationSpec.builder(DgsData::class)
+                    .addMember("%L = %S", DgsData::field.name, field.name)
+                    .addMember("%L = %S", DgsData::parentType.name, parent.name)
                     .build()
             )
             .addParameter(
-                ParameterSpec.builder(DgsDataFetchingEnvironment::class.java, "dataFetchingEnvironment").build()
+                ParameterSpec.builder("dataFetchingEnvironment", DgsDataFetchingEnvironment::class).build()
             )
 
         generateInputParameter(field.inputValueDefinitions).forEach(methodSpec::addParameter)
@@ -134,11 +136,11 @@ class DataFetcherInterfaceGenerator(private val config: CodeGenConfig, private v
     private fun generateInputParameter(inputValueDefinitions: List<InputValueDefinition>): List<ParameterSpec> {
         return inputValueDefinitions.map {
             ParameterSpec.builder(
-                TypeUtils(config.packageNameTypes, config, document).findReturnType(it.type),
-                it.name
+                it.name,
+                KotlinTypeUtils(config.packageNameTypes, config).findReturnType(it.type)
             ).addAnnotation(
-                AnnotationSpec.builder(InputArgument::class.java)
-                    .addMember(InputArgument::name.name, "\$S", it.name)
+                AnnotationSpec.builder(InputArgument::class)
+                    .addMember("%L = %S", InputArgument::name.name, it.name)
                     .build()
             ).build()
         }
