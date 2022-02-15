@@ -48,6 +48,24 @@ class CodegenGradlePluginTest {
     }
 
     @Test
+    fun taskDependenciesRegisteredSuccessfully() {
+        // get a list of Gradle tasks
+        val result = GradleRunner.create()
+            .withProjectDir(File("src/test/resources/test-project/"))
+            .withPluginClasspath()
+            .withArguments(
+                "-c", "smoke_test_settings.gradle",
+                "clean",
+                "copyMainSources"
+            ).forwardOutput()
+            .build()
+
+        // Verify the result
+        assertThat(result.task(":generateJava")).isNotNull
+        assertThat(result.task(":generateJava")!!.outcome).isEqualTo(SUCCESS)
+    }
+
+    @Test
     fun sourcesGenerated() {
         // build a project
         val result = GradleRunner.create()

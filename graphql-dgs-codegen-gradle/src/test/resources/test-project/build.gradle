@@ -34,3 +34,9 @@ generateJava {
 }
 
 codegen.clientCoreConventionsEnabled = false
+
+tasks.register("copyMainSources", Copy) {
+    //This should be enough to depend on the 'generateJava' task
+    from sourceSets.main.java
+    into "build/tmp/main"
+}
