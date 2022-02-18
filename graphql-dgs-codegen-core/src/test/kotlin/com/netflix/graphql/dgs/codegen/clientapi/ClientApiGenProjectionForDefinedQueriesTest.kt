@@ -41,7 +41,7 @@ class ClientApiGenProjectionForDefinedQueriesTest {
                 lastname: String
             }
             
-            query {
+            query abc {
                 people {
                     firstname
                 }
@@ -260,7 +260,7 @@ class ClientApiGenProjectionForDefinedQueriesTest {
                 age: Integer
             }
             
-            query {
+            query abc {
                 movies {
                     actors {
                         age
@@ -285,7 +285,7 @@ class ClientApiGenProjectionForDefinedQueriesTest {
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("Movies_ActorsProjection")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").doesNotContain("name")
 
-        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test

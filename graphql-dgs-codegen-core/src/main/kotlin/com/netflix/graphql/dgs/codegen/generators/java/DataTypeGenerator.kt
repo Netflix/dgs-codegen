@@ -18,10 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.CodeGenResult
-import com.netflix.graphql.dgs.codegen.filterSkipped
-import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.netflix.graphql.dgs.codegen.*
 import com.squareup.javapoet.*
 import graphql.language.*
 import graphql.language.TypeName
@@ -39,7 +36,8 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
             union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
         }.map { it.name }
 
-        var implements = definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
+        var implements =
+            definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
 
         var useInterfaceType = false
         var overrideGetter = false
@@ -59,7 +57,9 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                 .map {
                     Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true))
                 }
-                .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) })
+                .plus(
+                    extensions.flatMap { it.fieldDefinitions }.filterSkipped()
+                        .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) })
             val interfaceName = "I$name"
             implements = listOf(interfaceName) + implements
             val superInterfaces = definition.implements
@@ -95,6 +95,55 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
         return interfaceCodeGenResult
     }
 }
+
+class ClientProjectionDataTypeGenerator(private val config: CodeGenConfig, private val document: Document, operationName: String? = "operation")
+    : BaseDataTypeGenerator("${config.packageNameTypes}.${operationName?.lowercase()?: "operation"}", config, document) {
+    fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>, selectedParent: graphql.language.Field?): CodeGenResult {
+        if (definition.shouldSkip(config)) {
+            return CodeGenResult()
+        }
+
+        val name = definition.name
+
+        val unionTypes = document.getDefinitionsOfType(UnionTypeDefinition::class.java).filter { union ->
+            union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
+        }.map { it.name }
+
+        var implements =
+            definition.implements.filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }
+
+        var useInterfaceType = false
+        var overrideGetter = false
+
+
+        val fieldDefinitions = definition.fieldDefinitions
+            .filterSkipped()
+            .filterSelectedFields(selectedParent, config)
+            .map {
+                Field(
+                    it.name,
+                    typeUtils.findReturnType(it.type, useInterfaceType),
+                    overrideGetter = overrideGetter,
+                    description = it.description
+                )
+            }
+            .plus(
+                extensions.flatMap { it.fieldDefinitions }.filterSkipped().filterSelectedFields(selectedParent, config)
+                    .map {
+                        Field(
+                            it.name,
+                            typeUtils.findReturnType(it.type, useInterfaceType),
+                            overrideGetter = overrideGetter,
+                            description = it.description
+                        )
+                    }
+            )
+
+        return generate(name, unionTypes + implements, fieldDefinitions, definition.description)
+
+    }
+}
+
 
 class InputTypeGenerator(private val config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {

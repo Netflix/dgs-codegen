@@ -18,11 +18,8 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.CodeGenResult
-import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.*
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
-import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
@@ -30,15 +27,15 @@ import com.squareup.javapoet.TypeSpec
 import graphql.language.*
 import javax.lang.model.element.Modifier
 
-class InterfaceGenerator(private val config: CodeGenConfig, private val document: Document) {
+class InterfaceGenerator(private val config: CodeGenConfig, private val document: Document, private val packageName: String = config.packageNameTypes) {
 
-    private val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config, document)
     private val useInterfaceType = config.generateInterfaces
 
     fun generate(
         definition: InterfaceTypeDefinition,
-        extensions: List<InterfaceTypeExtensionDefinition>
+        extensions: List<InterfaceTypeExtensionDefinition>,
+        selectedParent: graphql.language.Field?
     ): CodeGenResult {
 
         if (definition.shouldSkip(config)) {
@@ -60,7 +57,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
-        mergedFieldDefinitions.filterSkipped().forEach {
+        mergedFieldDefinitions.filterSkipped().filterSelectedFields(selectedParent, config).forEach {
             // Only generate getters/setters for fields that are not interfaces.
             //
             // interface Pet {

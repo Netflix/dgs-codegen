@@ -1547,6 +1547,7 @@ class CodeGenTest {
             type Actor {
                 name: String
             }
+            
         """.trimIndent()
 
         val (dataTypes, interfaces) = CodeGen(

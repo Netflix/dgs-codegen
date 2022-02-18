@@ -32,12 +32,6 @@ import graphql.language.*
 import graphql.language.Field
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
-import graphql.schema.GraphQLSchema
-import graphql.schema.idl.RuntimeWiring
-import graphql.schema.idl.SchemaGenerator
-import graphql.schema.idl.SchemaParser
-import graphql.schema.idl.TypeDefinitionRegistry
-import graphql.validation.Validator
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -172,7 +166,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .excludeSchemaTypeExtension()
             .map {
                 val extensions = findInterfaceExtensions(it.name, definitions)
-                InterfaceGenerator(config, document).generate(it, extensions)
+                InterfaceGenerator(config, document).generate(it, extensions, null)
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
