@@ -40,17 +40,15 @@ import kotlin.collections.ArrayList
 import kotlin.collections.HashSet
 import kotlin.streams.toList
 
-class ClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
+class ClientApiGenerator(private val config: CodeGenConfig, private val document: Document, private val query: OperationDefinition? = null) {
     private val generatedClasses = mutableSetOf<String>()
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, document)
 
     fun generate(definition: ObjectTypeDefinition): CodeGenResult {
-
-        val operationDefinition = getOperationDefinition(document, definition.name)
-        var selectedFields = if (operationDefinition != null) { definition.fieldDefinitions().filterSelectedFields(operationDefinition, config) } else definition.fieldDefinitions()
+        var selectedFields = if (query != null) { definition.fieldDefinitions().filterSelectedFields(query, config) } else definition.fieldDefinitions()
         return selectedFields.filterIncludedInConfig(definition.name, config).filterSkipped().map {
             val javaFile = createQueryClass(it, definition.name)
-            val selectedField = if (operationDefinition != null) { getSelectionSetField(operationDefinition.selectionSet?.getSelectionsOfType(Field::class.java)!!, it.name) } else null
+            val selectedField = if (query != null) { getSelectionSetField(query.selectionSet?.getSelectionsOfType(Field::class.java)!!, it.name) } else null
             val rootProjection =
                 it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalized(), selectedField) }
                     ?: CodeGenResult()
@@ -543,7 +541,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun getPackageName(): String {
-        return config.packageNameClient
+        return if (query != null && query.name != null) {
+            return config.packageNameClient + "." + query.name.lowercase()
+        } else config.packageNameClient
     }
 
     private fun getDatatypesPackageName(): String {

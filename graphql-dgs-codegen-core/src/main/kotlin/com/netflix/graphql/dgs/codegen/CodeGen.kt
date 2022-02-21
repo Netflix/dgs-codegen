@@ -52,7 +52,12 @@ class CodeGen(private val config: CodeGenConfig) {
             .plus(config.schemas)
             .toList()
 
-        val joinedSchema = inputSchemas.joinToString("\n")
+        val inputQueries = config.queryFiles.sorted().asSequence()
+            .flatMap { it.walkTopDown().filter { file -> file.isFile } }
+            .map { it.readText() }
+            .toList()
+
+        val joinedSchema = inputSchemas.joinToString("\n").plus(inputQueries.joinToString("\n"))
         val codeGenResult =
             if (config.language == Language.JAVA) generateForSchema(joinedSchema)
             else generateKotlinForSchema(joinedSchema)
@@ -114,6 +119,10 @@ class CodeGen(private val config: CodeGenConfig) {
         val constantsClass = ConstantsGenerator(config, document).generate()
         // Client
         val client = generateJavaClientApi(definitions)
+        val operationDefinitions = document.definitions.asSequence()
+            .filterIsInstance<OperationDefinition>()
+            .toList()
+        val clientForDefinedQuery = generateJavaClientApiForDefinedQuery(operationDefinitions, definitions)
         val entitiesClient = generateJavaClientEntitiesApi(definitions)
         val entitiesRepresentationsTypes = generateJavaClientEntitiesRepresentations(definitions)
         // Data Fetchers
@@ -126,6 +135,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .merge(enumsResult)
             .merge(interfacesResult)
             .merge(client)
+            .merge(clientForDefinedQuery)
             .merge(entitiesClient)
             .merge(entitiesRepresentationsTypes)
             .merge(constantsClass)
@@ -167,7 +177,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi || config.generateClientApiForDefinedQuery) {
+        return if (config.generateClientApi) {
             definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
@@ -176,8 +186,20 @@ class CodeGen(private val config: CodeGenConfig) {
         } else CodeGenResult()
     }
 
+    private fun generateJavaClientApiForDefinedQuery(queries: Collection<OperationDefinition>, definitions: Collection<Definition<*>>): CodeGenResult {
+        return if (config.generateClientApiForDefinedQuery) {
+            queries.asSequence().map { query ->
+                definitions.asSequence()
+                    .filterIsInstance<ObjectTypeDefinition>()
+                    .filter { it.name.lowercase() == query.operation.name.lowercase() }
+                    .map { ClientApiGenerator(config, document, query).generate(it) }
+                    .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        } else CodeGenResult()
+    }
+
     private fun generateJavaClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi || config.generateClientApiForDefinedQuery) {
+        return if (config.generateClientApi) {
             val federatedDefinitions = definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.hasDirective("key") }
@@ -187,7 +209,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi || config.generateClientApiForDefinedQuery) {
+        return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
@@ -282,7 +304,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi || config.generateClientApiForDefinedQuery) {
+        return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
@@ -321,6 +343,7 @@ class CodeGen(private val config: CodeGenConfig) {
 data class CodeGenConfig(
     val schemas: Set<String> = emptySet(),
     val schemaFiles: Set<File> = emptySet(),
+    val queryFiles: Set<File> = emptySet(),
     val outputDir: Path = Paths.get("generated"),
     val examplesOutputDir: Path = Paths.get("generated-examples"),
     val writeToFiles: Boolean = false,
@@ -454,6 +477,14 @@ fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
 }
 
 fun List<FieldDefinition>.filterSelectedFields(operationDefinition: OperationDefinition, config: CodeGenConfig): List<FieldDefinition> {
+    // validate the selected fields
+    operationDefinition.selectionSet.selections
+        .filterIsInstance<Field>()
+        .forEach { iter ->
+            if (this.find { it.name == iter.name } == null) {
+                throw java.lang.Exception("${iter.name} is not a valid field in type ${operationDefinition.operation.name}")
+            }
+        }
     val fields: MutableList<FieldDefinition> = mutableListOf()
     return if (config.generateClientApiForDefinedQuery) {
         this.forEach {
@@ -466,6 +497,17 @@ fun List<FieldDefinition>.filterSelectedFields(operationDefinition: OperationDef
 
 fun List<FieldDefinition>.filterSelectedFields(parent: Field?, config: CodeGenConfig): List<FieldDefinition> {
     return if (parent != null && config.generateClientApiForDefinedQuery) {
+        // validate the selected fields
+        if (parent.selectionSet.selections.filterIsInstance<FragmentSpread>().isEmpty()) {
+            parent.selectionSet.selections
+                .filterIsInstance<Field>()
+                .forEach { iter ->
+                    if (this.find { it.name == iter.name } == null) {
+                        throw java.lang.Exception("${iter.name} is not a valid field in ${parent.name}")
+                    }
+                }
+        }
+
         val fields: MutableList<FieldDefinition> = mutableListOf()
         this.forEach {
             val field = parent.selectionSet.selections
@@ -479,6 +521,17 @@ fun List<FieldDefinition>.filterSelectedFields(parent: Field?, config: CodeGenCo
 
 fun List<ObjectTypeDefinition>.filterSelectedConcreteTypes(parent: Field?, config: CodeGenConfig): List<ObjectTypeDefinition> {
     return if (parent != null && config.generateClientApiForDefinedQuery) {
+        // validate the selected fields as well
+        if (parent.selectionSet.selections.filterIsInstance<FragmentSpread>().isEmpty()) {
+            parent.selectionSet.selections
+                .filterIsInstance<Field>()
+                .forEach { iter ->
+                    if (this.find { it.name == iter.name } == null) {
+                        throw java.lang.Exception("${iter.name} is not a valid field in ${parent.name}")
+                    }
+                }
+        }
+
         val types: MutableList<ObjectTypeDefinition> = mutableListOf()
         this.forEach {
             val field = parent.selectionSet.selections
@@ -492,6 +545,15 @@ fun List<ObjectTypeDefinition>.filterSelectedConcreteTypes(parent: Field?, confi
 
 fun List<TypeDefinition<*>>.filterSelectedUnionTypes(parent: Field?, config: CodeGenConfig): List<TypeDefinition<*>> {
     return if (parent != null && config.generateClientApiForDefinedQuery) {
+        // validate the selected fields as well
+        parent.selectionSet.selections
+            .filterIsInstance<Field>()
+            .forEach { iter ->
+                if (this.find { it.name == iter.name } == null) {
+                    throw java.lang.Exception("${iter.name} is not a valid field in ${parent.name}")
+                }
+            }
+
         val types: MutableList<TypeDefinition<*>> = mutableListOf()
         this.forEach {
             val field = parent.selectionSet.selections

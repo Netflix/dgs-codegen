@@ -24,6 +24,7 @@ import com.netflix.graphql.dgs.codegen.assertCompilesJava
 import com.netflix.graphql.dgs.codegen.basePackageName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class ClientApiGenProjectionForDefinedQueriesTest {
     @Test
@@ -50,7 +51,6 @@ class ClientApiGenProjectionForDefinedQueriesTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
                 generateClientApiForDefinedQuery = true,
             )
         ).generate()
@@ -87,7 +87,6 @@ class ClientApiGenProjectionForDefinedQueriesTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
                 generateClientApiForDefinedQuery = true,
             )
         ).generate()
@@ -149,7 +148,6 @@ class ClientApiGenProjectionForDefinedQueriesTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
                 generateClientApiForDefinedQuery = true,
             )
         ).generate()
@@ -218,7 +216,6 @@ class ClientApiGenProjectionForDefinedQueriesTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
                 generateClientApiForDefinedQuery = true,
             )
         ).generate()
@@ -272,7 +269,6 @@ class ClientApiGenProjectionForDefinedQueriesTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
                 generateClientApiForDefinedQuery = true,
             )
         ).generate()
@@ -312,7 +308,6 @@ class ClientApiGenProjectionForDefinedQueriesTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
                 generateClientApiForDefinedQuery = true,
                 typeMapping = mapOf("Long" to "java.lang.Long"),
             )
@@ -324,5 +319,178 @@ class ClientApiGenProjectionForDefinedQueriesTest {
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name").containsExactly("email")
 
         assertCompilesJava(codeGenResult)
+    }
+
+    @Test
+    fun `Generate projections for multiple queries`() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            
+            query ABC {
+                people {
+                    firstname
+                }
+            }
+            
+            query EFG {
+                people {
+                  lastname
+                }
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApiForDefinedQuery = true,
+            )
+        ).generate()
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PeopleProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("firstname")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").doesNotContain("lastname")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("PeopleProjectionRoot")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("lastname")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").doesNotContain("firstname")
+
+        assertCompilesJava(codeGenResult.clientProjections)
+    }
+
+    @Test
+    fun `Generate projections for multiple queries with different query types`() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Mutation {
+                updatePerson(age: Int) : Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            
+            query ABC {
+                people {
+                    firstname
+                }
+            }
+            
+            query EFG {
+                people {
+                  lastname
+                }
+            }
+            
+            mutation ZZZ {
+               updatePerson(age: 2) {
+                    lastname
+               }
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApiForDefinedQuery = true,
+            )
+        ).generate()
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PeopleProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("firstname")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").doesNotContain("lastname")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("PeopleProjectionRoot")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("lastname")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").doesNotContain("firstname")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("UpdatePersonProjectionRoot")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("lastname")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("firstname")
+
+        assertCompilesJava(codeGenResult.clientProjections)
+    }
+
+    @Test
+    fun `Throw an error when generating for invalid query types`() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Mutation {
+                updatePerson(age: Int) : Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            
+            query ZZZ {
+               updatePerson(age: 2) {
+                    lastname
+               }
+            }
+        """.trimIndent()
+
+        assertThrows<Exception> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApiForDefinedQuery = true,
+                )
+            ).generate()
+        }
+    }
+
+    @Test
+    fun `Throw an error when generating for query with invalid field selection`() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Mutation {
+                updatePerson(age: Int) : Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            
+            mutation ZZZ {
+               updatePerson(age: 2) {
+                    invalidField
+               }
+            }
+        """.trimIndent()
+
+        assertThrows<Exception> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApiForDefinedQuery = true,
+                )
+            ).generate()
+        }
     }
 }
