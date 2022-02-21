@@ -50,7 +50,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         var selectedFields = if (operationDefinition != null) { definition.fieldDefinitions().filterSelectedFields(operationDefinition, config) } else definition.fieldDefinitions()
         return selectedFields.filterIncludedInConfig(definition.name, config).filterSkipped().map {
             val javaFile = createQueryClass(it, definition.name)
-            val selectedField = if (operationDefinition != null) { getSelectionSetField(operationDefinition.selectionSet?.getSelectionsOfType(Field::class.java)!!, it.name)} else null
+            val selectedField = if (operationDefinition != null) { getSelectionSetField(operationDefinition.selectionSet?.getSelectionsOfType(Field::class.java)!!, it.name) } else null
             val rootProjection =
                 it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalized(), selectedField) }
                     ?: CodeGenResult()
@@ -232,7 +232,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
                 val processedEdges = mutableSetOf<Pair<String, String>>()
                 processedEdges.add(typeDef.name to type.name)
-                val selectedField = selectedParent?.selectionSet?.getSelectionsOfType(Field::class.java)?.find {it.name == fieldDef.name}
+                val selectedField = selectedParent?.selectionSet?.getSelectionsOfType(Field::class.java)?.find { it.name == fieldDef.name }
                 createSubProjection(typeDef, javaType.build(), javaType.build(), "${prefix}_${fieldDef.name.capitalized()}", selectedField, processedEdges, 1)
             }
             .fold(CodeGenResult()) { total, current -> total.merge(current) }
@@ -367,7 +367,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .build()
         )
 
-        val selectedField = selectedParent?.selectionSet?.getSelectionsOfType(Field::class.java)?.find {iter -> iter.name == it.name}
+        val selectedField = selectedParent?.selectionSet?.getSelectionsOfType(Field::class.java)?.find { iter -> iter.name == it.name }
         return createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}_${it.name.capitalized()}", selectedField, processedEdges, queryDepth)
     }
 
@@ -478,7 +478,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
                     val updatedProcessedEdges = processedEdges.toMutableSet()
                     updatedProcessedEdges.add(typeDef.name to type.name)
-                    val selectedField = selectedParent?.selectionSet?.getSelectionsOfType(Field::class.java)?.find {it.name == fieldDef.name}
+                    val selectedField = selectedParent?.selectionSet?.getSelectionsOfType(Field::class.java)?.find { it.name == fieldDef.name }
                     createSubProjection(typeDef, javaType.build(), root, "${truncatePrefix(prefix)}_${fieldDef.name.capitalized()}", selectedField, updatedProcessedEdges, queryDepth + 1)
                 }
                 .fold(CodeGenResult()) { total, current -> total.merge(current) }
@@ -537,8 +537,6 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         return javaType to codeGenResult.merge(concreteTypesResult).merge(unionTypesResult)
     }
-
-
 
     private fun truncatePrefix(prefix: String): String {
         return if (config.shortProjectionNames) ClassnameShortener.shorten(prefix) else prefix

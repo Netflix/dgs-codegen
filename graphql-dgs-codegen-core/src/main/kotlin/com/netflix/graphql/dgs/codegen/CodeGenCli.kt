@@ -47,6 +47,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val language by option("--language", "-l", help = "Output language").choice("java", "kotlin", ignoreCase = true)
         .default("java")
     private val generateClient by option("--generate-client", "-c", help = "Genereate client api").flag(default = false)
+    private val generateClientApiForDefinedQuery by option("--generate-client-api-for-defined-query", "-c", help = "Genereate client api for defined query").flag(default = false)
     private val generateDataTypes by option(
         "--generate-data-types",
         help = "Generate data types. Not needed when only generating an API"
@@ -85,6 +86,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                     language = Language.valueOf(language.uppercase()),
                     generateBoxedTypes = generateBoxedTypes,
                     generateClientApi = generateClient,
+                    generateClientApiForDefinedQuery = generateClientApiForDefinedQuery,
                     includeQueries = includeQueries,
                     includeMutations = includeMutations,
                     skipEntityQueries = skipEntityQueries,
@@ -105,6 +107,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                     language = Language.valueOf(language.uppercase()),
                     generateBoxedTypes = generateBoxedTypes,
                     generateClientApi = generateClient,
+                    generateClientApiForDefinedQuery = generateClientApiForDefinedQuery,
                     includeQueries = includeQueries,
                     includeMutations = includeMutations,
                     skipEntityQueries = skipEntityQueries,

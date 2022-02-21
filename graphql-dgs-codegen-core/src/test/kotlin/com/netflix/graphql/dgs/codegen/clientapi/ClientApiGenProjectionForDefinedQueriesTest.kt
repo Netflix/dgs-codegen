@@ -22,10 +22,8 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
 import com.netflix.graphql.dgs.codegen.basePackageName
-import com.squareup.javapoet.ClassName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.fail
 
 class ClientApiGenProjectionForDefinedQueriesTest {
     @Test

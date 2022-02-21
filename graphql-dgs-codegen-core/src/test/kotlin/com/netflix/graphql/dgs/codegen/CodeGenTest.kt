@@ -933,7 +933,6 @@ class CodeGenTest {
             type Person {
                 firstname: String
                 lastname: String
-                birthDate: Date
             }
         """.trimIndent()
 

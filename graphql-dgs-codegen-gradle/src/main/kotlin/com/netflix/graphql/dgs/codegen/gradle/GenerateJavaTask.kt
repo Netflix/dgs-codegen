@@ -70,6 +70,9 @@ open class GenerateJavaTask : DefaultTask() {
     var generateClient = false
 
     @Input
+    var generateClientApiForDefinedQuery = false
+
+    @Input
     var generateDataTypes = true
 
     @Input
@@ -139,6 +142,7 @@ open class GenerateJavaTask : DefaultTask() {
             language = Language.valueOf(language.uppercase(Locale.getDefault())),
             generateBoxedTypes = generateBoxedTypes,
             generateClientApi = generateClient,
+            generateClientApiForDefinedQuery = generateClientApiForDefinedQuery,
             generateInterfaces = generateInterfaces,
             generateInterfaceSetters = generateInterfaceSetters,
             typeMapping = typeMapping,

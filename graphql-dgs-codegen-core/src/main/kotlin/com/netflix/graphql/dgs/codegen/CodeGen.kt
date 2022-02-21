@@ -32,16 +32,9 @@ import graphql.language.*
 import graphql.language.Field
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
-import graphql.schema.GraphQLSchema
-import graphql.schema.idl.RuntimeWiring
-import graphql.schema.idl.SchemaGenerator
-import graphql.schema.idl.SchemaParser
-import graphql.schema.idl.TypeDefinitionRegistry
-import graphql.validation.Validator
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
-
 
 class CodeGen(private val config: CodeGenConfig) {
     lateinit var document: Document
@@ -102,18 +95,14 @@ class CodeGen(private val config: CodeGenConfig) {
             mutations = config.includeMutations,
             subscriptions = config.includeSubscriptions
         )
+
         /*val typeRegistry: TypeDefinitionRegistry = SchemaParser().parse(schema)
         val wiring: RuntimeWiring = RuntimeWiring.newRuntimeWiring().build()
         val graphQLSchema: GraphQLSchema = SchemaGenerator().makeExecutableSchema(typeRegistry, wiring)
 
         // temporary code to test out validation without a runtime
         val validator = Validator()
-        val queryDoc = Parser.parse("""query {
-                persons {
-                  name
-                }
-            }""")
-        val error =  validator.validateDocument(graphQLSchema, queryDoc)*/
+        val error = validator.validateDocument(graphQLSchema, document)*/
 
         val definitions = document.definitions
         // data types
@@ -178,7 +167,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi) {
+        return if (config.generateClientApi || config.generateClientApiForDefinedQuery) {
             definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
@@ -188,7 +177,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi) {
+        return if (config.generateClientApi || config.generateClientApiForDefinedQuery) {
             val federatedDefinitions = definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.hasDirective("key") }
@@ -198,7 +187,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi) {
+        return if (config.generateClientApi || config.generateClientApiForDefinedQuery) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
@@ -293,7 +282,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi) {
+        return if (config.generateClientApi || config.generateClientApiForDefinedQuery) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
@@ -464,7 +453,7 @@ fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
     return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
 }
 
-fun List<FieldDefinition>.filterSelectedFields(operationDefinition: OperationDefinition, config: CodeGenConfig) : List<FieldDefinition> {
+fun List<FieldDefinition>.filterSelectedFields(operationDefinition: OperationDefinition, config: CodeGenConfig): List<FieldDefinition> {
     val fields: MutableList<FieldDefinition> = mutableListOf()
     return if (config.generateClientApiForDefinedQuery) {
         this.forEach {
@@ -475,7 +464,7 @@ fun List<FieldDefinition>.filterSelectedFields(operationDefinition: OperationDef
     } else this
 }
 
-fun List<FieldDefinition>.filterSelectedFields(parent: Field?, config: CodeGenConfig) : List<FieldDefinition> {
+fun List<FieldDefinition>.filterSelectedFields(parent: Field?, config: CodeGenConfig): List<FieldDefinition> {
     return if (parent != null && config.generateClientApiForDefinedQuery) {
         val fields: MutableList<FieldDefinition> = mutableListOf()
         this.forEach {
@@ -488,7 +477,7 @@ fun List<FieldDefinition>.filterSelectedFields(parent: Field?, config: CodeGenCo
     } else this
 }
 
-fun List<ObjectTypeDefinition>.filterSelectedConcreteTypes(parent: Field?, config: CodeGenConfig) : List<ObjectTypeDefinition> {
+fun List<ObjectTypeDefinition>.filterSelectedConcreteTypes(parent: Field?, config: CodeGenConfig): List<ObjectTypeDefinition> {
     return if (parent != null && config.generateClientApiForDefinedQuery) {
         val types: MutableList<ObjectTypeDefinition> = mutableListOf()
         this.forEach {
@@ -501,7 +490,7 @@ fun List<ObjectTypeDefinition>.filterSelectedConcreteTypes(parent: Field?, confi
     } else this
 }
 
-fun List<TypeDefinition<*>>.filterSelectedUnionTypes(parent: Field?, config: CodeGenConfig) : List<TypeDefinition<*>> {
+fun List<TypeDefinition<*>>.filterSelectedUnionTypes(parent: Field?, config: CodeGenConfig): List<TypeDefinition<*>> {
     return if (parent != null && config.generateClientApiForDefinedQuery) {
         val types: MutableList<TypeDefinition<*>> = mutableListOf()
         this.forEach {
@@ -514,12 +503,12 @@ fun List<TypeDefinition<*>>.filterSelectedUnionTypes(parent: Field?, config: Cod
     } else this
 }
 
-fun getSelectionSetField(selectionSet: List<Field>, name: String) : Field? {
-        return selectionSet.find{ it.name == name }
+fun getSelectionSetField(selectionSet: List<Field>, name: String): Field? {
+    return selectionSet.find { it.name == name }
 }
 
-private fun getOperation(operation: String) : OperationDefinition.Operation? {
-    when(operation) {
+private fun getOperation(operation: String): OperationDefinition.Operation? {
+    when (operation) {
         "Query" -> return OperationDefinition.Operation.QUERY
         "Mutation" -> return OperationDefinition.Operation.MUTATION
         "Subscription" -> return OperationDefinition.Operation.SUBSCRIPTION
@@ -527,14 +516,12 @@ private fun getOperation(operation: String) : OperationDefinition.Operation? {
     return null
 }
 
-fun getOperationDefinition(document: Document, name: String) : OperationDefinition? {
+fun getOperationDefinition(document: Document, name: String): OperationDefinition? {
     return document.definitions.asSequence()
         .filterIsInstance<OperationDefinition>()
         .filter { it.operation == getOperation(name) }
         .toList().getOrNull(0)
 }
-
-
 
 fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
     return when (definitionName) {
