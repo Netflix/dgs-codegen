@@ -32,6 +32,7 @@ import graphql.language.*
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
 import java.io.File
+import java.lang.Integer.MAX_VALUE
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -221,7 +222,11 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateKotlinForSchema(schema: String): CodeGenResult {
-        document = Parser.parse(schema)
+        val options = ParserOptions
+            .getDefaultParserOptions()
+            .transform { o -> o.maxTokens(MAX_VALUE) }
+        val parser = Parser()
+        document = parser.parseDocument(schema, options)
         requiredTypeCollector = RequiredTypeCollector(
             document,
             queries = config.includeQueries,
