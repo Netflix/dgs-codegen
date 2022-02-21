@@ -46,8 +46,10 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
 
         return if (type in scalars) {
             """"${scalars.getValue(type).serialize(input)}""""
-        } else if (type.isPrimitive || type.isAssignableFrom(java.lang.Integer::class.java) || type.isAssignableFrom(java.lang.Long::class.java) || type.isAssignableFrom(java.lang.Double::class.java) || type.isAssignableFrom(java.lang.Float::class.java) || type.isAssignableFrom(java.lang.Boolean::class.java) || type.isAssignableFrom(java.lang.Short::class.java) || type.isAssignableFrom(java.lang.Byte::class.java) || type.isEnum) {
+        } else if (type.isPrimitive || type.isAssignableFrom(java.lang.Integer::class.java) || type.isAssignableFrom(java.lang.Long::class.java) || type.isAssignableFrom(java.lang.Double::class.java) || type.isAssignableFrom(java.lang.Float::class.java) || type.isAssignableFrom(java.lang.Boolean::class.java) || type.isAssignableFrom(java.lang.Short::class.java) || type.isAssignableFrom(java.lang.Byte::class.java)) {
             input.toString()
+        } else if (type.isEnum) {
+            (input as Enum<*>).name
         } else if (type in toStringClasses) {
             // Call toString for known types, in case no scalar is found. This is for backward compatibility.
             """"${input.toString().replace("\\", "\\\\").replace("\"", "\\\"")}""""
