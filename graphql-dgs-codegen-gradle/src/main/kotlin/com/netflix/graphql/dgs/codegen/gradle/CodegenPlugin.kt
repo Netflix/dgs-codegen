@@ -41,18 +41,11 @@ class CodegenPlugin : Plugin<Project> {
         val generateJavaTaskProvider = project.tasks.register("generateJava", GenerateJavaTask::class.java)
         generateJavaTaskProvider.configure { it.group = GRADLE_GROUP }
 
-        project.getTasksByName("compileJava", false).forEach {
-            it.dependsOn(generateJavaTaskProvider.get())
-        }
-        project.getTasksByName("compileKotlin", false).forEach {
-            it.dependsOn(generateJavaTaskProvider.get())
-        }
-
         val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
         val sourceSets = javaConvention.sourceSets
         val mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-        val outputDir = generateJavaTaskProvider.get().getOutputDir()
-        mainSourceSet.java.srcDirs(outputDir)
+        val outputDir = generateJavaTaskProvider.map(GenerateJavaTask::getOutputDir)
+        mainSourceSet.java.srcDirs(project.files(outputDir).builtBy(generateJavaTaskProvider))
 
         project.afterEvaluate { p ->
             if (extensions.clientCoreConventionsEnabled.getOrElse(true)) {
