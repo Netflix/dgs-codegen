@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 
 class ClientApiGenProjectionForDefinedQueriesTest {
+
     @Test
     fun `Generated root projection should contain only selected fields from the query`() {
 

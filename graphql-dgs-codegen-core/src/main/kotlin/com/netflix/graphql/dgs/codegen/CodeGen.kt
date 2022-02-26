@@ -522,15 +522,15 @@ fun List<FieldDefinition>.filterSelectedFields(parent: Field?, config: CodeGenCo
 fun List<ObjectTypeDefinition>.filterSelectedConcreteTypes(parent: Field?, config: CodeGenConfig): List<ObjectTypeDefinition> {
     return if (parent != null && config.generateClientApiForDefinedQuery) {
         // validate the selected fields as well
-        if (parent.selectionSet.selections.filterIsInstance<FragmentSpread>().isEmpty()) {
-            parent.selectionSet.selections
-                .filterIsInstance<Field>()
-                .forEach { iter ->
-                    if (this.find { it.name == iter.name } == null) {
-                        throw java.lang.Exception("${iter.name} is not a valid field in ${parent.name}")
-                    }
+        // if (! parent.selectionSet.selections.filterIsInstance<FragmentSpread>().isEmpty()) {
+        parent.selectionSet.selections
+            .filterIsInstance<Field>()
+            .forEach { iter ->
+                if (this.find { it.name == iter.name } == null && this.find { it.fieldDefinitions().any { field -> field.name == iter.name } } == null) {
+                    throw java.lang.Exception("${iter.name} is not a valid field in ${parent.name}")
                 }
-        }
+            }
+        // }
 
         val types: MutableList<ObjectTypeDefinition> = mutableListOf()
         this.forEach {

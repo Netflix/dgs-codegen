@@ -38,6 +38,9 @@ open class GenerateJavaTask : DefaultTask() {
     @InputFiles
     var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
 
+    @InputFiles
+    var queryPaths = emptyList<Any>()
+
     @Input
     var packageName = "com.netflix.dgs.codegen.generated"
 
@@ -129,9 +132,15 @@ open class GenerateJavaTask : DefaultTask() {
             logger.info("Processing $it")
         }
 
+        val queryPaths = queryPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
+        queryPaths.filter { !it.exists() }.forEach {
+            logger.warn("Query file location ${it.absolutePath} does not exist")
+        }
+
         val config = CodeGenConfig(
             schemas = emptySet(),
             schemaFiles = schemaPaths,
+            queryFiles = queryPaths,
             outputDir = getOutputDir().toPath(),
             examplesOutputDir = getExampleOutputDir().toPath(),
             writeToFiles = true,
