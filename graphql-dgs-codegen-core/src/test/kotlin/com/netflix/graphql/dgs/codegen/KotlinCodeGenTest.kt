@@ -260,6 +260,34 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `interface classes are not generated with generateDataTypes setting set to false`() {
+
+        val schema = """
+            interface Person {
+                 name: String
+            }
+
+            type People implements Person {
+                 name: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDataTypes = false,
+            )
+        ).generate()
+        val dataTypes = result.kotlinDataTypes
+        val interfaceTypes = result.kotlinInterfaces
+
+        assertThat(dataTypes.size).isEqualTo(0)
+        assertThat(interfaceTypes.size).isEqualTo(0)
+    }
+
+    @Test
     fun generateDataClassWithNoFields() {
 
         val schema = """
