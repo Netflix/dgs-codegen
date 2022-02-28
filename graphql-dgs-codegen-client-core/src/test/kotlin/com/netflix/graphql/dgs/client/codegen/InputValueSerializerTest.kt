@@ -131,6 +131,19 @@ class InputValueSerializerTest {
         assertThat(serialize).isEqualTo("""{date:"2021-05-13T04:34" }""")
     }
 
+    @Test
+    fun `issue 337`() {
+        val input = EvilGenre.ACTION
+        val serialize = InputValueSerializer().serialize(input)
+        assertThat(serialize).isEqualTo("ACTION")
+    }
+
+    enum class EvilGenre {
+        ACTION;
+        override fun toString(): String {
+            return "Genre[$name]"
+        }
+    }
     data class MyDataWithCompanion(val title: String) {
         companion object
     }

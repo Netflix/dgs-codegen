@@ -96,15 +96,11 @@ We use the standard Kotlin coding conventions. Intellij should select the correc
 in the `.idea/codeStyle` folder. Furthermore, we're also using [Klint](https://ktlint.github.io/). You can run
 formatting manually using Gradle:
 
-```
-./gradlew ktlintFormat
+```sh
+./gradlew lintKotlin
 ```
 
 We recommend installing a commit hook to run the style check to prevent failing the build for your branch.
-
-```
-./gradlew addKtlintCheckGitPreCommitHook
-```
 
 Pull Request builds
 ----
