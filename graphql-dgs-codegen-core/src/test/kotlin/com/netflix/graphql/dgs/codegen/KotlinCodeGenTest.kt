@@ -228,6 +228,66 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `interface type with kotlinAllFieldsOptional setting`() {
+
+        val schema = """
+            interface Person {
+                 name: String
+            }
+
+            type People implements Person {
+                 name: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                kotlinAllFieldsOptional = true,
+            )
+        ).generate()
+        val dataTypes = result.kotlinDataTypes
+        val interfaceTypes = result.kotlinInterfaces
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.propertySpecs[0].type.isNullable).isTrue
+        val interfaceType = interfaceTypes[0].members[0] as TypeSpec
+        assertThat(interfaceType.propertySpecs[0].type.isNullable).isTrue
+
+        assertCompilesKotlin(dataTypes + interfaceTypes)
+    }
+
+    @Test
+    fun `interface classes are not generated with generateDataTypes setting set to false`() {
+
+        val schema = """
+            interface Person {
+                 name: String
+            }
+
+            type People implements Person {
+                 name: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDataTypes = false,
+            )
+        ).generate()
+        val dataTypes = result.kotlinDataTypes
+        val interfaceTypes = result.kotlinInterfaces
+
+        assertThat(dataTypes.size).isEqualTo(0)
+        assertThat(interfaceTypes.size).isEqualTo(0)
+    }
+
+    @Test
     fun generateDataClassWithNoFields() {
 
         val schema = """
