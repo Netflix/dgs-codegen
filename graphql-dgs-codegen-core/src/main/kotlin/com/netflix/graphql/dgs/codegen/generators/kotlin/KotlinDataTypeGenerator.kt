@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
@@ -38,13 +39,19 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
+    private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
+
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
+
+        logger.info("Generating data type ${definition.name}")
 
         val fields = definition.fieldDefinitions
             .filterSkipped()
@@ -63,10 +70,14 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
 }
 
 class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
+    private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
+
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
+
+        logger.info("Generating input type ${definition.name}")
 
         val fields = definition.inputValueDefinitions
             .filter(ReservedKeywordFilter.filterInvalidNames)

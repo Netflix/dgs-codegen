@@ -20,17 +20,24 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.generators.java.EnumTypeGenerator
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.EnumTypeDefinition
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
+    private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
+
     fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
+
+        logger.info("Generating enum type ${definition.name}")
 
         val kotlinType = TypeSpec.classBuilder(definition.name).addModifiers(KModifier.ENUM)
 

@@ -24,13 +24,19 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
 import graphql.language.EnumTypeDefinition
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.lang.model.element.Modifier
 
 class EnumTypeGenerator(private val config: CodeGenConfig) {
+    private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
+
     fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
+
+        logger.info("Generating enum type ${definition.name}")
 
         val javaType =
             TypeSpec

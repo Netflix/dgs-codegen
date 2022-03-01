@@ -25,16 +25,21 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
 import graphql.language.TypeName
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.lang.model.element.Modifier
 
 class DataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+    private val logger: Logger = LoggerFactory.getLogger(DataTypeGenerator::class.java)
+
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
 
-        val name = definition.name
+        logger.info("Generating data type ${definition.name}")
 
+        val name = definition.name
         val unionTypes = document.getDefinitionsOfType(UnionTypeDefinition::class.java).filter { union ->
             union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
         }.map { it.name }
@@ -97,13 +102,16 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
 }
 
 class InputTypeGenerator(private val config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+    private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
+
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
 
-        val name = definition.name
+        logger.info("Generating input type ${definition.name}")
 
+        val name = definition.name
         val fieldDefinitions = definition.inputValueDefinitions.map {
             val defaultValue = it.defaultValue?.let { defVal ->
                 when (defVal) {

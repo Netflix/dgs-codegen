@@ -28,6 +28,8 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
 import graphql.language.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 import javax.lang.model.element.Modifier
 
 class InterfaceGenerator(private val config: CodeGenConfig, private val document: Document) {
@@ -35,6 +37,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
     private val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config, document)
     private val useInterfaceType = config.generateInterfaces
+    private val logger: Logger = LoggerFactory.getLogger(InterfaceGenerator::class.java)
 
     fun generate(
         definition: InterfaceTypeDefinition,
@@ -45,6 +48,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
             return CodeGenResult()
         }
 
+        logger.info("Generating type ${definition.name}")
         val javaType = TypeSpec.interfaceBuilder(definition.name)
             .addModifiers(Modifier.PUBLIC)
 
