@@ -162,7 +162,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return if (config.generateClientApi) {
             definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
+                .filter { OperationTypes.isOperationType(it.name) }
                 .map { ClientApiGenerator(config, document).generate(it) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
@@ -191,18 +191,25 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaDataFetchers(definitions: Collection<Definition<*>>): CodeGenResult {
-        return definitions.asSequence()
-            .filterIsInstance<ObjectTypeDefinition>()
-            .filter { it.name == "Query" }
-            .map { DatafetcherGenerator(config, document).generate(it) }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        return if (config.generateDataFetchersAsInterfaces) {
+            definitions.asSequence()
+                .filterIsInstance<ObjectTypeDefinition>()
+                .map { DataFetcherInterfaceGenerator(config, document).generate(it) }
+                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        } else {
+            definitions.asSequence()
+                .filterIsInstance<ObjectTypeDefinition>()
+                .filter { it.name == OperationTypes.query }
+                .map { DatafetcherGenerator(config, document).generate(it) }
+                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        }
     }
 
     private fun generateJavaDataType(definitions: Collection<Definition<*>>): CodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filter { it.name != OperationTypes.query && it.name != OperationTypes.mutation && it.name != "RelayPageInfo" }
             .filter { config.generateInterfaces || config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 DataTypeGenerator(config, document).generate(it, findTypeExtensions(it.name, definitions))
@@ -259,13 +266,22 @@ class CodeGen(private val config: CodeGenConfig) {
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
+        val dataFetcherResult = if (config.generateDataFetchersAsInterfaces) {
+            definitions.asSequence()
+                .filterIsInstance<ObjectTypeDefinition>()
+                .map { KotlinDataFetcherInterfaceGenerator(config).generate(it) }
+                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        } else {
+            CodeGenResult()
+        }
+
         val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
         val client = generateJavaClientApi(definitions)
         val entitiesClient = generateJavaClientEntitiesApi(definitions)
         val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
 
-        return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult)
+        return datatypesResult.merge(inputTypes).merge(interfacesResult).merge(unionResult).merge(enumsResult).merge(dataFetcherResult)
             .merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
     }
 
@@ -296,7 +312,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filter { !OperationTypes.isOperationType(it.name) && it.name != "RelayPageInfo" }
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 val extensions = findTypeExtensions(it.name, definitions)
@@ -348,6 +364,7 @@ data class CodeGenConfig(
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
+    val generateDataFetchersAsInterfaces: Boolean = false,
 ) {
     val packageNameClient: String
         get() = "$packageName.$subPackageNameClient"
@@ -457,21 +474,21 @@ fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
 
 fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
     return when (definitionName) {
-        "Query" -> {
+        OperationTypes.query -> {
             if (config.includeQueries.isEmpty()) {
                 this
             } else {
                 this.filter { it.name in config.includeQueries }
             }
         }
-        "Mutation" -> {
+        OperationTypes.mutation -> {
             if (config.includeMutations.isEmpty()) {
                 this
             } else {
                 this.filter { it.name in config.includeMutations }
             }
         }
-        "Subscription" -> {
+        OperationTypes.subscription -> {
             if (config.includeSubscriptions.isEmpty()) {
                 this
             } else {

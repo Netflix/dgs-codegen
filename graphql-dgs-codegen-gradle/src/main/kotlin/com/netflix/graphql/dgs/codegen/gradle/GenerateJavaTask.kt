@@ -78,6 +78,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var generateInterfaceSetters = true
 
+    @Input
+    var generateDataFetchersAsInterfaces = false
+
     @OutputDirectory
     fun getOutputDir(): File {
         return Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
@@ -141,6 +144,7 @@ open class GenerateJavaTask : DefaultTask() {
             generateClientApi = generateClient,
             generateInterfaces = generateInterfaces,
             generateInterfaceSetters = generateInterfaceSetters,
+            generateDataFetchersAsInterfaces = generateDataFetchersAsInterfaces,
             typeMapping = typeMapping,
             includeQueries = includeQueries.toSet(),
             includeMutations = includeMutations.toSet(),

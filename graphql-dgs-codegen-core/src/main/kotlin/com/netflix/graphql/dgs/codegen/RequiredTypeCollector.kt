@@ -42,11 +42,14 @@ class RequiredTypeCollector(
 
     init {
         val fieldDefinitions = mutableListOf<FieldDefinition>()
+
+        OperationTypes.initialize(document)
+
         for (definition in document.definitions.asSequence().filterIsInstance<ObjectTypeDefinition>()) {
             when (definition.name) {
-                "Query" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in queries }
-                "Mutation" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in mutations }
-                "Subscription" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in subscriptions }
+                OperationTypes.query -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in queries }
+                OperationTypes.mutation -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in mutations }
+                OperationTypes.subscription -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in subscriptions }
             }
         }
 
