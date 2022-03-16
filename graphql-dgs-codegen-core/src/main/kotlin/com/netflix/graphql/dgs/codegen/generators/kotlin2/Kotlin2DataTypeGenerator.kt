@@ -44,7 +44,6 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 import graphql.language.Description
 import graphql.language.Document
-import graphql.language.InterfaceTypeDefinition
 import graphql.language.NamedNode
 import graphql.language.ObjectTypeDefinition
 import graphql.language.UnionTypeDefinition
@@ -72,10 +71,8 @@ class Kotlin2DataTypeGenerator {
 
             val typeUtils = KotlinTypeUtils(config.packageNameTypes, config)
 
-            // get a map of interfaces > fields
-            val interfaceFields = document
-                .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
-                .associate { i -> i.name to i.fieldDefinitions.map { it.name } }
+            // get a map of all interfaces > fields
+            val interfaceFields = interfaceFields(document)
 
             // invert the union mapping to create a lookup
             val unionTypes = document
@@ -92,9 +89,8 @@ class Kotlin2DataTypeGenerator {
 
                     logger.info("Generating data type ${typeDefinition.name}")
 
-                    // get all interfaces this type will implement
-                    val interfaces = typeDefinition.implements.filterIsInstance<NamedNode<*>>()
-                    val implementedInterfaces = interfaces.map { it.name }
+                    // get all interfaces this type implements
+                    val implementedInterfaces = implementedInterfaces(typeDefinition)
                     val implementedUnionTypes = unionTypes[typeDefinition.name] ?: emptyList()
                     val superInterfaces = implementedInterfaces + implementedUnionTypes
 
@@ -105,7 +101,7 @@ class Kotlin2DataTypeGenerator {
                     // get all fields defined on the type itself or any extension types
                     val fields = listOf(typeDefinition)
                         .plus(extensionTypes)
-                        .flatMap { d -> d.fieldDefinitions }
+                        .flatMap { it.fieldDefinitions }
                         .filterSkipped()
                         .filter(ReservedKeywordFilter.filterInvalidNames)
                         .map {
@@ -117,10 +113,7 @@ class Kotlin2DataTypeGenerator {
                         }
 
                     // get a list of fields to override
-                    val overrideFields = interfaces
-                        .mapNotNull { interfaceFields[it.name] }
-                        .flatten()
-                        .toSet()
+                    val overrideFields = overrideFields(interfaceFields, implementedInterfaces)
 
                     // create a companion object to store defaults for each field
                     val companionObject = TypeSpec.companionObjectBuilder()
@@ -128,8 +121,8 @@ class Kotlin2DataTypeGenerator {
                         .addProperties(
                             fields.map { field ->
                                 PropertySpec.builder(
-                                    "${field.name}Default",
-                                    LambdaTypeName.get(returnType = field.type)
+                                    name = "${field.name}Default",
+                                    type = LambdaTypeName.get(returnType = field.type),
                                 )
                                     .addModifiers(KModifier.PRIVATE)
                                     .initializer(
@@ -154,7 +147,10 @@ class Kotlin2DataTypeGenerator {
                         // add a backing property for each field
                         .addProperties(
                             fields.map { field ->
-                                PropertySpec.builder(field.name, LambdaTypeName.get(returnType = field.type))
+                                PropertySpec.builder(
+                                    name = field.name,
+                                    type = LambdaTypeName.get(returnType = field.type),
+                                )
                                     .addModifiers(KModifier.PRIVATE)
                                     .mutable()
                                     .initializer("${field.name}Default")
@@ -183,7 +179,7 @@ class Kotlin2DataTypeGenerator {
                         .build()
 
                     // create the data class
-                    val type = TypeSpec.classBuilder(typeDefinition.name)
+                    val typeSpec = TypeSpec.classBuilder(typeDefinition.name)
                         // add docs if available
                         .apply {
                             if (typeDefinition.description != null) {
@@ -200,6 +196,7 @@ class Kotlin2DataTypeGenerator {
                         // add nested classes
                         .addType(companionObject)
                         .addType(builder)
+                        // add interfaces to implement
                         .addSuperinterfaces(
                             superInterfaces.map { ClassName.bestGuess("${config.packageNameTypes}.$it") }
                         )
@@ -209,8 +206,8 @@ class Kotlin2DataTypeGenerator {
                                 .addParameters(
                                     fields.map { field ->
                                         ParameterSpec.builder(
-                                            field.name,
-                                            LambdaTypeName.get(returnType = field.type)
+                                            name = field.name,
+                                            type = LambdaTypeName.get(returnType = field.type),
                                         )
                                             .defaultValue("${field.name}Default")
                                             .build()
@@ -222,8 +219,8 @@ class Kotlin2DataTypeGenerator {
                         .addProperties(
                             fields.map { field ->
                                 PropertySpec.builder(
-                                    "_${field.name}",
-                                    LambdaTypeName.get(returnType = field.type)
+                                    name = "_${field.name}",
+                                    type = LambdaTypeName.get(returnType = field.type),
                                 )
                                     .addModifiers(KModifier.PRIVATE)
                                     .initializer(field.name)
@@ -233,7 +230,10 @@ class Kotlin2DataTypeGenerator {
                         // add a getter for each field
                         .addProperties(
                             fields.map { field ->
-                                PropertySpec.builder(field.name, field.type)
+                                PropertySpec.builder(
+                                    name = field.name,
+                                    type = field.type,
+                                )
                                     .apply {
                                         if (field.description != null) {
                                             addKdoc("%L", field.description.sanitizeKdoc())
@@ -255,10 +255,7 @@ class Kotlin2DataTypeGenerator {
                         .build()
 
                     // return a file per type
-                    FileSpec
-                        .builder(config.packageNameTypes, type.name!!)
-                        .addType(type)
-                        .build()
+                    FileSpec.get(config.packageNameTypes, typeSpec)
                 }
         }
     }

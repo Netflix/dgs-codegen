@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.Kotlin2DataTypeGenerator
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.Kotlin2InterfaceTypeGenerator
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
@@ -293,7 +294,11 @@ class CodeGen(private val config: CodeGenConfig) {
                 config = config,
                 document = document,
                 requiredTypes = requiredTypeCollector.requiredTypes,
-            )
+            ),
+            kotlinInterfaces = Kotlin2InterfaceTypeGenerator.generate(
+                config = config,
+                document = document,
+            ),
         )
     }
 
