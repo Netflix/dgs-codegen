@@ -159,7 +159,7 @@ public class Person(
             dataTypes[1].toString()
         )
 
-        assertCompilesKotlin(dataTypes)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
@@ -192,53 +192,6 @@ public class Person(
 
         val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
-
-        assertEquals(
-            """
-package com.netflix.graphql.dgs.codegen.tests.generated.types
-
-import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
-import com.fasterxml.jackson.`annotation`.JsonProperty
-import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
-import java.lang.IllegalStateException
-import kotlin.collections.List
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@JsonDeserialize(builder = Query.Builder::class)
-public class Query(
-  people: () -> List<Person?>? = peopleDefault
-) {
-  private val _people: () -> List<Person?>? = people
-
-  public val people: List<Person?>?
-    get() = _people.invoke()
-
-  public companion object {
-    private val peopleDefault: () -> List<Person?>? = 
-        { throw IllegalStateException("Field `people` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var people: () -> List<Person?>? = peopleDefault
-
-    @JsonProperty("people")
-    public fun withPeople(people: List<Person?>?): Builder = this.apply {
-      this.people = { people }
-    }
-
-    public fun build() = Query(
-      people = people,
-    )
-  }
-}
-""".trimStart(),
-            dataTypes[0].toString()
-        )
 
         assertEquals(
             """
@@ -348,6 +301,47 @@ public class Employee(
             dataTypes[1].toString()
         )
 
-        assertCompilesKotlin(dataTypes + interfaces)
+        assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun generateEnum() {
+
+        val schema = """
+            type Query {
+                types: [EmployeeTypes]
+            }
+
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN2,
+            )
+        ).generate()
+
+        val enumTypes = codeGenResult.kotlinEnumTypes
+
+        assertEquals(
+            """
+package com.netflix.graphql.dgs.codegen.tests.generated.types
+
+public enum class EmployeeTypes {
+  ENGINEER,
+  MANAGER,
+  DIRECTOR,
+}
+""".trimStart(),
+            enumTypes[0].toString()
+        )
+
+        assertCompilesKotlin(codeGenResult)
     }
 }

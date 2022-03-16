@@ -54,6 +54,16 @@ fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
     return result
 }
 
+fun assertCompilesKotlin(codeGenResult: CodeGenResult): Path {
+    return assertCompilesKotlin(
+        codeGenResult.kotlinDataTypes
+            .plus(codeGenResult.kotlinInterfaces)
+            .plus(codeGenResult.kotlinEnumTypes)
+            .plus(codeGenResult.kotlinDataFetchers)
+            .plus(codeGenResult.kotlinConstants)
+    )
+}
+
 fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")

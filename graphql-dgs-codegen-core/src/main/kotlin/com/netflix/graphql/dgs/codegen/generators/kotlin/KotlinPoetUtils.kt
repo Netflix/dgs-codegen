@@ -212,3 +212,7 @@ fun FunSpec.Builder.addControlFlow(
     this.endControlFlow()
     return this
 }
+
+fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.Builder = apply {
+    enumSpecs.map { addEnumConstant(it.name!!, it) }
+}
