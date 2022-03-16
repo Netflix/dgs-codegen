@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.Kotlin2DataTypeGenerator
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
@@ -54,8 +55,11 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val joinedSchema = inputSchemas.joinToString("\n")
         val codeGenResult =
-            if (config.language == Language.JAVA) generateForSchema(joinedSchema)
-            else generateKotlinForSchema(joinedSchema)
+            when (config.language) {
+                Language.JAVA -> generateForSchema(joinedSchema)
+                Language.KOTLIN -> generateKotlinForSchema(joinedSchema)
+                Language.KOTLIN2 -> generateKotlin2ForSchema(joinedSchema)
+            }
 
         if (config.writeToFiles) {
             codeGenResult.javaDataTypes.forEach { it.writeTo(config.outputDir) }
@@ -269,6 +273,30 @@ class CodeGen(private val config: CodeGenConfig) {
             .merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
     }
 
+    private fun generateKotlin2ForSchema(schema: String): CodeGenResult {
+
+        val parser = Parser()
+        val options = ParserOptions
+            .getDefaultParserOptions()
+            .transform { o -> o.maxTokens(MAX_VALUE) }
+        val document = parser.parseDocument(schema, options)
+
+        val requiredTypeCollector = RequiredTypeCollector(
+            document = document,
+            queries = config.includeQueries,
+            mutations = config.includeMutations,
+            subscriptions = config.includeSubscriptions,
+        )
+
+        return CodeGenResult(
+            kotlinDataTypes = Kotlin2DataTypeGenerator.generate(
+                config = config,
+                document = document,
+                requiredTypes = requiredTypeCollector.requiredTypes,
+            )
+        )
+    }
+
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
@@ -382,7 +410,8 @@ data class CodeGenConfig(
 
 enum class Language {
     JAVA,
-    KOTLIN
+    KOTLIN,
+    KOTLIN2,
 }
 
 data class CodeGenResult(
