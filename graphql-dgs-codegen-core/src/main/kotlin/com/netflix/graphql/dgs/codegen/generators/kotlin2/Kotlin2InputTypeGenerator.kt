@@ -18,7 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
-import com.netflix.graphql.dgs.client.codegen.Kotlin2Input
+import com.netflix.graphql.dgs.client.codegen.GraphQLInput
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
@@ -31,7 +31,6 @@ import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asClassName
 import graphql.language.Document
 import graphql.language.InputObjectTypeDefinition
 
@@ -76,7 +75,7 @@ fun generateKotlin2InputTypes(
                         addKdoc("%L", inputDefinition.description.sanitizeKdoc())
                     }
                 }
-                .superclass(Kotlin2Input::class.asClassName())
+                .superclass(GraphQLInput::class)
                 // add a constructor with a parameter for every field
                 .primaryConstructor(
                     FunSpec.constructorBuilder()

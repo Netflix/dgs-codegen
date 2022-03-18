@@ -18,7 +18,28 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
-abstract class Kotlin2Input {
+@DslMarker
+annotation class QueryProjectionMarker
+
+@QueryProjectionMarker
+abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename")) : GraphQLInput() {
+
+    private val builder = StringBuilder("{ ${defaultFields.joinToString(" ")} ")
+
+    protected fun field(field: String) {
+        builder.append("$field ")
+    }
+
+    protected fun <T : GraphQLProjection> project(field: String, projection: T, projectionFields: T.() -> T) {
+        builder.append("$field ")
+        projectionFields.invoke(projection)
+        builder.append(projection.asQuery())
+    }
+
+    fun asQuery() = "$builder}"
+}
+
+abstract class GraphQLInput {
 
     companion object {
 

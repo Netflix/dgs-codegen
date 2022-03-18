@@ -21,9 +21,12 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 import com.squareup.kotlinpoet.TypeName
 import graphql.language.Description
 import graphql.language.Document
+import graphql.language.EnumTypeDefinition
 import graphql.language.ImplementingTypeDefinition
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.NamedNode
+import graphql.language.ObjectTypeDefinition
+import graphql.language.UnionTypeDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -31,6 +34,7 @@ internal val logger: Logger = LoggerFactory.getLogger("com.netflix.graphql.dgs.c
 
 internal data class Field(
     val name: String,
+    val isScalar: Boolean = false,
     val type: TypeName,
     val description: Description?,
 )
@@ -38,18 +42,24 @@ internal data class Field(
 /**
  * Returns a map of interface name to list of field names for all interfaces in the document
  */
-internal fun interfaceFields(document: Document): Map<String, List<String>> {
-    return document
-        .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+internal fun Document.interfaceFields(): Map<String, List<String>> {
+    return getDefinitionsOfType(InterfaceTypeDefinition::class.java)
         .associate { i -> i.name to i.fieldDefinitions.map { it.name } }
+}
+
+/**
+ * Returns a map of enum name to list of field names for all enums in the document
+ */
+internal fun Document.enumFields(): Map<String, List<String>> {
+    return getDefinitionsOfType(EnumTypeDefinition::class.java)
+        .associate { i -> i.name to i.enumValueDefinitions.map { it.name } }
 }
 
 /**
  * Returns the list of interfaces that this type implements
  */
-internal fun implementedInterfaces(typeDefinition: ImplementingTypeDefinition<*>): List<String> {
-    return typeDefinition
-        .implements
+internal fun ImplementingTypeDefinition<*>.implementedInterfaces(): List<String> {
+    return implements
         .filterIsInstance<NamedNode<*>>()
         .map { it.name }
 }
@@ -65,4 +75,17 @@ internal fun overrideFields(
         .mapNotNull { interfaceFields[it] }
         .flatten()
         .toSet()
+}
+
+internal fun Document.invertedUnionLookup(): Map<String, List<String>> {
+    return getDefinitionsOfType(UnionTypeDefinition::class.java)
+        .flatMap { u -> u.memberTypes.filterIsInstance<NamedNode<*>>().map { m -> m.name to u.name } }
+        .groupBy(keySelector = { it.first }, valueTransform = { it.second })
+}
+
+internal fun Document.invertedInterfaceLookup(): Map<String, List<String>> {
+    return getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+        .plus(getDefinitionsOfType(ObjectTypeDefinition::class.java))
+        .flatMap { o -> o.implements.filterIsInstance<NamedNode<*>>().map { i -> i.name to o.name } }
+        .groupBy(keySelector = { it.first }, valueTransform = { it.second })
 }

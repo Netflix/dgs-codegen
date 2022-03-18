@@ -48,7 +48,7 @@ fun generateKotlin2Interfaces(
     val typeUtils = KotlinTypeUtils(config.packageNameTypes, config)
 
     // get a map of all interfaces > fields
-    val interfaceFields = interfaceFields(document)
+    val interfaceFields = document.interfaceFields()
 
     return document
         .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
@@ -65,7 +65,7 @@ fun generateKotlin2Interfaces(
                 .map { node -> ClassName(config.packageNameTypes, node.name) }
 
             // get all interfaces that this interface implements
-            val implementedInterfaces = implementedInterfaces(interfaceDefinition)
+            val implementedInterfaces = interfaceDefinition.implementedInterfaces()
 
             // get any fields defined via schema extensions
             val extensionTypes = findInterfaceExtensions(interfaceDefinition.name, document.definitions)

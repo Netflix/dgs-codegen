@@ -43,9 +43,7 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 import graphql.language.Document
-import graphql.language.NamedNode
 import graphql.language.ObjectTypeDefinition
-import graphql.language.UnionTypeDefinition
 
 fun generateKotlin2DataTypes(
     config: CodeGenConfig,
@@ -56,13 +54,10 @@ fun generateKotlin2DataTypes(
     val typeUtils = KotlinTypeUtils(config.packageNameTypes, config)
 
     // get a map of all interfaces > fields
-    val interfaceFields = interfaceFields(document)
+    val interfaceFields = document.interfaceFields()
 
-    // invert the union mapping to create a lookup
-    val unionTypes = document
-        .getDefinitionsOfType(UnionTypeDefinition::class.java)
-        .flatMap { u -> u.memberTypes.filterIsInstance<NamedNode<*>>().map { m -> m.name to u.name } }
-        .groupBy(keySelector = { p -> p.first }, valueTransform = { p -> p.second })
+    // invert the union mapping to create a lookup from members to union
+    val unionTypes = document.invertedUnionLookup()
 
     return document
         .getDefinitionsOfType(ObjectTypeDefinition::class.java)
@@ -74,7 +69,7 @@ fun generateKotlin2DataTypes(
             logger.info("Generating data type ${typeDefinition.name}")
 
             // get all interfaces this type implements
-            val implementedInterfaces = implementedInterfaces(typeDefinition)
+            val implementedInterfaces = typeDefinition.implementedInterfaces()
             val implementedUnionTypes = unionTypes[typeDefinition.name] ?: emptyList()
             val superInterfaces = implementedInterfaces + implementedUnionTypes
 

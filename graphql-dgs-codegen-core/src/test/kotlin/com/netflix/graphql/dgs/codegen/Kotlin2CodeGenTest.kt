@@ -363,7 +363,6 @@ public enum class EmployeeTypes {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN2,
-                generateClientApi = true,
             )
         ).generate()
 
@@ -373,14 +372,151 @@ public enum class EmployeeTypes {
             """
 package com.netflix.graphql.dgs.codegen.tests.generated.types
 
-import com.netflix.graphql.dgs.client.codegen.Kotlin2Input
+import com.netflix.graphql.dgs.client.codegen.GraphQLInput
 import kotlin.String
 
 public class MovieFilter(
   public val genre: String? = default("genre")
-) : Kotlin2Input()
+) : GraphQLInput()
 """.trimStart(),
             inputTypes[0].toString()
+        )
+
+        assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun generateClientTypes() {
+
+        val schema = """
+            type Query {
+                person: Person
+                people: [Person]
+                string: String
+                strings: [String]
+                e: E
+                es: [E]
+                personA(a1: String, a2: String!, a3: I): Person
+                stringA(a1: String, a2: String!, a3: I): String
+            }
+
+            interface Person {
+                firstname: String
+            }
+
+            type Employee implements Person {
+                firstname: String
+                company: String
+            }
+            
+            enum E {
+                V
+            }
+            
+            input I {
+                arg: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN2,
+                generateClientApi = true,
+            )
+        ).generate()
+
+        val clientTypes = codeGenResult.kotlinClientTypes
+
+        assertEquals(
+            """
+package com.netflix.graphql.dgs.codegen.tests.generated.types
+
+import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import kotlin.String
+
+public class QueryProjection : GraphQLProjection() {
+  public val string: QueryProjection
+    get() {
+      field("string")
+      return this
+    }
+
+  public val strings: QueryProjection
+    get() {
+      field("strings")
+      return this
+    }
+
+  public val e: QueryProjection
+    get() {
+      field("e")
+      return this
+    }
+
+  public val es: QueryProjection
+    get() {
+      field("es")
+      return this
+    }
+
+  public fun person(_projection: PersonProjection.() -> PersonProjection): QueryProjection {
+    project("person", PersonProjection(), _projection)
+    return this
+  }
+
+  public fun people(_projection: PersonProjection.() -> PersonProjection): QueryProjection {
+    project("people", PersonProjection(), _projection)
+    return this
+  }
+
+  public fun personA(
+    a1: String? = default("a1"),
+    a2: String,
+    a3: I? = default("a3"),
+    _projection: PersonProjection.() -> PersonProjection
+  ): QueryProjection {
+    val args = formatArgs("a1" to a1, "a2" to a2, "a3" to a3)
+    project("personA(${'$'}args)", PersonProjection(), _projection)
+    return this
+  }
+
+  public fun stringA(
+    a1: String? = default("a1"),
+    a2: String,
+    a3: I? = default("a3")
+  ): QueryProjection {
+    val args = formatArgs("a1" to a1, "a2" to a2, "a3" to a3)
+    field("stringA(${'$'}args)")
+    return this
+  }
+}
+""".trimStart(),
+            clientTypes[0].toString()
+        )
+
+        assertEquals(
+            """
+package com.netflix.graphql.dgs.codegen.tests.generated.types
+
+import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+
+public class PersonProjection : GraphQLProjection() {
+  public val firstname: PersonProjection
+    get() {
+      field("firstname")
+      return this
+    }
+
+  public fun onEmployee(_projection: EmployeeProjection.() -> EmployeeProjection):
+      PersonProjection {
+    project("... on Employee", EmployeeProjection(), _projection)
+    return this
+  }
+}
+""".trimStart(),
+            clientTypes[3].toString()
         )
 
         assertCompilesKotlin(codeGenResult)

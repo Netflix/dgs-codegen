@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2ClientTypes
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2DataTypes
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2EnumTypes
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2InputTypes
@@ -335,7 +336,18 @@ class CodeGen(private val config: CodeGenConfig) {
         val options = ParserOptions
             .getDefaultParserOptions()
             .transform { o -> o.maxTokens(MAX_VALUE) }
-        val document = parser.parseDocument(schema, options)
+
+        // TODO where should this go?
+        val implicitTypes = """
+            type PageInfo {
+              hasNextPage: Boolean!
+              hasPreviousPage: Boolean!
+              startCursor: String
+              endCursor: String
+            }
+        """.trimIndent()
+
+        val document = parser.parseDocument("$schema\n$implicitTypes", options)
 
         val requiredTypeCollector = RequiredTypeCollector(
             document = document,
@@ -351,7 +363,7 @@ class CodeGen(private val config: CodeGenConfig) {
             kotlinInterfaces = generateKotlin2Interfaces(config, document),
             kotlinEnumTypes = generateKotlin2EnumTypes(config, document, requiredTypes),
             kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants,
-//            kotlinClientTypes = Kotlin2InputTypeGenerator.generate(config, document, requiredTypes),
+            kotlinClientTypes = generateKotlin2ClientTypes(config, document, requiredTypes),
         )
     }
 }
