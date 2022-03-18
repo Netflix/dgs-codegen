@@ -18,10 +18,22 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
+import com.squareup.kotlinpoet.TypeName
+import graphql.language.Description
 import graphql.language.Document
 import graphql.language.ImplementingTypeDefinition
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.NamedNode
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+internal val logger: Logger = LoggerFactory.getLogger("com.netflix.graphql.dgs.codegen.generators.kotlin2")
+
+internal data class Field(
+    val name: String,
+    val type: TypeName,
+    val description: Description?,
+)
 
 /**
  * Returns a map of interface name to list of field names for all interfaces in the document

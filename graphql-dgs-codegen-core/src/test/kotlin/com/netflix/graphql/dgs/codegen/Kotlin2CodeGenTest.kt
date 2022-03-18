@@ -344,4 +344,45 @@ public enum class EmployeeTypes {
 
         assertCompilesKotlin(codeGenResult)
     }
+
+    @Test
+    fun generateInputTypes() {
+
+        val schema = """
+            type Query {
+                movies(filter: MovieFilter)
+            }
+
+            input MovieFilter {
+                genre: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN2,
+                generateClientApi = true,
+            )
+        ).generate()
+
+        val inputTypes = codeGenResult.kotlinInputTypes
+
+        assertEquals(
+            """
+package com.netflix.graphql.dgs.codegen.tests.generated.types
+
+import com.netflix.graphql.dgs.client.codegen.Kotlin2Input
+import kotlin.String
+
+public class MovieFilter(
+  public val genre: String? = default("genre")
+) : Kotlin2Input()
+""".trimStart(),
+            inputTypes[0].toString()
+        )
+
+        assertCompilesKotlin(codeGenResult)
+    }
 }

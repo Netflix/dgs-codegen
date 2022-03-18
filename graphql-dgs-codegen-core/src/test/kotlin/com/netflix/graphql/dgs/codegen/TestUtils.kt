@@ -57,10 +57,12 @@ fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
 fun assertCompilesKotlin(codeGenResult: CodeGenResult): Path {
     return assertCompilesKotlin(
         codeGenResult.kotlinDataTypes
+            .plus(codeGenResult.kotlinInputTypes)
             .plus(codeGenResult.kotlinInterfaces)
             .plus(codeGenResult.kotlinEnumTypes)
             .plus(codeGenResult.kotlinDataFetchers)
             .plus(codeGenResult.kotlinConstants)
+            .plus(codeGenResult.kotlinClientTypes)
     )
 }
 

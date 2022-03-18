@@ -19,10 +19,9 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.generators.java.EnumTypeGenerator
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addEnumConstants
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
-import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.FileSpec
@@ -30,65 +29,54 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.Document
 import graphql.language.EnumTypeDefinition
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
-class Kotlin2EnumTypeGenerator {
+fun generateKotlin2EnumTypes(
+    config: CodeGenConfig,
+    document: Document,
+    requiredTypes: Set<String>,
+): List<FileSpec> {
 
-    companion object {
+    return document
+        .getDefinitionsOfType(EnumTypeDefinition::class.java)
+        .excludeSchemaTypeExtension()
+        .filter { config.generateDataTypes || it.name in requiredTypes }
+        .filter { !it.shouldSkip(config) }
+        .map { enumDefinition ->
 
-        private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
+            logger.info("Generating enum type ${enumDefinition.name}")
 
-        fun generate(
-            config: CodeGenConfig,
-            document: Document,
-            requiredTypes: Set<String>,
-        ): List<FileSpec> {
+            // get any fields defined via schema extensions
+            val extensionTypes = findEnumExtensions(enumDefinition.name, document.definitions)
 
-            return document
-                .getDefinitionsOfType(EnumTypeDefinition::class.java)
-                .excludeSchemaTypeExtension()
-                .filter { config.generateDataTypes || it.name in requiredTypes }
-                .filter { !it.shouldSkip(config) }
-                .map { enumDefinition ->
+            // get all fields defined on the type itself or any extension types
+            val fields = listOf(enumDefinition)
+                .plus(extensionTypes)
+                .flatMap { it.enumValueDefinitions }
 
-                    logger.info("Generating enum type ${enumDefinition.name}")
-
-                    // get any fields defined via schema extensions
-                    val extensionTypes =
-                        SchemaExtensionsUtils.findEnumExtensions(enumDefinition.name, document.definitions)
-
-                    // get all fields defined on the type itself or any extension types
-                    val fields = listOf(enumDefinition)
-                        .plus(extensionTypes)
-                        .flatMap { it.enumValueDefinitions }
-
-                    // create the enum class
-                    val enumSpec = TypeSpec.classBuilder(enumDefinition.name)
-                        .addModifiers(KModifier.ENUM)
-                        // add docs if available
-                        .apply {
-                            if (enumDefinition.description != null) {
-                                addKdoc("%L", enumDefinition.description.sanitizeKdoc())
-                            }
-                        }
-                        // add all fields
-                        .addEnumConstants(
-                            fields.map { field ->
-                                TypeSpec.enumBuilder(field.name)
-                                    .apply {
-                                        if (field.description != null) {
-                                            addKdoc("%L", field.description.sanitizeKdoc())
-                                        }
-                                    }
-                                    .build()
-                            }
-                        )
-                        .build()
-
-                    // return a file per enum
-                    FileSpec.get(config.packageNameTypes, enumSpec)
+            // create the enum class
+            val enumSpec = TypeSpec.classBuilder(enumDefinition.name)
+                .addModifiers(KModifier.ENUM)
+                // add docs if available
+                .apply {
+                    if (enumDefinition.description != null) {
+                        addKdoc("%L", enumDefinition.description.sanitizeKdoc())
+                    }
                 }
+                // add all fields
+                .addEnumConstants(
+                    fields.map { field ->
+                        TypeSpec.enumBuilder(field.name)
+                            .apply {
+                                if (field.description != null) {
+                                    addKdoc("%L", field.description.sanitizeKdoc())
+                                }
+                            }
+                            .build()
+                    }
+                )
+                .build()
+
+            // return a file per enum
+            FileSpec.get(config.packageNameTypes, enumSpec)
         }
-    }
 }

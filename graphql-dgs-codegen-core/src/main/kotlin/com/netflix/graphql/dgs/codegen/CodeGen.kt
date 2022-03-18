@@ -20,9 +20,10 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.Kotlin2DataTypeGenerator
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.Kotlin2EnumTypeGenerator
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.Kotlin2InterfaceTypeGenerator
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2DataTypes
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2EnumTypes
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2InputTypes
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2Interfaces
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
@@ -78,10 +79,12 @@ class CodeGen(private val config: CodeGenConfig) {
             }
             codeGenResult.javaConstants.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinDataTypes.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.kotlinInputTypes.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinInterfaces.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinEnumTypes.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinDataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
             codeGenResult.kotlinConstants.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.kotlinClientTypes.forEach { it.writeTo(config.outputDir) }
         }
 
         return codeGenResult
@@ -275,39 +278,6 @@ class CodeGen(private val config: CodeGenConfig) {
             .merge(client).merge(entitiesClient).merge(entitiesRepresentationsTypes).merge(constantsClass)
     }
 
-    private fun generateKotlin2ForSchema(schema: String): CodeGenResult {
-
-        val parser = Parser()
-        val options = ParserOptions
-            .getDefaultParserOptions()
-            .transform { o -> o.maxTokens(MAX_VALUE) }
-        val document = parser.parseDocument(schema, options)
-
-        val requiredTypeCollector = RequiredTypeCollector(
-            document = document,
-            queries = config.includeQueries,
-            mutations = config.includeMutations,
-            subscriptions = config.includeSubscriptions,
-        )
-
-        return CodeGenResult(
-            kotlinDataTypes = Kotlin2DataTypeGenerator.generate(
-                config = config,
-                document = document,
-                requiredTypes = requiredTypeCollector.requiredTypes,
-            ),
-            kotlinInterfaces = Kotlin2InterfaceTypeGenerator.generate(
-                config = config,
-                document = document,
-            ),
-            kotlinEnumTypes = Kotlin2EnumTypeGenerator.generate(
-                config = config,
-                document = document,
-                requiredTypes = requiredTypeCollector.requiredTypes,
-            )
-        )
-    }
-
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
         return if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
@@ -357,6 +327,32 @@ class CodeGen(private val config: CodeGenConfig) {
                 KotlinInterfaceTypeGenerator(config).generate(it, document, extensions)
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+    }
+
+    private fun generateKotlin2ForSchema(schema: String): CodeGenResult {
+
+        val parser = Parser()
+        val options = ParserOptions
+            .getDefaultParserOptions()
+            .transform { o -> o.maxTokens(MAX_VALUE) }
+        val document = parser.parseDocument(schema, options)
+
+        val requiredTypeCollector = RequiredTypeCollector(
+            document = document,
+            queries = config.includeQueries,
+            mutations = config.includeMutations,
+            subscriptions = config.includeSubscriptions,
+        )
+        val requiredTypes = requiredTypeCollector.requiredTypes
+
+        return CodeGenResult(
+            kotlinDataTypes = generateKotlin2DataTypes(config, document, requiredTypes),
+            kotlinInputTypes = generateKotlin2InputTypes(config, document, requiredTypes),
+            kotlinInterfaces = generateKotlin2Interfaces(config, document),
+            kotlinEnumTypes = generateKotlin2EnumTypes(config, document, requiredTypes),
+            kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants,
+//            kotlinClientTypes = Kotlin2InputTypeGenerator.generate(config, document, requiredTypes),
+        )
     }
 }
 
@@ -434,10 +430,12 @@ data class CodeGenResult(
     val clientProjections: List<JavaFile> = listOf(),
     val javaConstants: List<JavaFile> = listOf(),
     val kotlinDataTypes: List<FileSpec> = listOf(),
+    val kotlinInputTypes: List<FileSpec> = listOf(),
     val kotlinInterfaces: List<FileSpec> = listOf(),
     val kotlinEnumTypes: List<FileSpec> = listOf(),
     val kotlinDataFetchers: List<FileSpec> = listOf(),
-    val kotlinConstants: List<FileSpec> = emptyList()
+    val kotlinConstants: List<FileSpec> = listOf(),
+    val kotlinClientTypes: List<FileSpec> = listOf(),
 ) {
     fun merge(current: CodeGenResult): CodeGenResult {
         val javaDataTypes = this.javaDataTypes.plus(current.javaDataTypes)
@@ -448,10 +446,12 @@ data class CodeGenResult(
         val clientProjections = this.clientProjections.plus(current.clientProjections)
         val javaConstants = this.javaConstants.plus(current.javaConstants)
         val kotlinDataTypes = this.kotlinDataTypes.plus(current.kotlinDataTypes)
+        val kotlinInputTypes = this.kotlinInputTypes.plus(current.kotlinInputTypes)
         val kotlinInterfaces = this.kotlinInterfaces.plus(current.kotlinInterfaces)
         val kotlinEnumTypes = this.kotlinEnumTypes.plus(current.kotlinEnumTypes)
         val kotlinDataFetchers = this.kotlinDataFetchers.plus(current.kotlinDataFetchers)
         val kotlinConstants = this.kotlinConstants.plus(current.kotlinConstants)
+        val kotlinClientTypes = this.kotlinClientTypes.plus(current.kotlinClientTypes)
 
         return CodeGenResult(
             javaDataTypes = javaDataTypes,
@@ -462,32 +462,32 @@ data class CodeGenResult(
             clientProjections = clientProjections,
             javaConstants = javaConstants,
             kotlinDataTypes = kotlinDataTypes,
+            kotlinInputTypes = kotlinInputTypes,
             kotlinInterfaces = kotlinInterfaces,
             kotlinEnumTypes = kotlinEnumTypes,
             kotlinDataFetchers = kotlinDataFetchers,
-            kotlinConstants = kotlinConstants
+            kotlinConstants = kotlinConstants,
+            kotlinClientTypes = kotlinClientTypes,
         )
     }
 
     fun javaSources(): List<JavaFile> {
         return javaDataTypes
-            .asSequence()
             .plus(javaInterfaces)
             .plus(javaEnumTypes)
             .plus(javaDataFetchers)
             .plus(javaQueryTypes)
             .plus(clientProjections)
             .plus(javaConstants)
-            .toList()
     }
 
     fun kotlinSources(): List<FileSpec> {
         return kotlinDataTypes
-            .asSequence()
+            .plus(kotlinInputTypes)
             .plus(kotlinInterfaces)
             .plus(kotlinEnumTypes)
             .plus(kotlinConstants)
-            .toList()
+            .plus(kotlinClientTypes)
     }
 }
 
