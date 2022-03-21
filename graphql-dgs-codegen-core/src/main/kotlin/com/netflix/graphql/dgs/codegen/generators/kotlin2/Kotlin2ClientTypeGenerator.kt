@@ -234,8 +234,7 @@ fun generateKotlin2ClientObject(
     }
 
     val topLevelTypes = setOf("Query", "Mutation", "Subscription")
-        .intersect(document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
-            .map { it.name })
+        .intersect(document.getDefinitionsOfType(ObjectTypeDefinition::class.java).map { it.name })
 
     val typeSpec = TypeSpec.objectBuilder("Client")
         .addFunctions(
@@ -245,7 +244,6 @@ fun generateKotlin2ClientObject(
                     packageName = config.packageNameClient,
                     simpleNames = listOf("${type}Projection"),
                 )
-
 
                 FunSpec.builder("build$type")
                     .addParameter(
