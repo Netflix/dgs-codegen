@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2ClientObject
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2ClientTypes
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2DataTypes
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2EnumTypes
@@ -363,7 +364,8 @@ class CodeGen(private val config: CodeGenConfig) {
             kotlinInterfaces = generateKotlin2Interfaces(config, document),
             kotlinEnumTypes = generateKotlin2EnumTypes(config, document, requiredTypes),
             kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants,
-            kotlinClientTypes = generateKotlin2ClientTypes(config, document, requiredTypes),
+            kotlinClientTypes = generateKotlin2ClientTypes(config, document, requiredTypes)
+                .plus(generateKotlin2ClientObject(config, document)),
         )
     }
 }

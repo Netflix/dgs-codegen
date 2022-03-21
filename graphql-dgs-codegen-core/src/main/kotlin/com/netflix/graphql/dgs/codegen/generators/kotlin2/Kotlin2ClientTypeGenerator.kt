@@ -44,7 +44,8 @@ fun generateKotlin2ClientTypes(
     requiredTypes: Set<String>,
 ): List<FileSpec> {
 
-    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config)
+    val typeUtils = KotlinTypeUtils(config.packageNameClient, config)
+    val inputTypeUtils = KotlinTypeUtils(config.packageNameTypes, config)
 
     // get a map of all enums in the document
     val enumFields = document.enumFields()
@@ -63,7 +64,7 @@ fun generateKotlin2ClientTypes(
             val extensionTypes = SchemaExtensionsUtils.findTypeExtensions(typeDefinition.name, document.definitions)
 
             // the name of the type is used in every parameter & return value
-            val typeName = ClassName(config.packageNameTypes, "${typeDefinition.name}Projection")
+            val typeName = ClassName(config.packageNameClient, "${typeDefinition.name}Projection")
 
             // get all fields defined on the type itself or any extension types
             val fields = listOf(typeDefinition)
@@ -98,7 +99,7 @@ fun generateKotlin2ClientTypes(
                             FunSpec.builder(field.name)
                                 .addParameters(
                                     field.inputValueDefinitions.map {
-                                        val returnType = typeUtils.findReturnType(it.type)
+                                        val returnType = inputTypeUtils.findReturnType(it.type)
                                         ParameterSpec.builder(it.name, returnType)
                                             .apply {
                                                 if (returnType.isNullable) {
@@ -121,7 +122,7 @@ fun generateKotlin2ClientTypes(
                         // types without args just have a projection
                         !isScalar && !hasArgs -> {
                             val projectionType = ClassName(
-                                packageName = config.packageNameTypes,
+                                packageName = config.packageNameClient,
                                 simpleNames = listOf("${projectionTypeName(typeUtils.findReturnType(field.type))}Projection"),
                             )
                             FunSpec.builder(field.name)
@@ -142,13 +143,13 @@ fun generateKotlin2ClientTypes(
                         // !isScalar && hasArgs
                         else -> {
                             val projectionType = ClassName(
-                                packageName = config.packageNameTypes,
+                                packageName = config.packageNameClient,
                                 simpleNames = listOf("${projectionTypeName(typeUtils.findReturnType(field.type))}Projection"),
                             )
                             FunSpec.builder(field.name)
                                 .addParameters(
                                     field.inputValueDefinitions.map {
-                                        val returnType = typeUtils.findReturnType(it.type)
+                                        val returnType = inputTypeUtils.findReturnType(it.type)
                                         ParameterSpec.builder(it.name, returnType)
                                             .apply {
                                                 if (returnType.isNullable) {
@@ -185,7 +186,7 @@ fun generateKotlin2ClientTypes(
                 ?.map { interfaceName ->
 
                     val projectionType = ClassName(
-                        packageName = config.packageNameTypes,
+                        packageName = config.packageNameClient,
                         simpleNames = listOf("${interfaceName}Projection"),
                     )
 
@@ -207,14 +208,63 @@ fun generateKotlin2ClientTypes(
             // create the projection class
             val typeSpec = TypeSpec.classBuilder(typeName)
                 .superclass(GraphQLProjection::class)
+                // we can't ask for `__typename` on a `Subscription` object
+                .apply {
+                    if (typeDefinition.name == "Subscription") {
+                        addSuperclassConstructorParameter("defaultFields = emptySet()")
+                    }
+                }
                 .addProperties(fields.filterIsInstance<PropertySpec>())
                 .addFunctions(fields.filterIsInstance<FunSpec>())
                 .addFunctions(implementors)
                 .build()
 
             // return a file per type
-            FileSpec.get(config.packageNameTypes, typeSpec)
+            FileSpec.get(config.packageNameClient, typeSpec)
         }
+}
+
+fun generateKotlin2ClientObject(
+    config: CodeGenConfig,
+    document: Document,
+): List<FileSpec> {
+
+    if (!config.generateClientApi) {
+        return emptyList()
+    }
+
+    val topLevelTypes = setOf("Query", "Mutation", "Subscription")
+        .intersect(document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
+            .map { it.name })
+
+    val typeSpec = TypeSpec.objectBuilder("Client")
+        .addFunctions(
+            topLevelTypes.map { type ->
+
+                val projectionType = ClassName(
+                    packageName = config.packageNameClient,
+                    simpleNames = listOf("${type}Projection"),
+                )
+
+
+                FunSpec.builder("build$type")
+                    .addParameter(
+                        "_projection",
+                        LambdaTypeName.get(
+                            receiver = projectionType,
+                            returnType = projectionType,
+                        )
+                    )
+                    .returns(String::class)
+                    .addStatement("val projection = ${type}Projection()")
+                    .addStatement("_projection.invoke(projection)")
+                    .addStatement("""return "${type.lowercase()} ${'$'}{projection.asQuery()}"""")
+                    .build()
+            }
+        )
+        .build()
+
+    return listOf(FileSpec.get(config.packageNameClient, typeSpec))
 }
 
 // unpack the type to get the underlying type of the projection

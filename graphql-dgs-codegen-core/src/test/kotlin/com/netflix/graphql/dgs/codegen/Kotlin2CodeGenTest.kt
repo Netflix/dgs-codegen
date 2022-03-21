@@ -431,9 +431,27 @@ public class MovieFilter(
 
         assertEquals(
             """
-package com.netflix.graphql.dgs.codegen.tests.generated.types
+package com.netflix.graphql.dgs.codegen.tests.generated.client
+
+import kotlin.String
+
+public object Client {
+  public fun buildQuery(_projection: QueryProjection.() -> QueryProjection): String {
+    val projection = QueryProjection()
+    _projection.invoke(projection)
+    return "query ${'$'}{projection.asQuery()}"
+  }
+}
+""".trimStart(),
+            clientTypes[4].toString()
+        )
+
+        assertEquals(
+            """
+package com.netflix.graphql.dgs.codegen.tests.generated.client
 
 import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.tests.generated.types.I
 import kotlin.String
 
 public class QueryProjection : GraphQLProjection() {
@@ -498,7 +516,7 @@ public class QueryProjection : GraphQLProjection() {
 
         assertEquals(
             """
-package com.netflix.graphql.dgs.codegen.tests.generated.types
+package com.netflix.graphql.dgs.codegen.tests.generated.client
 
 import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
 
