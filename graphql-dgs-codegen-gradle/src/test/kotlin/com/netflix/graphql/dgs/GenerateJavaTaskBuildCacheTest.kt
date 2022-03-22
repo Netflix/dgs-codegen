@@ -34,6 +34,66 @@ import java.util.zip.ZipEntry
 
 class GenerateJavaTaskBuildCacheTest {
     @ParameterizedTest
+    @CsvSource("file", "provider")
+    fun explicitOutputDirectoriesReuseBuildAndConfigurationCaches(
+        assignment: String,
+        @TempDir tempDir: File,
+    ) {
+        val cacheDir = File(tempDir, "shared-build-cache")
+
+        fun workspace(name: String): File {
+            val project = createProject(tempDir, name, "build/$name-root", cacheDir)
+            val sources = "build/$name-sources"
+            val examples = "build/$name-examples"
+            val sourceValue = if (assignment == "file") "file('$sources')" else "layout.buildDirectory.dir('$name-sources')"
+            val exampleValue = if (assignment == "file") "file('$examples')" else "layout.buildDirectory.dir('$name-examples')"
+            File(project, "build.gradle").appendText(
+                """
+
+                generateJava {
+                    outputDir = $sourceValue
+                    exampleOutputDir = $exampleValue
+                    generatedSourcesDir = file('build/$name-later-root').absolutePath
+                }
+                """.trimIndent(),
+            )
+            // Compilation must consume the overridden output rather than an independently wired default directory.
+            File(project, "src/main/java/com/netflix/testproject/Foo.java").writeText(
+                """
+                package com.netflix.testproject;
+                public class Foo {
+                    com.netflix.testproject.graphql.types.Result result;
+                }
+                """.trimIndent(),
+            )
+            return project
+        }
+
+        val first = workspace("first")
+        val firstRun = runWithConfigurationCache(first, "--build-cache", "compileJava")
+        assertThat(firstRun.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(firstRun.task(":compileJava")?.outcome).isEqualTo(SUCCESS)
+        val expected = outputFingerprints(File(first, "build/first-sources"))
+        assertThat(expected).containsKey("com/netflix/testproject/graphql/types/Result.java")
+        val expectedExamples = outputFingerprints(File(first, "build/first-examples"))
+        assertThat(expectedExamples).isNotEmpty
+        assertThat(generatedOutput(first, "build/first-later-root")).doesNotExist()
+
+        val second = workspace("second")
+        val restored = runWithConfigurationCache(second, "--build-cache", "compileJava")
+        assertThat(restored.task(":generateJava")?.outcome).isEqualTo(FROM_CACHE)
+        assertThat(outputFingerprints(File(second, "build/second-sources"))).isEqualTo(expected)
+        assertThat(outputFingerprints(File(second, "build/second-examples"))).isEqualTo(expectedExamples)
+
+        File(second, "build").deleteRecursively()
+        val reused = runWithConfigurationCache(second, "--build-cache", "compileJava")
+        assertThat(reused.output).contains("Reusing configuration cache.")
+        assertThat(reused.task(":generateJava")?.outcome).isEqualTo(FROM_CACHE)
+        assertThat(outputFingerprints(File(second, "build/second-sources"))).isEqualTo(expected)
+        assertThat(outputFingerprints(File(second, "build/second-examples"))).isEqualTo(expectedExamples)
+    }
+
+    @ParameterizedTest
     @CsvSource(".graphql,false", ".graphql,true", ".graphqls,false", ".graphqls,true")
     fun schemaDirectoriesWithSchemaSuffixesReuseCachedOutputAcrossWorkspaces(
         suffix: String,

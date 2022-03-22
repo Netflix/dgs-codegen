@@ -1,0 +1,40 @@
+/*
+ *
+ *  Copyright 2020 Netflix, Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+plugins {
+    id 'java'
+    id 'com.netflix.dgs.codegen'
+}
+
+configurations {
+    // injected by Gradle Runner through test configuration, see CodegenGradlePluginTest
+    CodeGenConfiguration.exclude group: "com.netflix.graphql.dgs.codegen", module: "graphql-dgs-codegen-core"
+}
+
+generateJava {
+    packageName = 'com.netflix.testproject.graphql'
+    typeMapping = [Date: 'java.time.LocalDateTime']
+    outputDir = layout.buildDirectory.dir('custom-generated')
+    exampleOutputDir = layout.buildDirectory.dir('custom-examples')
+    // Explicit directories take precedence over the legacy root, including later changes to it.
+    generatedSourcesDir = layout.buildDirectory.dir('legacy-root').get().asFile.absolutePath
+}
+
+codegen.clientCoreConventionsEnabled = false
+
+layout.buildDirectory = layout.projectDirectory.dir('custom-build')
