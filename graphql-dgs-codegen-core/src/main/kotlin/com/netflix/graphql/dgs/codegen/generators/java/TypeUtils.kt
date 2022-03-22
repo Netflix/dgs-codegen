@@ -19,13 +19,13 @@
 package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.findSchemaTypeMapping
 import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.WildcardTypeName
 import graphql.language.*
 import graphql.language.TypeName
-import graphql.parser.Parser
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
@@ -73,7 +73,9 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 var canUseWildcardType = false
                 if (useWildcardType) {
                     if (typeName is ClassName) {
-                        if (document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> "I${e.name}" == typeName.simpleName() }) {
+                        if (document.definitions.filterIsInstance<ObjectTypeDefinition>()
+                            .any { e -> "I${e.name}" == typeName.simpleName() }
+                        ) {
                             canUseWildcardType = true
                         }
                     }
@@ -143,9 +145,9 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             )
         }
 
-        if (name in config.schemaTypeMapping) {
-            val mappedType = config.schemaTypeMapping.getValue(name)
-            return mappedType.toTypeName()
+        val schemaType = findSchemaTypeMapping(document, name)
+        if (schemaType != null) {
+            return schemaType.toTypeName()
         }
 
         if (name in commonScalars) {
@@ -207,25 +209,6 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         }
         return NodeTraverser().postOrder(visitor, fieldType) as TypeName
     }
-
-    private val CodeGenConfig.schemaTypeMapping: Map<String, String>
-        get() {
-            val inputSchemas = this.schemaFiles.asSequence()
-                .flatMap { it.walkTopDown().toList().filter { file -> file.isFile } }
-                .map { it.readText() } + this.schemas
-            val joinedSchema = inputSchemas.joinToString("\n")
-            val document = Parser().parseDocument(joinedSchema)
-
-            return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
-                it.getDirectives("javaType").isNullOrEmpty()
-            }.associate {
-                val javaType = it.getDirectives("javaType").singleOrNull()
-                    ?: throw IllegalArgumentException("multiple @javaType directives are defined")
-                val value = javaType.argumentsByName["name"]?.value
-                    ?: throw IllegalArgumentException("@javaType directive must contains name argument")
-                it.name to (value as StringValue).value
-            }
-        }
 
     private fun isFieldTypeAnInterface(fieldDefinitionType: TypeName): Boolean {
         return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)

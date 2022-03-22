@@ -27,22 +27,24 @@ import graphql.language.TypeName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig) {
+class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private val document: Document) {
+
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(KotlinInterfaceTypeGenerator::class.java)
+    }
 
     private val packageName = config.packageNameTypes
-    private val typeUtils = KotlinTypeUtils(packageName, config)
-    private val logger: Logger = LoggerFactory.getLogger(KotlinInterfaceTypeGenerator::class.java)
+    private val typeUtils = KotlinTypeUtils(packageName, config, document)
 
     fun generate(
         definition: InterfaceTypeDefinition,
-        document: Document,
         extensions: List<InterfaceTypeExtensionDefinition>
     ): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
 
-        logger.info("Generating type ${definition.name}")
+        logger.info("Generating type {}", definition.name)
 
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
         if (definition.description != null) {

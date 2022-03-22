@@ -29,9 +29,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.*
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
-import org.junit.jupiter.params.provider.Arguments.of
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
 
 class CodeGenTest {
@@ -2699,11 +2702,11 @@ It takes a title and such.
         @JvmStatic
         fun generateConstantsArguments(): Stream<Arguments> {
             return Stream.of(
-                of(
+                arguments(
                     true,
                     listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
                 ),
-                of(
+                arguments(
                     false,
                     listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
                 ),
@@ -2711,8 +2714,8 @@ It takes a title and such.
         }
 
         @JvmStatic
-        fun generateDataClassesWithParameterizedMappedTypesWrongCases() = Stream.of(
-            of("java.util.Map<String,String,>"),
+        fun generateDataClassesWithParameterizedMappedTypesWrongCases(): Stream<Arguments> = Stream.of(
+            arguments("java.util.Map<String,String,>"),
         )
     }
 }
