@@ -209,7 +209,7 @@ import kotlin.String
 @JsonSubTypes(value = [
   JsonSubTypes.Type(value = Employee::class, name = "Employee")
 ])
-public interface Person {
+public sealed interface Person {
   public val firstname: String?
 
   public val lastname: String?
@@ -416,6 +416,8 @@ public class MovieFilter(
             input I {
                 arg: String
             }
+            
+            union U = Employee
         """.trimIndent()
 
         val codeGenResult = CodeGen(
@@ -443,7 +445,7 @@ public object Client {
   }
 }
 """.trimStart(),
-            clientTypes[4].toString()
+            clientTypes[5].toString()
         )
 
         assertEquals(
@@ -535,6 +537,22 @@ public class PersonProjection : GraphQLProjection() {
 }
 """.trimStart(),
             clientTypes[3].toString()
+        )
+
+        assertEquals(
+            """
+package com.netflix.graphql.dgs.codegen.tests.generated.client
+
+import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+
+public class UProjection : GraphQLProjection() {
+  public fun onEmployee(_projection: EmployeeProjection.() -> EmployeeProjection): UProjection {
+    project("... on Employee", EmployeeProjection(), _projection)
+    return this
+  }
+}
+""".trimStart(),
+            clientTypes[4].toString()
         )
 
         assertCompilesKotlin(codeGenResult)

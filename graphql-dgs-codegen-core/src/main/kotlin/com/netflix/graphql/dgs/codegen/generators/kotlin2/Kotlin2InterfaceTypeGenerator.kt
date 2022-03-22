@@ -33,8 +33,10 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.Document
 import graphql.language.InterfaceTypeDefinition
+import graphql.language.NamedNode
 import graphql.language.ObjectTypeDefinition
 import graphql.language.TypeName
+import graphql.language.UnionTypeDefinition
 
 fun generateKotlin2Interfaces(
     config: CodeGenConfig,
@@ -50,7 +52,7 @@ fun generateKotlin2Interfaces(
     // get a map of all interfaces > fields
     val interfaceFields = document.interfaceFields()
 
-    return document
+    val interfaceClasses = document
         .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
         .excludeSchemaTypeExtension()
         .filter { !it.shouldSkip(config) }
@@ -80,6 +82,7 @@ fun generateKotlin2Interfaces(
 
             // create the interface
             val interfaceSpec = TypeSpec.interfaceBuilder(interfaceDefinition.name)
+                .addModifiers(KModifier.SEALED)
                 // add docs if available
                 .apply {
                     if (interfaceDefinition.description != null) {
@@ -122,4 +125,40 @@ fun generateKotlin2Interfaces(
             // return a file per interface
             FileSpec.get(config.packageNameTypes, interfaceSpec)
         }
+
+    val unionClasses = document.getDefinitionsOfType(UnionTypeDefinition::class.java)
+        .excludeSchemaTypeExtension()
+        .filter { !it.shouldSkip(config) }
+        .map { unionDefinition ->
+
+            logger.info("Generating union type ${unionDefinition.name}")
+
+            // get all types that implement this union
+            val implementations = unionDefinition.memberTypes
+                .filterIsInstance<NamedNode<*>>()
+                .map { node -> ClassName(config.packageNameTypes, node.name) }
+
+            // create the interface
+            val interfaceSpec = TypeSpec.interfaceBuilder(unionDefinition.name)
+                .addModifiers(KModifier.SEALED)
+                // add docs if available
+                .apply {
+                    if (unionDefinition.description != null) {
+                        addKdoc("%L", unionDefinition.description.sanitizeKdoc())
+                    }
+                }
+                // add jackson annotations
+                .addAnnotation(jsonTypeInfoAnnotation())
+                .apply {
+                    if (implementations.isNotEmpty()) {
+                        addAnnotation(jsonSubTypesAnnotation(implementations))
+                    }
+                }
+                .build()
+
+            // return a file per interface
+            FileSpec.get(config.packageNameTypes, interfaceSpec)
+        }
+
+    return interfaceClasses.plus(unionClasses)
 }

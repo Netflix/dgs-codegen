@@ -20,7 +20,6 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2ClientObject
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2ClientTypes
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2DataTypes
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2EnumTypes
@@ -48,9 +47,6 @@ class CodeGen(private val config: CodeGenConfig) {
 
     @Suppress("DuplicatedCode")
     fun generate(): CodeGenResult {
-        if (config.writeToFiles) {
-            config.outputDir.toFile().deleteRecursively()
-        }
 
         val inputSchemas = config.schemaFiles.sorted().asSequence()
             .flatMap { it.walkTopDown().filter { file -> file.isFile } }
@@ -339,7 +335,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .transform { o -> o.maxTokens(MAX_VALUE) }
 
         // TODO where should this go?
-        val implicitTypes = """
+        val pageInfo = """
             type PageInfo {
               hasNextPage: Boolean!
               hasPreviousPage: Boolean!
@@ -348,7 +344,16 @@ class CodeGen(private val config: CodeGenConfig) {
             }
         """.trimIndent()
 
-        val document = parser.parseDocument("$schema\n$implicitTypes", options)
+        val allSchemas = schema
+            .let {
+                if (!schema.contains("type PageInfo")) {
+                    "$schema\n$pageInfo"
+                } else {
+                    schema
+                }
+            }
+
+        val document = parser.parseDocument(allSchemas, options)
 
         val requiredTypeCollector = RequiredTypeCollector(
             document = document,
@@ -364,8 +369,7 @@ class CodeGen(private val config: CodeGenConfig) {
             kotlinInterfaces = generateKotlin2Interfaces(config, document),
             kotlinEnumTypes = generateKotlin2EnumTypes(config, document, requiredTypes),
             kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants,
-            kotlinClientTypes = generateKotlin2ClientTypes(config, document, requiredTypes)
-                .plus(generateKotlin2ClientObject(config, document)),
+            kotlinClientTypes = generateKotlin2ClientTypes(config, document),
         )
     }
 }

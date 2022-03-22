@@ -35,14 +35,20 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.Document
+import graphql.language.InputValueDefinition
 import graphql.language.InterfaceTypeDefinition
+import graphql.language.NamedNode
 import graphql.language.ObjectTypeDefinition
+import graphql.language.UnionTypeDefinition
 
 fun generateKotlin2ClientTypes(
     config: CodeGenConfig,
     document: Document,
-    requiredTypes: Set<String>,
 ): List<FileSpec> {
+
+    if (!config.generateClientApi) {
+        return emptyList()
+    }
 
     val typeUtils = KotlinTypeUtils(config.packageNameClient, config)
     val inputTypeUtils = KotlinTypeUtils(config.packageNameTypes, config)
@@ -53,11 +59,10 @@ fun generateKotlin2ClientTypes(
     // invert the interface mapping to create a lookup from interfaces to implementors
     val interfaceLookup = document.invertedInterfaceLookup()
 
-    // add a class for every interface & data type
-    return document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
+    // create a projection class for every interface & data type
+    val dataProjections = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
         .plus(document.getDefinitionsOfType(InterfaceTypeDefinition::class.java))
         .excludeSchemaTypeExtension()
-        .filter { config.generateClientApi || it.name in requiredTypes }
         .map { typeDefinition ->
 
             // get any fields defined via schema extensions
@@ -97,23 +102,8 @@ fun generateKotlin2ClientTypes(
                         // scalars with args are functions to take the args with no projection
                         isScalar && hasArgs -> {
                             FunSpec.builder(field.name)
-                                .addParameters(
-                                    field.inputValueDefinitions.map {
-                                        val returnType = inputTypeUtils.findReturnType(it.type)
-                                        ParameterSpec.builder(it.name, returnType)
-                                            .apply {
-                                                if (returnType.isNullable) {
-                                                    defaultValue("default(%S)", it.name)
-                                                }
-                                            }
-                                            .build()
-                                    }
-                                )
+                                .addInputArgs(inputTypeUtils, field.inputValueDefinitions)
                                 .returns(typeName)
-                                .addStatement(
-                                    "val args = formatArgs(%L)",
-                                    field.inputValueDefinitions.joinToString(", ") { """"${it.name}" to ${it.name}""" }
-                                )
                                 .addStatement("""field("${field.name}(${'$'}args)")""")
                                 .addStatement("return this")
                                 .build()
@@ -121,18 +111,12 @@ fun generateKotlin2ClientTypes(
 
                         // types without args just have a projection
                         !isScalar && !hasArgs -> {
-                            val projectionType = ClassName(
-                                packageName = config.packageNameClient,
-                                simpleNames = listOf("${projectionTypeName(typeUtils.findReturnType(field.type))}Projection"),
-                            )
+
+                            val projectTypeName = projectionTypeName(typeUtils.findReturnType(field.type))
+                            val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
+
                             FunSpec.builder(field.name)
-                                .addParameter(
-                                    "_projection",
-                                    LambdaTypeName.get(
-                                        receiver = projectionType,
-                                        returnType = projectionType,
-                                    )
-                                )
+                                .addParameter(projection)
                                 .returns(typeName)
                                 .addStatement("project(%S, %T(), _projection)", field.name, projectionType)
                                 .addStatement("return this")
@@ -142,35 +126,14 @@ fun generateKotlin2ClientTypes(
                         // function that has args and a projection
                         // !isScalar && hasArgs
                         else -> {
-                            val projectionType = ClassName(
-                                packageName = config.packageNameClient,
-                                simpleNames = listOf("${projectionTypeName(typeUtils.findReturnType(field.type))}Projection"),
-                            )
+
+                            val projectTypeName = projectionTypeName(typeUtils.findReturnType(field.type))
+                            val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
+
                             FunSpec.builder(field.name)
-                                .addParameters(
-                                    field.inputValueDefinitions.map {
-                                        val returnType = inputTypeUtils.findReturnType(it.type)
-                                        ParameterSpec.builder(it.name, returnType)
-                                            .apply {
-                                                if (returnType.isNullable) {
-                                                    defaultValue("default(%S)", it.name)
-                                                }
-                                            }
-                                            .build()
-                                    }
-                                )
-                                .addParameter(
-                                    "_projection",
-                                    LambdaTypeName.get(
-                                        receiver = projectionType,
-                                        returnType = projectionType,
-                                    )
-                                )
+                                .addInputArgs(inputTypeUtils, field.inputValueDefinitions)
+                                .addParameter(projection)
                                 .returns(typeName)
-                                .addStatement(
-                                    "val args = formatArgs(%L)",
-                                    field.inputValueDefinitions.joinToString(", ") { """"${it.name}" to ${it.name}""" }
-                                )
                                 .addStatement(
                                     """project("${field.name}(${'$'}args)", %T(), _projection)""",
                                     projectionType
@@ -183,26 +146,7 @@ fun generateKotlin2ClientTypes(
 
             // add the `... on XXX` projection for implementors of this interface
             val implementors = interfaceLookup[typeDefinition.name]
-                ?.map { interfaceName ->
-
-                    val projectionType = ClassName(
-                        packageName = config.packageNameClient,
-                        simpleNames = listOf("${interfaceName}Projection"),
-                    )
-
-                    FunSpec.builder("on$interfaceName")
-                        .addParameter(
-                            "_projection",
-                            LambdaTypeName.get(
-                                receiver = projectionType,
-                                returnType = projectionType,
-                            )
-                        )
-                        .returns(typeName)
-                        .addStatement("""project("... on $interfaceName", %T(), _projection)""", projectionType)
-                        .addStatement("return this")
-                        .build()
-                }
+                ?.map { subclassName -> onSubclassProjection(config.packageNameClient, typeName, subclassName) }
                 ?: emptyList()
 
             // create the projection class
@@ -222,39 +166,41 @@ fun generateKotlin2ClientTypes(
             // return a file per type
             FileSpec.get(config.packageNameClient, typeSpec)
         }
-}
 
-fun generateKotlin2ClientObject(
-    config: CodeGenConfig,
-    document: Document,
-): List<FileSpec> {
+    // create a projection for each union
+    val unionProjections = document.getDefinitionsOfType(UnionTypeDefinition::class.java)
+        .map { union ->
 
-    if (!config.generateClientApi) {
-        return emptyList()
-    }
+            // the name of the type is used in every parameter & return value
+            val typeName = ClassName(config.packageNameClient, "${union.name}Projection")
 
+            val typeSpec = TypeSpec.classBuilder(typeName)
+                .superclass(GraphQLProjection::class)
+                .addFunctions(
+                    union.memberTypes.map { subclass ->
+                        onSubclassProjection(config.packageNameClient, typeName, (subclass as NamedNode<*>).name)
+                    }
+                )
+                .build()
+
+            // return a file per type
+            FileSpec.get(config.packageNameClient, typeSpec)
+        }
+
+    // create a top-level client class
     val topLevelTypes = setOf("Query", "Mutation", "Subscription")
         .intersect(document.getDefinitionsOfType(ObjectTypeDefinition::class.java).map { it.name })
 
-    val typeSpec = TypeSpec.objectBuilder("Client")
+    val clientSpec = TypeSpec.objectBuilder("Client")
         .addFunctions(
             topLevelTypes.map { type ->
 
-                val projectionType = ClassName(
-                    packageName = config.packageNameClient,
-                    simpleNames = listOf("${type}Projection"),
-                )
+                val (projectionType, projection) = projectionType(config.packageNameClient, type)
 
                 FunSpec.builder("build$type")
-                    .addParameter(
-                        "_projection",
-                        LambdaTypeName.get(
-                            receiver = projectionType,
-                            returnType = projectionType,
-                        )
-                    )
+                    .addParameter(projection)
                     .returns(String::class)
-                    .addStatement("val projection = ${type}Projection()")
+                    .addStatement("val projection = %T()", projectionType)
                     .addStatement("_projection.invoke(projection)")
                     .addStatement("""return "${type.lowercase()} ${'$'}{projection.asQuery()}"""")
                     .build()
@@ -262,7 +208,9 @@ fun generateKotlin2ClientObject(
         )
         .build()
 
-    return listOf(FileSpec.get(config.packageNameClient, typeSpec))
+    val clientFile = FileSpec.get(config.packageNameClient, clientSpec)
+
+    return dataProjections.plus(unionProjections).plus(clientFile)
 }
 
 // unpack the type to get the underlying type of the projection
@@ -272,4 +220,63 @@ private fun projectionTypeName(type: TypeName): String {
         is ParameterizedTypeName -> projectionTypeName(type.typeArguments.first())
         else -> throw UnsupportedOperationException(type::class.simpleName)
     }
+}
+
+// create the `_projection = FooProjection.() -> FooProjection` parameter
+private fun projectionType(packageName: String, type: String): Pair<ClassName, ParameterSpec> {
+
+    val projectionType = ClassName(
+        packageName = packageName,
+        simpleNames = listOf("${type}Projection"),
+    )
+
+    val parameter = ParameterSpec(
+        name = "_projection",
+        type = LambdaTypeName.get(
+            receiver = projectionType,
+            returnType = projectionType,
+        )
+    )
+
+    return projectionType to parameter
+}
+
+private fun FunSpec.Builder.addInputArgs(
+    typeUtils: KotlinTypeUtils,
+    inputValueDefinitions: List<InputValueDefinition>,
+): FunSpec.Builder {
+
+    return this
+        .addParameters(
+            inputValueDefinitions.map {
+                val returnType = typeUtils.findReturnType(it.type)
+                ParameterSpec.builder(it.name, returnType)
+                    .apply {
+                        if (returnType.isNullable) {
+                            defaultValue("default(%S)", it.name)
+                        }
+                    }
+                    .build()
+            }
+        )
+        .addStatement(
+            "val args = formatArgs(%L)",
+            inputValueDefinitions.joinToString(", ") { """"${it.name}" to ${it.name}""" }
+        )
+}
+
+private fun onSubclassProjection(
+    packageName: String,
+    typeName: ClassName,
+    subclassName: String
+): FunSpec {
+
+    val (projectionType, projection) = projectionType(packageName, subclassName)
+
+    return FunSpec.builder("on$subclassName")
+        .addParameter(projection)
+        .returns(typeName)
+        .addStatement("""project("... on $subclassName", %T(), _projection)""", projectionType)
+        .addStatement("return this")
+        .build()
 }
