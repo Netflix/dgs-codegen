@@ -44,7 +44,8 @@ class CodegenPlugin : Plugin<Project> {
         val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
         val sourceSets = javaConvention.sourceSets
         val mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-        val outputDir = generateJavaTaskProvider.map(GenerateJavaTask::getOutputDir)
+        val outputDir = generateJavaTaskProvider.flatMap(GenerateJavaTask::outputDir)
+
         mainSourceSet.java.srcDirs(project.files(outputDir).builtBy(generateJavaTaskProvider))
 
         project.afterEvaluate { p ->
