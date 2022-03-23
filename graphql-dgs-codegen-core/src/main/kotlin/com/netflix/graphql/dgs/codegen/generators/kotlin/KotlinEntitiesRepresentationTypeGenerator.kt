@@ -38,14 +38,19 @@ import graphql.language.Type
 import graphql.language.TypeDefinition
 import graphql.language.TypeName
 
-class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameClient, config) {
+class KotlinEntitiesRepresentationTypeGenerator(config: CodeGenConfig, document: Document) :
+    AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
 
     fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
         val name = "${definition.name}Representation"
-        if (generatedRepresentations.containsKey(name)) {
+        if (name in generatedRepresentations) {
             return CodeGenResult()
         }
-        val directiveArg = definition.getDirectives("key").map { it.argumentsByName["fields"]?.value as StringValue }.map { it.value }
+        val directiveArg = definition.getDirectives("key")
+            .asSequence()
+            .map { it.argumentsByName["fields"]?.value as StringValue }
+            .map { it.value }
+            .toList()
         val keyFields = parseKeyDirectiveValue(directiveArg)
         return generateRepresentations(definition.name, definition.fieldDefinitions, generatedRepresentations, keyFields)
     }
@@ -57,7 +62,7 @@ class KotlinEntitiesRepresentationTypeGenerator(private val config: CodeGenConfi
         keyFields: Map<String, Any>
     ): CodeGenResult {
         val name = "${definitionName}Representation"
-        if (generatedRepresentations.containsKey(name)) {
+        if (name in generatedRepresentations) {
             return CodeGenResult()
         }
 

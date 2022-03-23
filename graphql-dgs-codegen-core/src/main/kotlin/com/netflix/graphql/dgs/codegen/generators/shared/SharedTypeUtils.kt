@@ -18,6 +18,10 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
+import graphql.language.Document
+import graphql.language.ScalarTypeDefinition
+import graphql.language.StringValue
+
 internal sealed class GenericSymbol(open val index: Int) {
     class OpenBracket(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf("<", startFrom))
     class CloseBracket(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf(">", startFrom))
@@ -119,4 +123,30 @@ internal fun <T> parseMappedType(
 
     if (stack.isNotEmpty()) throw IllegalArgumentException("Wrong mapped type $mappedType")
     return mappedType.toTypeName(true)
+}
+
+private const val JAVA_TYPE_DIRECTIVE_NAME = "javaType"
+
+/**
+ * Find the type mapping to use for [typeName] if one exists in the [document].
+ * That is, if a [ScalarTypeDefinition] exists with the same name as [typeName] and is annotated
+ * with a @javaType directive, return the value from that directive; otherwise return null.
+ */
+internal fun findSchemaTypeMapping(document: Document, typeName: String): String? {
+    for (definition in document.definitions) {
+        val scalarTypeDefinition = definition as? ScalarTypeDefinition
+            ?: continue
+        if (scalarTypeDefinition.name != typeName) {
+            continue
+        }
+        if (!scalarTypeDefinition.hasDirective(JAVA_TYPE_DIRECTIVE_NAME)) {
+            continue
+        }
+        val directive = scalarTypeDefinition.getDirectives(JAVA_TYPE_DIRECTIVE_NAME).singleOrNull()
+            ?: throw IllegalArgumentException("multiple @$JAVA_TYPE_DIRECTIVE_NAME directives are defined")
+        val nameArgument = directive.getArgument("name")
+            ?: throw IllegalArgumentException("@$JAVA_TYPE_DIRECTIVE_NAME directive must contain 'name' argument")
+        return (nameArgument.value as StringValue).value
+    }
+    return null
 }
