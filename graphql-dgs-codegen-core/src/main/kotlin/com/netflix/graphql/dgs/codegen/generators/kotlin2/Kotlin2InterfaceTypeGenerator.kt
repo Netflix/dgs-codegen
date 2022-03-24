@@ -19,11 +19,13 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonSubTypesAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonTypeInfoAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
@@ -43,7 +45,7 @@ fun generateKotlin2Interfaces(
     document: Document,
 ): List<FileSpec> {
 
-    if (!config.generateDataTypes && !config.generateInterfaces) {
+    if (!config.generateDataTypes) {
         return emptyList()
     }
 
@@ -76,6 +78,7 @@ fun generateKotlin2Interfaces(
             val fields = listOf(interfaceDefinition)
                 .plus(extensionTypes)
                 .flatMap { it.fieldDefinitions }
+                .filterSkipped()
 
             // get a list of fields to override
             val overrideFields = overrideFields(interfaceFields, implementedInterfaces)
@@ -133,8 +136,12 @@ fun generateKotlin2Interfaces(
 
             logger.info("Generating union type ${unionDefinition.name}")
 
+            // get any members defined via schema extensions
+            val extensionTypes = findUnionExtensions(unionDefinition.name, document.definitions)
+
             // get all types that implement this union
             val implementations = unionDefinition.memberTypes
+                .plus(extensionTypes.flatMap { it.memberTypes })
                 .filterIsInstance<NamedNode<*>>()
                 .map { node -> ClassName(config.packageNameTypes, node.name) }
 

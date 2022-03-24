@@ -25,6 +25,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
+import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
@@ -34,6 +35,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import graphql.language.DirectivesContainer
 import graphql.language.Document
 import graphql.language.InputValueDefinition
 import graphql.language.InterfaceTypeDefinition
@@ -63,6 +65,7 @@ fun generateKotlin2ClientTypes(
     val dataProjections = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
         .plus(document.getDefinitionsOfType(InterfaceTypeDefinition::class.java))
         .excludeSchemaTypeExtension()
+        .filter { !(it as DirectivesContainer<*>).shouldSkip(config) }
         .map { typeDefinition ->
 
             // get any fields defined via schema extensions
@@ -169,15 +172,23 @@ fun generateKotlin2ClientTypes(
 
     // create a projection for each union
     val unionProjections = document.getDefinitionsOfType(UnionTypeDefinition::class.java)
-        .map { union ->
+        .excludeSchemaTypeExtension()
+        .filter { !it.shouldSkip(config) }
+        .map { unionDefinition ->
 
             // the name of the type is used in every parameter & return value
-            val typeName = ClassName(config.packageNameClient, "${union.name}Projection")
+            val typeName = ClassName(config.packageNameClient, "${unionDefinition.name}Projection")
+
+            // get any members defined via schema extensions
+            val extensionTypes = SchemaExtensionsUtils.findUnionExtensions(unionDefinition.name, document.definitions)
+
+            val implementations = unionDefinition.memberTypes
+                .plus(extensionTypes.flatMap { it.memberTypes })
 
             val typeSpec = TypeSpec.classBuilder(typeName)
                 .superclass(GraphQLProjection::class)
                 .addFunctions(
-                    union.memberTypes.map { subclass ->
+                    implementations.map { subclass ->
                         onSubclassProjection(config.packageNameClient, typeName, (subclass as NamedNode<*>).name)
                     }
                 )
@@ -191,7 +202,7 @@ fun generateKotlin2ClientTypes(
     val topLevelTypes = setOf("Query", "Mutation", "Subscription")
         .intersect(document.getDefinitionsOfType(ObjectTypeDefinition::class.java).map { it.name })
 
-    val clientSpec = TypeSpec.objectBuilder("Client")
+    val clientSpec = TypeSpec.objectBuilder("DgsClient")
         .addFunctions(
             topLevelTypes.map { type ->
 
@@ -208,7 +219,7 @@ fun generateKotlin2ClientTypes(
         )
         .build()
 
-    val clientFile = FileSpec.get(config.packageNameClient, clientSpec)
+    val clientFile = FileSpec.get(config.packageName, clientSpec)
 
     return dataProjections.plus(unionProjections).plus(clientFile)
 }

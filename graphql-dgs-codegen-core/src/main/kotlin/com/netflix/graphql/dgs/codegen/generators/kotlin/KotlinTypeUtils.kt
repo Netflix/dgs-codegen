@@ -80,7 +80,7 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             fieldType !is NonNullType
     }
 
-    private val builtinScalars = setOf("ID", "Boolean", "Int", "Long", "String", "DateTime")
+    private val builtinScalars = setOf("ID", "Boolean", "Int", "Long", "Float", "String", "DateTime")
 
     fun isScalar(type: Type<*>, enums: Set<String>): Boolean {
         return when (type) {

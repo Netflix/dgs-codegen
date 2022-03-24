@@ -1,0 +1,3 @@
+package kotlin2.inputWithDefaultValueForEnum.expected
+
+public object DgsClient
