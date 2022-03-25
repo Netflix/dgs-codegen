@@ -52,9 +52,6 @@ class CodeGen(private val config: CodeGenConfig) {
 
     @Suppress("DuplicatedCode")
     fun generate(): CodeGenResult {
-        if (config.writeToFiles) {
-            config.outputDir.toFile().deleteRecursively()
-        }
 
         val codeGenResult = when (config.language) {
             Language.JAVA -> generateJava()
