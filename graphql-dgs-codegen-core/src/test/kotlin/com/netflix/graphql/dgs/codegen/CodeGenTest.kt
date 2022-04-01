@@ -660,7 +660,7 @@ class CodeGenTest {
             type Query {
                 people: [Person]
             }
-            
+
             type Person {
                 firstname: String
                 lastname: String
@@ -1375,6 +1375,67 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedString = """
             return "Person{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'" +"}";
+        """.trimIndent()
+        val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(expectedString).isEqualTo(generatedString)
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateToStringMethodForNoLogType() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            type Person {
+                firstname: String
+                lastname: String
+                password: String @nolog(reason:"PII")
+            }
+            directive @nolog on FIELD_DEFINITION
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+        val expectedString = """
+            return "Person{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'," +"password='" + "*****" + "'" +"}";
+        """.trimIndent()
+        val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(expectedString).isEqualTo(generatedString)
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateToStringMethodForNoLogInputType() {
+
+        val schema = """
+            type Query {
+                people(filter: PersonFilter): [Person]
+            }
+            input PersonFilter {
+                email: String @nolog
+            }
+            directive @nolog on INPUT_FIELD_DEFINITION
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+        val expectedString = """
+            return "PersonFilter{" + "email='" + "*****" + "'" +"}";
         """.trimIndent()
         val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedString).isEqualTo(generatedString)
