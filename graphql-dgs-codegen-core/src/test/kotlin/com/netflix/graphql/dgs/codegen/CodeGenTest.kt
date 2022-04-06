@@ -1382,7 +1382,7 @@ class CodeGenTest {
     }
 
     @Test
-    fun generateToStringMethodForNoLogType() {
+    fun generateToStringMethodForSensitiveType() {
 
         val schema = """
             type Query {
@@ -1392,9 +1392,9 @@ class CodeGenTest {
             type Person {
                 firstname: String
                 lastname: String
-                password: String @nolog(reason:"PII")
+                password: String @sensitive(reason:"PII")
             }
-            directive @nolog on FIELD_DEFINITION
+            directive @sensitive on FIELD_DEFINITION
         """.trimIndent()
 
         val (dataTypes) = CodeGen(
@@ -1414,16 +1414,16 @@ class CodeGenTest {
     }
 
     @Test
-    fun generateToStringMethodForNoLogInputType() {
+    fun generateToStringMethodForSensitiveInputType() {
 
         val schema = """
             type Query {
                 people(filter: PersonFilter): [Person]
             }
             input PersonFilter {
-                email: String @nolog
+                email: String @sensitive
             }
-            directive @nolog on INPUT_FIELD_DEFINITION
+            directive @sensitive on INPUT_FIELD_DEFINITION
         """.trimIndent()
 
         val (dataTypes) = CodeGen(
