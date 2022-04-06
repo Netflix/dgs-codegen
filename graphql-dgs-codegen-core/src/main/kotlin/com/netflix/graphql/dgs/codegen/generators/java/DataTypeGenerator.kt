@@ -264,7 +264,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         val methodBuilder = MethodSpec.methodBuilder("toString").addAnnotation(Override::class.java).addModifiers(Modifier.PUBLIC).returns(String::class.java)
         val toStringBody = StringBuilder("return \"${javaType.build().name}{\" + ")
         fieldDefinitions.forEachIndexed { index, field ->
-            val fieldValueStatement = if (field.directives.contains("nolog")) "\"*****\"" else ReservedKeywordSanitizer.sanitize(field.name)
+            val fieldValueStatement = if (field.directives.contains("sensitive")) "\"*****\"" else ReservedKeywordSanitizer.sanitize(field.name)
             toStringBody.append(
                 """
                 "${field.name}='" + $fieldValueStatement + "'${if (index < fieldDefinitions.size - 1) "," else ""}" +
