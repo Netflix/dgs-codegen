@@ -187,10 +187,6 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
                 .map { it.name }
                 .toSet()
 
-            if (field.name in interfaceFields) {
-                parameterSpec.addModifiers(KModifier.OVERRIDE)
-            }
-
             constructorBuilder.addParameter(parameterSpec.build())
             val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
             if (field.description != null) {
