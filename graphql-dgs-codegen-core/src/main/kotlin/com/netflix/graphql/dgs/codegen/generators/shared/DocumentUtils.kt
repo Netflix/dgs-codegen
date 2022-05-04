@@ -27,8 +27,6 @@ import graphql.language.InterfaceTypeDefinition
 import graphql.language.NamedNode
 import graphql.language.ObjectTypeDefinition
 import graphql.language.UnionTypeDefinition
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 internal data class Field(
     val name: String,

@@ -123,7 +123,8 @@ class CodeGen(private val config: CodeGenConfig) {
             if (config.generateKotlinNullableClasses || config.generateKotlinClosureProjections) {
                 val objectTypeDefs = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
                 if (!objectTypeDefs.any { def -> def.name == "PageInfo" } &&
-                    objectTypeDefs.any { def -> def.fieldDefinitions.any { field -> TypeUtil.unwrapAll(field.type).name == "PageInfo" } }) {
+                    objectTypeDefs.any { def -> def.fieldDefinitions.any { field -> TypeUtil.unwrapAll(field.type).name == "PageInfo" } }
+                ) {
                     it.definition(
                         ObjectTypeDefinition.newObjectTypeDefinition()
                             .name("PageInfo")
@@ -343,7 +344,6 @@ class CodeGen(private val config: CodeGenConfig) {
             CodeGenResult(
                 kotlinClientTypes = generateKotlin2ClientTypes(config, document),
             )
-
         } else {
 
             val client = generateJavaClientApi(definitions)
