@@ -85,8 +85,10 @@ class Kotlin2CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = "kotlin2.$testName.expected",
-                language = Language.KOTLIN2,
+                language = Language.KOTLIN,
                 generateClientApi = true,
+                generateKotlinNullableClasses = true,
+                generateKotlinClosureProjections = true,
             )
         ).generate()
 
