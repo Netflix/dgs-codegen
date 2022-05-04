@@ -181,7 +181,7 @@ class CodegenGradlePluginSpringBootSmokeTest {
             """
                 plugins {
                     id 'java'
-                    id 'org.jetbrains.kotlin.jvm' version '1.4.10' 
+                    id 'org.jetbrains.kotlin.jvm' version '1.6.21' 
                     id 'com.netflix.dgs.codegen'
                 }
                 
