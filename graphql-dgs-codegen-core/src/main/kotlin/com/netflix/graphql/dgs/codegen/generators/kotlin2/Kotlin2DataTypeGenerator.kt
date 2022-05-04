@@ -30,8 +30,13 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonIgnorePropertiesAnn
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonPropertyAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.netflix.graphql.dgs.codegen.generators.shared.Field
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
+import com.netflix.graphql.dgs.codegen.generators.shared.implementedInterfaces
+import com.netflix.graphql.dgs.codegen.generators.shared.interfaceFields
+import com.netflix.graphql.dgs.codegen.generators.shared.invertedUnionLookup
+import com.netflix.graphql.dgs.codegen.generators.shared.overrideFields
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
@@ -44,6 +49,10 @@ import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 import graphql.language.Document
 import graphql.language.ObjectTypeDefinition
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+internal val logger: Logger = LoggerFactory.getLogger("com.netflix.graphql.dgs.codegen.generators.kotlin2")
 
 fun generateKotlin2DataTypes(
     config: CodeGenConfig,

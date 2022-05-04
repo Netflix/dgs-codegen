@@ -27,6 +27,9 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
+import com.netflix.graphql.dgs.codegen.generators.shared.implementedInterfaces
+import com.netflix.graphql.dgs.codegen.generators.shared.interfaceFields
+import com.netflix.graphql.dgs.codegen.generators.shared.overrideFields
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec

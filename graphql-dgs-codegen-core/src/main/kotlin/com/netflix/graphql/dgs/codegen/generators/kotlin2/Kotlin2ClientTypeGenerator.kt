@@ -24,7 +24,9 @@ import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
+import com.netflix.graphql.dgs.codegen.generators.shared.enumFields
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
+import com.netflix.graphql.dgs.codegen.generators.shared.invertedInterfaceLookup
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec

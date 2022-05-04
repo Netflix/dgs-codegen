@@ -16,7 +16,7 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.generators.kotlin2
+package com.netflix.graphql.dgs.codegen.generators.shared
 
 import com.squareup.kotlinpoet.TypeName
 import graphql.language.Description
@@ -30,11 +30,8 @@ import graphql.language.UnionTypeDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-internal val logger: Logger = LoggerFactory.getLogger("com.netflix.graphql.dgs.codegen.generators.kotlin2")
-
 internal data class Field(
     val name: String,
-    val isScalar: Boolean = false,
     val type: TypeName,
     val description: Description?,
 )
