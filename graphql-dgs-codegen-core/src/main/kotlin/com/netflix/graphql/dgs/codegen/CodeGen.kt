@@ -34,33 +34,36 @@ import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtens
 import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
 import graphql.language.*
+import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
+import graphql.schema.idl.TypeUtil
 import java.io.File
-import java.lang.Integer.MAX_VALUE
 import java.nio.file.Path
 import java.nio.file.Paths
 
 class CodeGen(private val config: CodeGenConfig) {
-    lateinit var document: Document
-    private lateinit var requiredTypeCollector: RequiredTypeCollector
+
+    companion object {
+        private const val SDL_MAX_ALLOWED_SCHEMA_TOKENS: Int = Int.MAX_VALUE
+    }
+
+    private val document = buildDocument()
+    private val requiredTypeCollector = RequiredTypeCollector(
+        document = document,
+        queries = config.includeQueries,
+        mutations = config.includeMutations,
+        subscriptions = config.includeSubscriptions
+    )
 
     @Suppress("DuplicatedCode")
     fun generate(): CodeGenResult {
 
-        val inputSchemas = config.schemaFiles.sorted().asSequence()
-            .flatMap { it.walkTopDown().filter { file -> file.isFile } }
-            .map { it.readText() }
-            .plus(config.schemas)
-            .toList()
-
-        val joinedSchema = inputSchemas.joinToString("\n")
-        val codeGenResult =
-            when (config.language) {
-                Language.JAVA -> generateForSchema(joinedSchema)
-                Language.KOTLIN -> generateKotlinForSchema(joinedSchema)
-                Language.KOTLIN2 -> generateKotlin2ForSchema(joinedSchema)
-            }
+        val codeGenResult = when (config.language) {
+            Language.JAVA -> generateJava()
+            Language.KOTLIN -> generateKotlin()
+            Language.KOTLIN2 -> generateKotlin2()
+        }
 
         if (config.writeToFiles) {
             codeGenResult.javaDataTypes.forEach { it.writeTo(config.outputDir) }
@@ -88,21 +91,75 @@ class CodeGen(private val config: CodeGenConfig) {
         return codeGenResult
     }
 
-    private fun generateForSchema(schema: String): CodeGenResult {
-        val SDL_MAX_ALLOWED_SCHEMA_TOKENS: Int = Int.MAX_VALUE
-        val parserOptions = ParserOptions.getDefaultParserOptions()
-            .transform {
-                it.maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
-            }
-        ParserOptions.setDefaultParserOptions(parserOptions)
-        document = Parser.parse(schema)
-        requiredTypeCollector = RequiredTypeCollector(
-            document,
-            queries = config.includeQueries,
-            mutations = config.includeMutations,
-            subscriptions = config.includeSubscriptions
-        )
+    /**
+     * Build a [Document] containing the combined schemas from
+     * [config].
+     */
+    private fun buildDocument(): Document {
+        val options = ParserOptions.getDefaultParserOptions().transform { builder ->
+            builder.maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
+        }
+        val parser = Parser()
+        val readerBuilder = MultiSourceReader.newMultiSourceReader()
 
+        val schemaFiles = config.schemaFiles
+            .flatMap { it.walkTopDown() }
+            .filter { it.isFile }
+
+        for (schemaFile in schemaFiles) {
+            readerBuilder.reader(schemaFile.reader(), schemaFile.name)
+        }
+
+        for (schema in config.schemas) {
+            readerBuilder.string(schema, null)
+        }
+
+        val document = readerBuilder.build().use { reader ->
+            parser.parseDocument(reader, options)
+        }
+
+        return document.transform {
+
+            // for kotlin2, add implicit types like PageInfo to the schema so classes are generated
+            if (config.language == Language.KOTLIN2) {
+                val objectTypeDefs = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
+                if (!objectTypeDefs.any { def -> def.name == "PageInfo" } &&
+                    objectTypeDefs.any { def -> def.fieldDefinitions.any { field -> TypeUtil.unwrapAll(field.type).name == "PageInfo" } }) {
+                    it.definition(
+                        ObjectTypeDefinition.newObjectTypeDefinition()
+                            .name("PageInfo")
+                            .fieldDefinition(
+                                FieldDefinition.newFieldDefinition()
+                                    .name("hasNextPage")
+                                    .type(TypeName("Boolean!"))
+                                    .build()
+                            )
+                            .fieldDefinition(
+                                FieldDefinition.newFieldDefinition()
+                                    .name("hasPreviousPage")
+                                    .type(TypeName("Boolean!"))
+                                    .build()
+                            )
+                            .fieldDefinition(
+                                FieldDefinition.newFieldDefinition()
+                                    .name("startCursor")
+                                    .type(TypeName("String"))
+                                    .build()
+                            )
+                            .fieldDefinition(
+                                FieldDefinition.newFieldDefinition()
+                                    .name("endCursor")
+                                    .type(TypeName("String"))
+                                    .build()
+                            )
+                            .build()
+                    )
+                }
+            }
+        }
+    }
+
+    private fun generateJava(): CodeGenResult {
         val definitions = document.definitions
         // data types
         val dataTypesResult = generateJavaDataType(definitions)
@@ -228,19 +285,7 @@ class CodeGen(private val config: CodeGenConfig) {
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
-    private fun generateKotlinForSchema(schema: String): CodeGenResult {
-        val options = ParserOptions
-            .getDefaultParserOptions()
-            .transform { o -> o.maxTokens(MAX_VALUE) }
-        val parser = Parser()
-        document = parser.parseDocument(schema, options)
-        requiredTypeCollector = RequiredTypeCollector(
-            document,
-            queries = config.includeQueries,
-            mutations = config.includeMutations,
-            subscriptions = config.includeSubscriptions,
-        )
-
+    private fun generateKotlin(): CodeGenResult {
         val definitions = document.definitions
 
         val datatypesResult = generateKotlinDataTypes(definitions)
@@ -322,38 +367,12 @@ class CodeGen(private val config: CodeGenConfig) {
             .excludeSchemaTypeExtension()
             .map {
                 val extensions = findInterfaceExtensions(it.name, definitions)
-                KotlinInterfaceTypeGenerator(config).generate(it, document, extensions)
+                KotlinInterfaceTypeGenerator(config, document).generate(it, extensions)
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
-    private fun generateKotlin2ForSchema(schema: String): CodeGenResult {
-
-        val parser = Parser()
-        val options = ParserOptions
-            .getDefaultParserOptions()
-            .transform { o -> o.maxTokens(MAX_VALUE) }
-
-        // TODO where should this go?
-        val pageInfo = """
-            type PageInfo {
-              hasNextPage: Boolean!
-              hasPreviousPage: Boolean!
-              startCursor: String
-              endCursor: String
-            }
-        """.trimIndent()
-
-        val allSchemas = schema
-            .let {
-                if (schema.contains("PageInfo") && !schema.contains("type PageInfo")) {
-                    "$schema\n$pageInfo"
-                } else {
-                    schema
-                }
-            }
-
-        val document = parser.parseDocument(allSchemas, options)
+    private fun generateKotlin2(): CodeGenResult {
 
         val requiredTypeCollector = RequiredTypeCollector(
             document = document,
@@ -402,14 +421,11 @@ data class CodeGenConfig(
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
 ) {
-    val packageNameClient: String
-        get() = "$packageName.$subPackageNameClient"
+    val packageNameClient: String = "$packageName.$subPackageNameClient"
 
-    val packageNameDatafetchers: String
-        get() = "$packageName.$subPackageNameDatafetchers"
+    val packageNameDatafetchers: String = "$packageName.$subPackageNameDatafetchers"
 
-    val packageNameTypes: String
-        get() = "$packageName.$subPackageNameTypes"
+    val packageNameTypes: String = "$packageName.$subPackageNameTypes"
 
     override fun toString(): String {
         return """

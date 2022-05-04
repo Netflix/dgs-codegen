@@ -52,8 +52,8 @@ fun generateKotlin2ClientTypes(
         return emptyList()
     }
 
-    val typeUtils = KotlinTypeUtils(config.packageNameClient, config)
-    val inputTypeUtils = KotlinTypeUtils(config.packageNameTypes, config)
+    val typeUtils = KotlinTypeUtils(config.packageNameClient, config, document)
+    val inputTypeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
 
     // get a map of all enums in the document
     val enumFields = document.enumFields()

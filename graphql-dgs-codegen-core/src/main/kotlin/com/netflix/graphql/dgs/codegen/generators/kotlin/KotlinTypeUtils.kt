@@ -19,13 +19,12 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.findSchemaTypeMapping
 import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import graphql.language.*
 import graphql.language.TypeName
-import graphql.parser.Parser
-import graphql.parser.ParserOptions
 import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
@@ -33,7 +32,7 @@ import java.time.*
 import java.util.*
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
-class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig) {
+class KotlinTypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
 
     private val commonScalars = mapOf(
         "LocalTime" to LocalTime::class.asTypeName(),
@@ -110,8 +109,9 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             )
         }
 
-        if (name in config.schemaTypeMapping) {
-            return config.schemaTypeMapping.getValue(name).toKtTypeName()
+        val schemaType = findSchemaTypeMapping(document, name)
+        if (schemaType != null) {
+            return schemaType.toKtTypeName()
         }
 
         if (name in commonScalars) {
@@ -132,27 +132,4 @@ class KotlinTypeUtils(private val packageName: String, val config: CodeGenConfig
             else -> "$packageName.$name".toKtTypeName()
         }
     }
-
-    private val CodeGenConfig.schemaTypeMapping: Map<String, String>
-        get() {
-            val inputSchemas = this.schemaFiles.flatMap { it.walkTopDown().toList().filter { file -> file.isFile } }
-                .map { it.readText() }
-                .plus(this.schemas)
-            val joinedSchema = inputSchemas.joinToString("\n")
-            val options = ParserOptions
-                .getDefaultParserOptions()
-                .transform { o -> o.maxTokens(Integer.MAX_VALUE) }
-
-            val document = Parser().parseDocument(joinedSchema, options)
-
-            return document.definitions.filterIsInstance<ScalarTypeDefinition>().filterNot {
-                it.getDirectives("javaType").isNullOrEmpty()
-            }.associate {
-                val javaType = it.getDirectives("javaType").singleOrNull()
-                    ?: throw IllegalArgumentException("multiple @javaType directives are defined")
-                val value = javaType.argumentsByName["name"]?.value
-                    ?: throw IllegalArgumentException("@javaType directive must contains name argument")
-                it.name to (value as StringValue).value
-            }
-        }
 }

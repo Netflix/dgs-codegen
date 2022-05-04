@@ -29,9 +29,12 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.*
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
-import org.junit.jupiter.params.provider.Arguments.of
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
 
 class CodeGenTest {
@@ -657,7 +660,7 @@ class CodeGenTest {
             type Query {
                 people: [Person]
             }
-            
+
             type Person {
                 firstname: String
                 lastname: String
@@ -1372,6 +1375,67 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
         val expectedString = """
             return "Person{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'" +"}";
+        """.trimIndent()
+        val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(expectedString).isEqualTo(generatedString)
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateToStringMethodForSensitiveType() {
+
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            type Person {
+                firstname: String
+                lastname: String
+                password: String @sensitive(reason:"PII")
+            }
+            directive @sensitive on FIELD_DEFINITION
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+        val expectedString = """
+            return "Person{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'," +"password='" + "*****" + "'" +"}";
+        """.trimIndent()
+        val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
+        assertThat(expectedString).isEqualTo(generatedString)
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateToStringMethodForSensitiveInputType() {
+
+        val schema = """
+            type Query {
+                people(filter: PersonFilter): [Person]
+            }
+            input PersonFilter {
+                email: String @sensitive
+            }
+            directive @sensitive on INPUT_FIELD_DEFINITION
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
+        val expectedString = """
+            return "PersonFilter{" + "email='" + "*****" + "'" +"}";
         """.trimIndent()
         val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
         assertThat(expectedString).isEqualTo(generatedString)
@@ -2699,11 +2763,11 @@ It takes a title and such.
         @JvmStatic
         fun generateConstantsArguments(): Stream<Arguments> {
             return Stream.of(
-                of(
+                arguments(
                     true,
                     listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
                 ),
-                of(
+                arguments(
                     false,
                     listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
                 ),
@@ -2711,8 +2775,8 @@ It takes a title and such.
         }
 
         @JvmStatic
-        fun generateDataClassesWithParameterizedMappedTypesWrongCases() = Stream.of(
-            of("java.util.Map<String,String,>"),
+        fun generateDataClassesWithParameterizedMappedTypesWrongCases(): Stream<Arguments> = Stream.of(
+            arguments("java.util.Map<String,String,>"),
         )
     }
 }

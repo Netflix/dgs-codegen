@@ -40,7 +40,7 @@ fun generateKotlin2InputTypes(
     requiredTypes: Set<String>,
 ): List<FileSpec> {
 
-    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config)
+    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
 
     return document
         .getDefinitionsOfType(InputObjectTypeDefinition::class.java)

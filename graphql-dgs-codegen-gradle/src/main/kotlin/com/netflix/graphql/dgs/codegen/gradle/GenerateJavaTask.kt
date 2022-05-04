@@ -22,19 +22,24 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
+import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
 import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.PathSensitive
+import org.gradle.api.tasks.PathSensitivity
 import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
 import java.util.*
 
+@CacheableTask
 open class GenerateJavaTask : DefaultTask() {
     @Input
     var generatedSourcesDir: String = project.buildDir.absolutePath
 
+    @PathSensitive(PathSensitivity.RELATIVE)
     @InputFiles
     var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
 

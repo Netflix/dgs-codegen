@@ -49,7 +49,7 @@ fun generateKotlin2Interfaces(
         return emptyList()
     }
 
-    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config)
+    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
 
     // get a map of all interfaces > fields
     val interfaceFields = document.interfaceFields()

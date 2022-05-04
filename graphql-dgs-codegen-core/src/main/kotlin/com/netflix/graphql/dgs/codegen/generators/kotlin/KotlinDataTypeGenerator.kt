@@ -43,15 +43,19 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
-class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
-    private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
+class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
+    AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
+
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(KotlinDataTypeGenerator::class.java)
+    }
 
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
 
-        logger.info("Generating data type ${definition.name}")
+        logger.info("Generating data type {}", definition.name)
 
         val fields = definition.fieldDefinitions
             .filterSkipped()
@@ -69,7 +73,8 @@ class KotlinDataTypeGenerator(private val config: CodeGenConfig, private val doc
     }
 }
 
-class KotlinInputTypeGenerator(private val config: CodeGenConfig, private val document: Document) : AbstractKotlinDataTypeGenerator(config.packageNameTypes, config) {
+class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
+    AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
     private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
 
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
@@ -127,8 +132,12 @@ internal data class Field(
     val description: Description? = null
 )
 
-abstract class AbstractKotlinDataTypeGenerator(packageName: String, config: CodeGenConfig) {
-    protected val typeUtils = KotlinTypeUtils(packageName, config)
+abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected val config: CodeGenConfig, protected val document: Document) {
+    protected val typeUtils = KotlinTypeUtils(
+        packageName = packageName,
+        config = config,
+        document = document
+    )
 
     internal fun generate(
         name: String,
@@ -192,7 +201,7 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, config: Code
         }
 
         val unionTypes = document.getDefinitionsOfType(UnionTypeDefinition::class.java).filter { union ->
-            union.memberTypes.asSequence().map { it as graphql.language.TypeName }.any { it.name == name }
+            union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
         }
 
         val interfaceTypes = interfaces + unionTypes

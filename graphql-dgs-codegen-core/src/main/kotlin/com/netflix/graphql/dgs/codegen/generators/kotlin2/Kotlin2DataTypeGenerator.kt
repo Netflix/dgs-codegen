@@ -51,7 +51,7 @@ fun generateKotlin2DataTypes(
     requiredTypes: Set<String>,
 ): List<FileSpec> {
 
-    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config)
+    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
 
     // get a map of all interfaces > fields
     val interfaceFields = document.interfaceFields()

@@ -79,7 +79,8 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                         it.name,
                         typeUtils.findReturnType(it.type, useInterfaceType),
                         overrideGetter = overrideGetter,
-                        description = it.description
+                        description = it.description,
+                        directives = it.directives.map { directive -> directive.name }
                     )
                 }
                 .plus(
@@ -88,7 +89,8 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                             it.name,
                             typeUtils.findReturnType(it.type, useInterfaceType),
                             overrideGetter = overrideGetter,
-                            description = it.description
+                            description = it.description,
+                            directives = it.directives.map { directive -> directive.name }
                         )
                     }
                 )
@@ -136,13 +138,13 @@ class InputTypeGenerator(private val config: CodeGenConfig, document: Document) 
                     else -> CodeBlock.of("\$L", defVal)
                 }
             }
-            Field(name = it.name, type = typeUtils.findReturnType(it.type), initialValue = defaultValue, description = it.description)
+            Field(name = it.name, type = typeUtils.findReturnType(it.type), initialValue = defaultValue, description = it.description, directives = it.directives.map { directive -> directive.name })
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
         return generate(name, emptyList(), fieldDefinitions, definition.description)
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null)
+internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<String> = listOf<String>())
 
 abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig, document: Document) {
     internal val typeUtils = TypeUtils(packageName, config, document)
@@ -262,9 +264,10 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         val methodBuilder = MethodSpec.methodBuilder("toString").addAnnotation(Override::class.java).addModifiers(Modifier.PUBLIC).returns(String::class.java)
         val toStringBody = StringBuilder("return \"${javaType.build().name}{\" + ")
         fieldDefinitions.forEachIndexed { index, field ->
+            val fieldValueStatement = if (field.directives.contains("sensitive")) "\"*****\"" else ReservedKeywordSanitizer.sanitize(field.name)
             toStringBody.append(
                 """
-                "${field.name}='" + ${ReservedKeywordSanitizer.sanitize(field.name)} + "'${if (index < fieldDefinitions.size - 1) "," else ""}" +
+                "${field.name}='" + $fieldValueStatement + "'${if (index < fieldDefinitions.size - 1) "," else ""}" +
                 """.trimIndent()
             )
         }
