@@ -26,7 +26,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     compileOnly 'com.graphql-java:graphql-java'
     compileOnly 'com.fasterxml.jackson.core:jackson-databind'
-    implementation "org.reflections:reflections"
 
     testImplementation 'com.netflix.graphql.dgs:graphql-dgs-extended-scalars'
     testImplementation 'com.graphql-java:graphql-java'

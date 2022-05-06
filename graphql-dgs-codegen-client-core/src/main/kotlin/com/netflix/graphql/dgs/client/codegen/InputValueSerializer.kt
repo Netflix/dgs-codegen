@@ -17,23 +17,32 @@
 package com.netflix.graphql.dgs.client.codegen
 
 import graphql.schema.Coercing
-import org.reflections.ReflectionUtils
-import java.lang.reflect.Field
 import java.time.*
 import java.util.*
+import kotlin.reflect.KProperty1
+import kotlin.reflect.full.allSuperclasses
+import kotlin.reflect.full.hasAnnotation
+import kotlin.reflect.full.memberProperties
+import kotlin.reflect.jvm.isAccessible
+
+/**
+ * Marks this property invisible for input value serialization.
+ */
+@Target(AnnotationTarget.PROPERTY)
+internal annotation class Transient
 
 class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) {
     companion object {
-        val toStringClasses = setOf(
-            String::class.java,
-            LocalDateTime::class.java,
-            LocalDate::class.java,
-            LocalTime::class.java,
-            TimeZone::class.java,
-            Date::class.java,
-            OffsetDateTime::class.java,
-            Currency::class.java,
-            Instant::class.java
+        private val toStringClasses = setOf(
+            String::class,
+            LocalDateTime::class,
+            LocalDate::class,
+            LocalTime::class,
+            TimeZone::class,
+            Date::class,
+            OffsetDateTime::class,
+            Currency::class,
+            Instant::class
         )
     }
 
@@ -42,18 +51,16 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
             return "null"
         }
 
-        val type = input::class.java
-
-        return if (type in scalars) {
-            """"${scalars.getValue(type).serialize(input)}""""
-        } else if (type.isPrimitive || type.isAssignableFrom(java.lang.Integer::class.java) || type.isAssignableFrom(java.lang.Long::class.java) || type.isAssignableFrom(java.lang.Double::class.java) || type.isAssignableFrom(java.lang.Float::class.java) || type.isAssignableFrom(java.lang.Boolean::class.java) || type.isAssignableFrom(java.lang.Short::class.java) || type.isAssignableFrom(java.lang.Byte::class.java)) {
+        return if (input::class.java in scalars) {
+            """"${scalars.getValue(input::class.java).serialize(input)}""""
+        } else if (input::class.javaPrimitiveType != null) {
             input.toString()
-        } else if (type.isEnum) {
+        } else if (input::class.java.isEnum) {
             (input as Enum<*>).name
-        } else if (type in toStringClasses) {
+        } else if (input::class in toStringClasses) {
             // Call toString for known types, in case no scalar is found. This is for backward compatibility.
             """"${input.toString().replace("\\", "\\\\").replace("\"", "\\\"")}""""
-        } else if (input is List<*>) {
+        } else if (input is Collection<*>) {
             """[${input.filterNotNull().joinToString(", ") { listItem -> serialize(listItem) }}]"""
         } else if (input is Map<*, *>) {
             input.entries.joinToString(", ", "{ ", " }") { (key, value) ->
@@ -64,24 +71,25 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
                 }
             }
         } else {
-            val fields = LinkedList<Field>()
-            ReflectionUtils.getAllFields(input.javaClass).forEach {
-                if (!it.isSynthetic) {
-                    it.isAccessible = true
-                    fields.add(it)
+            val classes = sequenceOf(input::class) + input::class.allSuperclasses.asSequence() - Any::class
+            val properties = mutableMapOf<String, KProperty1<*, *>>()
+
+            for (klass in classes) {
+                for (property in klass.memberProperties) {
+                    if (property.name in properties || property.isAbstract || property.hasAnnotation<Transient>()) {
+                        continue
+                    }
+
+                    property.isAccessible = true
+                    properties[property.name] = property
                 }
             }
 
-            fields.filter { !it.type::class.isCompanion }.mapNotNull {
-                val nestedValue = it.get(input)
-                if (nestedValue != null && nestedValue::class.java == input::class.java) {
-                    """${it.name}:$nestedValue"""
-                } else if (nestedValue != null && !nestedValue::class.isCompanion) {
-                    """${it.name}:${serialize(nestedValue)}"""
-                } else {
-                    null
-                }
-            }.joinToString(", ", "{", " }")
+            properties.values.asSequence()
+                .mapNotNull { property ->
+                    val value = property.call(input)
+                    value?.let { """${property.name}:${serialize(value)}""" }
+                }.joinToString(", ", "{", "}")
         }
     }
 }

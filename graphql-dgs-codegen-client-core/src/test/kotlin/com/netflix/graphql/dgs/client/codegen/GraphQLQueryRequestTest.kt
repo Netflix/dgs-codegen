@@ -33,7 +33,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
-        assertThat(result).isEqualTo("query {test(actors: \"actorA\", movies: [\"movie1\", \"movie2\"]) }")
+        assertThat(result).isEqualTo("""query {test(actors: "actorA", movies: ["movie1", "movie2"]) }""")
     }
 
     @Test
@@ -54,7 +54,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
-        assertThat(result).isEqualTo("query {test(name: \"noname\", age: 30) }")
+        assertThat(result).isEqualTo("""query {test(name: "noname", age: 30) }""")
     }
 
     @Test
@@ -64,7 +64,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
-        assertThat(result).isEqualTo("query {test(movie: {movieId:1234, name:\"testMovie\" }) }")
+        assertThat(result).isEqualTo("""query {test(movie: {movieId:1234, name:"testMovie"}) }""")
     }
 
     @Test
@@ -74,7 +74,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("query {test(movie: {movieId:1234, name:\"testMovie\" }){ name movieId } }")
+        assertThat(result).isEqualTo("""query {test(movie: {movieId:1234, name:"testMovie"}){ name movieId } }""")
     }
 
     @Test
@@ -84,7 +84,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("mutation {testMutation(movie: {movieId:1234, name:\"testMovie\" }){ name movieId } }")
+        assertThat(result).isEqualTo("""mutation {testMutation(movie: {movieId:1234, name:"testMovie"}){ name movieId } }""")
     }
 
     @Test
@@ -94,7 +94,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("query TestNamedQuery {test(movie: {movieId:123, name:\"greatMovie\" }){ name movieId } }")
+        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId:123, name:"greatMovie"}){ name movieId } }""")
     }
 
     @Test
@@ -107,7 +107,7 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
 
         val result = request.serialize()
-        assertThat(result).isEqualTo("query TestNamedQuery {test(movie: {movieId:123, name:\"greatMovie\" }, dateRange: \"01/01/2020-05/11/2021\") }")
+        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId:123, name:"greatMovie"}, dateRange: "01/01/2020-05/11/2021") }""")
     }
 
     @Test
@@ -147,7 +147,7 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
 
         val result = request.serialize()
-        assertThat(result).isEqualTo("query TestNamedQuery {test(movie: {movieId:123, name:\"greatMovie\", window:\"01/01/2020-05/11/2021\" }) }")
+        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId:123, name:"greatMovie", window:"01/01/2020-05/11/2021"}) }""")
     }
 
     @Test
@@ -158,7 +158,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
         val result = request.serialize()
-        assertThat(result).isEqualTo("query {test(actors: { name: \"actorA\", movies: [\"movie1\", \"movie2\"] }, movie: {movieId:123, name:\"greatMovie\", window:\"01/01/2020-05/11/2021\" }) }")
+        assertThat(result).isEqualTo("""query {test(actors: { name: "actorA", movies: ["movie1", "movie2"] }, movie: {movieId:123, name:"greatMovie", window:"01/01/2020-05/11/2021"}) }""")
     }
 }
 
