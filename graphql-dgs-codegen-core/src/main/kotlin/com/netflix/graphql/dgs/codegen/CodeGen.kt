@@ -131,13 +131,13 @@ class CodeGen(private val config: CodeGenConfig) {
                             .fieldDefinition(
                                 FieldDefinition.newFieldDefinition()
                                     .name("hasNextPage")
-                                    .type(TypeName("Boolean!"))
+                                    .type(NonNullType(TypeName("Boolean")))
                                     .build()
                             )
                             .fieldDefinition(
                                 FieldDefinition.newFieldDefinition()
                                     .name("hasPreviousPage")
-                                    .type(TypeName("Boolean!"))
+                                    .type(NonNullType(TypeName("Boolean")))
                                     .build()
                             )
                             .fieldDefinition(

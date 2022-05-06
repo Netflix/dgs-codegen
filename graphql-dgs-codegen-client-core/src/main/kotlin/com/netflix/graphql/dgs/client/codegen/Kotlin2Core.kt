@@ -46,7 +46,8 @@ abstract class GraphQLInput {
         private val inputSerializer = InputValueSerializer()
 
         protected fun inputToString(value: Any?): String {
-            return inputSerializer.serialize(value)
+            // TODO escape newlines in InputValueSerializer
+            return inputSerializer.serialize(value).replace("\n", "\\n")
         }
 
         val defaults: ThreadLocal<MutableSet<String>> = ThreadLocal.withInitial { mutableSetOf() }
