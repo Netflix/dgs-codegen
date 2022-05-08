@@ -16,6 +16,11 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import graphql.language.Argument
+import graphql.language.AstPrinter
+import graphql.language.Field
+import graphql.language.OperationDefinition
+import graphql.language.SelectionSet
 import graphql.schema.Coercing
 
 class GraphQLQueryRequest(
@@ -30,35 +35,37 @@ class GraphQLQueryRequest(
     private val projectionSerializer = ProjectionSerializer(inputValueSerializer)
 
     fun serialize(): String {
-        val builder = StringBuilder()
-        builder.append(query.getOperationType())
-        if (query.name != null) {
-            builder.append(" ").append(query.name)
+        val operationDef = OperationDefinition.newOperationDefinition()
+
+        query.name?.let { operationDef.name(it) }
+        query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
+
+        if (query.variableDefinitions.isNotEmpty()) {
+            operationDef.variableDefinitions(query.variableDefinitions)
         }
-        builder.append(" {").append(query.getOperationName())
-        val input: Map<String, Any?> = query.input
-        if (input.isNotEmpty()) {
-            builder.append("(")
-            val inputEntryIterator = input.entries.iterator()
-            while (inputEntryIterator.hasNext()) {
-                val (key, value) = inputEntryIterator.next()
-                builder.append(key)
-                builder.append(": ")
-                builder.append(inputValueSerializer.serialize(value))
-                if (inputEntryIterator.hasNext()) {
-                    builder.append(", ")
+
+        val selection = Field.newField(query.getOperationName())
+        if (query.input.isNotEmpty()) {
+            selection.arguments(
+                query.input.map { (name, value) ->
+                    Argument(name, inputValueSerializer.toValue(value))
                 }
+            )
+        }
+
+        if (projection != null) {
+            val selectionSet = if (projection is BaseSubProjectionNode<*, *>) {
+                projectionSerializer.toSelectionSet(projection.root() as BaseProjectionNode)
+            } else {
+                projectionSerializer.toSelectionSet(projection)
             }
-            builder.append(")")
+            if (selectionSet.selections.isNotEmpty()) {
+                selection.selectionSet(selectionSet)
+            }
         }
 
-        if (projection is BaseSubProjectionNode<*, *>) {
-            builder.append(projectionSerializer.serialize(projection.root() as BaseProjectionNode))
-        } else if (projection != null) {
-            builder.append(projectionSerializer.serialize(projection))
-        }
+        operationDef.selectionSet(SelectionSet.newSelectionSet().selection(selection.build()).build())
 
-        builder.append(" }")
-        return builder.toString()
+        return AstPrinter.printAst(operationDef.build())
     }
 }

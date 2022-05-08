@@ -18,12 +18,17 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
+import graphql.language.OperationDefinition
 import graphql.language.StringValue
 import graphql.language.Value
+import graphql.parser.InvalidSyntaxException
+import graphql.parser.Parser
 import graphql.schema.Coercing
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
+import java.util.Optional
 import java.util.UUID
 
 class GraphQLQueryRequestTest {
@@ -35,7 +40,12 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query {test(actors: "actorA", movies: ["movie1", "movie2"]) }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query {
+            |  test(actors: "actorA", movies: ["movie1", "movie2"])
+            |}""".trimMargin()
+        )
     }
 
     @Test
@@ -45,7 +55,12 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
-        assertThat(result).isEqualTo("query {test(movies: [1234, 5678]) }")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query {
+            |  test(movies: [1234, 5678])
+            |}""".trimMargin()
+        )
     }
 
     @Test
@@ -56,7 +71,12 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query {test(name: "noname", age: 30) }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query {
+            |  test(name: "noname", age: 30)
+            |}""".trimMargin()
+        )
     }
 
     @Test
@@ -66,7 +86,12 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query {test(movie: {movieId : 1234, name : "testMovie"}) }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query {
+            |  test(movie: {movieId : 1234, name : "testMovie"})
+            |}""".trimMargin()
+        )
     }
 
     @Test
@@ -76,7 +101,15 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query {test(movie: {movieId : 1234, name : "testMovie"}){ name movieId } }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query {
+            |  test(movie: {movieId : 1234, name : "testMovie"}) {
+            |    name
+            |    movieId
+            |  }
+            |}""".trimMargin()
+        )
     }
 
     @Test
@@ -86,7 +119,15 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("""mutation {testMutation(movie: {movieId : 1234, name : "testMovie"}){ name movieId } }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """mutation {
+            |  testMutation(movie: {movieId : 1234, name : "testMovie"}) {
+            |    name
+            |    movieId
+            |  }
+            |}""".trimMargin()
+        )
     }
 
     @Test
@@ -96,7 +137,15 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId : 123, name : "greatMovie"}){ name movieId } }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query TestNamedQuery {
+            |  test(movie: {movieId : 123, name : "greatMovie"}) {
+            |    name
+            |    movieId
+            |  }
+            |}""".trimMargin()
+        )
     }
 
     @Test
@@ -109,39 +158,101 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
 
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021") }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query TestNamedQuery {
+            |  test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021")
+            |}""".trimMargin()
+        )
     }
 
     @Test
     fun `serialize with UUID scalar - #416`() {
+        val uuidCoercing = object : Coercing<UUID, String> {
+            override fun serialize(uuid: Any): String {
+                return uuid.toString()
+            }
+
+            override fun parseValue(input: Any): UUID {
+                return UUID.fromString(input.toString())
+            }
+
+            override fun parseLiteral(input: Any): UUID {
+                return UUID.fromString(input.toString())
+            }
+
+            override fun valueToLiteral(input: Any): Value<*> {
+                return StringValue.of(serialize(input))
+            }
+        }
         val randomUUID = UUID.randomUUID()
         val query = TestNamedGraphQLQuery().apply {
             input["id"] = randomUUID
         }
 
-        val request =
-            GraphQLQueryRequest(query, MovieProjection(), mapOf(UUID::class.java to UUIDScalar))
+        val request = GraphQLQueryRequest(query, MovieProjection(), mapOf(UUID::class.java to uuidCoercing))
 
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query TestNamedQuery {test(id: "$randomUUID") }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query TestNamedQuery {
+            |  test(id: "$randomUUID")
+            |}""".trimMargin()
+        )
     }
 
-    object UUIDScalar : Coercing<UUID, String> {
-        override fun serialize(uuid: Any): String {
-            return uuid.toString()
-        }
+    @Test
+    fun testQueryWithInlineFragment() {
+        val query = TestNamedGraphQLQuery()
+        val projection = EntitiesProjectionRoot().onMovie(Optional.of("Movie"))
+            .moveId().title().releaseYear()
+            .reviews(username = "Foo", score = 10).username().score()
+            .root()
+        val request = GraphQLQueryRequest(query, projection)
 
-        override fun parseValue(input: Any): UUID {
-            return UUID.fromString(input.toString())
-        }
+        val serialized = request.serialize()
+        assertValidQuery(serialized)
+        assertThat(serialized).isEqualTo(
+            """query TestNamedQuery {
+              |  test {
+              |    ... on Movie {
+              |      __typename
+              |      moveId
+              |      title
+              |      releaseYear
+              |      reviews(username: "Foo", score: 10) {
+              |        username
+              |        score
+              |      }
+              |    }
+              |  }
+              |}""".trimMargin()
+        )
+    }
 
-        override fun parseLiteral(input: Any): UUID {
-            return UUID.fromString(input.toString())
+    @Test
+    fun testQueryFieldWithEmptyProjectionAndInputArguments() {
+        val query = TestNamedGraphQLQuery()
+        data class TitleFormat(val uppercase: Boolean)
+        val projection = object : BaseProjectionNode() {
+            init {
+                fields["movieId"] = null
+                fields["title"] = object : BaseProjectionNode() {}
+                inputArguments["title"] = listOf(InputArgument(name = "format", value = TitleFormat(true)))
+            }
         }
+        val request = GraphQLQueryRequest(query, projection)
 
-        override fun valueToLiteral(input: Any): Value<*> {
-            return StringValue.of(serialize(input))
-        }
+        val serialized = request.serialize()
+        assertValidQuery(serialized)
+        assertThat(serialized).isEqualTo(
+            """query TestNamedQuery {
+              |  test {
+              |    movieId
+              |    title(format: {uppercase : true})
+              |  }
+              |}""".trimMargin()
+        )
     }
 
     @Test
@@ -153,7 +264,12 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
 
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"}) }""")
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query TestNamedQuery {
+            |  test(movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"})
+            |}""".trimMargin()
+        )
     }
 
     @Test
@@ -164,7 +280,53 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query {test(actors: {name : "actorA", movies : ["movie1", "movie2"]}, movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"}) }""")
+
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query {
+            |  test(actors: {name : "actorA", movies : ["movie1", "movie2"]}, movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"})
+            |}""".trimMargin()
+        )
+    }
+
+    @Test
+    fun testEntitiesQuery() {
+        val query = EntitiesGraphQLQuery.Builder()
+            .addRepresentationAsVariable(mapOf("__typename" to "Movie", "id" to 1234))
+            .build()
+        val projection = EntitiesProjectionRoot().onMovie(Optional.of("Movie"))
+            .moveId().title().releaseYear()
+            .root()
+        val request = GraphQLQueryRequest(query, projection)
+        val serialized = request.serialize()
+
+        assertValidQuery(serialized)
+        assertThat(serialized).isEqualTo(
+            """query (${'$'}representations: [_Any!]!) {
+              |  _entities(representations: ${'$'}representations) {
+              |    ... on Movie {
+              |      __typename
+              |      moveId
+              |      title
+              |      releaseYear
+              |    }
+              |  }
+              |}
+        """.trimMargin()
+        )
+    }
+
+    /**
+     * Assert that the GraphQL query is syntactically valid.
+     */
+    private fun assertValidQuery(query: String) {
+        val doc = try {
+            Parser().parseDocument(query)
+        } catch (exc: InvalidSyntaxException) {
+            throw AssertionError("The query failed to parse: ${exc.localizedMessage}")
+        }
+        doc.getFirstDefinitionOfType(OperationDefinition::class.java)
+            .orElseThrow { AssertionError("No operation definition found in document") }
     }
 }
 
