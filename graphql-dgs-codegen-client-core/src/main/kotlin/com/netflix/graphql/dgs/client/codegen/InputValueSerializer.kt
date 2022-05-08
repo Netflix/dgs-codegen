@@ -16,10 +16,28 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import graphql.language.ArrayValue
+import graphql.language.AstPrinter
+import graphql.language.BooleanValue
+import graphql.language.EnumValue
+import graphql.language.FloatValue
+import graphql.language.IntValue
+import graphql.language.NullValue
+import graphql.language.ObjectField
+import graphql.language.ObjectValue
+import graphql.language.StringValue
+import graphql.language.Value
 import graphql.schema.Coercing
-import java.time.*
-import java.util.*
-import kotlin.reflect.KProperty1
+import java.math.BigDecimal
+import java.math.BigInteger
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.OffsetDateTime
+import java.util.Currency
+import java.util.Date
+import java.util.TimeZone
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
@@ -47,49 +65,90 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
     }
 
     fun serialize(input: Any?): String {
+        return AstPrinter.printAst(toValue(input))
+    }
+
+    private fun toValue(input: Any?): Value<*> {
         if (input == null) {
-            return "null"
+            return NullValue.newNullValue().build()
         }
 
-        return if (input::class.java in scalars) {
-            """"${scalars.getValue(input::class.java).serialize(input)}""""
-        } else if (input::class.javaPrimitiveType != null) {
-            input.toString()
-        } else if (input::class.java.isEnum) {
-            (input as Enum<*>).name
-        } else if (input::class in toStringClasses) {
-            // Call toString for known types, in case no scalar is found. This is for backward compatibility.
-            """"${input.toString().replace("\\", "\\\\").replace("\"", "\\\"")}""""
-        } else if (input is Collection<*>) {
-            """[${input.filterNotNull().joinToString(", ") { listItem -> serialize(listItem) }}]"""
-        } else if (input is Map<*, *>) {
-            input.entries.joinToString(", ", "{ ", " }") { (key, value) ->
-                if (value != null) {
-                    """$key: ${serialize(value)}"""
-                } else {
-                    """$key: null"""
-                }
-            }
-        } else {
-            val classes = sequenceOf(input::class) + input::class.allSuperclasses.asSequence() - Any::class
-            val properties = mutableMapOf<String, KProperty1<*, *>>()
-
-            for (klass in classes) {
-                for (property in klass.memberProperties) {
-                    if (property.name in properties || property.isAbstract || property.hasAnnotation<Transient>()) {
-                        continue
-                    }
-
-                    property.isAccessible = true
-                    properties[property.name] = property
-                }
-            }
-
-            properties.values.asSequence()
-                .mapNotNull { property ->
-                    val value = property.call(input)
-                    value?.let { """${property.name}:${serialize(value)}""" }
-                }.joinToString(", ", "{", "}")
+        if (input::class.java in scalars) {
+            return scalars.getValue(input::class.java).valueToLiteral(input)
         }
+
+        if (input::class in toStringClasses) {
+            return StringValue.of(input.toString())
+        }
+
+        if (input is String) {
+            return StringValue.of(input)
+        }
+
+        if (input is Float) {
+            return FloatValue.of(input.toDouble())
+        }
+
+        if (input is Double) {
+            return FloatValue.of(input)
+        }
+
+        if (input is BigDecimal) {
+            return FloatValue.newFloatValue(input).build()
+        }
+
+        if (input is BigInteger) {
+            return IntValue.newIntValue(input).build()
+        }
+
+        if (input is Int) {
+            return IntValue.of(input)
+        }
+
+        if (input is Number) {
+            return IntValue.newIntValue(BigInteger.valueOf(input.toLong())).build()
+        }
+
+        if (input is Boolean) {
+            return BooleanValue.of(input)
+        }
+
+        if (input is Enum<*>) {
+            return EnumValue.newEnumValue(input.name).build()
+        }
+
+        if (input is Collection<*>) {
+            return ArrayValue.newArrayValue()
+                .values(input.map { toValue(it) })
+                .build()
+        }
+
+        if (input is Map<*, *>) {
+            return ObjectValue.newObjectValue()
+                .objectFields(input.map { (key, value) -> ObjectField(key.toString(), toValue(value)) })
+                .build()
+        }
+
+        val classes = sequenceOf(input::class) + input::class.allSuperclasses.asSequence() - Any::class
+        val propertyValues = mutableMapOf<String, Any?>()
+
+        for (klass in classes) {
+            for (property in klass.memberProperties) {
+                if (property.name in propertyValues || property.isAbstract || property.hasAnnotation<Transient>()) {
+                    continue
+                }
+
+                property.isAccessible = true
+                propertyValues[property.name] = property.call(input)
+            }
+        }
+
+        val objectFields = propertyValues.asSequence()
+            .filter { (_, value) -> value != null }
+            .map { (name, value) -> ObjectField(name, toValue(value)) }
+            .toList()
+        return ObjectValue.newObjectValue()
+            .objectFields(objectFields)
+            .build()
     }
 }

@@ -75,6 +75,7 @@
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
             "locked": "18.0"
@@ -203,6 +204,7 @@
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
             "locked": "18.0"

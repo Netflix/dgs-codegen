@@ -1,5 +1,11 @@
 {
     "apiDependenciesMetadata": {
+        "com.graphql-java:graphql-java": {
+            "locked": "18.0"
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "4.10.1"
+        },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.6.21"
         }
@@ -25,14 +31,14 @@
         "com.fasterxml.jackson.core:jackson-databind": {
             "locked": "2.13.2"
         },
-        "com.graphql-java:graphql-java": {
-            "locked": "18.0"
-        },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "locked": "4.10.1"
         }
     },
     "implementationDependenciesMetadata": {
+        "com.graphql-java:graphql-java": {
+            "locked": "18.0"
+        },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "locked": "4.10.1"
         },
@@ -64,6 +70,9 @@
         }
     },
     "runtimeClasspath": {
+        "com.graphql-java:graphql-java": {
+            "locked": "18.0"
+        },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "locked": "4.10.1"
         },
