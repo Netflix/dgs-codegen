@@ -8,7 +8,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Setup Java
         uses: actions/setup-java@v3
@@ -55,13 +55,13 @@ jobs:
           ./gradlew --info check publishToMavenLocal --warning-mode all
 
       - name: Clone dgs-examples-java
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
         with:
           repository: Netflix/dgs-examples-java
           path: build/examples/dgs-examples-java
 
       - name: Clone dgs-examples-kotlin
-        uses: actions/checkout@master
+        uses: actions/checkout@v3
         with:
           repository: Netflix/dgs-examples-kotlin
           path: build/examples/dgs-examples-kotlin
