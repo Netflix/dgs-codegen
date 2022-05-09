@@ -77,7 +77,6 @@ fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
                     }.joinToString(":")
                 noStdlib = true
                 noReflect = true
-                skipRuntimeVersionCheck = true
             }
         )
         assertThat(exitCode).isEqualTo(ExitCode.OK)
