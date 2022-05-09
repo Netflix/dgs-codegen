@@ -23,19 +23,32 @@ package com.netflix.graphql.dgs
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import java.io.File
+import org.junit.jupiter.api.io.TempDir
+import java.nio.file.Path
+import java.nio.file.Paths
+import kotlin.io.path.div
 
 /**
  * A simple unit test for the 'com.netflix.graphql.dgs.greeting' plugin.
  */
 class CodegenGradlePluginTest {
 
+    @TempDir
+    lateinit var projectDir: Path
+
+    @BeforeEach
+    fun setUp() {
+        val projectResourcePath = Paths.get("src", "test", "resources", "test-project")
+        projectResourcePath.toFile().copyRecursively(target = projectDir.toFile())
+    }
+
     @Test
     fun taskRegisteredSuccessfully() {
         // get a list of Gradle tasks
         val result = GradleRunner.create()
-            .withProjectDir(File("src/test/resources/test-project/"))
+            .withProjectDir(projectDir.toFile())
             .withPluginClasspath()
             .withArguments(
                 "-c", "smoke_test_settings.gradle",
@@ -51,7 +64,7 @@ class CodegenGradlePluginTest {
     fun taskDependenciesRegisteredSuccessfully() {
         // get a list of Gradle tasks
         val result = GradleRunner.create()
-            .withProjectDir(File("src/test/resources/test-project/"))
+            .withProjectDir(projectDir.toFile())
             .withPluginClasspath()
             .withArguments(
                 "-c", "smoke_test_settings.gradle",
@@ -69,7 +82,7 @@ class CodegenGradlePluginTest {
     fun sourcesGenerated() {
         // build a project
         val result = GradleRunner.create()
-            .withProjectDir(File("src/test/resources/test-project/"))
+            .withProjectDir(projectDir.toFile())
             .withPluginClasspath()
             .withArguments(
                 "--stacktrace",
@@ -83,14 +96,15 @@ class CodegenGradlePluginTest {
         // Verify the result
         assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
         // Verify that POJOs are generated in the configured directory
-        assertThat(File(EXPECTED_PATH + "Result.java").exists()).isTrue
+
+        assertThat(projectDir / EXPECTED_PATH / "Result.java").exists()
     }
 
     @Test
     fun sourcesGenerated_UsingDefaultPath() {
         // build a project
         val result = GradleRunner.create()
-            .withProjectDir(File("src/test/resources/test-project/"))
+            .withProjectDir(projectDir.toFile())
             .withPluginClasspath()
             .withArguments(
                 "--stacktrace",
@@ -105,14 +119,36 @@ class CodegenGradlePluginTest {
         // Verify the result
         assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
         // Verify that POJOs are generated in the configured directory
-        assertThat(File(EXPECTED_DEFAULT_PATH + "Result.java").exists()).isTrue
+        assertThat(projectDir / EXPECTED_DEFAULT_PATH / "Result.java").exists()
+        assertThat(projectDir / EXPECTED_DEFAULT_PATH / "Result.java").exists()
+    }
+
+    @Test
+    fun sourcesGenerated_UsingOverridenOutputDir() {
+        // build a project
+        val result = GradleRunner.create()
+            .withProjectDir(projectDir.toFile())
+            .withPluginClasspath()
+            .withArguments(
+                "--stacktrace",
+                "-b", "build_with_output_dir.gradle",
+                "clean",
+                "build"
+            ).forwardOutput()
+            .withDebug(true)
+            .build()
+
+        // Verify the result
+        assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        // Verify that POJOs are generated in the configured directory
+        assertThat(projectDir / BUILD_DIR / "custom-generated" / SOURCES_PATH / "Result.java").exists()
     }
 
     @Test
     fun sourcesGenerated_OmitNullInputFields() {
         // build a project
         val result = GradleRunner.create()
-            .withProjectDir(File("src/test/resources/test-project/"))
+            .withProjectDir(projectDir.toFile())
             .withPluginClasspath()
             .withArguments(
                 "--stacktrace",
@@ -128,12 +164,14 @@ class CodegenGradlePluginTest {
         // Verify the result
         assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
         // Verify that POJOs are generated in the configured directory
-        assertThat(File(EXPECTED_DEFAULT_PATH + "Result.java").exists()).isTrue
-        assertThat(File(EXPECTED_DEFAULT_PATH + "Filter.java").exists()).isTrue
+        assertThat(projectDir / EXPECTED_DEFAULT_PATH / "Result.java").exists()
+        assertThat(projectDir / EXPECTED_DEFAULT_PATH / "Filter.java").exists()
     }
 
     companion object {
-        const val EXPECTED_PATH = "src/test/resources/test-project/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
-        const val EXPECTED_DEFAULT_PATH = "src/test/resources/test-project/build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
+        private val BUILD_DIR = Paths.get("build")
+        private val SOURCES_PATH = Paths.get("com", "netflix", "testproject", "graphql", "types")
+        private val EXPECTED_PATH = BUILD_DIR / "graphql" / "generated" / "sources" / "dgs-codegen" / SOURCES_PATH
+        private val EXPECTED_DEFAULT_PATH = BUILD_DIR / "generated" / "sources" / "dgs-codegen" / SOURCES_PATH
     }
 }
