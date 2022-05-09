@@ -68,9 +68,13 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
         return AstPrinter.printAst(toValue(input))
     }
 
-    private fun toValue(input: Any?): Value<*> {
+    fun toValue(input: Any?): Value<*> {
         if (input == null) {
             return NullValue.newNullValue().build()
+        }
+
+        if (input is Value<*>) {
+            return input
         }
 
         if (input::class.java in scalars) {

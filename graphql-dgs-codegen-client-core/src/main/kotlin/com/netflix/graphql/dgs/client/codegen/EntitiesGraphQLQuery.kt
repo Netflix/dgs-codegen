@@ -17,40 +17,53 @@
 package com.netflix.graphql.dgs.client.codegen
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import java.util.*
+import graphql.language.ListType
+import graphql.language.NonNullType
+import graphql.language.TypeName
+import graphql.language.VariableDefinition
+import graphql.language.VariableReference
 
-class EntitiesGraphQLQuery : GraphQLQuery {
-    val variables: MutableMap<String, Any> = LinkedHashMap()
+class EntitiesGraphQLQuery(representations: List<Any>) : GraphQLQuery() {
 
-    constructor(representations: List<Any>?) {
-        variables["representations"] = representations!!
-    }
+    val variables: Map<String, Any> = mapOf(REPRESENTATIONS_NAME to representations)
 
-    constructor()
-
-    override fun getOperationType(): String {
-        return "query(\$representations: [_Any!]!)"
+    init {
+        variableDefinitions += VariableDefinition.newVariableDefinition()
+            .name(REPRESENTATIONS_NAME)
+            .type(
+                NonNullType.newNonNullType(
+                    ListType.newListType(
+                        NonNullType.newNonNullType(
+                            TypeName.newTypeName("_Any").build()
+                        ).build()
+                    ).build()
+                ).build()
+            )
+            .build()
+        input[REPRESENTATIONS_NAME] = VariableReference.newVariableReference().name(REPRESENTATIONS_NAME).build()
     }
 
     override fun getOperationName(): String {
-        return "_entities(representations: \$representations)"
+        return "_entities"
     }
 
     class Builder {
-        private val representations: MutableList<Any> = ArrayList()
-        val mapper = ObjectMapper()
+        private val representations = mutableListOf<Any>()
 
         fun build(): EntitiesGraphQLQuery {
             return EntitiesGraphQLQuery(representations)
         }
 
         fun addRepresentationAsVariable(representation: Any): Builder {
-            representations.add(mapper.convertValue(representation, HashMap::class.java))
+            representations += mapper.convertValue(representation, HashMap::class.java)
             return this
         }
     }
 
     companion object {
+        private val mapper = ObjectMapper()
+        private const val REPRESENTATIONS_NAME = "representations"
+
         fun newRequest(): Builder {
             return Builder()
         }

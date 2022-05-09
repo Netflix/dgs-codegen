@@ -16,52 +16,63 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
-import java.util.*
+import graphql.language.Argument
+import graphql.language.AstPrinter
+import graphql.language.Field
+import graphql.language.InlineFragment
+import graphql.language.SelectionSet
+import graphql.language.TypeName
 
 class ProjectionSerializer(private val inputValueSerializer: InputValueSerializer) {
 
-    fun serialize(projection: BaseProjectionNode, isFragment: Boolean = false): String {
-        if (projection.fields.isEmpty() && projection.fragments.isEmpty()) {
-            return ""
+    fun toSelectionSet(projection: BaseProjectionNode): SelectionSet {
+        val selectionSet = SelectionSet.newSelectionSet()
+
+        for ((fieldName, value) in projection.fields) {
+            val fieldSelection = Field.newField()
+                .name(fieldName)
+                .arguments(
+                    projection.inputArguments[fieldName].orEmpty().map { (argName, values) ->
+                        Argument(argName, inputValueSerializer.toValue(values))
+                    }
+                )
+            if (value is BaseProjectionNode) {
+                val fieldSelectionSet = toSelectionSet(value)
+                if (fieldSelectionSet.selections.isNotEmpty()) {
+                    fieldSelection.selectionSet(fieldSelectionSet)
+                }
+            } else if (value != null) {
+                fieldSelection.selectionSet(
+                    SelectionSet.newSelectionSet()
+                        .selection(Field.newField(value.toString()).build())
+                        .build()
+                )
+            }
+            selectionSet.selection(fieldSelection.build())
         }
 
-        val prefix = if (isFragment) {
-            val schemaType = projection.schemaType.orElse(
-                projection::class.java.name
-                    .substringAfterLast(".")
-                    .substringAfterLast("_")
-                    .substringBefore("Projection")
+        for (fragment in projection.fragments) {
+            val typeCondition = fragment.schemaType.map { TypeName(it) }
+                .orElseGet {
+                    val className = fragment::class.simpleName
+                        ?: throw AssertionError("Unable to determine class name for projection: $fragment")
+                    TypeName(
+                        className.substringAfterLast("_")
+                            .substringBefore("Projection")
+                    )
+                }
+
+            selectionSet.selection(
+                InlineFragment.newInlineFragment()
+                    .typeCondition(typeCondition)
+                    .selectionSet(toSelectionSet(fragment))
+                    .build()
             )
-            "... on $schemaType { "
-        } else {
-            "{ "
         }
+        return selectionSet.build()
+    }
 
-        val joiner = StringJoiner(" ", prefix, " }")
-        projection.fields.forEach { (key, value) ->
-            val field = if (projection.inputArguments[key] != null) {
-                val inputArgsJoiner = StringJoiner(", ", "(", ")")
-                projection.inputArguments[key]?.forEach {
-                    inputArgsJoiner.add("${it.name}: ${inputValueSerializer.serialize(it.value)}")
-                }
-
-                key + inputArgsJoiner.toString()
-            } else {
-                key
-            }
-
-            joiner.add(field)
-            if (value != null) {
-                if (value is BaseProjectionNode) {
-                    joiner.add(" ").add(serialize(value))
-                } else {
-                    joiner.add(" ").add(value.toString())
-                }
-            }
-        }
-
-        projection.fragments.forEach { joiner.add(serialize(it, true)) }
-
-        return joiner.toString()
+    fun serialize(projection: BaseProjectionNode): String {
+        return AstPrinter.printAst(toSelectionSet(projection))
     }
 }
