@@ -12,6 +12,9 @@
             "locked": "3.4.2"
         },
         "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "18.0"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {
@@ -21,6 +24,9 @@
             "locked": "4.10.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "4.10.1"
         },
         "com.squareup:javapoet": {
@@ -47,6 +53,9 @@
             "locked": "3.4.2"
         },
         "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "18.0"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {
@@ -56,6 +65,9 @@
             "locked": "4.10.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "4.10.1"
         },
         "com.squareup:javapoet": {
@@ -102,6 +114,9 @@
             "locked": "3.4.2"
         },
         "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "18.0"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {
@@ -149,6 +164,9 @@
             "locked": "0.19"
         },
         "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "18.0"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {
@@ -158,6 +176,9 @@
             "locked": "4.10.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "4.10.1"
         },
         "com.squareup:javapoet": {
@@ -202,6 +223,9 @@
             "locked": "0.19"
         },
         "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "18.0"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {
@@ -211,6 +235,9 @@
             "locked": "4.10.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "4.10.1"
         },
         "com.squareup:javapoet": {
@@ -255,6 +282,9 @@
             "locked": "0.19"
         },
         "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core"
+            ],
             "locked": "18.0"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core": {

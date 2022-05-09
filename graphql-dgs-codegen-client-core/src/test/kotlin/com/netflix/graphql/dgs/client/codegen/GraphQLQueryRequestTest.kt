@@ -18,11 +18,13 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import graphql.language.StringValue
+import graphql.language.Value
 import graphql.schema.Coercing
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.*
+import java.util.UUID
 
 class GraphQLQueryRequestTest {
     @Test
@@ -64,7 +66,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query {test(movie: {movieId:1234, name:"testMovie"}) }""")
+        assertThat(result).isEqualTo("""query {test(movie: {movieId : 1234, name : "testMovie"}) }""")
     }
 
     @Test
@@ -74,7 +76,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query {test(movie: {movieId:1234, name:"testMovie"}){ name movieId } }""")
+        assertThat(result).isEqualTo("""query {test(movie: {movieId : 1234, name : "testMovie"}){ name movieId } }""")
     }
 
     @Test
@@ -84,7 +86,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("""mutation {testMutation(movie: {movieId:1234, name:"testMovie"}){ name movieId } }""")
+        assertThat(result).isEqualTo("""mutation {testMutation(movie: {movieId : 1234, name : "testMovie"}){ name movieId } }""")
     }
 
     @Test
@@ -94,7 +96,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId:123, name:"greatMovie"}){ name movieId } }""")
+        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId : 123, name : "greatMovie"}){ name movieId } }""")
     }
 
     @Test
@@ -107,7 +109,7 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
 
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId:123, name:"greatMovie"}, dateRange: "01/01/2020-05/11/2021") }""")
+        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021") }""")
     }
 
     @Test
@@ -121,7 +123,7 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(query, MovieProjection(), mapOf(UUID::class.java to UUIDScalar))
 
         val result = request.serialize()
-        assertThat(result).isEqualTo("query TestNamedQuery {test(id: \"$randomUUID\") }")
+        assertThat(result).isEqualTo("""query TestNamedQuery {test(id: "$randomUUID") }""")
     }
 
     object UUIDScalar : Coercing<UUID, String> {
@@ -136,6 +138,10 @@ class GraphQLQueryRequestTest {
         override fun parseLiteral(input: Any): UUID {
             return UUID.fromString(input.toString())
         }
+
+        override fun valueToLiteral(input: Any): Value<*> {
+            return StringValue.of(serialize(input))
+        }
     }
 
     @Test
@@ -147,7 +153,7 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
 
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId:123, name:"greatMovie", window:"01/01/2020-05/11/2021"}) }""")
+        assertThat(result).isEqualTo("""query TestNamedQuery {test(movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"}) }""")
     }
 
     @Test
@@ -158,7 +164,7 @@ class GraphQLQueryRequestTest {
         }
         val request = GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
         val result = request.serialize()
-        assertThat(result).isEqualTo("""query {test(actors: { name: "actorA", movies: ["movie1", "movie2"] }, movie: {movieId:123, name:"greatMovie", window:"01/01/2020-05/11/2021"}) }""")
+        assertThat(result).isEqualTo("""query {test(actors: {name : "actorA", movies : ["movie1", "movie2"]}, movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"}) }""")
     }
 }
 
