@@ -313,6 +313,22 @@ class CodeGen(private val config: CodeGenConfig) {
             return CodeGenResult()
         }
 
+        val interfaceCodeGen = if (config.generateInterfaces) {
+            definitions.asSequence()
+                .filterIsInstance<ObjectTypeDefinition>()
+                .excludeSchemaTypeExtension()
+                .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+                .map { definition ->
+                    val interfaceGenerator = KotlinInterfaceTypeGenerator(config, document)
+                    val interfaceTypeDefinition =
+                        InterfaceTypeDefinition.newInterfaceTypeDefinition().name("I" + definition.name)
+                            .definitions(definition.fieldDefinitions()).build()
+                    interfaceGenerator.generate(interfaceTypeDefinition, emptyList())
+                }
+                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+        }
+        else CodeGenResult()
+
         return definitions.asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
             .excludeSchemaTypeExtension()
@@ -320,7 +336,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 val extensions = findInterfaceExtensions(it.name, definitions)
                 KotlinInterfaceTypeGenerator(config, document).generate(it, extensions)
             }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(interfaceCodeGen) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 }
 
