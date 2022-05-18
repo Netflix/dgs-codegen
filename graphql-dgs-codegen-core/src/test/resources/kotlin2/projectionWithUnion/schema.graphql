@@ -1,0 +1,15 @@
+type Query {
+  u: U
+  us: [U]
+}
+
+interface Person {
+  firstname: String
+}
+
+type Employee implements Person {
+  firstname: String
+  company: String
+}
+
+union U = Employee

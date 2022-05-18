@@ -29,6 +29,7 @@ dependencies {
     implementation(project(":graphql-dgs-codegen-client-core"))
     implementation 'com.graphql-java:graphql-java'
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.slf4j:slf4j-api'
 
     implementation 'com.squareup:javapoet:1.13.+'

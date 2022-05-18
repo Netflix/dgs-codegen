@@ -1,0 +1,12 @@
+type Query {
+  people(filter: PersonFilter): [Person]
+}
+
+type Person {
+  firstname: String
+  lastname: String
+}
+
+input PersonFilter {
+  email: String
+}
