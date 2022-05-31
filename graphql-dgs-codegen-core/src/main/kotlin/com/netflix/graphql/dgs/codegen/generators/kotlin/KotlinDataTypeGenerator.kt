@@ -23,6 +23,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
 import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
@@ -41,6 +42,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.lang.IllegalArgumentException
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
@@ -60,12 +62,12 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
         val fields = definition.fieldDefinitions
             .filterSkipped()
             .filter(ReservedKeywordFilter.filterInvalidNames)
-            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) } +
+            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description, it.directives) } +
             extensions.flatMap { it.fieldDefinitions }
                 .filterSkipped()
-                .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
+                .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description, it.directives) }
         val interfaces = definition.implements
-        return generate(definition.name, fields, interfaces, document, definition.description)
+        return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
     }
 
     override fun getPackageName(): String {
@@ -89,14 +91,14 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
             .map {
                 val type = typeUtils.findReturnType(it.type)
                 val defaultValue = it.defaultValue?.let { value -> generateCode(value, type) }
-                Field(name = it.name, type = type, nullable = typeUtils.isNullable(it.type), default = defaultValue, description = it.description)
+                Field(name = it.name, type = type, nullable = typeUtils.isNullable(it.type), default = defaultValue, description = it.description, directives = it.directives)
             }.plus(
                 extensions.flatMap { it.inputValueDefinitions }.map {
-                    Field(name = it.name, type = typeUtils.findReturnType(it.type), nullable = typeUtils.isNullable(it.type), default = null, description = it.description)
+                    Field(name = it.name, type = typeUtils.findReturnType(it.type), nullable = typeUtils.isNullable(it.type), default = null, description = it.description, directives = it.directives)
                 }
             )
         val interfaces = emptyList<Type<*>>()
-        return generate(definition.name, fields, interfaces, document, definition.description)
+        return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
     }
 
     private fun generateCode(value: Value<Value<*>>, type: KtTypeName): CodeBlock =
@@ -129,7 +131,8 @@ internal data class Field(
     val type: KtTypeName,
     val nullable: Boolean,
     val default: CodeBlock? = null,
-    val description: Description? = null
+    val description: Description? = null,
+    val directives: List<Directive> = emptyList()
 )
 
 abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected val config: CodeGenConfig, protected val document: Document) {
@@ -139,12 +142,57 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
         document = document
     )
 
+    /**
+     * Applies the directives on a field
+     */
+    private fun applyDirectives(directives: List<Directive>, parameterSpec: ParameterSpec.Builder) {
+        parameterSpec.addAnnotations(applyDirectives(directives))
+    }
+
+    /**
+     * Applies the directives on a graphQL input or type
+     */
+    private fun applyDirectives(directives: List<Directive>, typeSpec: TypeSpec.Builder) {
+        typeSpec.addAnnotations(applyDirectives(directives))
+    }
+
+    /**
+     * Creates an argument map of the input Arguments
+     */
+    private fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
+        return directive.arguments.fold(mutableMapOf(), {
+            argMap, argument ->
+            argMap[argument.name] = argument.value
+            argMap
+        })
+    }
+
+    /**
+     * Applies directives like customAnnotation
+     */
+    private fun applyDirectives(directives: List<Directive>): MutableList<AnnotationSpec> {
+        return directives.fold(mutableListOf(), {
+            annotations, directive ->
+            val argumentMap = createArgumentMap(directive)
+            if (directive.name == ParserConstants.CUSTOM_ANNOTATION)
+                annotations.add(customAnnotation(argumentMap, config))
+            if (directive.name == ParserConstants.DEPRECATED)
+                if (argumentMap.containsKey(ParserConstants.REASON))
+                    annotations.add(deprecatedAnnotation((argumentMap[ParserConstants.REASON] as StringValue).value))
+                else
+                    throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
+
+            annotations
+        })
+    }
+
     internal fun generate(
         name: String,
         fields: List<Field>,
         interfaces: List<Type<*>>,
         document: Document,
-        description: Description? = null
+        description: Description? = null,
+        directives: List<Directive> = emptyList()
     ): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
 
@@ -156,12 +204,20 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
             kotlinType.addKdoc("%L", description.sanitizeKdoc())
         }
 
+        if (directives.isNotEmpty()) {
+            applyDirectives(directives, kotlinType)
+        }
+
         val constructorBuilder = FunSpec.constructorBuilder()
 
         fields.forEach { field ->
             val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
             val parameterSpec = ParameterSpec.builder(field.name, returnType)
                 .addAnnotation(jsonPropertyAnnotation(field.name))
+
+            if (field.directives.isNotEmpty()) {
+                applyDirectives(field.directives, parameterSpec)
+            }
 
             if (field.default != null) {
                 parameterSpec.defaultValue(field.default)
