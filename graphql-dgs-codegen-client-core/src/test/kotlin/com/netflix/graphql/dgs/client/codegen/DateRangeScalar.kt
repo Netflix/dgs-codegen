@@ -17,6 +17,7 @@
 package com.netflix.graphql.dgs.client.codegen
 
 import graphql.language.StringValue
+import graphql.language.Value
 import graphql.schema.Coercing
 import graphql.schema.CoercingParseLiteralException
 import graphql.schema.CoercingParseValueException
@@ -25,7 +26,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 class DateRangeScalar : Coercing<DateRange, String> {
-    private var formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+    private val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
     @Throws(CoercingSerializeException::class)
     override fun serialize(dataFetcherResult: Any): String {
@@ -37,7 +38,7 @@ class DateRangeScalar : Coercing<DateRange, String> {
     override fun parseValue(input: Any): DateRange {
         val split = (input as String).split("-").toTypedArray()
         val from = LocalDate.parse(split[0], formatter)
-        val to = LocalDate.parse(split[0], formatter)
+        val to = LocalDate.parse(split[1], formatter)
         return DateRange(from, to)
     }
 
@@ -45,8 +46,12 @@ class DateRangeScalar : Coercing<DateRange, String> {
     override fun parseLiteral(input: Any): DateRange {
         val split = (input as StringValue).value.split("-").toTypedArray()
         val from = LocalDate.parse(split[0], formatter)
-        val to = LocalDate.parse(split[0], formatter)
+        val to = LocalDate.parse(split[1], formatter)
         return DateRange(from, to)
+    }
+
+    override fun valueToLiteral(input: Any): Value<*> {
+        return StringValue.of(serialize(input))
     }
 }
 

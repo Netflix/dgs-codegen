@@ -36,8 +36,15 @@ internal class ProjectionSerializerTest {
 
         val projection = ShowsProjectionRoot()
             .reviews(3, OffsetDateTime.of(2021, 6, 16, 15, 20, 0, 0, ZoneOffset.UTC)).starScore().root
-        val serialize = projectionSerializer.serialize(projection)
-        assertThat(serialize).isEqualTo("{ reviews(minScore: 3, since: \"2021-06-16T15:20:00Z\")   { starScore } }")
+        val serialized = projectionSerializer.serialize(projection)
+
+        assertThat(serialized).isEqualTo(
+            """{
+          |  reviews(minScore: 3, since: "2021-06-16T15:20:00Z") {
+          |    starScore
+          |  }
+          |}""".trimMargin()
+        )
     }
 
     @Test
@@ -48,21 +55,48 @@ internal class ProjectionSerializerTest {
             .moveId().title().releaseYear()
             .reviews(username = "Foo", score = 10).username().score()
         // when
-        val serialize = ProjectionSerializer(InputValueSerializer()).serialize(root, isFragment = true)
+        val serialized = ProjectionSerializer(InputValueSerializer()).serialize(root)
         // then
-        assertThat(serialize).isEqualTo("""... on Entities { ... on Movie { __typename moveId title releaseYear reviews(username: "Foo", score: 10)   { username score } } }""")
+        assertThat(serialized).isEqualTo(
+            """{
+            |  ... on Movie {
+            |    __typename
+            |    moveId
+            |    title
+            |    releaseYear
+            |    reviews(username: "Foo", score: 10) {
+            |      username
+            |      score
+            |    }
+            |  }
+            |}""".trimMargin()
+        )
     }
 
     @Test
     fun `Projection for entity with no explicit schema type`() {
         // given
         val root = EntitiesProjectionRoot()
-        root.onMovie(Optional.empty())
+            .onMovie(Optional.empty())
             .moveId().title().releaseYear()
             .reviews(username = "Foo", score = 10).username().score()
+            .root()
         // when
-        val serialize = ProjectionSerializer(InputValueSerializer()).serialize(root, isFragment = true)
+        val serialized = ProjectionSerializer(InputValueSerializer()).serialize(root)
         // then
-        assertThat(serialize).isEqualTo("""... on Entities { ... on EntitiesMovieKey { __typename moveId title releaseYear reviews(username: "Foo", score: 10)   { username score } } }""")
+        assertThat(serialized).isEqualTo(
+            """{
+            |  ... on EntitiesMovieKey {
+            |    __typename
+            |    moveId
+            |    title
+            |    releaseYear
+            |    reviews(username: "Foo", score: 10) {
+            |      username
+            |      score
+            |    }
+            |  }
+            |}""".trimMargin()
+        )
     }
 }

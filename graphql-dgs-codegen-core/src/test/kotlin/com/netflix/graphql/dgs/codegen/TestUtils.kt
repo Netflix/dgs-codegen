@@ -54,6 +54,9 @@ fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
     return result
 }
 
+fun assertCompilesKotlin(codeGenResult: CodeGenResult) =
+    assertCompilesKotlin(codeGenResult.kotlinSources())
+
 fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")
@@ -77,7 +80,6 @@ fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
                     }.joinToString(":")
                 noStdlib = true
                 noReflect = true
-                skipRuntimeVersionCheck = true
             }
         )
         assertThat(exitCode).isEqualTo(ExitCode.OK)

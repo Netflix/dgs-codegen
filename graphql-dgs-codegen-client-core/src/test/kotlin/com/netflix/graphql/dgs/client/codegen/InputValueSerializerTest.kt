@@ -39,7 +39,7 @@ class InputValueSerializerTest {
         )
 
         val serialize = InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(movieInput)
-        assertThat(serialize).isEqualTo("{movieId:1, title:\"Some movie\", genre:ACTION, director:{name:\"The Director\" }, actor:[{name:\"Actor 1\", roleName:\"Role 1\" }, {name:\"Actor 2\", roleName:\"Role 2\" }], releaseWindow:\"01/01/2020-01/01/2021\" }")
+        assertThat(serialize).isEqualTo("""{movieId : 1, title : "Some movie", genre : ACTION, director : {name : "The Director"}, actor : [{name : "Actor 1", roleName : "Role 1"}, {name : "Actor 2", roleName : "Role 2"}], releaseWindow : "01/01/2020-01/01/2021"}""")
     }
 
     @Test
@@ -58,7 +58,7 @@ class InputValueSerializerTest {
         )
 
         val serialize = InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(listOf(movieInput))
-        assertThat(serialize).isEqualTo("[{movieId:1, title:\"Some movie\", genre:ACTION, director:{name:\"The Director\" }, actor:[{name:\"Actor 1\", roleName:\"Role 1\" }, {name:\"Actor 2\", roleName:\"Role 2\" }], releaseWindow:\"01/01/2020-01/01/2021\" }]")
+        assertThat(serialize).isEqualTo("""[{movieId : 1, title : "Some movie", genre : ACTION, director : {name : "The Director"}, actor : [{name : "Actor 1", roleName : "Role 1"}, {name : "Actor 2", roleName : "Role 2"}], releaseWindow : "01/01/2020-01/01/2021"}]""")
     }
 
     @Test
@@ -67,7 +67,7 @@ class InputValueSerializerTest {
         val movieInput = MovieInput(1)
 
         val serialize = InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(movieInput)
-        assertThat(serialize).isEqualTo("{movieId:1 }")
+        assertThat(serialize).isEqualTo("{movieId : 1}")
     }
 
     @Test
@@ -109,7 +109,7 @@ class InputValueSerializerTest {
     @Test
     fun `Companion objects should be ignored`() {
         val serialize = InputValueSerializer().serialize(MyDataWithCompanion("some title"))
-        assertThat(serialize).isEqualTo("{title:\"some title\" }")
+        assertThat(serialize).isEqualTo("""{title : "some title"}""")
     }
 
     @Test
@@ -121,14 +121,14 @@ class InputValueSerializerTest {
     @Test
     fun `Base class properties should be found`() {
         val serialize = InputValueSerializer().serialize(MySubClass("DGS", 1500))
-        assertThat(serialize).isEqualTo("{stars:1500, name:\"DGS\" }")
+        assertThat(serialize).isEqualTo("""{stars : 1500, name : "DGS"}""")
     }
 
     @Test
     fun `Date without scalar`() {
         val input = WithLocalDateTime(LocalDateTime.of(2021, 5, 13, 4, 34))
         val serialize = InputValueSerializer().serialize(input)
-        assertThat(serialize).isEqualTo("""{date:"2021-05-13T04:34" }""")
+        assertThat(serialize).isEqualTo("""{date : "2021-05-13T04:34"}""")
     }
 
     @Test
@@ -136,6 +136,27 @@ class InputValueSerializerTest {
         val input = EvilGenre.ACTION
         val serialize = InputValueSerializer().serialize(input)
         assertThat(serialize).isEqualTo("ACTION")
+    }
+
+    @Test
+    fun `overridden properties are serialized`() {
+        abstract class Base {
+            val baseField: Boolean = true
+            open val field: String = "default"
+        }
+        class QueryInput(override val field: String) : Base()
+        val serialized = InputValueSerializer().serialize(QueryInput("hello"))
+        assertThat(serialized).isEqualTo("""{field : "hello", baseField : true}""")
+    }
+
+    @Test
+    fun `properties annotated with @Transient should not be included`() {
+        data class QueryInput(val visible: String) {
+            @Transient
+            val notVisible = "do not serialize"
+        }
+        val serialized = InputValueSerializer().serialize(QueryInput("serialize me"))
+        assertThat(serialized).isEqualTo("""{visible : "serialize me"}""")
     }
 
     enum class EvilGenre {

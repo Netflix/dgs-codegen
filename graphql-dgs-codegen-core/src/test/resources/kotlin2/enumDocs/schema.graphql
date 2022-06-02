@@ -1,0 +1,6 @@
+"""
+Some options
+"""
+enum Color {
+  red,white,blue
+}

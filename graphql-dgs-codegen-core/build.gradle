@@ -29,14 +29,15 @@ dependencies {
     implementation(project(":graphql-dgs-codegen-client-core"))
     implementation 'com.graphql-java:graphql-java'
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.slf4j:slf4j-api'
 
     implementation 'com.squareup:javapoet:1.13.+'
-    implementation 'com.squareup:kotlinpoet:1.10.+'
+    implementation 'com.squareup:kotlinpoet:1.11.+'
     implementation 'com.github.ajalt.clikt:clikt:3.4.+'
 
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
-    testImplementation 'org.jetbrains.kotlin:kotlin-compiler:1.5.31'
+    testImplementation 'org.jetbrains.kotlin:kotlin-compiler:1.6.21'
 }
 
 application {

@@ -18,10 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder
 import com.squareup.kotlinpoet.*
 import graphql.introspection.Introspection
 import graphql.language.ArrayValue
@@ -122,6 +125,33 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
 }
 
 /**
+ * Generate a [JsonDeserialize] annotation for the builder class.
+ *
+ * Example generated annotation:
+ * ```
+ * @JsonDeserialize(builder = Movie.Builder::class)
+ * ```
+ */
+fun jsonDeserializeAnnotation(builderType: ClassName): AnnotationSpec {
+    return AnnotationSpec.builder(JsonDeserialize::class)
+        .addMember("builder = %T::class", builderType)
+        .build()
+}
+
+/**
+ * Generate a [JsonPOJOBuilder] annotation for the builder class.
+ *
+ * Example generated annotation:
+ * ```
+ * @JsonPOJOBuilder
+ * ```
+ */
+fun jsonBuilderAnnotation(): AnnotationSpec {
+    return AnnotationSpec.builder(JsonPOJOBuilder::class)
+        .build()
+}
+
+/**
  * Generate a [JsonProperty] annotation for the supplied
  * field name.
  *
@@ -145,6 +175,21 @@ fun deprecatedAnnotation(reason: String): AnnotationSpec {
         builder.addMember(CodeBlock.of("${ParserConstants.REPLACE_WITH}${ParserConstants.ASSIGNMENT_OPERATOR}%M(%S)", MemberName("kotlin", ParserConstants.REPLACE_WITH_CLASS), reason.substringAfter(ParserConstants.REPLACE_WITH_STR)))
     }
     return builder.build()
+}
+
+/**
+ * Generate a [JsonIgnoreProperties] annotation for the supplied
+ * property name.
+ *
+ * Example generated annotation:
+ * ```
+ * @JsonIgnoreProperties("__typename")
+ * ```
+ */
+fun jsonIgnorePropertiesAnnotation(name: String): AnnotationSpec {
+    return AnnotationSpec.builder(JsonIgnoreProperties::class)
+        .addMember("%S", name)
+        .build()
 }
 
 fun Description.sanitizeKdoc(): String {
@@ -194,6 +239,7 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
         else -> ClassName.bestGuess(name)
     }
 }
+
 
 /**
  * Creates custom annotation from arguments
@@ -245,6 +291,7 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, prefix: 
             else CodeBlock.of("$prefix[%L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, type = if (v is EnumValue) prefix else "").toString() })
         else -> CodeBlock.of("$prefix%L", value)
     }
+}
 
 /**
  * Parses the inputs argument in the directive to get the input parameters of the annotation
@@ -268,4 +315,19 @@ private fun parsePackage(config: CodeGenConfig, name: String, type: String? = nu
     var packageName = name.substringBeforeLast(".", "")
     packageName = if (packageName.isEmpty() && type != null) config.includeImports.getOrDefault(type, "") else packageName
     return packageName to name.substringAfterLast(".")
+}
+
+fun FunSpec.Builder.addControlFlow(
+    controlFlow: String,
+    vararg args: Any,
+    builder: FunSpec.Builder.() -> Unit,
+): FunSpec.Builder {
+    this.beginControlFlow(controlFlow, *args)
+    builder.invoke(this)
+    this.endControlFlow()
+    return this
+}
+
+fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.Builder = apply {
+    enumSpecs.map { addEnumConstant(it.name!!, it) }
 }
