@@ -89,6 +89,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var generateInterfaceSetters = true
 
+    @Input
+    var implementSerializable = false
+
     @OutputDirectory
     fun getOutputDir(): File {
         return Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
@@ -164,7 +167,8 @@ open class GenerateJavaTask : DefaultTask() {
             omitNullInputFields = omitNullInputFields,
             maxProjectionDepth = maxProjectionDepth,
             kotlinAllFieldsOptional = kotlinAllFieldsOptional,
-            snakeCaseConstantNames = snakeCaseConstantNames
+            snakeCaseConstantNames = snakeCaseConstantNames,
+            implementSerializable = implementSerializable
         )
 
         logger.info("Codegen config: {}", config)

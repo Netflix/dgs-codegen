@@ -41,6 +41,7 @@ import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.Serializable
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
@@ -65,7 +66,7 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
                 .filterSkipped()
                 .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
         val interfaces = definition.implements
-        return generate(definition.name, fields, interfaces, document, definition.description)
+        return generate(definition.name, fields, interfaces, config.implementSerializable, document, definition.description)
     }
 
     override fun getPackageName(): String {
@@ -96,7 +97,7 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
                 }
             )
         val interfaces = emptyList<Type<*>>()
-        return generate(definition.name, fields, interfaces, document, definition.description)
+        return generate(definition.name, fields, interfaces, config.implementSerializable, document, definition.description)
     }
 
     private fun generateCode(value: Value<Value<*>>, type: KtTypeName): CodeBlock =
@@ -143,10 +144,15 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
         name: String,
         fields: List<Field>,
         interfaces: List<Type<*>>,
+        implementSerializable: Boolean,
         document: Document,
         description: Description? = null
     ): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
+
+        if (implementSerializable) {
+            kotlinType.addSuperinterface(ClassName.bestGuess(Serializable::class.java.name))
+        }
 
         if (fields.isNotEmpty()) {
             kotlinType.addModifiers(KModifier.DATA)

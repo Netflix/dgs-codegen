@@ -438,6 +438,7 @@ data class CodeGenConfig(
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
     var generateAllConstructor: Boolean = true,
+    val implementSerializable: Boolean = false,
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 

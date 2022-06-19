@@ -27,6 +27,7 @@ import graphql.language.*
 import graphql.language.TypeName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.Serializable
 import javax.lang.model.element.Modifier
 
 class DataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
@@ -95,7 +96,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                     }
                 )
 
-            return generate(name, unionTypes + implements, fieldDefinitions, definition.description, config.generateAllConstructor)
+            return generate(name, unionTypes + implements, fieldDefinitions, config.implementSerializable, definition.description, config.generateAllConstructor)
                 .merge(interfaceCodeGenResult)
         }
 
@@ -140,7 +141,7 @@ class InputTypeGenerator(private val config: CodeGenConfig, document: Document) 
             }
             Field(name = it.name, type = typeUtils.findReturnType(it.type), initialValue = defaultValue, description = it.description, directives = it.directives.map { directive -> directive.name })
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
-        return generate(name, emptyList(), fieldDefinitions, definition.description, config.generateAllConstructor)
+        return generate(name, emptyList(), fieldDefinitions, config.implementSerializable, definition.description, config.generateAllConstructor)
     }
 }
 
@@ -153,11 +154,16 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         name: String,
         interfaces: List<String>,
         fields: List<Field>,
+        implementSerializable: Boolean,
         description: Description? = null,
         generateAllConstructor: Boolean,
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
+
+        if (implementSerializable) {
+            javaType.addSuperinterface(ClassName.get(Serializable::class.java))
+        }
 
         if (description != null) {
             javaType.addJavadoc(description.sanitizeJavaDoc())
