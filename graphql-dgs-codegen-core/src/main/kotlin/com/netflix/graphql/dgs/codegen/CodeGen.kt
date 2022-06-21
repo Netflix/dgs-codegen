@@ -437,6 +437,7 @@ data class CodeGenConfig(
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
+    var generateAllConstructor: Boolean = true,
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
