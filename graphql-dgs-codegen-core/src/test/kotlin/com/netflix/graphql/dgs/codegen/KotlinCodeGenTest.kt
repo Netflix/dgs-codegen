@@ -2365,7 +2365,7 @@ It takes a title and such.
         assertThat(interfaceTypeSpec.propertySpecs[1].name).isEqualTo("public")
         assertThat(interfaceTypeSpec.propertySpecs[2].name).isEqualTo("private")
 
-        assertCompilesKotlin(interfaces)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
