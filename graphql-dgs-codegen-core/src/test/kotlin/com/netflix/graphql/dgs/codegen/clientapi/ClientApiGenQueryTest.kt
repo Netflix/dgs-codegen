@@ -819,4 +819,47 @@ class ClientApiGenQueryTest {
             "_while"
         )
     }
+
+    @Test
+    fun `Should be able to generate successfully when java keywords and default value are used as input types`() {
+        val schema = """
+            type Query {
+                foo(fooInput: FooInput): Baz
+                bar(barInput: BarInput): Baz
+            }
+            
+            input FooInput {
+                public: Boolean = true
+            }
+            
+            input BarInput {
+                public: Boolean
+            }
+
+            type Baz {
+                public: Boolean
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateDataTypes = false,
+                generateClientApi = true,
+                includeQueries = setOf("foo", "bar")
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaDataTypes.size).isEqualTo(2)
+
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.name).isEqualTo("FooInput")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].name).isEqualTo("_public")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("true")
+
+        assertThat(codeGenResult.javaDataTypes[1].typeSpec.name).isEqualTo("BarInput")
+        assertThat(codeGenResult.javaDataTypes[1].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("")
+
+        assertCompilesJava(codeGenResult.javaDataTypes)
+    }
 }

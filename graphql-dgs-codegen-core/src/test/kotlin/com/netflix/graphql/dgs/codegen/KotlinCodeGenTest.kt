@@ -1392,6 +1392,57 @@ class KotlinCodeGenTest {
         assertCompilesKotlin(dataTypes)
     }
 
+    @Test
+    fun `Should be able to generate successfully when java keywords and default value are used as input types`() {
+        val schema = """
+            type Query {
+                foo(fooInput: FooInput): Baz
+                bar(barInput: BarInput): Baz
+            }
+            
+            input FooInput {
+                public: Boolean = true
+            }
+            
+            input BarInput {
+                public: Boolean
+            }
+
+            type Baz {
+                public: Boolean
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDataTypes = false,
+                generateClientApi = true,
+                includeQueries = setOf("foo", "bar")
+            )
+        ).generate()
+
+        assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(2)
+
+        val fileSpec0 = codeGenResult.kotlinDataTypes[0] as FileSpec
+        assertThat(fileSpec0.name).isEqualTo("FooInput")
+        assertThat(fileSpec0.members.size).isEqualTo(1)
+        val typeSpec0 = fileSpec0.members[0] as TypeSpec
+        assertThat(typeSpec0.propertySpecs.size).isEqualTo(1)
+        assertThat(typeSpec0.propertySpecs[0].name).isEqualTo("public")
+
+        val fileSpec1 = codeGenResult.kotlinDataTypes[1] as FileSpec
+        assertThat(fileSpec1.name).isEqualTo("BarInput")
+        assertThat(fileSpec1.members.size).isEqualTo(1)
+        val typeSpec1 = fileSpec1.members[0] as TypeSpec
+        assertThat(typeSpec1.propertySpecs.size).isEqualTo(1)
+        assertThat(typeSpec1.propertySpecs[0].name).isEqualTo("public")
+
+        assertCompilesKotlin(codeGenResult.kotlinDataTypes)
+    }
+
     @ParameterizedTest(name = "{index} => Snake Case? {0}; expected names {1}")
     @MethodSource("generateConstantsArguments")
     fun `Generates constants from Type names available via the DgsConstants class`(

@@ -309,7 +309,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         val fieldBuilder = if (fieldDefinition.initialValue != null) {
-            FieldSpec.builder(fieldDefinition.type, fieldDefinition.name).addModifiers(Modifier.PRIVATE).initializer(fieldDefinition.initialValue)
+            FieldSpec.builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE).initializer(fieldDefinition.initialValue)
         } else {
             FieldSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE)
         }
