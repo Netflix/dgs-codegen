@@ -460,6 +460,52 @@ class ClientApiGenQueryTest {
     }
 
     @Test
+    fun interfaceWithKeywords() {
+        val schema = """
+            type Query {
+              queryRoot: QueryRoot
+            }
+
+            interface HasDefaultField {
+              default: String
+              public: String
+              private: Boolean
+            }
+            
+            type QueryRoot implements HasDefaultField {
+                name: String
+                default: String
+                public: String
+                private: Boolean
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("QueryRootGraphQLQuery")
+
+        assertThat(codeGenResult.javaInterfaces.size).isEqualTo(1)
+        assertThat(codeGenResult.javaInterfaces[0].typeSpec.name).isEqualTo("HasDefaultField")
+
+        assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].name).isEqualTo("name")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[1].name).isEqualTo("_default")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[2].name).isEqualTo("_public")
+
+        assertCompilesJava(
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
+        )
+    }
+
+    @Test
     fun `The Query API should support sub-projects on fields with Basic Types`() {
         // given
         val schema = """
