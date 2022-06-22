@@ -2314,6 +2314,61 @@ It takes a title and such.
     }
 
     @Test
+    fun interfaceWithKeywords() {
+        val schema = """
+            type Query {
+              queryRoot: QueryRoot
+            }
+
+            interface HasDefaultField {
+              default: String
+              public: String
+              private: Boolean
+            }
+            
+            type QueryRoot implements HasDefaultField {
+                name: String
+                default: String
+                public: String
+                private: Boolean
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
+
+        assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.kotlinDataTypes[0].name).isEqualTo("QueryRoot")
+        assertThat(codeGenResult.kotlinDataTypes[0].members.size).isEqualTo(1)
+
+        val dataTypeSpec = codeGenResult.kotlinDataTypes[0].members[0] as TypeSpec
+
+        assertThat(dataTypeSpec.propertySpecs.size).isEqualTo(4)
+        assertThat(dataTypeSpec.propertySpecs[0].name).isEqualTo("name")
+        assertThat(dataTypeSpec.propertySpecs[1].name).isEqualTo("default")
+        assertThat(dataTypeSpec.propertySpecs[2].name).isEqualTo("public")
+        assertThat(dataTypeSpec.propertySpecs[3].name).isEqualTo("private")
+
+        val interfaces = codeGenResult.kotlinInterfaces
+
+        assertThat(interfaces.size).isEqualTo(1)
+
+        val interfaceTypeSpec = interfaces[0].members[0] as TypeSpec
+
+        assertThat(interfaceTypeSpec.propertySpecs.size).isEqualTo(3)
+        assertThat(interfaceTypeSpec.propertySpecs[0].name).isEqualTo("default")
+        assertThat(interfaceTypeSpec.propertySpecs[1].name).isEqualTo("public")
+        assertThat(interfaceTypeSpec.propertySpecs[2].name).isEqualTo("private")
+
+        assertCompilesKotlin(interfaces)
+    }
+
+    @Test
     fun generateEnumKDoc() {
         val schema = """           
             ""${'"'}
