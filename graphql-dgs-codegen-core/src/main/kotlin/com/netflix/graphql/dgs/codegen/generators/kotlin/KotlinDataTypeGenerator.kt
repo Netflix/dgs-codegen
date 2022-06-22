@@ -191,7 +191,10 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
                 parameterSpec.addModifiers(KModifier.OVERRIDE)
             }
 
-            constructorBuilder.addParameter(parameterSpec.build())
+            if (config.generateAllConstructor) {
+                constructorBuilder.addParameter(parameterSpec.build())
+            }
+
             val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
             if (field.description != null) {
                 propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
