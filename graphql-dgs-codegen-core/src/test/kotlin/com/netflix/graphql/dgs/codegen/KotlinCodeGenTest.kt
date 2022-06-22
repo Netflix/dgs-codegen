@@ -2314,7 +2314,7 @@ It takes a title and such.
     }
 
     @Test
-    fun interfaceWithKeywords() {
+    fun `can generate code based on GraphQL interfaces, which fields express java key-words`() {
         val schema = """
             type Query {
               queryRoot: QueryRoot
@@ -2365,7 +2365,7 @@ It takes a title and such.
         assertThat(interfaceTypeSpec.propertySpecs[1].name).isEqualTo("public")
         assertThat(interfaceTypeSpec.propertySpecs[2].name).isEqualTo("private")
 
-        assertCompilesKotlin(interfaces)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
