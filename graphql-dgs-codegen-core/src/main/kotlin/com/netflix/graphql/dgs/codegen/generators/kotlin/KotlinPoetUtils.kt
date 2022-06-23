@@ -18,12 +18,16 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize
+import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder
 import com.squareup.kotlinpoet.*
 import graphql.introspection.Introspection
 import graphql.language.Description
+
 /**
  * Generate a [JsonTypeInfo] annotation, which allows for Jackson
  * polymorphic type handling when deserializing from JSON.
@@ -94,6 +98,33 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
 }
 
 /**
+ * Generate a [JsonDeserialize] annotation for the builder class.
+ *
+ * Example generated annotation:
+ * ```
+ * @JsonDeserialize(builder = Movie.Builder::class)
+ * ```
+ */
+fun jsonDeserializeAnnotation(builderType: ClassName): AnnotationSpec {
+    return AnnotationSpec.builder(JsonDeserialize::class)
+        .addMember("builder = %T::class", builderType)
+        .build()
+}
+
+/**
+ * Generate a [JsonPOJOBuilder] annotation for the builder class.
+ *
+ * Example generated annotation:
+ * ```
+ * @JsonPOJOBuilder
+ * ```
+ */
+fun jsonBuilderAnnotation(): AnnotationSpec {
+    return AnnotationSpec.builder(JsonPOJOBuilder::class)
+        .build()
+}
+
+/**
  * Generate a [JsonProperty] annotation for the supplied
  * field name.
  *
@@ -104,6 +135,21 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
  */
 fun jsonPropertyAnnotation(name: String): AnnotationSpec {
     return AnnotationSpec.builder(JsonProperty::class)
+        .addMember("%S", name)
+        .build()
+}
+
+/**
+ * Generate a [JsonIgnoreProperties] annotation for the supplied
+ * property name.
+ *
+ * Example generated annotation:
+ * ```
+ * @JsonIgnoreProperties("__typename")
+ * ```
+ */
+fun jsonIgnorePropertiesAnnotation(name: String): AnnotationSpec {
+    return AnnotationSpec.builder(JsonIgnoreProperties::class)
         .addMember("%S", name)
         .build()
 }
@@ -154,4 +200,19 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
         DOUBLE_ARRAY.simpleName -> DOUBLE_ARRAY
         else -> ClassName.bestGuess(name)
     }
+}
+
+fun FunSpec.Builder.addControlFlow(
+    controlFlow: String,
+    vararg args: Any,
+    builder: FunSpec.Builder.() -> Unit,
+): FunSpec.Builder {
+    this.beginControlFlow(controlFlow, *args)
+    builder.invoke(this)
+    this.endControlFlow()
+    return this
+}
+
+fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.Builder = apply {
+    enumSpecs.map { addEnumConstant(it.name!!, it) }
 }

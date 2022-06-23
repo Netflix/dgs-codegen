@@ -1392,6 +1392,57 @@ class KotlinCodeGenTest {
         assertCompilesKotlin(dataTypes)
     }
 
+    @Test
+    fun `Should be able to generate successfully when java keywords and default value are used as input types`() {
+        val schema = """
+            type Query {
+                foo(fooInput: FooInput): Baz
+                bar(barInput: BarInput): Baz
+            }
+            
+            input FooInput {
+                public: Boolean = true
+            }
+            
+            input BarInput {
+                public: Boolean
+            }
+
+            type Baz {
+                public: Boolean
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDataTypes = false,
+                generateClientApi = true,
+                includeQueries = setOf("foo", "bar")
+            )
+        ).generate()
+
+        assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(2)
+
+        val fileSpec0 = codeGenResult.kotlinDataTypes[0] as FileSpec
+        assertThat(fileSpec0.name).isEqualTo("FooInput")
+        assertThat(fileSpec0.members.size).isEqualTo(1)
+        val typeSpec0 = fileSpec0.members[0] as TypeSpec
+        assertThat(typeSpec0.propertySpecs.size).isEqualTo(1)
+        assertThat(typeSpec0.propertySpecs[0].name).isEqualTo("public")
+
+        val fileSpec1 = codeGenResult.kotlinDataTypes[1] as FileSpec
+        assertThat(fileSpec1.name).isEqualTo("BarInput")
+        assertThat(fileSpec1.members.size).isEqualTo(1)
+        val typeSpec1 = fileSpec1.members[0] as TypeSpec
+        assertThat(typeSpec1.propertySpecs.size).isEqualTo(1)
+        assertThat(typeSpec1.propertySpecs[0].name).isEqualTo("public")
+
+        assertCompilesKotlin(codeGenResult.kotlinDataTypes)
+    }
+
     @ParameterizedTest(name = "{index} => Snake Case? {0}; expected names {1}")
     @MethodSource("generateConstantsArguments")
     fun `Generates constants from Type names available via the DgsConstants class`(
@@ -2260,6 +2311,61 @@ It takes a title and such.
         )
 
         assertCompilesKotlin(interfaces)
+    }
+
+    @Test
+    fun `can generate code based on GraphQL interfaces, which fields express java key-words`() {
+        val schema = """
+            type Query {
+              queryRoot: QueryRoot
+            }
+
+            interface HasDefaultField {
+              default: String
+              public: String
+              private: Boolean
+            }
+            
+            type QueryRoot implements HasDefaultField {
+                name: String
+                default: String
+                public: String
+                private: Boolean
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
+
+        assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.kotlinDataTypes[0].name).isEqualTo("QueryRoot")
+        assertThat(codeGenResult.kotlinDataTypes[0].members.size).isEqualTo(1)
+
+        val dataTypeSpec = codeGenResult.kotlinDataTypes[0].members[0] as TypeSpec
+
+        assertThat(dataTypeSpec.propertySpecs.size).isEqualTo(4)
+        assertThat(dataTypeSpec.propertySpecs[0].name).isEqualTo("name")
+        assertThat(dataTypeSpec.propertySpecs[1].name).isEqualTo("default")
+        assertThat(dataTypeSpec.propertySpecs[2].name).isEqualTo("public")
+        assertThat(dataTypeSpec.propertySpecs[3].name).isEqualTo("private")
+
+        val interfaces = codeGenResult.kotlinInterfaces
+
+        assertThat(interfaces.size).isEqualTo(1)
+
+        val interfaceTypeSpec = interfaces[0].members[0] as TypeSpec
+
+        assertThat(interfaceTypeSpec.propertySpecs.size).isEqualTo(3)
+        assertThat(interfaceTypeSpec.propertySpecs[0].name).isEqualTo("default")
+        assertThat(interfaceTypeSpec.propertySpecs[1].name).isEqualTo("public")
+        assertThat(interfaceTypeSpec.propertySpecs[2].name).isEqualTo("private")
+
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test

@@ -125,7 +125,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         if (config.generateInterfaceSetters) {
             val setterBuilder = MethodSpec.methodBuilder("set${fieldName.capitalized()}")
                 .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                .addParameter(returnType, fieldName)
+                .addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldName))
 
             if (fieldDefinition.description != null) {
                 setterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
