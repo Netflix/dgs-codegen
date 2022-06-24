@@ -779,7 +779,8 @@ class ClientApiGenQueryTest {
             try: Boolean            
             void: Boolean           
             volatile: Boolean       
-            while: Boolean          
+            while: Boolean         
+            class: Int
           }
           
           scalar Long
@@ -857,7 +858,8 @@ class ClientApiGenQueryTest {
             "_try",
             "_void",
             "_volatile",
-            "_while"
+            "_while",
+            "_class"
         )
     }
 
@@ -958,5 +960,49 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.javaQueryTypes[8].typeSpec.name).isEqualTo("BarGraphQLQuery")
 
         assertCompilesJava(codeGenResult.javaQueryTypes)
+    }
+
+    @Test
+    fun `Should be able to generate successfully when java keywords are used as types`() {
+        val schema = """
+            type Query {
+                bar: Bar
+            }
+            
+            interface Foo {
+                class: Int
+            }
+
+            type Bar implements Foo {
+                object: Int
+                class: Int
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateDataTypes = true,
+                generateClientApi = true,
+                includeQueries = setOf("bar")
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
+
+        val typeSpec = codeGenResult.javaDataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Bar")
+        assertThat(typeSpec.fieldSpecs[0].name).isEqualTo("object")
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs[1].name).isEqualTo("_class")
+
+        assertThat(typeSpec.methodSpecs.size).isGreaterThan(0)
+        assertThat(typeSpec.methodSpecs[0].name).isEqualTo("getObject")
+        assertThat(typeSpec.methodSpecs[1].name).isEqualTo("setObject")
+        assertThat(typeSpec.methodSpecs[2].name).isEqualTo("getClassField")
+        assertThat(typeSpec.methodSpecs[3].name).isEqualTo("setClassField")
+
+        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaInterfaces)
     }
 }

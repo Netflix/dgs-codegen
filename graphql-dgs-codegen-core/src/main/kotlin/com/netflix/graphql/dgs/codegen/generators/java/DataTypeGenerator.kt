@@ -346,7 +346,7 @@ abstract class BaseDataTypeGenerator(
 
         javaType.addField(field)
 
-        val getterName = "get${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}"
+        val getterName = typeUtils.transformIfDefaultClassMethodExists("get${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}", TypeUtils.Companion.getClass)
         val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
         if (fieldDefinition.overrideGetter) {
             getterMethodBuilder.addAnnotation(Override::class.java)
@@ -358,7 +358,7 @@ abstract class BaseDataTypeGenerator(
 
         javaType.addMethod(getterMethodBuilder.build())
 
-        val setterName = "set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}"
+        val setterName = typeUtils.transformIfDefaultClassMethodExists("set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}", TypeUtils.Companion.setClass)
         javaType.addMethod(
             MethodSpec.methodBuilder(setterName)
                 .addModifiers(Modifier.PUBLIC)
