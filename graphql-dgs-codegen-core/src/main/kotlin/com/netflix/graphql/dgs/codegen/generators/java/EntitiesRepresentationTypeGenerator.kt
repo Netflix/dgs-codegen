@@ -114,6 +114,7 @@ class EntitiesRepresentationTypeGenerator(
             name = representationName,
             interfaces = emptyList(),
             fields = fieldDefinitions.plus(typeName),
+            config.implementSerializable,
             description = null,
             config.generateAllConstructor,
         )

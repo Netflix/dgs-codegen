@@ -35,6 +35,7 @@ import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
+import java.io.Serializable
 import java.util.stream.Stream
 
 class CodeGenTest {
@@ -2803,6 +2804,28 @@ It takes a title and such.
             """Some options
             """.trimIndent()
         )
+    }
+
+    @Test
+    fun generateSerializableDataClass() {
+        val schema = """
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                implementSerializable = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+        assertThat(dataTypes[0].typeSpec.superinterfaces).contains(ClassName.get(Serializable::class.java))
     }
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
