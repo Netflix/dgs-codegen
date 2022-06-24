@@ -114,7 +114,8 @@ class EntitiesRepresentationTypeGenerator(
             name = representationName,
             interfaces = emptyList(),
             fields = fieldDefinitions.plus(typeName),
-            description = null
+            description = null,
+            config.generateAllConstructor,
         )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
         // Merge all results.

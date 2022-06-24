@@ -739,6 +739,55 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateDataClassWithNoAllConstructor() {
+        val schema = """
+            type Query {
+                cars: [Car]
+            }
+            
+            type Car {
+                make: String
+                model: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateAllConstructor = false
+            )
+        ).generate()
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn { it.name.equals("<init>") && it.parameters.size> 0 }.hasSize(0)
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateDataClassWithAllConstructor() {
+        val schema = """
+            type Query {
+                cars: [Car]
+            }
+            
+            type Car {
+                make: String
+                model: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn { it.name.equals("<init>") && it.parameters.size> 0 }.hasSize(1)
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
     fun generateEnum() {
         val schema = """
             type Query {
