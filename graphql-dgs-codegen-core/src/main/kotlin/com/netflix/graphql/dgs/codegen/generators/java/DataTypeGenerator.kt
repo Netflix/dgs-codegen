@@ -95,7 +95,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                     }
                 )
 
-            return generate(name, unionTypes + implements, fieldDefinitions, definition.description)
+            return generate(name, unionTypes + implements, fieldDefinitions, definition.description, config.generateAllConstructor)
                 .merge(interfaceCodeGenResult)
         }
 
@@ -140,7 +140,7 @@ class InputTypeGenerator(private val config: CodeGenConfig, document: Document) 
             }
             Field(name = it.name, type = typeUtils.findReturnType(it.type), initialValue = defaultValue, description = it.description, directives = it.directives.map { directive -> directive.name })
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
-        return generate(name, emptyList(), fieldDefinitions, definition.description)
+        return generate(name, emptyList(), fieldDefinitions, definition.description, config.generateAllConstructor)
     }
 }
 
@@ -153,7 +153,8 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
         name: String,
         interfaces: List<String>,
         fields: List<Field>,
-        description: Description? = null
+        description: Description? = null,
+        generateAllConstructor: Boolean,
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
@@ -176,7 +177,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
         addDefaultConstructor(javaType)
 
-        if (fields.isNotEmpty()) {
+        if (generateAllConstructor && fields.isNotEmpty()) {
             addParameterizedConstructor(fields, javaType)
         }
 
