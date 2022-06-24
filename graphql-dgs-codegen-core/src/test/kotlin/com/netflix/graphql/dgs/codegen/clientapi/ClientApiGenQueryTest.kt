@@ -908,4 +908,41 @@ class ClientApiGenQueryTest {
 
         assertCompilesJava(codeGenResult.javaDataTypes)
     }
+
+    @Test
+    fun `generate client code for both query and subscription with same definitions`() {
+        val schema = """
+            type Query {
+                shows: [Show]
+            }
+
+            type Subscription {
+                shows: [Show]
+            }
+            
+            type Mutation {
+                shows: [Show]
+            }
+
+            type Show {
+                id: Int
+                title: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(3)
+        assertThat(codeGenResult.javaQueryTypes[0].packageName).isEqualTo("com.netflix.graphql.dgs.codegen.tests.generated.client.query")
+        assertThat(codeGenResult.javaQueryTypes[1].packageName).isEqualTo("com.netflix.graphql.dgs.codegen.tests.generated.client.subscription")
+        assertThat(codeGenResult.javaQueryTypes[2].packageName).isEqualTo("com.netflix.graphql.dgs.codegen.tests.generated.client.mutation")
+
+        assertCompilesJava(codeGenResult.javaQueryTypes)
+    }
 }
