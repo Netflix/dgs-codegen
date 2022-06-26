@@ -42,7 +42,7 @@ class ClientApiGenBuilderTest {
         ).generate()
 
         val builderClass = assertCompilesJava(codeGenResult).toClassLoader()
-            .loadClass("$basePackageName.client.query.FilterGraphQLQuery\$Builder")
+            .loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
 
         val buildMethod = builderClass.getMethod("build")
         val nameMethod = builderClass.getMethod("nameFilter", String::class.java)
@@ -73,7 +73,7 @@ class ClientApiGenBuilderTest {
         ).generate()
 
         val builderClass = assertCompilesJava(codeGenResult).toClassLoader()
-            .loadClass("$basePackageName.client.query.FilterGraphQLQuery\$Builder")
+            .loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
         val buildMethod = builderClass.getMethod("build")
 
         // When the 'nameFilter' method is not invoked, it should not be included in the input map.

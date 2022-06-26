@@ -223,11 +223,13 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
+        val methodNames = mutableSetOf<String>()
         return if (config.generateClientApi) {
             definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
-                .map { ClientApiGenerator(config, document).generate(it) }
+                .sortedBy { it.name.length }
+                .map { ClientApiGenerator(config, document).generate(it, methodNames) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
     }
