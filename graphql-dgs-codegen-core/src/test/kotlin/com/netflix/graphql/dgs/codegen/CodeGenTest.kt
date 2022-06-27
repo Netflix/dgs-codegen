@@ -756,7 +756,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateAllConstructor = false
+                javaGenerateAllConstructor = false
             )
         ).generate()
 

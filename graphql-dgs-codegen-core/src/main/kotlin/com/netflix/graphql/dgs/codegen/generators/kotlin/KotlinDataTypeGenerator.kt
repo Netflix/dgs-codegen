@@ -66,7 +66,7 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
                 .filterSkipped()
                 .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
         val interfaces = definition.implements
-        return generate(definition.name, fields, interfaces, config.implementSerializable, document, definition.description)
+        return generate(definition.name, fields, interfaces, document, definition.description)
     }
 
     override fun getPackageName(): String {
@@ -97,7 +97,7 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
                 }
             )
         val interfaces = emptyList<Type<*>>()
-        return generate(definition.name, fields, interfaces, config.implementSerializable, document, definition.description)
+        return generate(definition.name, fields, interfaces, document, definition.description)
     }
 
     private fun generateCode(value: Value<Value<*>>, type: KtTypeName): CodeBlock =
@@ -133,7 +133,11 @@ internal data class Field(
     val description: Description? = null
 )
 
-abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected val config: CodeGenConfig, protected val document: Document) {
+abstract class AbstractKotlinDataTypeGenerator(
+    packageName: String,
+    protected val config: CodeGenConfig,
+    protected val document: Document
+) {
     protected val typeUtils = KotlinTypeUtils(
         packageName = packageName,
         config = config,
@@ -144,13 +148,12 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
         name: String,
         fields: List<Field>,
         interfaces: List<Type<*>>,
-        implementSerializable: Boolean,
         document: Document,
         description: Description? = null
     ): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
 
-        if (implementSerializable) {
+        if (config.implementSerializable) {
             kotlinType.addSuperinterface(ClassName.bestGuess(Serializable::class.java.name))
         }
 
@@ -197,9 +200,7 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
                 parameterSpec.addModifiers(KModifier.OVERRIDE)
             }
 
-            if (config.generateAllConstructor) {
-                constructorBuilder.addParameter(parameterSpec.build())
-            }
+            constructorBuilder.addParameter(parameterSpec.build())
 
             val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
             if (field.description != null) {

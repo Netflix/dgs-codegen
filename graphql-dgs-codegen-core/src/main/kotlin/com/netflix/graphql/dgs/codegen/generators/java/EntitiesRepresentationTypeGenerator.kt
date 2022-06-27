@@ -28,8 +28,8 @@ import org.slf4j.LoggerFactory
 
 @Suppress("UNCHECKED_CAST")
 class EntitiesRepresentationTypeGenerator(
-    val config: CodeGenConfig,
-    private val document: Document
+    config: CodeGenConfig,
+    document: Document
 ) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
 
     fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
@@ -114,9 +114,7 @@ class EntitiesRepresentationTypeGenerator(
             name = representationName,
             interfaces = emptyList(),
             fields = fieldDefinitions.plus(typeName),
-            config.implementSerializable,
             description = null,
-            config.generateAllConstructor,
         )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
         // Merge all results.
