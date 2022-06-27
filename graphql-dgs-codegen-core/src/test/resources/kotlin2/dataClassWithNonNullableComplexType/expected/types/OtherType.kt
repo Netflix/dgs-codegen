@@ -11,7 +11,7 @@ import kotlin.String
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = OtherType.Builder::class)
 public class OtherType(
-  name: () -> String = nameDefault
+  name: () -> String = nameDefault,
 ) {
   private val _name: () -> String = name
 

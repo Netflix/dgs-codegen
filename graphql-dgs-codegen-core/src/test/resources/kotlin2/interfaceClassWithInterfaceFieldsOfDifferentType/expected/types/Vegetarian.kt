@@ -13,7 +13,7 @@ import kotlin.collections.List
 @JsonDeserialize(builder = Vegetarian.Builder::class)
 public class Vegetarian(
   calories: () -> String? = caloriesDefault,
-  vegetables: () -> List<String?>? = vegetablesDefault
+  vegetables: () -> List<String?>? = vegetablesDefault,
 ) : Diet {
   private val _calories: () -> String? = calories
 

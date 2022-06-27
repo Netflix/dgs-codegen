@@ -25,7 +25,6 @@ class InputValueSerializerTest {
 
     @Test
     fun `Serialize a complex object`() {
-
         val movieInput = MovieInput(
             1,
             "Some movie",
@@ -33,7 +32,7 @@ class InputValueSerializerTest {
             MovieInput.Director("The Director"),
             listOf(
                 MovieInput.Actor("Actor 1", "Role 1"),
-                MovieInput.Actor("Actor 2", "Role 2"),
+                MovieInput.Actor("Actor 2", "Role 2")
             ),
             DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 1, 1))
         )
@@ -44,7 +43,6 @@ class InputValueSerializerTest {
 
     @Test
     fun `List of a complex object`() {
-
         val movieInput = MovieInput(
             1,
             "Some movie",
@@ -52,7 +50,7 @@ class InputValueSerializerTest {
             MovieInput.Director("The Director"),
             listOf(
                 MovieInput.Actor("Actor 1", "Role 1"),
-                MovieInput.Actor("Actor 2", "Role 2"),
+                MovieInput.Actor("Actor 2", "Role 2")
             ),
             DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 1, 1))
         )
@@ -63,7 +61,6 @@ class InputValueSerializerTest {
 
     @Test
     fun `Null values should be skipped`() {
-
         val movieInput = MovieInput(1)
 
         val serialize = InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(movieInput)

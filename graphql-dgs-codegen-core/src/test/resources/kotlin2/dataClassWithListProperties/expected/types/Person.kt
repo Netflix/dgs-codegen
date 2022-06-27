@@ -13,7 +13,7 @@ import kotlin.collections.List
 @JsonDeserialize(builder = Person.Builder::class)
 public class Person(
   name: () -> String? = nameDefault,
-  email: () -> List<String?>? = emailDefault
+  email: () -> List<String?>? = emailDefault,
 ) {
   private val _name: () -> String? = name
 

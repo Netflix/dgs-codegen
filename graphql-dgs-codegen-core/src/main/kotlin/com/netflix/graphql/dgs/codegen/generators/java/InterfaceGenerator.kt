@@ -43,7 +43,6 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         definition: InterfaceTypeDefinition,
         extensions: List<InterfaceTypeExtensionDefinition>
     ): CodeGenResult {
-
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
@@ -110,7 +109,6 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun addInterfaceMethod(fieldDefinition: FieldDefinition, javaType: TypeSpec.Builder) {
-
         val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType)
 
         val fieldName = fieldDefinition.name

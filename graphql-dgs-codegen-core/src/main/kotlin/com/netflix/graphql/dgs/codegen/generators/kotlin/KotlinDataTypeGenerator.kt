@@ -165,12 +165,15 @@ abstract class AbstractKotlinDataTypeGenerator(
             kotlinType.addKdoc("%L", description.sanitizeKdoc())
         }
 
-        val constructorBuilder = FunSpec.constructorBuilder()
+        val funConstructorBuilder = FunSpec.constructorBuilder()
 
         fields.forEach { field ->
             val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
-            val parameterSpec = ParameterSpec.builder(field.name, returnType)
-                .addAnnotation(jsonPropertyAnnotation(field.name))
+
+            val parameterSpec =
+                ParameterSpec
+                    .builder(field.name, returnType)
+                    .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.default != null) {
                 parameterSpec.defaultValue(field.default)
@@ -184,6 +187,18 @@ abstract class AbstractKotlinDataTypeGenerator(
                     else -> if (field.nullable) parameterSpec.defaultValue("null")
                 }
             }
+            funConstructorBuilder.addParameter(parameterSpec.build())
+        }
+        kotlinType.primaryConstructor(funConstructorBuilder.build())
+
+        fields.forEach { field ->
+            val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
+            val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
+
+            if (field.description != null) {
+                propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
+            }
+            propertySpecBuilder.initializer(field.name)
 
             val interfaceNames = interfaces.asSequence()
                 .map { it as NamedNode<*> }
@@ -197,16 +212,11 @@ abstract class AbstractKotlinDataTypeGenerator(
                 .toSet()
 
             if (field.name in interfaceFields) {
-                parameterSpec.addModifiers(KModifier.OVERRIDE)
+                // Properties are the syntactical element that will allow us to override things, they are the spec on
+                // which we should add the override modifier.
+                propertySpecBuilder.addModifiers(KModifier.OVERRIDE)
             }
 
-            constructorBuilder.addParameter(parameterSpec.build())
-
-            val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
-            if (field.description != null) {
-                propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
-            }
-            propertySpecBuilder.initializer(field.name)
             kotlinType.addProperty(propertySpecBuilder.build())
         }
 
@@ -225,7 +235,7 @@ abstract class AbstractKotlinDataTypeGenerator(
             kotlinType.addAnnotation(disableJsonTypeInfoAnnotation())
         }
 
-        kotlinType.primaryConstructor(constructorBuilder.build())
+        kotlinType.primaryConstructor(funConstructorBuilder.build())
         kotlinType.addType(TypeSpec.companionObjectBuilder().build())
 
         val typeSpec = kotlinType.build()

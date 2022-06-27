@@ -11,7 +11,7 @@ import kotlin.collections.List
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-  types: () -> List<EmployeeTypes?>? = typesDefault
+  types: () -> List<EmployeeTypes?>? = typesDefault,
 ) {
   private val _types: () -> List<EmployeeTypes?>? = types
 

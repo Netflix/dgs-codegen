@@ -6,5 +6,5 @@ import kotlin.String
 
 public class MovieFilter(
   public val genre: String? = default("genre"),
-  public val releaseYear: Int? = default("releaseYear")
+  public val releaseYear: Int? = default("releaseYear"),
 ) : GraphQLInput()

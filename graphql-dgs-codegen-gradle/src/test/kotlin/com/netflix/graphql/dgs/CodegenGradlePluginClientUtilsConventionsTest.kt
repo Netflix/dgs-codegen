@@ -46,7 +46,7 @@ repositories { mavenCentral() }
 dependencies { }
 
 codegen.clientCoreConventionsEnabled = false
-""".trimMargin()
+            """.trimMargin()
         )
 
         val runner = GradleRunner.create()
@@ -78,7 +78,7 @@ repositories { mavenCentral() }
 
 dependencies { }
 
-""".trimMargin()
+            """.trimMargin()
         )
         // when the build is executed
         val runner = GradleRunner.create()
@@ -150,7 +150,7 @@ dependencies { }
 codegen {
     clientCoreVersion = "$higherVersion"
 }
-""".trimMargin()
+            """.trimMargin()
         )
         // when the build is executed
         val runner = GradleRunner.create()
@@ -185,7 +185,7 @@ repositories { mavenCentral() }
 dependencies { 
     implementation 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:$higherVersion'
 }
-""".trimMargin()
+            """.trimMargin()
         )
         // when the build is executed
         val runner = GradleRunner.create()

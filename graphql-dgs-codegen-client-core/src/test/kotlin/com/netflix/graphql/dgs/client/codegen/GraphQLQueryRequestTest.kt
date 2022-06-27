@@ -44,7 +44,8 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query {
             |  test(actors: "actorA", movies: ["movie1", "movie2"])
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -59,7 +60,8 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query {
             |  test(movies: [1234, 5678])
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -75,7 +77,8 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query {
             |  test(name: "noname", age: 30)
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -90,7 +93,8 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query {
             |  test(movie: {movieId : 1234, name : "testMovie"})
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -108,7 +112,8 @@ class GraphQLQueryRequestTest {
             |    name
             |    movieId
             |  }
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -126,7 +131,8 @@ class GraphQLQueryRequestTest {
             |    name
             |    movieId
             |  }
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -144,7 +150,8 @@ class GraphQLQueryRequestTest {
             |    name
             |    movieId
             |  }
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -162,7 +169,8 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query TestNamedQuery {
             |  test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021")
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -197,7 +205,8 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query TestNamedQuery {
             |  test(id: "$randomUUID")
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -226,7 +235,8 @@ class GraphQLQueryRequestTest {
               |      }
               |    }
               |  }
-              |}""".trimMargin()
+              |}
+            """.trimMargin()
         )
     }
 
@@ -251,7 +261,8 @@ class GraphQLQueryRequestTest {
               |    movieId
               |    title(format: {uppercase : true})
               |  }
-              |}""".trimMargin()
+              |}
+            """.trimMargin()
         )
     }
 
@@ -268,7 +279,8 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query TestNamedQuery {
             |  test(movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"})
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -285,7 +297,8 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query {
             |  test(actors: {name : "actorA", movies : ["movie1", "movie2"]}, movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"})
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -312,7 +325,7 @@ class GraphQLQueryRequestTest {
               |    }
               |  }
               |}
-        """.trimMargin()
+            """.trimMargin()
         )
     }
 

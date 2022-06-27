@@ -10,7 +10,7 @@ import java.lang.IllegalStateException
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = MyType.Builder::class)
 public class MyType(
-  other: () -> OtherType = otherDefault
+  other: () -> OtherType = otherDefault,
 ) {
   private val _other: () -> OtherType = other
 

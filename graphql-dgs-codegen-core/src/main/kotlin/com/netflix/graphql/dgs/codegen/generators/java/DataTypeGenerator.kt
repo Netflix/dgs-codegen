@@ -53,10 +53,11 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
 
         if (config.generateInterfaces) {
             useInterfaceType = true
-            val fieldsFromSuperTypes = document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
-                .filter { ClassName.get(packageName, it.name).toString() in implements }
-                .flatMap { it.fieldDefinitions }
-                .map { it.name }
+            val fieldsFromSuperTypes =
+                document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+                    .filter { ClassName.get(packageName, it.name).toString() in implements }
+                    .flatMap { it.fieldDefinitions }
+                    .map { it.name }
 
             overrideGetter = true
             val fieldDefinitions = definition.fieldDefinitions
@@ -65,7 +66,13 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
                 .map {
                     Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true))
                 }
-                .plus(extensions.flatMap { it.fieldDefinitions }.filterSkipped().map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) })
+                .plus(
+                    extensions
+                        .flatMap { it.fieldDefinitions }
+                        .filterSkipped()
+                        .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) }
+                )
+
             val interfaceName = "I$name"
             implements = listOf(interfaceName) + implements
             val superInterfaces = definition.implements
@@ -139,7 +146,13 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                     else -> CodeBlock.of("\$L", defVal)
                 }
             }
-            Field(name = it.name, type = typeUtils.findReturnType(it.type), initialValue = defaultValue, description = it.description, directives = it.directives.map { directive -> directive.name })
+            Field(
+                name = it.name,
+                type = typeUtils.findReturnType(it.type),
+                initialValue = defaultValue,
+                description = it.description,
+                directives = it.directives.map { directive -> directive.name }
+            )
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
         return generate(name, emptyList(), fieldDefinitions, definition.description)
     }
@@ -158,7 +171,7 @@ abstract class BaseDataTypeGenerator(
         name: String,
         interfaces: List<String>,
         fields: List<Field>,
-        description: Description? = null,
+        description: Description? = null
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
@@ -256,7 +269,7 @@ abstract class BaseDataTypeGenerator(
                 equalsBody.append(
                     """ &&
                     
-                """.trimMargin()
+                    """.trimMargin()
                 )
             }
         }
@@ -292,7 +305,6 @@ abstract class BaseDataTypeGenerator(
     }
 
     private fun addParameterizedConstructor(fieldDefinitions: List<Field>, javaType: TypeSpec.Builder) {
-
         val constructorBuilder = MethodSpec.constructorBuilder()
         fieldDefinitions.forEach {
             constructorBuilder
@@ -318,7 +330,10 @@ abstract class BaseDataTypeGenerator(
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         val fieldBuilder = if (fieldDefinition.initialValue != null) {
-            FieldSpec.builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE).initializer(fieldDefinition.initialValue)
+            FieldSpec
+                .builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                .addModifiers(Modifier.PRIVATE)
+                .initializer(fieldDefinition.initialValue)
         } else {
             FieldSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE)
         }
@@ -349,7 +364,8 @@ abstract class BaseDataTypeGenerator(
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
                 .addStatement(
-                    "this.\$N = \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
+                    "this.\$N = \$N",
+                    ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
                     ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
                 ).build()
         )
@@ -357,11 +373,14 @@ abstract class BaseDataTypeGenerator(
 
     private fun addAbstractGetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         val getterName = "get${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}"
-        javaType.addMethod(MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT).returns(returnType).build())
+        javaType.addMethod(
+            MethodSpec.methodBuilder(getterName)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(returnType).build()
+        )
     }
 
     private fun addBuilder(javaType: TypeSpec.Builder) {
-
         val className = ClassName.get(packageName, javaType.build().name)
         val buildMethod = MethodSpec.methodBuilder("build").returns(className).addStatement(
             """
@@ -372,11 +391,21 @@ abstract class BaseDataTypeGenerator(
         ).addModifiers(Modifier.PUBLIC).build()
 
         val builderClassName = ClassName.get(packageName, "$className.Builder")
-        val newBuilderMethod = MethodSpec.methodBuilder("newBuilder").returns(builderClassName).addStatement("return new Builder()").addModifiers(Modifier.PUBLIC, Modifier.STATIC).build()
+        val newBuilderMethod =
+            MethodSpec
+                .methodBuilder("newBuilder")
+                .returns(builderClassName)
+                .addStatement("return new Builder()")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .build()
+
         javaType.addMethod(newBuilderMethod)
 
-        val builderType = TypeSpec.classBuilder("Builder").addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-            .addMethod(buildMethod)
+        val builderType =
+            TypeSpec
+                .classBuilder("Builder")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .addMethod(buildMethod)
 
         javaType.build().fieldSpecs.map {
             MethodSpec.methodBuilder(it.name)
@@ -386,8 +415,8 @@ abstract class BaseDataTypeGenerator(
                 .addStatement("return this")
                 .addParameter(ParameterSpec.builder(it.type, it.name).build())
                 .addModifiers(Modifier.PUBLIC).build()
-        }
-            .forEach { builderType.addMethod(it) }
+        }.forEach { builderType.addMethod(it) }
+
         builderType.addFields(javaType.build().fieldSpecs)
         javaType.addType(builderType.build())
     }

@@ -11,7 +11,7 @@ import kotlin.Int
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Rating.Builder::class)
 public class Rating(
-  stars: () -> Int? = starsDefault
+  stars: () -> Int? = starsDefault,
 ) : SearchResult {
   private val _stars: () -> Int? = stars
 

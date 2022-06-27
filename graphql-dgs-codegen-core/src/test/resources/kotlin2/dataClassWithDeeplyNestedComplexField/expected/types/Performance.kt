@@ -12,7 +12,7 @@ import kotlin.Double
 @JsonDeserialize(builder = Performance.Builder::class)
 public class Performance(
   zeroToSixty: () -> Double? = zeroToSixtyDefault,
-  quarterMile: () -> Double? = quarterMileDefault
+  quarterMile: () -> Double? = quarterMileDefault,
 ) {
   private val _zeroToSixty: () -> Double? = zeroToSixty
 

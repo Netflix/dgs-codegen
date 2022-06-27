@@ -53,7 +53,7 @@ class ClientApiGenFragmentTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -107,7 +107,7 @@ class ClientApiGenFragmentTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -156,7 +156,7 @@ class ClientApiGenFragmentTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -203,7 +203,7 @@ class ClientApiGenFragmentTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -247,7 +247,8 @@ class ClientApiGenFragmentTest {
                 |})
                 |public interface SearchResult {
                 |}
-                |""".trimMargin()
+                |
+            """.trimMargin()
         )
 
         // And assert the Search_Result_MovieProjection instance has an explicit schemaType

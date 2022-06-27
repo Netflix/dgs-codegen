@@ -1,13 +1,13 @@
 {
     "apiDependenciesMetadata": {
         "com.graphql-java:graphql-java": {
-            "locked": "18.0"
+            "locked": "18.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         }
     },
     "compileClasspath": {
@@ -15,16 +15,16 @@
             "locked": "2.13.2"
         },
         "com.graphql-java:graphql-java": {
-            "locked": "18.0"
+            "locked": "18.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         }
     },
     "compileOnlyDependenciesMetadata": {
@@ -32,75 +32,78 @@
             "locked": "2.13.2"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         }
     },
     "implementationDependenciesMetadata": {
         "com.graphql-java:graphql-java": {
-            "locked": "18.0"
+            "locked": "18.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         }
     },
     "kotlinCompilerClasspath": {
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         }
     },
     "kotlinCompilerPluginClasspathMain": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         }
     },
     "kotlinCompilerPluginClasspathTest": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         }
     },
     "kotlinKlibCommonizerClasspath": {
         "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         }
     },
     "runtimeClasspath": {
         "com.graphql-java:graphql-java": {
-            "locked": "18.0"
+            "locked": "18.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         }
     },
     "testCompileClasspath": {
         "com.graphql-java:graphql-java": {
-            "locked": "18.0"
+            "locked": "18.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.22.0"
+            "locked": "3.23.1"
+        },
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.8.2"
@@ -114,22 +117,25 @@
     },
     "testImplementationDependenciesMetadata": {
         "com.graphql-java:graphql-java": {
-            "locked": "18.0"
+            "locked": "18.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.22.0"
+            "locked": "3.23.1"
+        },
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.8.2"
@@ -143,22 +149,25 @@
     },
     "testRuntimeClasspath": {
         "com.graphql-java:graphql-java": {
-            "locked": "18.0"
+            "locked": "18.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-extended-scalars": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "4.10.1"
+            "locked": "5.0.4"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.22.0"
+            "locked": "3.23.1"
+        },
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.6.21"
+            "locked": "1.7.0"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.8.2"

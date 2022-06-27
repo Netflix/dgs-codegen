@@ -4,5 +4,5 @@ import com.netflix.graphql.dgs.client.codegen.GraphQLInput
 import kotlin.String
 
 public class I(
-  public val arg: String? = default("arg")
+  public val arg: String? = default("arg"),
 ) : GraphQLInput()

@@ -17,7 +17,7 @@ public class Bird(
   address: () -> List<String> = addressDefault,
   mother: () -> Bird = motherDefault,
   father: () -> Bird? = fatherDefault,
-  parents: () -> List<Bird?>? = parentsDefault
+  parents: () -> List<Bird?>? = parentsDefault,
 ) : Pet {
   private val _id: () -> String = id
 
