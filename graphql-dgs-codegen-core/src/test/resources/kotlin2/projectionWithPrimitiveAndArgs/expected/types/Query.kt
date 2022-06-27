@@ -11,7 +11,7 @@ import kotlin.String
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-  string: () -> String? = stringDefault
+  string: () -> String? = stringDefault,
 ) {
   private val _string: () -> String? = string
 

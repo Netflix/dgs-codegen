@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.Index
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -35,7 +36,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithStringProperties() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -69,7 +69,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithNullablePrimitive() {
-
         val schema = """
             type MyType {
                 count: Int
@@ -105,7 +104,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithNonNullablePrimitive() {
-
         val schema = """
             type MyType {
                 count: Int!
@@ -137,7 +135,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `non nullable primitive, but with kotlinAllFieldsOptional setting`() {
-
         val schema = """
             type MyType {
                 count: Int!
@@ -166,7 +163,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithNonNullableComplexType() {
-
         val schema = """
             type MyType {
                 other: OtherType!
@@ -197,7 +193,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `non nullable complex type with kotlinAllFieldsOptional setting`() {
-
         val schema = """
             type MyType {
                 other: OtherType!
@@ -213,7 +208,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                kotlinAllFieldsOptional = true,
+                kotlinAllFieldsOptional = true
             )
         ).generate().kotlinDataTypes
 
@@ -229,7 +224,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `interface type with kotlinAllFieldsOptional setting`() {
-
         val schema = """
             interface Person {
                  name: String
@@ -245,7 +239,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                kotlinAllFieldsOptional = true,
+                kotlinAllFieldsOptional = true
             )
         ).generate()
         val dataTypes = result.kotlinDataTypes
@@ -261,7 +255,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `interface classes are not generated with generateDataTypes setting set to false`() {
-
         val schema = """
             interface Person {
                  name: String
@@ -277,7 +270,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                generateDataTypes = false,
+                generateDataTypes = false
             )
         ).generate()
         val dataTypes = result.kotlinDataTypes
@@ -289,7 +282,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithNoFields() {
-
         val schema = """
             type Query {
                 me: Person
@@ -318,7 +310,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithCustomPackagename() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -347,7 +338,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithListProperties() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -377,7 +367,9 @@ class KotlinCodeGenTest {
         assertThat(emailProperty.name).isEqualTo("email")
 
         assertThat(nameProperty.type).isEqualTo(STRING.copy(nullable = true))
-        assertThat(emailProperty.type).isEqualTo(LIST.parameterizedBy(STRING.copy(nullable = true)).copy(nullable = true))
+        assertThat(emailProperty.type).isEqualTo(
+            LIST.parameterizedBy(STRING.copy(nullable = true)).copy(nullable = true)
+        )
 
         assertCompilesKotlin(dataTypes)
     }
@@ -451,7 +443,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithInterface() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -483,9 +474,23 @@ class KotlinCodeGenTest {
         // Check data class
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(type.name).isEqualTo("Employee")
-        assertThat(type.propertySpecs.size).isEqualTo(3)
+        assertThat(type.propertySpecs).hasSize(3)
         assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname", "company")
-        assertThat(type.primaryConstructor?.parameters?.get(0)?.modifiers).contains(KModifier.OVERRIDE)
+        assertThat(type.propertySpecs).satisfies(
+            { ps ->
+                assertThat(ps.name).isEqualTo("firstname")
+                assertThat(ps.modifiers).contains(KModifier.OVERRIDE)
+            },
+            Index.atIndex(0)
+        )
+        assertThat(type.propertySpecs).satisfies(
+            { ps ->
+                assertThat(ps.name).isEqualTo("lastname")
+                assertThat(ps.modifiers).contains(KModifier.OVERRIDE)
+            },
+            Index.atIndex(1)
+        )
+
         assertThat(type.superinterfaces.keys).contains(ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.Person"))
 
         // Check interface
@@ -503,7 +508,7 @@ class KotlinCodeGenTest {
                 |@JsonTypeInfo(
                 |  use = JsonTypeInfo.Id.NAME,
                 |  include = JsonTypeInfo.As.PROPERTY,
-                |  property = "__typename"
+                |  property = "__typename",
                 |)
                 |@JsonSubTypes(value = [
                 |  JsonSubTypes.Type(value = Employee::class, name = "Employee")
@@ -515,7 +520,8 @@ class KotlinCodeGenTest {
                 |
                 |  public companion object
                 |}
-                |""".trimMargin()
+                |
+            """.trimMargin()
         )
 
         assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
@@ -533,11 +539,12 @@ class KotlinCodeGenTest {
                 |  @JsonProperty("lastname")
                 |  public override val lastname: String? = null,
                 |  @JsonProperty("company")
-                |  public val company: String? = null
+                |  public val company: String? = null,
                 |) : Person {
                 |  public companion object
                 |}
-                |""".trimMargin()
+                |
+            """.trimMargin()
         )
 
         assertCompilesKotlin(dataTypes + interfaces)
@@ -579,7 +586,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithNonNullableAndInterface() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -612,9 +618,23 @@ class KotlinCodeGenTest {
         // Check data class
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(type.name).isEqualTo("Employee")
-        assertThat(type.propertySpecs.size).isEqualTo(3)
+        // Type properties.
+        assertThat(type.propertySpecs).hasSize(3)
         assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname", "company")
-        assertThat(type.primaryConstructor?.parameters?.get(0)?.modifiers).contains(KModifier.OVERRIDE)
+        assertThat(type.propertySpecs).satisfies({ ps ->
+            assertThat(ps.name).isEqualTo("firstname")
+            assertThat(ps.modifiers).contains(KModifier.OVERRIDE)
+        }, Index.atIndex(0))
+        assertThat(type.propertySpecs).satisfies({ ps ->
+            assertThat(ps.name).isEqualTo("lastname")
+            assertThat(ps.modifiers).contains(KModifier.OVERRIDE)
+        }, Index.atIndex(1))
+        assertThat(type.propertySpecs).satisfies({ ps ->
+            assertThat(ps.name).isEqualTo("company")
+            assertThat(ps.modifiers).contains(KModifier.OVERRIDE)
+        }, Index.atIndex(2))
+
+        // Ctor parameters
         assertThat(type.primaryConstructor?.parameters?.get(0)?.type?.isNullable).isFalse
         assertThat(type.primaryConstructor?.parameters?.get(1)?.type?.isNullable).isFalse
         assertThat(type.primaryConstructor?.parameters?.get(2)?.type?.isNullable).isTrue
@@ -628,12 +648,11 @@ class KotlinCodeGenTest {
         assertThat(interfaceType.propertySpecs[1].type.isNullable).isFalse
         assertThat(interfaceType.propertySpecs[2].type.isNullable).isTrue
 
-        assertCompilesKotlin(dataTypes + interfaces)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
     fun generateDataClassWitRecursiveField() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -710,22 +729,28 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).flatExtracting("members").extracting("name").contains("Car", "Engine", "Performance")
         val nestedType = dataTypes[1].members[0] as TypeSpec
         assertThat(nestedType.name).isEqualTo("Engine")
-        assertThat(nestedType.propertySpecs).filteredOn("name", "performance").extracting("type.simpleName").containsExactly("Performance")
+        assertThat(nestedType.propertySpecs).filteredOn("name", "performance").extracting("type.simpleName")
+            .containsExactly("Performance")
 
         assertCompilesKotlin(dataTypes)
     }
 
     @Test
-    fun generateDataClassWithNoAllConstructor() {
+    fun `Generate a Data Class where all fields are not required to be initialized in the constructors and which properties are mutable`() {
         val schema = """
             type Query {
-                cars: [Car]
+                cars(filter: CarFilter) : [Car]
             }
             
             type Car {
                 make: String
                 model: String
             }
+            
+           input CarFilter{
+                make: String
+                model: String
+           } 
         """.trimIndent()
 
         val result = CodeGen(
@@ -733,16 +758,48 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
+                implementSerializable = true,
                 generateAllConstructor = false
             )
         ).generate().kotlinDataTypes
         val type = result[0].members[0] as TypeSpec
-        assertThat(type.primaryConstructor?.parameters?.size ?: 1).isEqualTo(0)
+        assertThat(type.propertySpecs)
+            .hasSize(2)
+            .satisfies(
+                { ps: PropertySpec ->
+                    assertThat(ps.name).isEqualTo("make")
+                    assertThat(ps.mutable).isTrue()
+                },
+                Index.atIndex(0)
+            )
+            .satisfies(
+                { ps: PropertySpec ->
+                    assertThat(ps.name).isEqualTo("model")
+                    assertThat(ps.mutable).isTrue()
+                },
+                Index.atIndex(1)
+            )
+        assertThat(type.primaryConstructor?.parameters)
+            .hasSize(2)
+            .satisfies(
+                { ps: ParameterSpec ->
+                    assertThat(ps.name).isEqualTo("make")
+                    assertThat(ps.defaultValue.toString()).isEqualTo("null")
+                },
+                Index.atIndex(0)
+            )
+            .satisfies(
+                { ps: ParameterSpec ->
+                    assertThat(ps.name).isEqualTo("model")
+                    assertThat(ps.defaultValue.toString()).isEqualTo("null")
+                },
+                Index.atIndex(1)
+            )
         assertCompilesKotlin(result)
     }
 
     @Test
-    fun generateDataClassWithAllConstructor() {
+    fun `Generate a Data Class where all fields are initialized in the constructors and which properties are immutable`() {
         val schema = """
             type Query {
                 cars: [Car]
@@ -763,13 +820,43 @@ class KotlinCodeGenTest {
             )
         ).generate().kotlinDataTypes
         val type = result[0].members[0] as TypeSpec
-        assertThat(type.primaryConstructor?.parameters?.size ?: 0).isGreaterThan(0)
+        assertThat(type.propertySpecs)
+            .hasSize(2)
+            .satisfies(
+                { ps: PropertySpec ->
+                    assertThat(ps.name).isEqualTo("make")
+                    assertThat(ps.mutable).isFalse()
+                },
+                Index.atIndex(0)
+            )
+            .satisfies(
+                { ps: PropertySpec ->
+                    assertThat(ps.name).isEqualTo("model")
+                    assertThat(ps.mutable).isFalse()
+                },
+                Index.atIndex(1)
+            )
+        assertThat(type.primaryConstructor?.parameters)
+            .hasSize(2)
+            .satisfies(
+                { ps: ParameterSpec ->
+                    assertThat(ps.name).isEqualTo("make")
+                    assertThat(ps.defaultValue.toString()).isEqualTo("null")
+                },
+                Index.atIndex(0)
+            )
+            .satisfies(
+                { ps: ParameterSpec ->
+                    assertThat(ps.name).isEqualTo("model")
+                    assertThat(ps.defaultValue.toString()).isEqualTo("null")
+                },
+                Index.atIndex(1)
+            )
         assertCompilesKotlin(result)
     }
 
     @Test
     fun generateEnum() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -837,7 +924,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `Use mapped type name when the type is mapped`() {
-
         val schema = """
             type Query {                
                 search: SearchResult
@@ -859,7 +945,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                typeMapping = mapOf("Person" to "mypackage.Person"),
+                typeMapping = mapOf("Person" to "mypackage.Person")
             )
         ).generate().kotlinDataTypes
 
@@ -876,11 +962,11 @@ class KotlinCodeGenTest {
             arguments("List<*>", "kotlin.collections.List<*>"),
             arguments(
                 "Map<List<String>, Map<String, Any?>>",
-                "kotlin.collections.Map<kotlin.collections.List<kotlin.String>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>",
+                "kotlin.collections.Map<kotlin.collections.List<kotlin.String>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>"
             ),
             arguments(
                 "List<List<String>>",
-                "kotlin.collections.List<kotlin.collections.List<kotlin.String>>",
+                "kotlin.collections.List<kotlin.collections.List<kotlin.String>>"
             ),
             arguments("kotlin.String", "kotlin.String"),
             arguments("kotlin.collections.Map<*, *>", "kotlin.collections.Map<*, *>"),
@@ -895,12 +981,12 @@ class KotlinCodeGenTest {
             ),
             arguments(
                 "kotlin.collections.Map<kotlin.collections.List<*>, kotlin.collections.Map<String, Any?>>",
-                "kotlin.collections.Map<kotlin.collections.List<*>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>",
+                "kotlin.collections.Map<kotlin.collections.List<*>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>"
             ),
             arguments(
                 "Map<Map<String, Any>, Map<String, Any?>>",
-                "kotlin.collections.Map<kotlin.collections.Map<kotlin.String, kotlin.Any>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>",
-            ),
+                "kotlin.collections.Map<kotlin.collections.Map<kotlin.String, kotlin.Any>, kotlin.collections.Map<kotlin.String, kotlin.Any?>>"
+            )
         )
     }
 
@@ -929,7 +1015,7 @@ class KotlinCodeGenTest {
                         schemas = setOf(schema),
                         packageName = basePackageName,
                         language = Language.KOTLIN,
-                        typeMapping = mapOf("JSON" to given),
+                        typeMapping = mapOf("JSON" to given)
                     )
                 ).generate()
                 val dataTypes = generated.kotlinDataTypes
@@ -970,7 +1056,7 @@ class KotlinCodeGenTest {
                     "kotlin.collections.Map<String, kotlin.collections.ArrayList<>",
                     "kotlin.collections.Map<<String, kotlin.collections.ArrayList<String>>",
                     "kotlin.collections.Map<String, kotlin.collections.ArrayList<>>>",
-                    "kotlin.collections.Map<**>",
+                    "kotlin.collections.Map<**>"
                 ]
             )
             fun testWrongCase(mappedTypeAsString: String) {
@@ -980,7 +1066,7 @@ class KotlinCodeGenTest {
                             schemas = setOf(schema),
                             packageName = basePackageName,
                             language = Language.KOTLIN,
-                            typeMapping = mapOf("JSON" to mappedTypeAsString),
+                            typeMapping = mapOf("JSON" to mappedTypeAsString)
                         )
                     ).generate()
                 }
@@ -990,7 +1076,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `Use mapped type name when the type is mapped for interface`() {
-
         val schema = """
             type Query {                
                 search: SearchResult
@@ -1016,8 +1101,8 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN,
                 typeMapping = mapOf(
                     "SomethingWithAName" to "mypackage.SomethingWithAName",
-                    "Person" to "mypackage.Person",
-                ),
+                    "Person" to "mypackage.Person"
+                )
             )
         ).generate()
 
@@ -1032,7 +1117,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `Use mapped type name when the type is mapped for union`() {
-
         val schema = """
             type Query {                
                 search: SearchResult
@@ -1057,8 +1141,8 @@ class KotlinCodeGenTest {
                 typeMapping = mapOf(
                     "SearchResult" to "mypackage.SearchResult",
                     "Movie" to "mypackage.Movie",
-                    "Actor" to "mypackage.Actor",
-                ),
+                    "Actor" to "mypackage.Actor"
+                )
             )
         ).generate()
 
@@ -1071,7 +1155,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `Use mapped type name for enum`() {
-
         val schema = """
             type Query {                
                 state: State
@@ -1089,8 +1172,8 @@ class KotlinCodeGenTest {
                 packageName = basePackageName,
                 language = Language.KOTLIN,
                 typeMapping = mapOf(
-                    "State" to "mypackage.State",
-                ),
+                    "State" to "mypackage.State"
+                )
             )
         ).generate()
 
@@ -1100,7 +1183,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun `Use mapped type name when a concrete type of a union is mapped`() {
-
         val schema = """
             type Query {                
                 search: SearchResult
@@ -1123,8 +1205,8 @@ class KotlinCodeGenTest {
                 packageName = basePackageName,
                 language = Language.KOTLIN,
                 typeMapping = mapOf(
-                    "Actor" to "mypackage.Actor",
-                ),
+                    "Actor" to "mypackage.Actor"
+                )
             )
         ).generate()
         val dataTypes = result.kotlinDataTypes
@@ -1137,7 +1219,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateInputTypes() {
-
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
@@ -1178,7 +1259,13 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate()
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
         val dataTypes = codeGenResult.kotlinDataTypes
         val enums = codeGenResult.kotlinEnumTypes
         assertThat(dataTypes).hasSize(1)
@@ -1213,7 +1300,13 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val dataTypes = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate().kotlinDataTypes
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -1246,7 +1339,13 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val dataTypes = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate().kotlinDataTypes
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -1279,7 +1378,13 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val dataTypes = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate().kotlinDataTypes
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -1312,7 +1417,13 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val dataTypes = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate().kotlinDataTypes
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -1350,7 +1461,13 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate()
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
         val dataTypes = codeGenResult.kotlinDataTypes
         val enums = codeGenResult.kotlinEnumTypes
         assertThat(dataTypes).hasSize(1)
@@ -1385,7 +1502,13 @@ class KotlinCodeGenTest {
             }          
         """.trimIndent()
 
-        val dataTypes = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, language = Language.KOTLIN)).generate().kotlinDataTypes
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -1411,7 +1534,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateExtendedInputTypes() {
-
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
@@ -1485,7 +1607,7 @@ class KotlinCodeGenTest {
         assertThat(typeSpec0.propertySpecs.size).isEqualTo(1)
         assertThat(typeSpec0.propertySpecs[0].name).isEqualTo("public")
 
-        val fileSpec1 = codeGenResult.kotlinDataTypes[1] as FileSpec
+        val fileSpec1 = codeGenResult.kotlinDataTypes[1]
         assertThat(fileSpec1.name).isEqualTo("BarInput")
         assertThat(fileSpec1.members.size).isEqualTo(1)
         val typeSpec1 = fileSpec1.members[0] as TypeSpec
@@ -1499,7 +1621,7 @@ class KotlinCodeGenTest {
     @MethodSource("generateConstantsArguments")
     fun `Generates constants from Type names available via the DgsConstants class`(
         snakeCaseEnabled: Boolean,
-        constantNames: List<String>,
+        constantNames: List<String>
     ) {
         val schema = """
             type Query {
@@ -1528,7 +1650,8 @@ class KotlinCodeGenTest {
         val type = result.kotlinConstants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactlyElementsOf(constantNames)
         assertThat(type.typeSpecs[0].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "People")
-        assertThat(type.typeSpecs[1].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Firstname", "Lastname", "Metadata")
+        assertThat(type.typeSpecs[1].propertySpecs).extracting("name")
+            .containsExactly("TYPE_NAME", "Firstname", "Lastname", "Metadata")
         assertThat(type.typeSpecs[2].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Data")
 
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinConstants)
@@ -1540,12 +1663,19 @@ class KotlinCodeGenTest {
             return of(
                 Arguments.of(
                     true,
-                    listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
+                    listOf(
+                        "QUERY",
+                        "PERSON",
+                        "PERSON_META_DATA",
+                        "V_PERSON_META_DATA",
+                        "V_1_PERSON_META_DATA",
+                        "URL_META_DATA"
+                    )
                 ),
                 Arguments.of(
                     false,
                     listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
-                ),
+                )
             )
         }
     }
@@ -1611,7 +1741,8 @@ class KotlinCodeGenTest {
         ).generate()
         val type = result.kotlinConstants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
-        assertThat(type.typeSpecs[2].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Email", "BirthYear")
+        assertThat(type.typeSpecs[2].propertySpecs).extracting("name")
+            .containsExactly("TYPE_NAME", "Email", "BirthYear")
 
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinConstants)
     }
@@ -1642,7 +1773,8 @@ class KotlinCodeGenTest {
         ).generate()
         val type = result.kotlinConstants[0].members[0] as TypeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
-        assertThat(type.typeSpecs[1].propertySpecs).extracting("name").containsExactly("TYPE_NAME", "Firstname", "Lastname", "Email")
+        assertThat(type.typeSpecs[1].propertySpecs).extracting("name")
+            .containsExactly("TYPE_NAME", "Firstname", "Lastname", "Email")
 
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinConstants)
     }
@@ -1724,29 +1856,29 @@ class KotlinCodeGenTest {
 
         assertThat(interfaces[0].toString()).isEqualTo(
             """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
-                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-                |
-                |@JsonTypeInfo(
-                |  use = JsonTypeInfo.Id.NAME,
-                |  include = JsonTypeInfo.As.PROPERTY,
-                |  property = "__typename"
-                |)
-                |@JsonSubTypes(value = [
-                |  JsonSubTypes.Type(value = Movie::class, name = "Movie"),
-                |  JsonSubTypes.Type(value = Actor::class, name = "Actor"),
-                |  JsonSubTypes.Type(value = Rating::class, name = "Rating")
-                |])
-                |public interface SearchResult {
-                |  public companion object
-                |}
-
-        """.trimMargin()
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types
+            |
+            |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+            |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |
+            |@JsonTypeInfo(
+            |  use = JsonTypeInfo.Id.NAME,
+            |  include = JsonTypeInfo.As.PROPERTY,
+            |  property = "__typename",
+            |)
+            |@JsonSubTypes(value = [
+            |  JsonSubTypes.Type(value = Movie::class, name = "Movie"),
+            |  JsonSubTypes.Type(value = Actor::class, name = "Actor"),
+            |  JsonSubTypes.Type(value = Rating::class, name = "Rating")
+            |])
+            |public interface SearchResult {
+            |  public companion object
+            |}
+            |
+            """.trimMargin()
         )
 
-        assertCompilesKotlin(dataTypes + interfaces)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
@@ -1761,16 +1893,15 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val dataTypes = CodeGen(
+        val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN
             )
-        ).generate().kotlinDataTypes
-        assertThat(dataTypes).extracting("name").containsExactly("Person")
-
-        assertCompilesKotlin(dataTypes)
+        ).generate()
+        assertThat(codeGenResult.kotlinDataTypes).extracting("name").containsExactly("Person")
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
@@ -1798,7 +1929,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateWithCustomSubPackageName() {
-
         val schema = """
             type Person {
                 firstname: String
@@ -1806,7 +1936,14 @@ class KotlinCodeGenTest {
             }
         """.trimIndent()
 
-        val dataTypes = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, subPackageNameTypes = "mytypes", language = Language.KOTLIN)).generate().kotlinDataTypes
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                subPackageNameTypes = "mytypes",
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
@@ -1865,30 +2002,32 @@ class KotlinCodeGenTest {
         assertThat(droid.propertySpecs).extracting("name").contains("id", "name", "primaryFunction")
         assertThat(droid.superinterfaces.keys).contains(ClassName.bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.SearchResult"))
 
-        val rsultPage = dataTypes[2].members[0] as TypeSpec
-        assertThat(rsultPage.name).isEqualTo("SearchResultPage")
-        assertThat(rsultPage.propertySpecs.size).isEqualTo(1)
-        assertThat(rsultPage.propertySpecs).extracting("name").contains("items")
-        assertThat(rsultPage.superinterfaces.keys).isEmpty()
+        val resultPage = dataTypes[2].members[0] as TypeSpec
+        assertThat(resultPage.name).isEqualTo("SearchResultPage")
+        assertThat(resultPage.propertySpecs.size).isEqualTo(1)
+        assertThat(resultPage.propertySpecs).extracting("name").contains("items")
+        assertThat(resultPage.superinterfaces.keys).isEmpty()
 
         assertThat(interfaces.size).isEqualTo(1)
         val searchResult = interfaces[0].members[0] as TypeSpec
         assertThat(FileSpec.get("$basePackageName.types", searchResult).toString()).contains(
             """
-                |@JsonTypeInfo(
-                |  use = JsonTypeInfo.Id.NAME,
-                |  include = JsonTypeInfo.As.PROPERTY,
-                |  property = "__typename"
-                |)
-                |@JsonSubTypes(value = [
-                |  JsonSubTypes.Type(value = Human::class, name = "Human"),
-                |  JsonSubTypes.Type(value = Droid::class, name = "Droid")
-                |])
-                |""".trimMargin()
+             |@JsonTypeInfo(
+             |  use = JsonTypeInfo.Id.NAME,
+             |  include = JsonTypeInfo.As.PROPERTY,
+             |  property = "__typename",
+             |)
+             |@JsonSubTypes(value = [
+             |  JsonSubTypes.Type(value = Human::class, name = "Human"),
+             |  JsonSubTypes.Type(value = Droid::class, name = "Droid")
+             |])
+             |
+            """.trimMargin()
         )
-
-        // This ensures deserializability in the absence of __typename
-        assertThat(FileSpec.get("$basePackageName.types", human).toString()).contains("@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)")
+        // This ensures deserializable in the absence of __typename
+        assertThat(
+            FileSpec.get("$basePackageName.types", human).toString()
+        ).contains("@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)")
     }
 
     @Test
@@ -1937,7 +2076,6 @@ class KotlinCodeGenTest {
 
     @Test
     fun generateDataClassWithInterfaceInheritance() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -1960,7 +2098,6 @@ class KotlinCodeGenTest {
                 company: String
                 imdbProfile: String
             }
-
         """.trimIndent()
 
         val codeGenResult = CodeGen(
@@ -1978,89 +2115,103 @@ class KotlinCodeGenTest {
         // Check data class
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(type.name).isEqualTo("Talent")
-        assertThat(type.propertySpecs.size).isEqualTo(4)
+        // Type properties
+        assertThat(type.propertySpecs).hasSize(4)
         assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname", "company", "imdbProfile")
-        assertThat(type.primaryConstructor?.parameters?.get(0)?.modifiers).contains(KModifier.OVERRIDE)
+        assertThat(type.propertySpecs).satisfies({ ps ->
+            assertThat(ps.name).isEqualTo("firstname")
+            assertThat(ps.modifiers).contains(KModifier.OVERRIDE)
+        }, Index.atIndex(0))
+        assertThat(type.propertySpecs).satisfies({ ps ->
+            assertThat(ps.name).isEqualTo("lastname")
+            assertThat(ps.modifiers).contains(KModifier.OVERRIDE)
+        }, Index.atIndex(1))
+        assertThat(type.propertySpecs).satisfies({ ps ->
+            assertThat(ps.name).isEqualTo("company")
+            assertThat(ps.modifiers).contains(KModifier.OVERRIDE)
+        }, Index.atIndex(2))
+        // Check interface
         assertThat(type.superinterfaces.keys)
             .contains(
                 ClassName
                     .bestGuess("com.netflix.graphql.dgs.codegen.tests.generated.types.Employee")
             )
-
-        // Check interface
-        assertThat(interfaces.size).isEqualTo(2)
+        assertThat(interfaces).hasSize(2)
 
         val personInterfaceType = interfaces[0].members[0] as TypeSpec
         assertThat(FileSpec.get("$basePackageName.types", personInterfaceType).toString()).isEqualTo(
             """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import kotlin.String
-                |
-                |public interface Person {
-                |  public val firstname: String?
-                |
-                |  public val lastname: String?
-                |
-                |  public companion object
-                |}
-                |""".trimMargin()
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types
+            |
+            |import kotlin.String
+            |
+            |public interface Person {
+            |  public val firstname: String?
+            |
+            |  public val lastname: String?
+            |
+            |  public companion object
+            |}
+            |
+            """.trimMargin()
         )
 
         val employeeInterfaceType = interfaces[1].members[0] as TypeSpec
         assertThat(FileSpec.get("$basePackageName.types", employeeInterfaceType).toString()).isEqualTo(
             """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
-                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-                |import kotlin.String
-                |
-                |@JsonTypeInfo(
-                |  use = JsonTypeInfo.Id.NAME,
-                |  include = JsonTypeInfo.As.PROPERTY,
-                |  property = "__typename"
-                |)
-                |@JsonSubTypes(value = [
-                |  JsonSubTypes.Type(value = Talent::class, name = "Talent")
-                |])
-                |public interface Employee : Person {
-                |  public override val firstname: String?
-                |
-                |  public override val lastname: String?
-                |
-                |  public val company: String?
-                |
-                |  public companion object
-                |}
-                |""".trimMargin()
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types
+            |
+            |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+            |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |import kotlin.String
+            |
+            |@JsonTypeInfo(
+            |  use = JsonTypeInfo.Id.NAME,
+            |  include = JsonTypeInfo.As.PROPERTY,
+            |  property = "__typename",
+            |)
+            |@JsonSubTypes(value = [
+            |  JsonSubTypes.Type(value = Talent::class, name = "Talent")
+            |])
+            |public interface Employee : Person {
+            |  public override val firstname: String?
+            |
+            |  public override val lastname: String?
+            |
+            |  public val company: String?
+            |
+            |  public companion object
+            |}
+            |
+            """.trimMargin()
         )
 
         assertThat(FileSpec.get("$basePackageName.types", type).toString()).isEqualTo(
             """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-                |import kotlin.String
-                |
-                |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-                |public data class Talent(
-                |  @JsonProperty("firstname")
-                |  public override val firstname: String? = null,
-                |  @JsonProperty("lastname")
-                |  public override val lastname: String? = null,
-                |  @JsonProperty("company")
-                |  public override val company: String? = null,
-                |  @JsonProperty("imdbProfile")
-                |  public val imdbProfile: String? = null
-                |) : Employee {
-                |  public companion object
-                |}
-                |""".trimMargin()
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types
+            |
+            |import com.fasterxml.jackson.`annotation`.JsonProperty
+            |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |import kotlin.String
+            |
+            |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
+            |public data class Talent(
+            |  @JsonProperty("firstname")
+            |  public override val firstname: String? = null,
+            |  @JsonProperty("lastname")
+            |  public override val lastname: String? = null,
+            |  @JsonProperty("company")
+            |  public override val company: String? = null,
+            |  @JsonProperty("imdbProfile")
+            |  public val imdbProfile: String? = null,
+            |) : Employee {
+            |  public companion object
+            |}
+            |
+            """.trimMargin()
         )
 
-        assertCompilesKotlin(dataTypes + interfaces)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
@@ -2068,31 +2219,32 @@ class KotlinCodeGenTest {
         // schema contains nullable, non-nullable and list types as interface fields  and fields that are
         // not interfaces
         val schema = """
-            interface Pet {
-                id: ID!
-	            name: String
-                address: [String!]!
-                mother: Pet!
-                father: Pet
-            	parents: [Pet]
-             }
-            type Dog implements Pet {
-                id: ID!
-	            name: String
-                address: [String!]!
-                mother: Dog!
-                father: Dog
-            	parents: [Dog]
-            }
-            type Bird implements Pet {
-                id: ID!
-	            name: String
-                address: [String!]!
-                mother: Bird!
-                father: Bird
-            	parents: [Bird]
-            }
-        """.trimIndent()
+            |interface Pet {
+            |    id: ID!
+            |    name: String
+            |    address: [String!]!
+            |    mother: Pet!
+            |    father: Pet
+            |    parents: [Pet]
+            |}
+            |type Dog implements Pet {
+            |    id: ID!
+            |    name: String
+            |    address: [String!]!
+            |    mother: Dog!
+            |    father: Dog
+            |    parents: [Dog]
+            |}
+            |type Bird implements Pet {
+            |    id: ID!
+            |    name: String
+            |    address: [String!]!
+            |    mother: Bird!
+            |    father: Bird
+            |    parents: [Bird]
+            |}
+            |
+        """.trimMargin()
 
         val codeGenResult = CodeGen(
             CodeGenConfig(
@@ -2101,45 +2253,45 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN
             )
         ).generate()
-        val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
 
         assertThat(interfaces[0].toString()).isEqualTo(
             """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
-                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-                |import kotlin.String
-                |import kotlin.collections.List
-                |
-                |@JsonTypeInfo(
-                |  use = JsonTypeInfo.Id.NAME,
-                |  include = JsonTypeInfo.As.PROPERTY,
-                |  property = "__typename"
-                |)
-                |@JsonSubTypes(value = [
-                |  JsonSubTypes.Type(value = Dog::class, name = "Dog"),
-                |  JsonSubTypes.Type(value = Bird::class, name = "Bird")
-                |])
-                |public interface Pet {
-                |  public val id: String
-                |
-                |  public val name: String?
-                |
-                |  public val address: List<String>
-                |
-                |  public val mother: Pet
-                |
-                |  public val father: Pet?
-                |
-                |  public val parents: List<Pet?>?
-                |
-                |  public companion object
-                |}
-                |""".trimMargin()
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types
+            |
+            |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+            |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |import kotlin.String
+            |import kotlin.collections.List
+            |
+            |@JsonTypeInfo(
+            |  use = JsonTypeInfo.Id.NAME,
+            |  include = JsonTypeInfo.As.PROPERTY,
+            |  property = "__typename",
+            |)
+            |@JsonSubTypes(value = [
+            |  JsonSubTypes.Type(value = Dog::class, name = "Dog"),
+            |  JsonSubTypes.Type(value = Bird::class, name = "Bird")
+            |])
+            |public interface Pet {
+            |  public val id: String
+            |
+            |  public val name: String?
+            |
+            |  public val address: List<String>
+            |
+            |  public val mother: Pet
+            |
+            |  public val father: Pet?
+            |
+            |  public val parents: List<Pet?>?
+            |
+            |  public companion object
+            |}
+            |
+            """.trimMargin()
         )
-        assertCompilesKotlin(dataTypes + interfaces)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
@@ -2147,25 +2299,26 @@ class KotlinCodeGenTest {
         // schema contains nullable, non-nullable and list types as interface fields  and fields that are
         // not interfaces
         val schema = """
-            interface Pet {
-	            name: String
-                diet: Diet
-             }
-             
-            interface Diet {
-                calories: String
-            }
-            
-            type Vegetarian implements Diet {
-                calories: String
-                vegetables: [String]
-            }
-            
-            type Dog implements Pet {
-	            name: String
-                diet: Vegetarian
-            }
-        """.trimIndent()
+            |interface Pet {
+            |   name: String
+            |   diet: Diet
+            |}
+            |  
+            |interface Diet {
+            |   calories: String
+            |}
+            | 
+            |type Vegetarian implements Diet {
+            |   calories: String
+            |   vegetables: [String]
+            |}
+            | 
+            |type Dog implements Pet {
+            |   name: String
+            |   diet: Vegetarian
+            |}
+            |
+        """.trimMargin()
 
         val codeGenResult = CodeGen(
             CodeGenConfig(
@@ -2174,40 +2327,39 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN
             )
         ).generate()
-        val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
 
         assertThat(interfaces[0].toString()).isEqualTo(
             """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
-                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-                |import kotlin.String
-                |
-                |@JsonTypeInfo(
-                |  use = JsonTypeInfo.Id.NAME,
-                |  include = JsonTypeInfo.As.PROPERTY,
-                |  property = "__typename"
-                |)
-                |@JsonSubTypes(value = [
-                |  JsonSubTypes.Type(value = Dog::class, name = "Dog")
-                |])
-                |public interface Pet {
-                |  public val name: String?
-                |
-                |  public val diet: Diet?
-                |
-                |  public companion object
-                |}
-            |""".trimMargin()
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types
+            |
+            |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+            |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |import kotlin.String
+            |
+            |@JsonTypeInfo(
+            |  use = JsonTypeInfo.Id.NAME,
+            |  include = JsonTypeInfo.As.PROPERTY,
+            |  property = "__typename",
+            |)
+            |@JsonSubTypes(value = [
+            |  JsonSubTypes.Type(value = Dog::class, name = "Dog")
+            |])
+            |public interface Pet {
+            |  public val name: String?
+            |
+            |  public val diet: Diet?
+            |
+            |  public companion object
+            |}
+            |
+            """.trimMargin()
         )
-        assertCompilesKotlin(dataTypes + interfaces)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
     fun generateClassKDoc() {
-
         val schema = """
             type Query {
                 search(movieFilter: MovieFilter!): Movie
@@ -2229,7 +2381,6 @@ class KotlinCodeGenTest {
             input MovieFilter {
                 titleFilter: String
             }
-            
         """.trimIndent()
 
         val dataTypes = CodeGen(
@@ -2261,7 +2412,6 @@ It takes a title and such.
 
     @Test
     fun generateClassFieldsKDoc() {
-
         val schema = """
             type Query {
                 search(movieFilter: MovieFilter!): Movie

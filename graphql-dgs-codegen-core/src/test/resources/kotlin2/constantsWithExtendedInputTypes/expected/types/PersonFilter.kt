@@ -6,5 +6,5 @@ import kotlin.String
 
 public class PersonFilter(
   public val email: String? = default("email"),
-  public val birthYear: Int? = default("birthYear")
+  public val birthYear: Int? = default("birthYear"),
 ) : GraphQLInput()

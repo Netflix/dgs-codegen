@@ -58,7 +58,6 @@ class CodeGen(private val config: CodeGenConfig) {
 
     @Suppress("DuplicatedCode")
     fun generate(): CodeGenResult {
-
         val codeGenResult = when (config.language) {
             Language.JAVA -> generateJava()
             Language.KOTLIN -> generateKotlin()
@@ -118,7 +117,6 @@ class CodeGen(private val config: CodeGenConfig) {
         }
 
         return document.transform {
-
             // for kotlin2, add implicit types like PageInfo to the schema so classes are generated
             if (config.generateKotlinNullableClasses || config.generateKotlinClosureProjections) {
                 val objectTypeDefs = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
@@ -292,21 +290,19 @@ class CodeGen(private val config: CodeGenConfig) {
             document = document,
             queries = config.includeQueries,
             mutations = config.includeMutations,
-            subscriptions = config.includeSubscriptions,
+            subscriptions = config.includeSubscriptions
         )
         val requiredTypes = requiredTypeCollector.requiredTypes
 
         val dataTypes = if (config.generateKotlinNullableClasses) {
-
             CodeGenResult(
                 kotlinDataTypes = generateKotlin2DataTypes(config, document, requiredTypes),
                 kotlinInputTypes = generateKotlin2InputTypes(config, document, requiredTypes),
                 kotlinInterfaces = generateKotlin2Interfaces(config, document),
                 kotlinEnumTypes = generateKotlin2EnumTypes(config, document, requiredTypes),
-                kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants,
+                kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants
             )
         } else {
-
             val datatypesResult = generateKotlinDataTypes(definitions)
             val inputTypes = generateKotlinInputTypes(definitions)
             val interfacesResult = generateKotlinInterfaceTypes(definitions)
@@ -342,10 +338,9 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val clientTypes = if (config.generateKotlinClosureProjections) {
             CodeGenResult(
-                kotlinClientTypes = generateKotlin2ClientTypes(config, document),
+                kotlinClientTypes = generateKotlin2ClientTypes(config, document)
             )
         } else {
-
             val client = generateJavaClientApi(definitions)
             val entitiesClient = generateJavaClientEntitiesApi(definitions)
             val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
@@ -438,7 +433,7 @@ data class CodeGenConfig(
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
     var generateAllConstructor: Boolean = true,
-    val implementSerializable: Boolean = false,
+    val implementSerializable: Boolean = false
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
@@ -487,7 +482,7 @@ data class CodeGenResult(
     val kotlinEnumTypes: List<FileSpec> = listOf(),
     val kotlinDataFetchers: List<FileSpec> = listOf(),
     val kotlinConstants: List<FileSpec> = listOf(),
-    val kotlinClientTypes: List<FileSpec> = listOf(),
+    val kotlinClientTypes: List<FileSpec> = listOf()
 ) {
     fun merge(current: CodeGenResult): CodeGenResult {
         val javaDataTypes = this.javaDataTypes.plus(current.javaDataTypes)
@@ -519,7 +514,7 @@ data class CodeGenResult(
             kotlinEnumTypes = kotlinEnumTypes,
             kotlinDataFetchers = kotlinDataFetchers,
             kotlinConstants = kotlinConstants,
-            kotlinClientTypes = kotlinClientTypes,
+            kotlinClientTypes = kotlinClientTypes
         )
     }
 

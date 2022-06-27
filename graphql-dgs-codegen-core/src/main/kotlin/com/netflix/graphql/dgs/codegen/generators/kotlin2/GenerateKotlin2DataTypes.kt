@@ -57,9 +57,8 @@ internal val logger: Logger = LoggerFactory.getLogger("com.netflix.graphql.dgs.c
 fun generateKotlin2DataTypes(
     config: CodeGenConfig,
     document: Document,
-    requiredTypes: Set<String>,
+    requiredTypes: Set<String>
 ): List<FileSpec> {
-
     val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
 
     // get a map of all interfaces > fields
@@ -95,7 +94,7 @@ fun generateKotlin2DataTypes(
                     Field(
                         name = it.name,
                         type = typeUtils.findReturnType(it.type),
-                        description = it.description,
+                        description = it.description
                     )
                 }
 
@@ -109,7 +108,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = "${field.name}Default",
-                            type = LambdaTypeName.get(returnType = field.type),
+                            type = LambdaTypeName.get(returnType = field.type)
                         )
                             .addModifiers(KModifier.PRIVATE)
                             .initializer(
@@ -136,7 +135,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = LambdaTypeName.get(returnType = field.type),
+                            type = LambdaTypeName.get(returnType = field.type)
                         )
                             .addModifiers(KModifier.PRIVATE)
                             .mutable()
@@ -194,7 +193,7 @@ fun generateKotlin2DataTypes(
                             fields.map { field ->
                                 ParameterSpec.builder(
                                     name = field.name,
-                                    type = LambdaTypeName.get(returnType = field.type),
+                                    type = LambdaTypeName.get(returnType = field.type)
                                 )
                                     .defaultValue("${field.name}Default")
                                     .build()
@@ -207,7 +206,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = "_${field.name}",
-                            type = LambdaTypeName.get(returnType = field.type),
+                            type = LambdaTypeName.get(returnType = field.type)
                         )
                             .addModifiers(KModifier.PRIVATE)
                             .initializer(field.name)
@@ -219,7 +218,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = field.type,
+                            type = field.type
                         )
                             .apply {
                                 if (field.description != null) {

@@ -33,9 +33,8 @@ import graphql.language.EnumTypeDefinition
 fun generateKotlin2EnumTypes(
     config: CodeGenConfig,
     document: Document,
-    requiredTypes: Set<String>,
+    requiredTypes: Set<String>
 ): List<FileSpec> {
-
     return document
         .getDefinitionsOfType(EnumTypeDefinition::class.java)
         .excludeSchemaTypeExtension()

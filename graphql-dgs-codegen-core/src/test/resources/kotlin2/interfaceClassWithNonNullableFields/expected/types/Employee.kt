@@ -13,7 +13,7 @@ import kotlin.String
 public class Employee(
   firstname: () -> String = firstnameDefault,
   lastname: () -> String? = lastnameDefault,
-  company: () -> String? = companyDefault
+  company: () -> String? = companyDefault,
 ) : Person {
   private val _firstname: () -> String = firstname
 

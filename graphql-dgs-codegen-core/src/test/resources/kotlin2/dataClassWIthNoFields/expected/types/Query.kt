@@ -10,7 +10,7 @@ import java.lang.IllegalStateException
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-  me: () -> Person? = meDefault
+  me: () -> Person? = meDefault,
 ) {
   private val _me: () -> Person? = me
 

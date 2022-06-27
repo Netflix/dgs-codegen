@@ -16,7 +16,7 @@ import kotlin.collections.List
 public class MyType(
   count: () -> List<Int>? = countDefault,
   truth: () -> List<Boolean>? = truthDefault,
-  floaty: () -> List<Double>? = floatyDefault
+  floaty: () -> List<Double>? = floatyDefault,
 ) {
   private val _count: () -> List<Int>? = count
 

@@ -13,7 +13,7 @@ import kotlin.String
 public class Person(
   firstname: () -> String? = firstnameDefault,
   lastname: () -> String? = lastnameDefault,
-  email: () -> String? = emailDefault
+  email: () -> String? = emailDefault,
 ) {
   private val _firstname: () -> String? = firstname
 

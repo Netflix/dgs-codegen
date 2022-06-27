@@ -27,10 +27,7 @@ import graphql.language.*
 import org.slf4j.LoggerFactory
 
 @Suppress("UNCHECKED_CAST")
-class EntitiesRepresentationTypeGenerator(
-    val config: CodeGenConfig,
-    private val document: Document
-) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
+class EntitiesRepresentationTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
 
     fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
         if (config.skipEntityQueries) {
@@ -114,9 +111,7 @@ class EntitiesRepresentationTypeGenerator(
             name = representationName,
             interfaces = emptyList(),
             fields = fieldDefinitions.plus(typeName),
-            config.implementSerializable,
-            description = null,
-            config.generateAllConstructor,
+            description = null
         )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
         // Merge all results.

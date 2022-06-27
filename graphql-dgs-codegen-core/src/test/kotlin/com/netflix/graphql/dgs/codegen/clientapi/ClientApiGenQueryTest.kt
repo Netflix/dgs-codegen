@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test
 class ClientApiGenQueryTest {
     @Test
     fun generateQueryType() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -41,7 +40,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -53,7 +52,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateQueryTypeWithComments() {
-
         val schema = """
             type Query {
                 ""${'"'}
@@ -72,7 +70,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -89,7 +87,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateQueryTypesWithTypeExtensions() {
-
         val schema = """
             extend type Person {
                 preferences: Preferences
@@ -122,7 +119,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -222,7 +219,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateRecursiveInputTypes() {
-
         val schema = """
             type Query {
                 movies(filter: MovieQuery): [String]
@@ -258,7 +254,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateArgumentsForSimpleTypes() {
-
         val schema = """
             type Query {
                 personSearch(lastname: String): [Person]
@@ -275,7 +270,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("lastname")
@@ -285,7 +280,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateArgumentsForEnum() {
-
         val schema = """
             type Query {
                 personSearch(index: SearchIndex): [Person]
@@ -306,7 +300,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -319,7 +313,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateArgumentsForObjectType() {
-
         val schema = """
             type Query {
                 personSearch(index: SearchIndex): [Person]
@@ -340,7 +333,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -354,7 +347,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun includeQueryConfig() {
-
         val schema = """
             type Query {
                 movieTitles: [String]
@@ -367,7 +359,7 @@ class ClientApiGenQueryTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                includeQueries = setOf("movieTitles"),
+                includeQueries = setOf("movieTitles")
             )
         ).generate()
 
@@ -379,7 +371,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun skipCodegen() {
-
         val schema = """
             type Query {
                 persons: [Person]
@@ -401,7 +392,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -440,7 +431,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -484,7 +475,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -563,7 +554,8 @@ class ClientApiGenQueryTest {
 
         assertThat(
             rootProjectionClass.getMethod(
-                "stringField", java.lang.Boolean::class.java
+                "stringField",
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(stringFieldProjectionClass) { it.returnType }
@@ -624,7 +616,8 @@ class ClientApiGenQueryTest {
 
         assertThat(
             rootProjectionClass.getMethod(
-                "booleanArrayField", java.lang.Boolean::class.java
+                "booleanArrayField",
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(booleanArrayFieldProjectionClass) { it.returnType }
@@ -644,7 +637,8 @@ class ClientApiGenQueryTest {
 
         assertThat(
             rootProjectionClass.getMethod(
-                "floatField", java.lang.Boolean::class.java
+                "floatField",
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(floatFieldProjectionClass) { it.returnType }
@@ -664,7 +658,8 @@ class ClientApiGenQueryTest {
 
         assertThat(
             rootProjectionClass.getMethod(
-                "floatArrayField", java.lang.Boolean::class.java
+                "floatArrayField",
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(floatArrayFieldProjectionClass) { it.returnType }
@@ -692,7 +687,7 @@ class ClientApiGenQueryTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val projections = codeGenResult.clientProjections
@@ -796,7 +791,7 @@ class ClientApiGenQueryTest {
                 packageName = basePackageName,
                 generateDataTypes = true,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val projections = codeGenResult.clientProjections

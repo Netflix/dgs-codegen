@@ -25,19 +25,20 @@ plugins {
 dependencies {
     implementation platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:latest.release")
 
-    implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
     implementation(project(":graphql-dgs-codegen-client-core"))
+
+	implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
     implementation 'com.graphql-java:graphql-java'
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.slf4j:slf4j-api'
 
-    implementation 'com.squareup:javapoet:1.13.+'
-    implementation 'com.squareup:kotlinpoet:1.11.+'
-    implementation 'com.github.ajalt.clikt:clikt:3.5.+'
+    implementation 'com.squareup:javapoet:1.13.0'
+    implementation 'com.squareup:kotlinpoet:1.12.0'
+    implementation 'com.github.ajalt.clikt:clikt:3.5.0'
 
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
-    testImplementation 'org.jetbrains.kotlin:kotlin-compiler:1.6.21'
+    testImplementation "org.jetbrains.kotlin:kotlin-compiler:${Versions.KOTLIN_VERSION}"
 }
 
 application {

@@ -26,14 +26,13 @@ import java.nio.file.Paths
 class SchemaMergingTest {
     @Test
     fun mergeSchemasJava() {
-
         val schemaDir = Paths.get("src/test/resources/schemas").toAbsolutePath().toFile()
 
         val codeGen = CodeGen(
             config = CodeGenConfig(
                 schemaFiles = setOf(schemaDir),
                 writeToFiles = false,
-                generateClientApi = true,
+                generateClientApi = true
             )
         )
         val result = codeGen.generate()
@@ -47,7 +46,6 @@ class SchemaMergingTest {
 
     @Test
     fun mergeSchemasKotlin() {
-
         val schemaDir = Paths.get("src/test/resources/schemas").toAbsolutePath().toFile()
 
         val codeGen = CodeGen(
@@ -55,7 +53,7 @@ class SchemaMergingTest {
                 schemaFiles = setOf(schemaDir),
                 writeToFiles = false,
                 language = Language.KOTLIN,
-                generateClientApi = true,
+                generateClientApi = true
             )
         )
         val result = codeGen.generate()

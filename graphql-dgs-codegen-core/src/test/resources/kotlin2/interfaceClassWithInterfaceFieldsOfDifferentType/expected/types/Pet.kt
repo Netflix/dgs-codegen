@@ -7,7 +7,7 @@ import kotlin.String
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.PROPERTY,
-  property = "__typename"
+  property = "__typename",
 )
 @JsonSubTypes(value = [
   JsonSubTypes.Type(value = Dog::class, name = "Dog")

@@ -66,7 +66,7 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
                 .filterSkipped()
                 .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
         val interfaces = definition.implements
-        return generate(definition.name, fields, interfaces, config.implementSerializable, document, definition.description)
+        return generate(definition.name, fields, interfaces, document, definition.description)
     }
 
     override fun getPackageName(): String {
@@ -97,7 +97,7 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
                 }
             )
         val interfaces = emptyList<Type<*>>()
-        return generate(definition.name, fields, interfaces, config.implementSerializable, document, definition.description)
+        return generate(definition.name, fields, interfaces, document, definition.description)
     }
 
     private fun generateCode(value: Value<Value<*>>, type: KtTypeName): CodeBlock =
@@ -144,13 +144,12 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
         name: String,
         fields: List<Field>,
         interfaces: List<Type<*>>,
-        implementSerializable: Boolean,
         document: Document,
         description: Description? = null
     ): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
 
-        if (implementSerializable) {
+        if (config.implementSerializable) {
             kotlinType.addSuperinterface(ClassName.bestGuess(Serializable::class.java.name))
         }
 
@@ -162,12 +161,15 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
             kotlinType.addKdoc("%L", description.sanitizeKdoc())
         }
 
-        val constructorBuilder = FunSpec.constructorBuilder()
+        val funConstructorBuilder = FunSpec.constructorBuilder()
 
         fields.forEach { field ->
             val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
-            val parameterSpec = ParameterSpec.builder(field.name, returnType)
-                .addAnnotation(jsonPropertyAnnotation(field.name))
+
+            val parameterSpec =
+                ParameterSpec
+                    .builder(field.name, returnType)
+                    .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.default != null) {
                 parameterSpec.defaultValue(field.default)
@@ -180,6 +182,21 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
                     BOOLEAN -> if (field.nullable) parameterSpec.defaultValue("null")
                     else -> if (field.nullable) parameterSpec.defaultValue("null")
                 }
+            }
+            funConstructorBuilder.addParameter(parameterSpec.build())
+        }
+        kotlinType.primaryConstructor(funConstructorBuilder.build())
+
+        fields.forEach { field ->
+            val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
+            val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
+
+            if (field.description != null) {
+                propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
+            }
+            propertySpecBuilder.initializer(field.name)
+            if (!config.generateAllConstructor) {
+                propertySpecBuilder.mutable(true)
             }
 
             val interfaceNames = interfaces.asSequence()
@@ -194,18 +211,11 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
                 .toSet()
 
             if (field.name in interfaceFields) {
-                parameterSpec.addModifiers(KModifier.OVERRIDE)
+                // Properties are the syntactical element that will allow us to override things, they are the spec on
+                // which we should add the override modifier.
+                propertySpecBuilder.addModifiers(KModifier.OVERRIDE)
             }
 
-            if (config.generateAllConstructor) {
-                constructorBuilder.addParameter(parameterSpec.build())
-            }
-
-            val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
-            if (field.description != null) {
-                propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
-            }
-            propertySpecBuilder.initializer(field.name)
             kotlinType.addProperty(propertySpecBuilder.build())
         }
 
@@ -224,7 +234,7 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
             kotlinType.addAnnotation(disableJsonTypeInfoAnnotation())
         }
 
-        kotlinType.primaryConstructor(constructorBuilder.build())
+        kotlinType.primaryConstructor(funConstructorBuilder.build())
         kotlinType.addType(TypeSpec.companionObjectBuilder().build())
 
         val typeSpec = kotlinType.build()

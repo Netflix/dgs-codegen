@@ -40,10 +40,11 @@ internal class ProjectionSerializerTest {
 
         assertThat(serialized).isEqualTo(
             """{
-          |  reviews(minScore: 3, since: "2021-06-16T15:20:00Z") {
+          |  reviews(minScore: 3, since: "2021-06-16T15:20:00.000Z") {
           |    starScore
           |  }
-          |}""".trimMargin()
+          |}
+            """.trimMargin()
         )
     }
 
@@ -69,7 +70,8 @@ internal class ProjectionSerializerTest {
             |      score
             |    }
             |  }
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 
@@ -96,7 +98,8 @@ internal class ProjectionSerializerTest {
             |      score
             |    }
             |  }
-            |}""".trimMargin()
+            |}
+            """.trimMargin()
         )
     }
 }

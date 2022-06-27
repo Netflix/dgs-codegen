@@ -12,7 +12,7 @@ import kotlin.String
 @JsonDeserialize(builder = Employee.Builder::class)
 public class Employee(
   firstname: () -> String? = firstnameDefault,
-  company: () -> String? = companyDefault
+  company: () -> String? = companyDefault,
 ) : Person {
   private val _firstname: () -> String? = firstname
 

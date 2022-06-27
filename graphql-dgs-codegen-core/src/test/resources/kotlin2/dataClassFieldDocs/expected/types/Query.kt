@@ -10,7 +10,7 @@ import java.lang.IllegalStateException
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-  search: () -> Movie? = searchDefault
+  search: () -> Movie? = searchDefault,
 ) {
   private val _search: () -> Movie? = search
 

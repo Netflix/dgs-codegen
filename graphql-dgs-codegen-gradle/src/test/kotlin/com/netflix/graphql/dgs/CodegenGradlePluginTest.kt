@@ -38,8 +38,10 @@ class CodegenGradlePluginTest {
             .withProjectDir(File("src/test/resources/test-project/"))
             .withPluginClasspath()
             .withArguments(
-                "-c", "smoke_test_settings.gradle",
-                "tasks", "--all"
+                "-c",
+                "smoke_test_settings.gradle",
+                "tasks",
+                "--all"
             ).forwardOutput()
             .build()
 
@@ -54,7 +56,8 @@ class CodegenGradlePluginTest {
             .withProjectDir(File("src/test/resources/test-project/"))
             .withPluginClasspath()
             .withArguments(
-                "-c", "smoke_test_settings.gradle",
+                "-c",
+                "smoke_test_settings.gradle",
                 "clean",
                 "copyMainSources"
             ).forwardOutput()
@@ -73,7 +76,8 @@ class CodegenGradlePluginTest {
             .withPluginClasspath()
             .withArguments(
                 "--stacktrace",
-                "-c", "smoke_test_settings.gradle",
+                "-c",
+                "smoke_test_settings.gradle",
                 "clean",
                 "build"
             ).forwardOutput()
@@ -94,8 +98,10 @@ class CodegenGradlePluginTest {
             .withPluginClasspath()
             .withArguments(
                 "--stacktrace",
-                "-c", "smoke_test_settings_with_default_dir.gradle",
-                "-b", "build_with_default_dir.gradle",
+                "-c",
+                "smoke_test_settings_with_default_dir.gradle",
+                "-b",
+                "build_with_default_dir.gradle",
                 "clean",
                 "build"
             ).forwardOutput()
@@ -116,8 +122,10 @@ class CodegenGradlePluginTest {
             .withPluginClasspath()
             .withArguments(
                 "--stacktrace",
-                "-c", "smoke_test_settings_omit_null_input_fields.gradle",
-                "-b", "build_omit_null_input_fields.gradle",
+                "-c",
+                "smoke_test_settings_omit_null_input_fields.gradle",
+                "-b",
+                "build_omit_null_input_fields.gradle",
                 "clean",
                 "build"
             )
