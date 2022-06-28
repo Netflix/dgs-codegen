@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory
 import java.io.Serializable
 import javax.lang.model.element.Modifier
 
-class DataTypeGenerator(private val config: CodeGenConfig, private val document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     private val logger: Logger = LoggerFactory.getLogger(DataTypeGenerator::class.java)
 
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
@@ -96,7 +96,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
                     }
                 )
 
-            return generate(name, unionTypes + implements, fieldDefinitions, config.implementSerializable, definition.description, config.generateAllConstructor)
+            return generate(name, unionTypes + implements, fieldDefinitions, definition.description)
                 .merge(interfaceCodeGenResult)
         }
 
@@ -104,7 +104,7 @@ class DataTypeGenerator(private val config: CodeGenConfig, private val document:
     }
 }
 
-class InputTypeGenerator(private val config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
 
     fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
@@ -141,27 +141,29 @@ class InputTypeGenerator(private val config: CodeGenConfig, document: Document) 
             }
             Field(name = it.name, type = typeUtils.findReturnType(it.type), initialValue = defaultValue, description = it.description, directives = it.directives.map { directive -> directive.name })
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
-        return generate(name, emptyList(), fieldDefinitions, config.implementSerializable, definition.description, config.generateAllConstructor)
+        return generate(name, emptyList(), fieldDefinitions, definition.description)
     }
 }
 
 internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<String> = listOf<String>())
 
-abstract class BaseDataTypeGenerator(internal val packageName: String, config: CodeGenConfig, document: Document) {
+abstract class BaseDataTypeGenerator(
+    internal val packageName: String,
+    internal val config: CodeGenConfig,
+    internal val document: Document
+) {
     internal val typeUtils = TypeUtils(packageName, config, document)
 
     internal fun generate(
         name: String,
         interfaces: List<String>,
         fields: List<Field>,
-        implementSerializable: Boolean,
         description: Description? = null,
-        generateAllConstructor: Boolean,
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addModifiers(Modifier.PUBLIC)
 
-        if (implementSerializable) {
+        if (config.implementSerializable) {
             javaType.addSuperinterface(ClassName.get(Serializable::class.java))
         }
 
@@ -183,7 +185,7 @@ abstract class BaseDataTypeGenerator(internal val packageName: String, config: C
 
         addDefaultConstructor(javaType)
 
-        if (generateAllConstructor && fields.isNotEmpty()) {
+        if (config.javaGenerateAllConstructor && fields.isNotEmpty()) {
             addParameterizedConstructor(fields, javaType)
         }
 

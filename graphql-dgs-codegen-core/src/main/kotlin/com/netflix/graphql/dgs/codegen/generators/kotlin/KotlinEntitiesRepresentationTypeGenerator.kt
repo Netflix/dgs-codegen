@@ -92,7 +92,7 @@ class KotlinEntitiesRepresentationTypeGenerator(config: CodeGenConfig, document:
                 }
             }
 
-        return generate(name, fieldDefinitions + typeName, emptyList(), config.implementSerializable, document).merge(result)
+        return generate(name, fieldDefinitions + typeName, emptyList(), document).merge(result)
     }
 
     override fun getPackageName(): String {
