@@ -189,7 +189,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .build()
         )
         javaType.addType(builderClass.build())
-        return JavaFile.builder(getPackageName().plus(operation.lowercase()), javaType.build()).build()
+        return JavaFile.builder(getPackageName(), javaType.build()).build()
     }
 
     /**
