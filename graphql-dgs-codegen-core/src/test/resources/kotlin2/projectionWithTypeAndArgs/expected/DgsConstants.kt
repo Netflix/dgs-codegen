@@ -9,6 +9,14 @@ public object DgsConstants {
     public const val TYPE_NAME: String = "Query"
 
     public const val Person: String = "person"
+
+    public object PERSON_INPUT_ARGUMENT {
+      public const val A1: String = "a1"
+
+      public const val A2: String = "a2"
+
+      public const val A3: String = "a3"
+    }
   }
 
   public object EMPLOYEE {
