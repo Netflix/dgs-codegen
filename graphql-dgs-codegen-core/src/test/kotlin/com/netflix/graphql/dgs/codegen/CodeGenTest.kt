@@ -29,12 +29,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
-import org.junit.jupiter.params.provider.ArgumentsProvider
-import org.junit.jupiter.params.provider.ArgumentsSource
-import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
 import java.io.Serializable
 import java.util.stream.Stream
 
@@ -1643,6 +1639,38 @@ class CodeGenTest {
         val type = result.javaConstants[0].typeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
         assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People", "Friends")
+    }
+
+    @Test
+    fun generateConstantsForQueryInputArguments() {
+        val schema = """
+            type Query {
+                shows(titleFilter: String,moveFilter: MovieFilter): [Show]
+            }
+            
+            type Show {
+                name: String
+            }
+            
+            input MovieFilter {
+                title: String
+                genre: Genre
+                language: Language
+                tags: [String]
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+        val type = result.javaConstants[0].typeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "SHOW", "MOVIEFILTER")
+        assertThat(type.typeSpecs[0].typeSpecs).extracting("name").containsExactly("SHOWS_INPUT_ARGUMENT")
+        assertThat(type.typeSpecs[0].typeSpecs[0].fieldSpecs).extracting("name")
+            .containsExactly("TitleFilter", "MoveFilter")
     }
 
     @Test

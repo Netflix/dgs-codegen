@@ -30,11 +30,7 @@ import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
-import graphql.language.Document
-import graphql.language.InputObjectTypeDefinition
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.ObjectTypeDefinition
-import graphql.language.UnionTypeDefinition
+import graphql.language.*
 import javax.lang.model.element.Modifier
 
 class ConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
@@ -55,6 +51,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
 
                 fields.forEach { field ->
                     addFieldNameConstant(constantsType, field.name)
+                    addQueryInputArgument(constantsType, field)
                 }
 
                 javaType.addType(constantsType.build())
@@ -137,5 +134,16 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             )
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""$fieldName"""").build()
         )
+    }
+
+    private fun addQueryInputArgument(constantsType: TypeSpec.Builder, field: FieldDefinition) {
+        val inputFields = field.inputValueDefinitions
+        if (inputFields.isNotEmpty()) {
+            val inputConstantsType = createConstantTypeBuilder(config, field.name + "_INPUT_ARGUMENT")
+            inputFields.forEach { inputField ->
+                addFieldNameConstant(inputConstantsType, inputField.name)
+            }
+            constantsType.addType(inputConstantsType.build())
+        }
     }
 }

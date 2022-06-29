@@ -742,6 +742,39 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateConstantsForQueryInputArguments() {
+        val schema = """
+            type Query {
+                shows(titleFilter: String,moveFilter: MovieFilter): [Show]
+            }
+            
+            type Show {
+                name: String
+            }
+            
+            input MovieFilter {
+                title: String
+                genre: Genre
+                language: Language
+                tags: [String]
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+            )
+        ).generate()
+        val type = result.kotlinConstants[0].members[0] as TypeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "SHOW", "MOVIEFILTER")
+        assertThat(type.typeSpecs[0].typeSpecs).extracting("name").containsExactly("SHOWS_INPUT_ARGUMENT")
+        assertThat(type.typeSpecs[0].typeSpecs[0].propertySpecs).extracting("name")
+            .containsExactly("TitleFilter", "MoveFilter")
+    }
+
+    @Test
     fun generateEnum() {
 
         val schema = """
