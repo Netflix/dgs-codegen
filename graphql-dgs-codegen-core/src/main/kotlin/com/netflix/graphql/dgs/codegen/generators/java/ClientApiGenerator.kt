@@ -50,9 +50,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private val generatedClasses = mutableSetOf<String>()
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, document)
 
-    fun generate(definition: ObjectTypeDefinition): CodeGenResult {
+    fun generate(definition: ObjectTypeDefinition, methodNames: MutableSet<String>): CodeGenResult {
         return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
-            val javaFile = createQueryClass(it, definition.name)
+            val javaFile = createQueryClass(it, definition.name, methodNames)
 
             val rootProjection =
                 it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalized()) }
@@ -76,8 +76,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         return CodeGenResult().merge(entitiesRootProjection)
     }
 
-    private fun createQueryClass(it: FieldDefinition, operation: String): JavaFile {
-        val javaType = TypeSpec.classBuilder("${it.name.capitalized()}GraphQLQuery")
+    private fun createQueryClass(it: FieldDefinition, operation: String, methodNames: MutableSet<String>): JavaFile {
+        val methodName = generateMethodName(it.name.capitalized(), operation.lowercase(), methodNames)
+        val javaType = TypeSpec.classBuilder(methodName)
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(GraphQLQuery::class.java))
 
         if (it.description != null) {
@@ -103,16 +104,16 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             .addMethod(
                 MethodSpec.methodBuilder("build")
                     .addModifiers(Modifier.PUBLIC)
-                    .returns(ClassName.get("", "${it.name.capitalized()}GraphQLQuery"))
+                    .returns(ClassName.get("", methodName))
                     .addCode(
                         if (it.inputValueDefinitions.isNotEmpty()) {
                             """
-                            |return new ${it.name.capitalized()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, fieldsSet);
+                            |return new $methodName(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, fieldsSet);
                             |         
                             """.trimMargin()
                         } else {
                             """
-                            |return new ${it.name.capitalized()}GraphQLQuery();
+                            |return new $methodName();                                     
                             """.trimMargin()
                         }
                     )
@@ -191,6 +192,22 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         )
         javaType.addType(builderClass.build())
         return JavaFile.builder(getPackageName(), javaType.build()).build()
+    }
+
+    /**
+     * Generate method name. If there are same method names in type `Query`, `Mutation` and `Subscription`, add suffix.
+     * For example, there are `shows` in `Query`, `Mutation` and `Subscription`, the generated files should be:
+     * `ShowsGraphQLQuery`, `ShowsGraphQLMutation` and `ShowsGraphQLSubscription`
+     */
+    private fun generateMethodName(originalMethodName: String, typeName: String, methodNames: MutableSet<String>): String {
+        return if ("mutation" == typeName && methodNames.contains(originalMethodName)) {
+            originalMethodName.plus("GraphQLMutation")
+        } else if ("subscription" == typeName && methodNames.contains(originalMethodName)) {
+            originalMethodName.plus("GraphQLSubscription")
+        } else {
+            methodNames.add(originalMethodName)
+            originalMethodName.plus("GraphQLQuery")
+        }
     }
 
     private fun createRootProjection(type: TypeDefinition<*>, prefix: String): CodeGenResult {
