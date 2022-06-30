@@ -19,4 +19,4 @@
 rootProject.name = 'graphql-dgs-codegen'
 include 'graphql-dgs-codegen-gradle'
 include 'graphql-dgs-codegen-core'
-include 'graphql-dgs-codegen-client-core'
+include 'graphql-dgs-codegen-shared-core'

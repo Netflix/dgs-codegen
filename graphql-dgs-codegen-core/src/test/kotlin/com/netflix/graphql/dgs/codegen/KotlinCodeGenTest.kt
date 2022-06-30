@@ -815,7 +815,7 @@ class KotlinCodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                language = Language.KOTLIN,
+                language = Language.KOTLIN
             )
         ).generate()
         val type = result.kotlinConstants[0].members[0] as TypeSpec

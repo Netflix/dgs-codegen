@@ -1,6 +1,6 @@
 package kotlin2.interfaceClassWithInterfaceFieldsOfDifferentType.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class PetProjection : GraphQLProjection() {
   public val name: PetProjection

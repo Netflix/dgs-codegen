@@ -1,6 +1,6 @@
 package kotlin2.projectionWithTypeAndArgs.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import kotlin.String
 import kotlin2.projectionWithTypeAndArgs.expected.types.I
 

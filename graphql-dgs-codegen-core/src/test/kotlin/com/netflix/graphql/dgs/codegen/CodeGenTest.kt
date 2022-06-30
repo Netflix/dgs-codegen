@@ -1645,7 +1645,7 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
