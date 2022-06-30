@@ -11,7 +11,7 @@ import kotlin.String
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Actor.Builder::class)
 public class Actor(
-  name: () -> String? = nameDefault
+  name: () -> String? = nameDefault,
 ) : SearchResult {
   private val _name: () -> String? = name
 

@@ -116,10 +116,11 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
 
     private fun createConstantTypeBuilder(conf: CodeGenConfig, name: String): TypeSpec.Builder {
         val className =
-            if (conf.snakeCaseConstantNames)
+            if (conf.snakeCaseConstantNames) {
                 CodeGeneratorUtils.camelCaseToSnakeCase(name, CodeGeneratorUtils.Case.UPPERCASE)
-            else
+            } else {
                 name.uppercase()
+            }
 
         return TypeSpec
             .classBuilder(className)

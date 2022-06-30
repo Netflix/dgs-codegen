@@ -12,7 +12,7 @@ import kotlin.collections.List
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-  movies: () -> List<String?>? = moviesDefault
+  movies: () -> List<String?>? = moviesDefault,
 ) {
   private val _movies: () -> List<String?>? = movies
 

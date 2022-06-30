@@ -13,7 +13,7 @@ import kotlin.String
 public class Droid(
   id: () -> String = idDefault,
   name: () -> String = nameDefault,
-  primaryFunction: () -> String? = primaryFunctionDefault
+  primaryFunction: () -> String? = primaryFunctionDefault,
 ) : SearchResult {
   private val _id: () -> String = id
 

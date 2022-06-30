@@ -89,7 +89,8 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
 
     val formatString = subTypes.joinToString(
         separator = ",\n",
-        prefix = "value = [\n⇥", postfix = "⇤\n]"
+        prefix = "value = [\n⇥",
+        postfix = "⇤\n]"
     ) { "%L" }
 
     return AnnotationSpec.builder(JsonSubTypes::class)
@@ -161,8 +162,9 @@ fun Description.sanitizeKdoc(): String {
 fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
-    if (!isGenericParam)
+    if (!isGenericParam) {
         ktTypeClassBestGuess(normalizedClassName)
+    }
 
     return when {
         normalizedClassName == "*" -> STAR
@@ -205,7 +207,7 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
 fun FunSpec.Builder.addControlFlow(
     controlFlow: String,
     vararg args: Any,
-    builder: FunSpec.Builder.() -> Unit,
+    builder: FunSpec.Builder.() -> Unit
 ): FunSpec.Builder {
     this.beginControlFlow(controlFlow, *args)
     builder.invoke(this)

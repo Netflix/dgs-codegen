@@ -6,7 +6,7 @@ import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.PROPERTY,
-  property = "__typename"
+  property = "__typename",
 )
 @JsonSubTypes(value = [
   JsonSubTypes.Type(value = Movie::class, name = "Movie"),

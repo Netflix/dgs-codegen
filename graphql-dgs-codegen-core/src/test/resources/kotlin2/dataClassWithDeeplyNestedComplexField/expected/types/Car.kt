@@ -13,7 +13,7 @@ import kotlin.String
 public class Car(
   make: () -> String? = makeDefault,
   model: () -> String? = modelDefault,
-  engine: () -> Engine? = engineDefault
+  engine: () -> Engine? = engineDefault,
 ) {
   private val _make: () -> String? = make
 

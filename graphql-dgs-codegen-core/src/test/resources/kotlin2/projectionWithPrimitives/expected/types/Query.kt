@@ -13,7 +13,7 @@ import kotlin.collections.List
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
   string: () -> String? = stringDefault,
-  strings: () -> List<String?>? = stringsDefault
+  strings: () -> List<String?>? = stringsDefault,
 ) {
   private val _string: () -> String? = string
 

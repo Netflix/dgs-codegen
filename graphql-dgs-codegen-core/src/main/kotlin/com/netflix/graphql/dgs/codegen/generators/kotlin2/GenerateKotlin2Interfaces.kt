@@ -45,9 +45,8 @@ import graphql.language.UnionTypeDefinition
 
 fun generateKotlin2Interfaces(
     config: CodeGenConfig,
-    document: Document,
+    document: Document
 ): List<FileSpec> {
-
     if (!config.generateDataTypes) {
         return emptyList()
     }

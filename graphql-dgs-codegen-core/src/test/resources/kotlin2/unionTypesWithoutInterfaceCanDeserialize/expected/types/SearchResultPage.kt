@@ -11,7 +11,7 @@ import kotlin.collections.List
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = SearchResultPage.Builder::class)
 public class SearchResultPage(
-  items: () -> List<SearchResult?>? = itemsDefault
+  items: () -> List<SearchResult?>? = itemsDefault,
 ) {
   private val _items: () -> List<SearchResult?>? = items
 

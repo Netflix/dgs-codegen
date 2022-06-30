@@ -12,7 +12,7 @@ import kotlin.String
 @JsonDeserialize(builder = Dog.Builder::class)
 public class Dog(
   name: () -> String? = nameDefault,
-  diet: () -> Vegetarian? = dietDefault
+  diet: () -> Vegetarian? = dietDefault,
 ) : Pet {
   private val _name: () -> String? = name
 

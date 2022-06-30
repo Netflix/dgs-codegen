@@ -15,7 +15,7 @@ import kotlin.Int
 public class MyType(
   count: () -> Int = countDefault,
   truth: () -> Boolean = truthDefault,
-  floaty: () -> Double = floatyDefault
+  floaty: () -> Double = floatyDefault,
 ) {
   private val _count: () -> Int = count
 

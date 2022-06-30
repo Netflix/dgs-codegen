@@ -14,7 +14,7 @@ import kotlin.collections.List
 public class Person(
   firstname: () -> String? = firstnameDefault,
   lastname: () -> String? = lastnameDefault,
-  friends: () -> List<Person?>? = friendsDefault
+  friends: () -> List<Person?>? = friendsDefault,
 ) {
   private val _firstname: () -> String? = firstname
 

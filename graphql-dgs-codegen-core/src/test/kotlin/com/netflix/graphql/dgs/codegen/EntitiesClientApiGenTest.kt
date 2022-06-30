@@ -51,7 +51,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -95,7 +95,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -141,7 +141,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -186,7 +186,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -237,7 +237,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -291,7 +291,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -338,7 +338,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -385,7 +385,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -440,7 +440,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -505,7 +505,7 @@ class EntitiesClientApiGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
@@ -539,7 +539,7 @@ class EntitiesClientApiGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                skipEntityQueries = true,
+                skipEntityQueries = true
             )
         ).generate()
 
@@ -568,7 +568,7 @@ class EntitiesClientApiGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
         // then
@@ -611,7 +611,7 @@ class EntitiesClientApiGenTest {
 
         mapOf(
             "mBarField" to (arrayOf(Integer::class.java, String::class.java) to entitiesFooKey_MBarFieldProjection),
-            "mStringField" to (arrayOf(Integer::class.java, String::class.java) to entitiesFooKeyProjectionClass),
+            "mStringField" to (arrayOf(Integer::class.java, String::class.java) to entitiesFooKeyProjectionClass)
         ).forEach { (name, p) ->
             val (_, returnClass) = p
             assertThat(entitiesFooKeyProjectionClass.getMethod(name))

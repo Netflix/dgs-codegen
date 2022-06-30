@@ -46,7 +46,7 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
         "RelayPageInfo" to PageInfo::class.asTypeName(),
         "PageInfo" to PageInfo::class.asTypeName(),
         "PresignedUrlResponse" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse".toKtTypeName(),
-        "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName(),
+        "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName()
     )
 
     fun findReturnType(fieldType: Type<*>): KtTypeName {
@@ -73,10 +73,11 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
     }
 
     fun isNullable(fieldType: Type<*>): Boolean {
-        return if (config.kotlinAllFieldsOptional)
+        return if (config.kotlinAllFieldsOptional) {
             true
-        else
+        } else {
             fieldType !is NonNullType
+        }
     }
 
     private val builtinScalars = setOf("ID", "Boolean", "Int", "Long", "Float", "String", "DateTime")

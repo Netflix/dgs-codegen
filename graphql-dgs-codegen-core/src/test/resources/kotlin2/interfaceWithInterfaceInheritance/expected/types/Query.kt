@@ -11,7 +11,7 @@ import kotlin.collections.List
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-  fruits: () -> List<Fruit?>? = fruitsDefault
+  fruits: () -> List<Fruit?>? = fruitsDefault,
 ) {
   private val _fruits: () -> List<Fruit?>? = fruits
 

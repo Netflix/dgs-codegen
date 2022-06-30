@@ -83,7 +83,8 @@ fun jsonSubTypeAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
 
     for (type in subTypes) {
         annotationSpec.addMember(
-            "value", "\$L",
+            "value",
+            "\$L",
             AnnotationSpec.builder(JsonSubTypes.Type::class.java)
                 .addMember("value", "\$T.class", type)
                 .addMember("name", "\$S", type.simpleName())
@@ -105,8 +106,9 @@ fun Description.sanitizeJavaDoc(): String {
 fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
-    if (!isGenericParam)
+    if (!isGenericParam) {
         return typeClassBestGuess(normalizedClassName)
+    }
 
     val superKeyword = normalizedClassName.split(" super ")
     val extendsKeyword = normalizedClassName.split(" extends ")

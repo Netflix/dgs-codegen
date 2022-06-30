@@ -12,7 +12,7 @@ import kotlin.collections.List
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
   u: () -> U? = uDefault,
-  us: () -> List<U?>? = usDefault
+  us: () -> List<U?>? = usDefault,
 ) {
   private val _u: () -> U? = u
 

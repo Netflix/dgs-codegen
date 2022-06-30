@@ -36,7 +36,6 @@ import javax.lang.model.element.Modifier
 
 class DatafetcherGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(query: ObjectTypeDefinition): CodeGenResult {
-
         return query.fieldDefinitions.asSequence().map { field ->
             createDatafetcher(field)
         }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }

@@ -14,7 +14,7 @@ import kotlin.String
 public class Human(
   id: () -> String = idDefault,
   name: () -> String = nameDefault,
-  totalCredits: () -> Int? = totalCreditsDefault
+  totalCredits: () -> Int? = totalCreditsDefault,
 ) : SearchResult {
   private val _id: () -> String = id
 

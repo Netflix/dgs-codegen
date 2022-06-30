@@ -18,7 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import org.junit.jupiter.api.Assertions.assertEquals
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions.fail
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
@@ -35,50 +35,9 @@ class Kotlin2CodeGenTest {
     // set this to true to update all expected outputs instead of running tests
     private val updateExpected = false
 
-    companion object {
-
-        private fun getAbsolutePath(suffix: String): Path {
-            val projectDirAbsolutePath = Paths.get("").toAbsolutePath().toString()
-            return Paths.get(projectDirAbsolutePath, "/src/test/resources/$suffix")
-        }
-
-        private fun listAllFiles(suffix: String): List<Path> {
-            val path = getAbsolutePath(suffix)
-            return Files.walk(path)
-                .filter { Files.isRegularFile(it) }
-                .toList()
-        }
-
-        @Suppress("unused")
-        @JvmStatic
-        fun listTestsToRun(): List<String> {
-            return getAbsolutePath("kotlin2")
-                .listDirectoryEntries()
-                .map { it.getName(it.nameCount.dec()).toString() }
-                .sorted()
-        }
-
-        private fun readResource(fileName: String): String {
-            return this::class.java.getResource(fileName)
-                ?.readText()
-                ?: throw IllegalArgumentException("Missing file: $fileName")
-        }
-
-        private fun writeExpected(fileName: String, content: String) {
-            val path = getAbsolutePath(fileName)
-
-            if (!path.exists()) {
-                path.parent.createDirectories()
-            }
-
-            path.toFile().writeText(content)
-        }
-    }
-
     @ParameterizedTest
     @MethodSource("listTestsToRun")
     fun testCodeGen(testName: String) {
-
         val schema = readResource("/kotlin2/$testName/schema.graphql")
 
         val codeGenResult = CodeGen(
@@ -88,7 +47,7 @@ class Kotlin2CodeGenTest {
                 language = Language.KOTLIN,
                 generateClientApi = true,
                 generateKotlinNullableClasses = true,
-                generateKotlinClosureProjections = true,
+                generateKotlinClosureProjections = true
             )
         ).generate()
 
@@ -119,10 +78,49 @@ class Kotlin2CodeGenTest {
             if (updateExpected) {
                 writeExpected(fileName, actual)
             } else {
-                assertEquals(readResource(fileName), actual)
+                assertThat(actual).isEqualTo(readResource(fileName))
             }
         }
 
         assertCompilesKotlin(codeGenResult)
+    }
+    companion object {
+
+        @Suppress("unused")
+        @JvmStatic
+        fun listTestsToRun(): List<String> {
+            return getAbsolutePath("kotlin2")
+                .listDirectoryEntries()
+                .map { it.getName(it.nameCount.dec()).toString() }
+                .sorted()
+        }
+
+        private fun getAbsolutePath(suffix: String): Path {
+            val projectDirAbsolutePath = Paths.get("").toAbsolutePath().toString()
+            return Paths.get(projectDirAbsolutePath, "/src/test/resources/$suffix")
+        }
+
+        private fun listAllFiles(suffix: String): List<Path> {
+            val path = getAbsolutePath(suffix)
+            return Files.walk(path)
+                .filter { Files.isRegularFile(it) }
+                .toList()
+        }
+
+        private fun readResource(fileName: String): String {
+            return this::class.java.getResource(fileName)
+                ?.readText()
+                ?: throw IllegalArgumentException("Missing file: $fileName")
+        }
+
+        private fun writeExpected(fileName: String, content: String) {
+            val path = getAbsolutePath(fileName)
+
+            if (!path.exists()) {
+                path.parent.createDirectories()
+            }
+
+            path.toFile().writeText(content)
+        }
     }
 }

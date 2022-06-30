@@ -77,7 +77,7 @@ class CodegenGradlePluginSpringBootSmokeTest {
             scalar Time
             scalar JSON
             scalar Url
-            """.trimMargin()
+        """.trimMargin()
 
     @Test
     fun `A SpringBoot project can use the generated Java`() {

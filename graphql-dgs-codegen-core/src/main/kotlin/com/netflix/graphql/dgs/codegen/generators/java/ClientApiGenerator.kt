@@ -105,14 +105,16 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .addModifiers(Modifier.PUBLIC)
                     .returns(ClassName.get("", "${it.name.capitalized()}GraphQLQuery"))
                     .addCode(
-                        if (it.inputValueDefinitions.isNotEmpty())
+                        if (it.inputValueDefinitions.isNotEmpty()) {
                             """
                             |return new ${it.name.capitalized()}GraphQLQuery(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, fieldsSet);
                             |         
-                            """.trimMargin() else
-                            """
-                            |return new ${it.name.capitalized()}GraphQLQuery();                                     
                             """.trimMargin()
+                        } else {
+                            """
+                            |return new ${it.name.capitalized()}GraphQLQuery();
+                            """.trimMargin()
+                        }
                     )
                     .build()
             ).addField(FieldSpec.builder(setOfStringType, "fieldsSet", Modifier.PRIVATE).initializer("new \$T<>()", ClassName.get(HashSet::class.java)).build())
@@ -239,7 +241,6 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             .fold(CodeGenResult()) { total, current -> total.merge(current) }
 
         fieldDefinitions.filterSkipped().forEach {
-
             val objectTypeDefinition = it.type.findTypeDefinition(document)
             if (objectTypeDefinition == null) {
                 javaType.addMethod(
@@ -282,7 +283,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     """
                      |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
                      |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
-                     """.trimMargin()
+                    """.trimMargin()
                 }
                 }
                 |return projection;
@@ -327,7 +328,6 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
     private fun createConcreteTypes(type: TypeDefinition<*>, root: TypeSpec, javaType: TypeSpec.Builder, prefix: String, processedEdges: Set<Pair<String, String>>, queryDepth: Int): CodeGenResult {
         return if (type is InterfaceTypeDefinition) {
-
             val concreteTypes = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).filter {
                 it.implements.filterIsInstance<NamedNode<*>>().any { iface -> iface.name == type.name }
             }
@@ -465,7 +465,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                                     | $projectionName projection = new $projectionName(this, getRoot());
                                     | getFields().put("${fieldDef.name}", projection);
                                     | return projection;
-                                    """.trimMargin()
+                                """.trimMargin()
                             )
                             .addModifiers(Modifier.PUBLIC)
                             .build()
@@ -512,7 +512,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                                     """
                                      |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
                                      |getInputArguments().get("${it.name}").add(${input.name}Arg);
-                                     """.trimMargin()
+                                    """.trimMargin()
                                 }}
                                 |return this;
                                 """.trimMargin(),

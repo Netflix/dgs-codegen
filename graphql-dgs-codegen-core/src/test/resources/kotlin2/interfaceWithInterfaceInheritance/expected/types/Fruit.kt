@@ -6,7 +6,7 @@ import kotlin.collections.List
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.PROPERTY,
-  property = "__typename"
+  property = "__typename",
 )
 public sealed interface Fruit {
   public val seeds: List<Seed?>?

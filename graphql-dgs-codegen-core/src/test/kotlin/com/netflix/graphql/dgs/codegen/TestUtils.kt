@@ -67,7 +67,7 @@ fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
             PrintingMessageCollector(
                 System.out,
                 MessageRenderer.WITHOUT_PATHS,
-                false,
+                false
             ),
             Services.EMPTY,
             K2JVMCompilerArguments().apply {
