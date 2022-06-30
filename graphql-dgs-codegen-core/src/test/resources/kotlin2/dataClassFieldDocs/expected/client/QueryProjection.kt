@@ -1,6 +1,6 @@
 package kotlin2.dataClassFieldDocs.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import kotlin2.dataClassFieldDocs.expected.types.MovieFilter
 
 public class QueryProjection : GraphQLProjection() {

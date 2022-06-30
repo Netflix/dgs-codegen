@@ -1,6 +1,6 @@
 package kotlin2.unionTypesWithoutInterfaceCanDeserialize.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import kotlin.String
 
 public class QueryProjection : GraphQLProjection() {

@@ -18,8 +18,8 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter

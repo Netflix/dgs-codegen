@@ -1,6 +1,6 @@
 package kotlin2.dataClassWithNonNullablePrimitiveInList.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class MyTypeProjection : GraphQLProjection() {
   public val count: MyTypeProjection

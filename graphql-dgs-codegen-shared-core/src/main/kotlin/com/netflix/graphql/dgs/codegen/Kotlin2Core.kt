@@ -16,7 +16,9 @@
  *
  */
 
-package com.netflix.graphql.dgs.client.codegen
+package com.netflix.graphql.dgs.codegen
+
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializer
 
 @DslMarker
 annotation class QueryProjectionMarker

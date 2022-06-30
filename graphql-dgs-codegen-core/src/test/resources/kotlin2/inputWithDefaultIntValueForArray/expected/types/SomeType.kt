@@ -1,6 +1,6 @@
 package kotlin2.inputWithDefaultIntValueForArray.expected.types
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.GraphQLInput
 import kotlin.Int
 import kotlin.collections.List
 

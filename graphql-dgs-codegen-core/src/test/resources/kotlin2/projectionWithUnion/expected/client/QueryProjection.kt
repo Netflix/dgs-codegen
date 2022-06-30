@@ -1,6 +1,6 @@
 package kotlin2.projectionWithUnion.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class QueryProjection : GraphQLProjection() {
   public fun u(_projection: UProjection.() -> UProjection): QueryProjection {

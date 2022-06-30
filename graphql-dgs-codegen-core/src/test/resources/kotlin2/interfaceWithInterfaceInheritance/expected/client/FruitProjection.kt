@@ -1,6 +1,6 @@
 package kotlin2.interfaceWithInterfaceInheritance.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class FruitProjection : GraphQLProjection() {
   public fun seeds(_projection: SeedProjection.() -> SeedProjection): FruitProjection {
