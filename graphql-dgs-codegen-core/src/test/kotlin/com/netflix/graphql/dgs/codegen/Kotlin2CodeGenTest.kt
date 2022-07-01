@@ -52,7 +52,7 @@ class Kotlin2CodeGenTest {
                     "dataClassWithMappedTypes" -> mapOf(
                         "Long" to "kotlin.Long",
                         "DateTime" to "java.time.OffsetDateTime",
-                        "PageInfo" to "graphql.relay.PageInfo",
+                        "PageInfo" to "graphql.relay.PageInfo"
                     )
                     else -> emptyMap()
                 }

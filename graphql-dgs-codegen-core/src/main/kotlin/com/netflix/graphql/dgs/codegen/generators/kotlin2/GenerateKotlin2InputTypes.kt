@@ -39,7 +39,6 @@ fun generateKotlin2InputTypes(
     document: Document,
     requiredTypes: Set<String>
 ): List<FileSpec> {
-
     val typeLookup = Kotlin2TypeLookup(config, document)
 
     return document
@@ -79,7 +78,7 @@ fun generateKotlin2InputTypes(
                                 val type = type(field)
                                 ParameterSpec.builder(
                                     name = field.name,
-                                    type = type,
+                                    type = type
                                 )
                                     .apply {
                                         if (type.isNullable) {
@@ -96,7 +95,7 @@ fun generateKotlin2InputTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = type(field),
+                            type = type(field)
                         )
                             .initializer(field.name)
                             .build()

@@ -34,7 +34,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import graphql.language.DirectivesContainer
 import graphql.language.Document
 import graphql.language.InputValueDefinition
 import graphql.language.InterfaceTypeDefinition
@@ -46,7 +45,6 @@ fun generateKotlin2ClientTypes(
     config: CodeGenConfig,
     document: Document
 ): List<FileSpec> {
-
     if (!config.generateClientApi) {
         return emptyList()
     }

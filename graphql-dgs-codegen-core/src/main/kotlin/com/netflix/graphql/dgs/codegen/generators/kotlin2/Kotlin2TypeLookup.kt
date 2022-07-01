@@ -55,7 +55,7 @@ import com.squareup.kotlinpoet.TypeName as KtTypeName
  */
 class Kotlin2TypeLookup(
     config: CodeGenConfig,
-    private val document: Document,
+    private val document: Document
 ) {
 
     /**
@@ -66,7 +66,7 @@ class Kotlin2TypeLookup(
         Scalars.GraphQLFloat.name to DOUBLE, // Float: A signed double-precision floating-point value. https://graphql.org/learn/schema/#scalar-types
         Scalars.GraphQLString.name to STRING,
         Scalars.GraphQLBoolean.name to BOOLEAN,
-        Scalars.GraphQLID.name to STRING,
+        Scalars.GraphQLID.name to STRING
     )
 
     /**
@@ -229,7 +229,6 @@ class Kotlin2TypeLookup(
     }
 
     private fun findKtTypeName(typeName: TypeName, packageName: String): KtTypeName {
-
         // check config
         val mappedType = mappedTypes[typeName.name]
         if (mappedType != null) {

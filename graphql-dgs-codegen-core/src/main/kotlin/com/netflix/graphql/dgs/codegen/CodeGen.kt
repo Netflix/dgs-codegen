@@ -37,7 +37,6 @@ import graphql.language.*
 import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
-import graphql.schema.idl.TypeUtil
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths

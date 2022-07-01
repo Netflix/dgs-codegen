@@ -54,7 +54,6 @@ fun generateKotlin2DataTypes(
     document: Document,
     requiredTypes: Set<String>
 ): List<FileSpec> {
-
     val typeLookup = Kotlin2TypeLookup(config, document)
 
     return document
@@ -203,7 +202,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = type(field),
+                            type = type(field)
                         )
                             .apply {
                                 if (field.description != null) {
