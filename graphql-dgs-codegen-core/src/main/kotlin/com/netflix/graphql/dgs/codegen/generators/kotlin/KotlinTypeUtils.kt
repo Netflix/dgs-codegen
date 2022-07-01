@@ -80,17 +80,6 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
         }
     }
 
-    private val builtinScalars = setOf("ID", "Boolean", "Int", "Long", "Float", "String", "DateTime")
-
-    fun isScalar(type: Type<*>, enums: Set<String>): Boolean {
-        return when (type) {
-            is TypeName -> builtinScalars.contains(type.name) || enums.contains(type.name)
-            is ListType -> isScalar(type.type, enums)
-            is NonNullType -> isScalar(type.type, enums)
-            else -> throw UnsupportedOperationException(type::class.qualifiedName)
-        }
-    }
-
     private fun TypeName.toKtTypeName(): KtTypeName {
         if (name in config.typeMapping) {
             val mappedType = config.typeMapping.getValue(name)

@@ -130,7 +130,7 @@ internal fun <T> parseMappedType(
     return mappedType.toTypeName(true)
 }
 
-private const val JAVA_TYPE_DIRECTIVE_NAME = "javaType"
+internal const val JAVA_TYPE_DIRECTIVE_NAME = "javaType"
 
 /**
  * Find the type mapping to use for [typeName] if one exists in the [document].

@@ -35,6 +35,7 @@ fun generateKotlin2EnumTypes(
     document: Document,
     requiredTypes: Set<String>
 ): List<FileSpec> {
+
     return document
         .getDefinitionsOfType(EnumTypeDefinition::class.java)
         .excludeSchemaTypeExtension()

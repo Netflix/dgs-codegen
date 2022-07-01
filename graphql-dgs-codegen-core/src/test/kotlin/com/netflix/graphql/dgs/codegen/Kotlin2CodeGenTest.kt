@@ -47,7 +47,15 @@ class Kotlin2CodeGenTest {
                 language = Language.KOTLIN,
                 generateClientApi = true,
                 generateKotlinNullableClasses = true,
-                generateKotlinClosureProjections = true
+                generateKotlinClosureProjections = true,
+                typeMapping = when (testName) {
+                    "dataClassWithMappedTypes" -> mapOf(
+                        "Long" to "kotlin.Long",
+                        "DateTime" to "java.time.OffsetDateTime",
+                        "PageInfo" to "graphql.relay.PageInfo",
+                    )
+                    else -> emptyMap()
+                }
             )
         ).generate()
 
@@ -84,6 +92,7 @@ class Kotlin2CodeGenTest {
 
         assertCompilesKotlin(codeGenResult)
     }
+
     companion object {
 
         @Suppress("unused")
@@ -102,6 +111,7 @@ class Kotlin2CodeGenTest {
 
         private fun listAllFiles(suffix: String): List<Path> {
             val path = getAbsolutePath(suffix)
+            if (!path.exists()) return emptyList()
             return Files.walk(path)
                 .filter { Files.isRegularFile(it) }
                 .toList()
