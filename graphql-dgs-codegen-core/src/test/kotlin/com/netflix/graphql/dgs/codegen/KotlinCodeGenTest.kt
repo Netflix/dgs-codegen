@@ -2607,4 +2607,61 @@ It takes a title and such.
 
         assertCompilesKotlin(enums)
     }
+
+    @Test
+    fun `generate client code for both query and subscription with same definitions`() {
+        val schema = """
+            type Subscription {
+                shows: [Show]
+                movie(id: ID!): Movie
+                foo: Boolean
+                bar: Boolean
+            }
+            
+            type Mutation {
+                shows: [String]
+                movie(id: ID!, title: String): Movie
+                foo: String
+            }
+            
+            type Query {
+                shows: [Show]
+                movie: Movie
+            }
+            type Show {
+                id: Int
+                title: String
+            }
+            
+            type Movie {
+                title: String
+                duration: Int
+                related: Related
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateClientApi = true
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(9)
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("ShowsGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[1].typeSpec.name).isEqualTo("MovieGraphQLQuery")
+
+        assertThat(codeGenResult.javaQueryTypes[2].typeSpec.name).isEqualTo("ShowsGraphQLMutation")
+        assertThat(codeGenResult.javaQueryTypes[3].typeSpec.name).isEqualTo("MovieGraphQLMutation")
+        assertThat(codeGenResult.javaQueryTypes[4].typeSpec.name).isEqualTo("FooGraphQLQuery")
+
+        assertThat(codeGenResult.javaQueryTypes[5].typeSpec.name).isEqualTo("ShowsGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[6].typeSpec.name).isEqualTo("MovieGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[7].typeSpec.name).isEqualTo("FooGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[8].typeSpec.name).isEqualTo("BarGraphQLQuery")
+
+        assertCompilesJava(codeGenResult.javaQueryTypes)
+    }
 }
