@@ -214,4 +214,17 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
             .any { node -> node.name == findInnerType(fieldDefinitionType).name }
     }
+
+    fun transformIfDefaultClassMethodExists(originName: String, defaultMethodName: String): String {
+        return if (defaultMethodName == originName) {
+            return originName.plus("Field")
+        } else {
+            originName
+        }
+    }
+
+    companion object {
+        const val getClass = "getClass"
+        const val setClass = "setClass"
+    }
 }

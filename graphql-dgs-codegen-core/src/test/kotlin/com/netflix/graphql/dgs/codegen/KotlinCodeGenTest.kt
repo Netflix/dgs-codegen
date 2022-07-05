@@ -2541,6 +2541,44 @@ It takes a title and such.
     }
 
     @Test
+    fun `can generate code based on GraphQL type, which fields express java key-words`() {
+        val schema = """
+            type Query {
+                bar: Bar
+            }
+            
+            interface Foo {
+                class: Int
+            }
+
+            type Bar implements Foo {
+                object: Int
+                class: Int
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
+
+        assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.kotlinDataTypes[0].name).isEqualTo("Bar")
+        assertThat(codeGenResult.kotlinDataTypes[0].members.size).isEqualTo(1)
+
+        val dataTypeSpec = codeGenResult.kotlinDataTypes[0].members[0] as TypeSpec
+
+        assertThat(dataTypeSpec.propertySpecs.size).isEqualTo(2)
+        assertThat(dataTypeSpec.propertySpecs[0].name).isEqualTo("object")
+        assertThat(dataTypeSpec.propertySpecs[1].name).isEqualTo("class")
+
+        assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
     fun generateEnumKDoc() {
         val schema = """           
             ""${'"'}
