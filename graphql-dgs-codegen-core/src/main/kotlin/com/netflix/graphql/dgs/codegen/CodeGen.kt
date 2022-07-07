@@ -104,6 +104,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .filter { it.isFile }
 
         for (schemaFile in schemaFiles) {
+            schemaFile.appendText("\n")
             readerBuilder.reader(schemaFile.reader(), schemaFile.name)
         }
 
