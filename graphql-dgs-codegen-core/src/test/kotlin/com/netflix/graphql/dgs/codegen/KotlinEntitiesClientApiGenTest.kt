@@ -20,7 +20,6 @@ package com.netflix.graphql.dgs.codegen
 
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Index
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 class KotlinEntitiesClientApiGenTest {
@@ -323,9 +322,7 @@ class KotlinEntitiesClientApiGenTest {
         codeGenResult.assertCompile()
     }
 
-    // TODO MovieGenreRepresentation is missing.
     @Test
-    @Disabled
     fun `Entities can have keys that are enums`() {
         val schema = """
             type Query {
@@ -362,9 +359,7 @@ class KotlinEntitiesClientApiGenTest {
         codeGenResult.assertCompile()
     }
 
-    // TODO understand why we are missing Person and MovieGenre Representations
     @Test
-    @Disabled
     fun `Entities can have the @key directive used multiple times`() {
         val schema = """
             type Movie @key(fields: "id genre") @key(fields: "id actor{ id }") @key(fields: "id location { id }") {
