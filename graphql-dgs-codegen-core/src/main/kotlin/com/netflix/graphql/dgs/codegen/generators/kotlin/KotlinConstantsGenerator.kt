@@ -30,11 +30,7 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
-import graphql.language.Document
-import graphql.language.InputObjectTypeDefinition
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.ObjectTypeDefinition
-import graphql.language.UnionTypeDefinition
+import graphql.language.*
 
 class KotlinConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(): CodeGenResult {
@@ -53,6 +49,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
                 fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
+                    addQueryInputArgument(constantsType, field)
                 }
 
                 baseConstantsType.addType(constantsType.build())
@@ -117,15 +114,30 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
     private fun createConstantTypeBuilder(conf: CodeGenConfig, name: String): TypeSpec.Builder {
         val className =
-            if (conf.snakeCaseConstantNames)
+            if (conf.snakeCaseConstantNames) {
                 CodeGeneratorUtils.camelCaseToSnakeCase(name, CodeGeneratorUtils.Case.UPPERCASE)
-            else
+            } else {
                 name.uppercase()
+            }
 
         return TypeSpec.objectBuilder(className)
     }
 
     private fun addFieldName(constantsType: TypeSpec.Builder, name: String) {
-        constantsType.addProperty(PropertySpec.builder(name.capitalized(), String::class).addModifiers(KModifier.CONST).initializer(""""$name"""").build())
+        constantsType.addProperty(
+            PropertySpec.builder(name.capitalized(), String::class).addModifiers(KModifier.CONST)
+                .initializer(""""$name"""").build()
+        )
+    }
+
+    private fun addQueryInputArgument(constantsType: TypeSpec.Builder, field: FieldDefinition) {
+        val inputFields = field.inputValueDefinitions
+        if (inputFields.isNotEmpty()) {
+            val inputConstantsType = createConstantTypeBuilder(config, field.name + "_INPUT_ARGUMENT")
+            inputFields.forEach { inputField ->
+                addFieldName(inputConstantsType, inputField.name)
+            }
+            constantsType.addType(inputConstantsType.build())
+        }
     }
 }

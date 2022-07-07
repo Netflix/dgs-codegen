@@ -31,7 +31,7 @@ import graphql.language.UnionTypeDefinition
 internal data class Field(
     val name: String,
     val type: TypeName,
-    val description: Description?,
+    val description: Description?
 )
 
 /**
@@ -64,7 +64,7 @@ internal fun ImplementingTypeDefinition<*>.implementedInterfaces(): List<String>
  */
 internal fun overrideFields(
     interfaceFields: Map<String, List<String>>,
-    implementedInterfaces: List<String>,
+    implementedInterfaces: List<String>
 ): Set<String> {
     return implementedInterfaces
         .mapNotNull { interfaceFields[it] }

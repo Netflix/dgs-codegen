@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test
 class ClientApiGenSubscriptionTest {
     @Test
     fun generateSubscriptionType() {
-
         val schema = """
             type Subscription {
                 movie(movieId: ID, title: String): Movie
@@ -44,7 +43,7 @@ class ClientApiGenSubscriptionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -56,7 +55,6 @@ class ClientApiGenSubscriptionTest {
 
     @Test
     fun generateSubscriptionWithInputType() {
-
         val schema = """
             type Mutation {
                 movie(movie: MovieDescription): Movie
@@ -78,7 +76,7 @@ class ClientApiGenSubscriptionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -92,7 +90,6 @@ class ClientApiGenSubscriptionTest {
 
     @Test
     fun includeSubscriptionConfig() {
-
         val schema = """
             type Subscription {
                 movieTitle: String
@@ -105,7 +102,7 @@ class ClientApiGenSubscriptionTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                includeSubscriptions = setOf("movieTitle"),
+                includeSubscriptions = setOf("movieTitle")
             )
         ).generate()
 

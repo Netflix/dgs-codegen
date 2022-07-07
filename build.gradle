@@ -16,16 +16,22 @@
  *
  */
 
-
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '1.6.21' apply false
+    id 'org.jetbrains.kotlin.jvm'  version "1.7.0" apply false
     id 'nebula.netflixoss' version '10.6.0'
-    id "org.jmailen.kotlinter" version "3.6.0"
+    id "org.jmailen.kotlinter" version "3.11.1"
 }
 
 description = 'Netflix GraphQL DGS Code Generation'
 
 allprojects {
+
+    ext {
+        Versions = [
+                KOTLIN_VERSION: '1.7.0'
+        ]
+    }
+
     repositories {
         mavenCentral()
     }
@@ -37,24 +43,31 @@ allprojects {
     group = 'com.netflix.graphql.dgs.codegen'
 
     dependencies {
+        testImplementation "org.jetbrains.kotlin:kotlin-compiler:${Versions.KOTLIN_VERSION}"
+
         testImplementation platform('org.junit:junit-bom:5.8.+')
-        testImplementation 'org.assertj:assertj-core:3.22.+'
+        testImplementation 'org.assertj:assertj-core:3.23.+'
         testImplementation 'org.junit.jupiter:junit-jupiter'
         testImplementation 'org.junit.jupiter:junit-jupiter-params'
     }
 
     tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
-      kotlinOptions {
-        jvmTarget = "1.8"
-      }
+        compileKotlin {
+            kotlinOptions {
+                jvmTarget = "1.8"
+            }
+        }
     }
 
     test {
         useJUnitPlatform()
     }
 
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
+	java {
+    	toolchain {
+        	languageVersion.set(JavaLanguageVersion.of(8))
+    	}
+	}
 }
 
 subprojects {

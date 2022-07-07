@@ -1,6 +1,6 @@
 package kotlin2.constantsForInputTypes.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import kotlin2.constantsForInputTypes.expected.types.PersonFilter
 
 public class QueryProjection : GraphQLProjection() {

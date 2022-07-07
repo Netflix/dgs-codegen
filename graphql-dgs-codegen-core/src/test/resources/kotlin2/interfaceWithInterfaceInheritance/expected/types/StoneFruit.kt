@@ -7,7 +7,7 @@ import kotlin.collections.List
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.PROPERTY,
-  property = "__typename"
+  property = "__typename",
 )
 public sealed interface StoneFruit : Fruit {
   public override val seeds: List<Seed?>?

@@ -9,6 +9,10 @@ public object DgsConstants {
     public const val TYPE_NAME: String = "Query"
 
     public const val Movies: String = "movies"
+
+    public object MOVIES_INPUT_ARGUMENT {
+      public const val Filter: String = "filter"
+    }
   }
 
   public object MOVIEFILTER {

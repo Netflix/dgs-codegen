@@ -1,6 +1,6 @@
 package kotlin2.dataClassWithInterfaceInheritance.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class TalentProjection : GraphQLProjection() {
   public val firstname: TalentProjection

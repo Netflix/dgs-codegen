@@ -15,7 +15,7 @@ import kotlin.String
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Movie.Builder::class)
 public class Movie(
-  title: () -> String? = titleDefault
+  title: () -> String? = titleDefault,
 ) {
   private val _title: () -> String? = title
 

@@ -42,7 +42,7 @@ internal class CodeGeneratorUtilsTest {
             "1Abc" to "1_abc",
             "ABCefg" to "ab_cefg",
             "A1BCefg" to "a_1_b_cefg",
-            "AbCeFg" to "ab_ce_fg",
+            "AbCeFg" to "ab_ce_fg"
         ).map { Arguments.of(it.first, it.second) }
     }
 }

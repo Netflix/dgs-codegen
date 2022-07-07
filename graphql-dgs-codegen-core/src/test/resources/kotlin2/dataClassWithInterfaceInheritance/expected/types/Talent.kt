@@ -14,7 +14,7 @@ public class Talent(
   firstname: () -> String = firstnameDefault,
   lastname: () -> String? = lastnameDefault,
   company: () -> String? = companyDefault,
-  imdbProfile: () -> String? = imdbProfileDefault
+  imdbProfile: () -> String? = imdbProfileDefault,
 ) : Employee {
   private val _firstname: () -> String = firstname
 

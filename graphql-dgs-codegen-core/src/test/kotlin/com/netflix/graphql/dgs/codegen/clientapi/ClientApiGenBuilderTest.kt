@@ -37,7 +37,7 @@ class ClientApiGenBuilderTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                maxProjectionDepth = 2,
+                maxProjectionDepth = 2
             )
         ).generate()
 
@@ -68,7 +68,7 @@ class ClientApiGenBuilderTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                maxProjectionDepth = 2,
+                maxProjectionDepth = 2
             )
         ).generate()
 

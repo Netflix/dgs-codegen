@@ -39,7 +39,7 @@ import graphql.language.TypeDefinition
 import graphql.language.TypeName
 
 class KotlinEntitiesRepresentationTypeGenerator(config: CodeGenConfig, document: Document) :
-    AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
+    AbstractKotlinDataTypeGenerator(packageName = config.packageNameClient, config = config, document = document) {
 
     fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
         val name = "${definition.name}Representation"

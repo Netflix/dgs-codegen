@@ -1,6 +1,6 @@
 package kotlin2.dataClassWithNonNullableListOfNullableValues.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class PersonProjection : GraphQLProjection() {
   public val name: PersonProjection

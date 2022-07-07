@@ -16,7 +16,7 @@ public class Engine(
   type: () -> String? = typeDefault,
   bhp: () -> Int? = bhpDefault,
   size: () -> Double? = sizeDefault,
-  performance: () -> Performance? = performanceDefault
+  performance: () -> Performance? = performanceDefault,
 ) {
   private val _type: () -> String? = type
 

@@ -7,7 +7,7 @@ import kotlin.String
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.PROPERTY,
-  property = "__typename"
+  property = "__typename",
 )
 public sealed interface Person {
   public val firstname: String

@@ -1,6 +1,6 @@
 package kotlin2.projectionWithEnum.expected.client
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class QueryProjection : GraphQLProjection() {
   public val e: QueryProjection

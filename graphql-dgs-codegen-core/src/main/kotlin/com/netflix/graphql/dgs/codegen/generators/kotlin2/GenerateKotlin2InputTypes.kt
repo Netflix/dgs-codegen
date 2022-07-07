@@ -18,8 +18,8 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLInput
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.GraphQLInput
 import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
@@ -38,9 +38,8 @@ import graphql.language.InputObjectTypeDefinition
 fun generateKotlin2InputTypes(
     config: CodeGenConfig,
     document: Document,
-    requiredTypes: Set<String>,
+    requiredTypes: Set<String>
 ): List<FileSpec> {
-
     val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
 
     return document
@@ -64,7 +63,7 @@ fun generateKotlin2InputTypes(
                     Field(
                         name = it.name,
                         type = typeUtils.findReturnType(it.type),
-                        description = it.description,
+                        description = it.description
                     )
                 }
 
@@ -84,7 +83,7 @@ fun generateKotlin2InputTypes(
                             fields.map { field ->
                                 ParameterSpec.builder(
                                     name = field.name,
-                                    type = field.type,
+                                    type = field.type
                                 )
                                     .apply {
                                         if (field.type.isNullable) {
@@ -101,7 +100,7 @@ fun generateKotlin2InputTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = field.type,
+                            type = field.type
                         )
                             .initializer(field.name)
                             .build()

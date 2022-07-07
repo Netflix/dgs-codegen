@@ -18,8 +18,8 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
-import com.netflix.graphql.dgs.client.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
@@ -47,9 +47,8 @@ import graphql.language.UnionTypeDefinition
 
 fun generateKotlin2ClientTypes(
     config: CodeGenConfig,
-    document: Document,
+    document: Document
 ): List<FileSpec> {
-
     if (!config.generateClientApi) {
         return emptyList()
     }
@@ -88,12 +87,11 @@ fun generateKotlin2ClientTypes(
                     val hasArgs = field.inputValueDefinitions.isNotEmpty()
 
                     when {
-
                         // scalars without args are just parameters that note the field is requested
                         isScalar && !hasArgs -> {
                             PropertySpec.builder(
                                 name = field.name,
-                                type = typeName,
+                                type = typeName
                             )
                                 .getter(
                                     FunSpec.getterBuilder()
@@ -116,7 +114,6 @@ fun generateKotlin2ClientTypes(
 
                         // types without args just have a projection
                         !isScalar && !hasArgs -> {
-
                             val projectTypeName = projectionTypeName(typeUtils.findReturnType(field.type))
                             val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
 
@@ -131,7 +128,6 @@ fun generateKotlin2ClientTypes(
                         // function that has args and a projection
                         // !isScalar && hasArgs
                         else -> {
-
                             val projectTypeName = projectionTypeName(typeUtils.findReturnType(field.type))
                             val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
 
@@ -237,17 +233,16 @@ private fun projectionTypeName(type: TypeName): String {
 
 // create the `_projection = FooProjection.() -> FooProjection` parameter
 private fun projectionType(packageName: String, type: String): Pair<ClassName, ParameterSpec> {
-
     val projectionType = ClassName(
         packageName = packageName,
-        simpleNames = listOf("${type}Projection"),
+        simpleNames = listOf("${type}Projection")
     )
 
     val parameter = ParameterSpec(
         name = "_projection",
         type = LambdaTypeName.get(
             receiver = projectionType,
-            returnType = projectionType,
+            returnType = projectionType
         )
     )
 
@@ -256,9 +251,8 @@ private fun projectionType(packageName: String, type: String): Pair<ClassName, P
 
 private fun FunSpec.Builder.addInputArgs(
     typeUtils: KotlinTypeUtils,
-    inputValueDefinitions: List<InputValueDefinition>,
+    inputValueDefinitions: List<InputValueDefinition>
 ): FunSpec.Builder {
-
     return this
         .addParameters(
             inputValueDefinitions.map {
@@ -283,7 +277,6 @@ private fun onSubclassProjection(
     typeName: ClassName,
     subclassName: String
 ): FunSpec {
-
     val (projectionType, projection) = projectionType(packageName, subclassName)
 
     return FunSpec.builder("on$subclassName")

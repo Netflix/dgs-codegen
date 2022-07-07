@@ -28,7 +28,7 @@ class ReservedKeywordSanitizer {
                 "_",
                 "parent",
                 "protected",
-                "root",
+                "root"
             )
 
         private const val prefix = "_"
