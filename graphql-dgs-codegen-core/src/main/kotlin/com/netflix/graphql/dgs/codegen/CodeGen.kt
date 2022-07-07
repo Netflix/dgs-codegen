@@ -37,7 +37,6 @@ import graphql.language.*
 import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
-import graphql.schema.idl.TypeUtil
 import java.io.File
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -116,45 +115,7 @@ class CodeGen(private val config: CodeGenConfig) {
             parser.parseDocument(reader, options)
         }
 
-        return document.transform {
-            // for kotlin2, add implicit types like PageInfo to the schema so classes are generated
-            if (config.generateKotlinNullableClasses || config.generateKotlinClosureProjections) {
-                val objectTypeDefs = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
-                if (!objectTypeDefs.any { def -> def.name == "PageInfo" } &&
-                    objectTypeDefs.any { def -> def.fieldDefinitions.any { field -> TypeUtil.unwrapAll(field.type).name == "PageInfo" } }
-                ) {
-                    it.definition(
-                        ObjectTypeDefinition.newObjectTypeDefinition()
-                            .name("PageInfo")
-                            .fieldDefinition(
-                                FieldDefinition.newFieldDefinition()
-                                    .name("hasNextPage")
-                                    .type(NonNullType(TypeName("Boolean")))
-                                    .build()
-                            )
-                            .fieldDefinition(
-                                FieldDefinition.newFieldDefinition()
-                                    .name("hasPreviousPage")
-                                    .type(NonNullType(TypeName("Boolean")))
-                                    .build()
-                            )
-                            .fieldDefinition(
-                                FieldDefinition.newFieldDefinition()
-                                    .name("startCursor")
-                                    .type(TypeName("String"))
-                                    .build()
-                            )
-                            .fieldDefinition(
-                                FieldDefinition.newFieldDefinition()
-                                    .name("endCursor")
-                                    .type(TypeName("String"))
-                                    .build()
-                            )
-                            .build()
-                    )
-                }
-            }
-        }
+        return document
     }
 
     private fun generateJava(): CodeGenResult {

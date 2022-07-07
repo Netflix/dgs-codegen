@@ -20,10 +20,8 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLInput
-import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
-import com.netflix.graphql.dgs.codegen.generators.shared.Field
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
@@ -34,13 +32,14 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.Document
 import graphql.language.InputObjectTypeDefinition
+import graphql.language.InputValueDefinition
 
 fun generateKotlin2InputTypes(
     config: CodeGenConfig,
     document: Document,
     requiredTypes: Set<String>
 ): List<FileSpec> {
-    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
+    val typeLookup = Kotlin2TypeLookup(config, document)
 
     return document
         .getDefinitionsOfType(InputObjectTypeDefinition::class.java)
@@ -59,13 +58,8 @@ fun generateKotlin2InputTypes(
                 .plus(extensionTypes)
                 .flatMap { it.inputValueDefinitions }
                 .filter(ReservedKeywordFilter.filterInvalidNames)
-                .map {
-                    Field(
-                        name = it.name,
-                        type = typeUtils.findReturnType(it.type),
-                        description = it.description
-                    )
-                }
+
+            fun type(field: InputValueDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
 
             // create the input class
             val typeSpec = TypeSpec.classBuilder(inputDefinition.name)
@@ -81,12 +75,13 @@ fun generateKotlin2InputTypes(
                     FunSpec.constructorBuilder()
                         .addParameters(
                             fields.map { field ->
+                                val type = type(field)
                                 ParameterSpec.builder(
                                     name = field.name,
-                                    type = field.type
+                                    type = type
                                 )
                                     .apply {
-                                        if (field.type.isNullable) {
+                                        if (type.isNullable) {
                                             defaultValue("default(%S)", field.name)
                                         }
                                     }
@@ -100,7 +95,7 @@ fun generateKotlin2InputTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = field.type
+                            type = type(field)
                         )
                             .initializer(field.name)
                             .build()

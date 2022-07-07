@@ -20,16 +20,12 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.filterSkipped
-import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonSubTypesAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonTypeInfoAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
-import com.netflix.graphql.dgs.codegen.generators.shared.implementedInterfaces
-import com.netflix.graphql.dgs.codegen.generators.shared.interfaceFields
-import com.netflix.graphql.dgs.codegen.generators.shared.overrideFields
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
@@ -51,10 +47,7 @@ fun generateKotlin2Interfaces(
         return emptyList()
     }
 
-    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
-
-    // get a map of all interfaces > fields
-    val interfaceFields = document.interfaceFields()
+    val typeLookup = Kotlin2TypeLookup(config, document)
 
     val interfaceClasses = document
         .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
@@ -71,7 +64,7 @@ fun generateKotlin2Interfaces(
                 .map { node -> ClassName(config.packageNameTypes, node.name) }
 
             // get all interfaces that this interface implements
-            val implementedInterfaces = interfaceDefinition.implementedInterfaces()
+            val implementedInterfaces = typeLookup.implementedInterfaces(interfaceDefinition)
 
             // get any fields defined via schema extensions
             val extensionTypes = findInterfaceExtensions(interfaceDefinition.name, document.definitions)
@@ -83,7 +76,7 @@ fun generateKotlin2Interfaces(
                 .filterSkipped()
 
             // get a list of fields to override
-            val overrideFields = overrideFields(interfaceFields, implementedInterfaces)
+            val overrideFields = typeLookup.overrideFields(implementedInterfaces)
 
             // create the interface
             val interfaceSpec = TypeSpec.interfaceBuilder(interfaceDefinition.name)
@@ -110,7 +103,7 @@ fun generateKotlin2Interfaces(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = typeUtils.findReturnType(field.type)
+                            type = typeLookup.findReturnType(config.packageNameTypes, field.type)
                         )
                             .apply {
                                 if (field.description != null) {

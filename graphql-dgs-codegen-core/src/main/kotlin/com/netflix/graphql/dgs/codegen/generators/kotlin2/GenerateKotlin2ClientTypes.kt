@@ -21,12 +21,9 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.filterSkipped
-import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
-import com.netflix.graphql.dgs.codegen.generators.shared.enumFields
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
-import com.netflix.graphql.dgs.codegen.generators.shared.invertedInterfaceLookup
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
@@ -37,7 +34,6 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
-import graphql.language.DirectivesContainer
 import graphql.language.Document
 import graphql.language.InputValueDefinition
 import graphql.language.InterfaceTypeDefinition
@@ -53,20 +49,13 @@ fun generateKotlin2ClientTypes(
         return emptyList()
     }
 
-    val typeUtils = KotlinTypeUtils(config.packageNameClient, config, document)
-    val inputTypeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
-
-    // get a map of all enums in the document
-    val enumFields = document.enumFields()
-
-    // invert the interface mapping to create a lookup from interfaces to implementors
-    val interfaceLookup = document.invertedInterfaceLookup()
+    val typeLookup = Kotlin2TypeLookup(config, document)
 
     // create a projection class for every interface & data type
     val dataProjections = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
         .plus(document.getDefinitionsOfType(InterfaceTypeDefinition::class.java))
         .excludeSchemaTypeExtension()
-        .filter { !(it as DirectivesContainer<*>).shouldSkip(config) }
+        .filter { type -> type.directives.none { it.name == "skipcodegen" } && !typeLookup.isScalar(type.name) }
         .map { typeDefinition ->
 
             // get any fields defined via schema extensions
@@ -83,7 +72,7 @@ fun generateKotlin2ClientTypes(
                 .filter(ReservedKeywordFilter.filterInvalidNames)
                 .map { field ->
 
-                    val isScalar = typeUtils.isScalar(field.type, enumFields.keys)
+                    val isScalar = typeLookup.isScalar(field.type)
                     val hasArgs = field.inputValueDefinitions.isNotEmpty()
 
                     when {
@@ -105,7 +94,7 @@ fun generateKotlin2ClientTypes(
                         // scalars with args are functions to take the args with no projection
                         isScalar && hasArgs -> {
                             FunSpec.builder(field.name)
-                                .addInputArgs(inputTypeUtils, field.inputValueDefinitions)
+                                .addInputArgs(config, typeLookup, field.inputValueDefinitions)
                                 .returns(typeName)
                                 .addStatement("""field("${field.name}(${'$'}args)")""")
                                 .addStatement("return this")
@@ -114,7 +103,7 @@ fun generateKotlin2ClientTypes(
 
                         // types without args just have a projection
                         !isScalar && !hasArgs -> {
-                            val projectTypeName = projectionTypeName(typeUtils.findReturnType(field.type))
+                            val projectTypeName = projectionTypeName(typeLookup.findReturnType(config.packageNameClient, field.type))
                             val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
 
                             FunSpec.builder(field.name)
@@ -128,11 +117,11 @@ fun generateKotlin2ClientTypes(
                         // function that has args and a projection
                         // !isScalar && hasArgs
                         else -> {
-                            val projectTypeName = projectionTypeName(typeUtils.findReturnType(field.type))
+                            val projectTypeName = projectionTypeName(typeLookup.findReturnType(config.packageNameClient, field.type))
                             val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
 
                             FunSpec.builder(field.name)
-                                .addInputArgs(inputTypeUtils, field.inputValueDefinitions)
+                                .addInputArgs(config, typeLookup, field.inputValueDefinitions)
                                 .addParameter(projection)
                                 .returns(typeName)
                                 .addStatement(
@@ -146,9 +135,8 @@ fun generateKotlin2ClientTypes(
                 }
 
             // add the `... on XXX` projection for implementors of this interface
-            val implementors = interfaceLookup[typeDefinition.name]
-                ?.map { subclassName -> onSubclassProjection(config.packageNameClient, typeName, subclassName) }
-                ?: emptyList()
+            val implementors = typeLookup.interfaceImplementors(typeDefinition.name)
+                .map { subclassName -> onSubclassProjection(config.packageNameClient, typeName, subclassName) }
 
             // create the projection class
             val typeSpec = TypeSpec.classBuilder(typeName)
@@ -250,13 +238,14 @@ private fun projectionType(packageName: String, type: String): Pair<ClassName, P
 }
 
 private fun FunSpec.Builder.addInputArgs(
-    typeUtils: KotlinTypeUtils,
+    config: CodeGenConfig,
+    typeLookup: Kotlin2TypeLookup,
     inputValueDefinitions: List<InputValueDefinition>
 ): FunSpec.Builder {
     return this
         .addParameters(
             inputValueDefinitions.map {
-                val returnType = typeUtils.findReturnType(it.type)
+                val returnType = typeLookup.findReturnType(config.packageNameTypes, it.type)
                 ParameterSpec.builder(it.name, returnType)
                     .apply {
                         if (returnType.isNullable) {

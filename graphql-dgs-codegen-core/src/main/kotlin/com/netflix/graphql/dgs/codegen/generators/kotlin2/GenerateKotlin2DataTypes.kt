@@ -20,7 +20,6 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.filterSkipped
-import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addControlFlow
 import com.netflix.graphql.dgs.codegen.generators.kotlin.disableJsonTypeInfoAnnotation
@@ -30,13 +29,8 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonIgnorePropertiesAnn
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonPropertyAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
-import com.netflix.graphql.dgs.codegen.generators.shared.Field
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
-import com.netflix.graphql.dgs.codegen.generators.shared.implementedInterfaces
-import com.netflix.graphql.dgs.codegen.generators.shared.interfaceFields
-import com.netflix.graphql.dgs.codegen.generators.shared.invertedUnionLookup
-import com.netflix.graphql.dgs.codegen.generators.shared.overrideFields
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
@@ -48,6 +42,7 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.buildCodeBlock
 import graphql.language.Document
+import graphql.language.FieldDefinition
 import graphql.language.ObjectTypeDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -59,13 +54,7 @@ fun generateKotlin2DataTypes(
     document: Document,
     requiredTypes: Set<String>
 ): List<FileSpec> {
-    val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
-
-    // get a map of all interfaces > fields
-    val interfaceFields = document.interfaceFields()
-
-    // invert the union mapping to create a lookup from members to union
-    val unionTypes = document.invertedUnionLookup()
+    val typeLookup = Kotlin2TypeLookup(config, document)
 
     return document
         .getDefinitionsOfType(ObjectTypeDefinition::class.java)
@@ -77,8 +66,8 @@ fun generateKotlin2DataTypes(
             logger.info("Generating data type ${typeDefinition.name}")
 
             // get all interfaces this type implements
-            val implementedInterfaces = typeDefinition.implementedInterfaces()
-            val implementedUnionTypes = unionTypes[typeDefinition.name] ?: emptyList()
+            val implementedInterfaces = typeLookup.implementedInterfaces(typeDefinition)
+            val implementedUnionTypes = typeLookup.implementedUnionTypes(typeDefinition.name)
             val superInterfaces = implementedInterfaces + implementedUnionTypes
 
             // get any fields defined via schema extensions
@@ -90,16 +79,11 @@ fun generateKotlin2DataTypes(
                 .flatMap { it.fieldDefinitions }
                 .filterSkipped()
                 .filter(ReservedKeywordFilter.filterInvalidNames)
-                .map {
-                    Field(
-                        name = it.name,
-                        type = typeUtils.findReturnType(it.type),
-                        description = it.description
-                    )
-                }
+
+            fun type(field: FieldDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
 
             // get a list of fields to override
-            val overrideFields = overrideFields(interfaceFields, implementedInterfaces)
+            val overrideFields = typeLookup.overrideFields(implementedInterfaces)
 
             // create a companion object to store defaults for each field
             val companionObject = TypeSpec.companionObjectBuilder()
@@ -108,7 +92,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = "${field.name}Default",
-                            type = LambdaTypeName.get(returnType = field.type)
+                            type = LambdaTypeName.get(returnType = type(field))
                         )
                             .addModifiers(KModifier.PRIVATE)
                             .initializer(
@@ -135,7 +119,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = LambdaTypeName.get(returnType = field.type)
+                            type = LambdaTypeName.get(returnType = type(field))
                         )
                             .addModifiers(KModifier.PRIVATE)
                             .mutable()
@@ -148,7 +132,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         FunSpec.builder("with${field.name.capitalized()}")
                             .addAnnotation(jsonPropertyAnnotation(field.name))
-                            .addParameter(field.name, field.type)
+                            .addParameter(field.name, type(field))
                             .addControlFlow("return this.apply") {
                                 addStatement("this.${field.name} = { ${field.name} }")
                             }
@@ -193,7 +177,7 @@ fun generateKotlin2DataTypes(
                             fields.map { field ->
                                 ParameterSpec.builder(
                                     name = field.name,
-                                    type = LambdaTypeName.get(returnType = field.type)
+                                    type = LambdaTypeName.get(returnType = type(field))
                                 )
                                     .defaultValue("${field.name}Default")
                                     .build()
@@ -206,7 +190,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = "_${field.name}",
-                            type = LambdaTypeName.get(returnType = field.type)
+                            type = LambdaTypeName.get(returnType = type(field))
                         )
                             .addModifiers(KModifier.PRIVATE)
                             .initializer(field.name)
@@ -218,7 +202,7 @@ fun generateKotlin2DataTypes(
                     fields.map { field ->
                         PropertySpec.builder(
                             name = field.name,
-                            type = field.type
+                            type = type(field)
                         )
                             .apply {
                                 if (field.description != null) {
