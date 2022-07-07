@@ -23,6 +23,7 @@ import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
 import com.squareup.javapoet.WildcardTypeName
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -35,6 +36,46 @@ import java.io.Serializable
 import java.util.stream.Stream
 
 class CodeGenTest {
+
+    @Test
+    fun `When the schema fails to parse, is able to print the error message along with the schema`() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            type Mutation {
+        """.trimIndent()
+
+        Assertions.assertThatThrownBy {
+            CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+        }.isInstanceOf(CodeGenSchemaParsingException::class.java)
+            .hasMessageContainingAll(
+                "Invalid Syntax : offending token '<EOF>' at line 8 column 16",
+                """
+                |Schema Section:
+                |>>>
+                |    firstname: String
+                |    lastname: String
+                |}
+                |type Mutation {
+                |
+                """.trimMargin(),
+                """Full Schema:
+                |type Query {
+                |    people: [Person]
+                |}
+                |type Person {
+                |    firstname: String
+                |    lastname: String
+                |}
+                |type Mutation {
+                """.trimMargin()
+            )
+    }
 
     @Test
     fun generateDataClassWithStringProperties() {
