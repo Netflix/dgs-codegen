@@ -100,7 +100,7 @@ class CodeGen(private val config: CodeGenConfig) {
         val parser = Parser()
         val readerBuilder = MultiSourceReader.newMultiSourceReader()
 
-        val schemaFiles = config.schemaFiles
+        val schemaFiles = config.schemaFiles.sorted()
             .flatMap { it.walkTopDown() }
             .filter { it.isFile }
 
