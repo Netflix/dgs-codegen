@@ -49,6 +49,10 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
         "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName()
     )
 
+    fun qualifyName(name: String): String {
+        return "$packageName.$name"
+    }
+
     fun findReturnType(fieldType: Type<*>): KtTypeName {
         val visitor = object : NodeVisitorStub() {
             override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {

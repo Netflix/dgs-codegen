@@ -68,10 +68,6 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
         val interfaces = definition.implements
         return generate(definition.name, fields, interfaces, document, definition.description)
     }
-
-    override fun getPackageName(): String {
-        return config.packageNameTypes
-    }
 }
 
 class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
@@ -119,10 +115,6 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
             is ParameterizedTypeName -> typeArguments[0].className
             else -> TODO()
         }
-
-    override fun getPackageName(): String {
-        return config.packageNameTypes
-    }
 }
 
 internal data class Field(
@@ -245,5 +237,7 @@ abstract class AbstractKotlinDataTypeGenerator(
         return CodeGenResult(kotlinDataTypes = listOf(fileSpec))
     }
 
-    abstract fun getPackageName(): String
+    open fun getPackageName(): String {
+        return config.packageNameTypes
+    }
 }
