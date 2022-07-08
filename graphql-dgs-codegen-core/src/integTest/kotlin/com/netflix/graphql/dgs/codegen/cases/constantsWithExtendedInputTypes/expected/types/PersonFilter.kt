@@ -1,0 +1,10 @@
+package com.netflix.graphql.dgs.codegen.cases.constantsWithExtendedInputTypes.expected.types
+
+import com.netflix.graphql.dgs.codegen.GraphQLInput
+import kotlin.Int
+import kotlin.String
+
+public class PersonFilter(
+  public val email: String? = default("email"),
+  public val birthYear: Int? = default("birthYear"),
+) : GraphQLInput()

@@ -1,3 +1,0 @@
-package kotlin2.interfaceClassWithInterfaceFields.expected
-
-public object DgsClient
