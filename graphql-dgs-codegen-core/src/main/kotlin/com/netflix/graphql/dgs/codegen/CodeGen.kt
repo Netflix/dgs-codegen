@@ -34,10 +34,12 @@ import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtens
 import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
 import graphql.language.*
+import graphql.parser.InvalidSyntaxException
 import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
 import java.io.File
+import java.io.Reader
 import java.nio.file.Path
 import java.nio.file.Paths
 
@@ -97,26 +99,39 @@ class CodeGen(private val config: CodeGenConfig) {
             builder.maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
         }
         val parser = Parser()
+
         val readerBuilder = MultiSourceReader.newMultiSourceReader()
+        val debugReaderBuilder = MultiSourceReader.newMultiSourceReader()
 
-        val schemaFiles = config.schemaFiles.sorted()
-            .flatMap { it.walkTopDown() }
-            .filter { it.isFile }
-
-        for (schemaFile in schemaFiles) {
-            schemaFile.appendText("\n")
-            readerBuilder.reader(schemaFile.reader(), schemaFile.name)
-        }
-
-        for (schema in config.schemas) {
-            readerBuilder.string(schema, null)
-        }
-
+        loadSchemaReaders(readerBuilder, debugReaderBuilder)
         val document = readerBuilder.build().use { reader ->
-            parser.parseDocument(reader, options)
+            try {
+                parser.parseDocument(reader, options)
+            } catch (exception: InvalidSyntaxException) {
+                throw CodeGenSchemaParsingException(debugReaderBuilder.build(), exception)
+            }
         }
 
         return document
+    }
+
+    /**
+     * Loads the given [MultiSourceReader.Builder] references with the sources that will be used to provide
+     * the schema information for the parser.
+     */
+    private fun loadSchemaReaders(vararg readerBuilders: MultiSourceReader.Builder) {
+        readerBuilders.forEach { rb ->
+            val schemaFiles = config.schemaFiles.sorted()
+                .flatMap { it.walkTopDown() }
+                .filter { it.isFile }
+            for (schemaFile in schemaFiles) {
+                rb.string("\n", "codegen")
+                rb.reader(schemaFile.reader(), schemaFile.name)
+            }
+            for (schema in config.schemas) {
+                rb.string(schema, null)
+            }
+        }
     }
 
     private fun generateJava(): CodeGenResult {
@@ -615,6 +630,33 @@ fun Type<*>.findBaseTypeDefinition(): TypeDefinition<*>? {
         }
         else -> {
             null
+        }
+    }
+}
+
+class CodeGenSchemaParsingException(
+    schemaReader: Reader,
+    invalidSyntaxException: InvalidSyntaxException
+) : RuntimeException(buildMessage(schemaReader, invalidSyntaxException), invalidSyntaxException) {
+    companion object {
+        private fun buildMessage(
+            schemaReader: Reader,
+            invalidSyntaxException: InvalidSyntaxException
+        ): String {
+            schemaReader.use { reader ->
+                return """
+                |Unable to parse the schema...
+                |${invalidSyntaxException.message}
+                | 
+                |Schema Section:
+                |>>>
+                |${invalidSyntaxException.sourcePreview}
+                |<<<
+                |
+                |Full Schema:
+                |${reader.readText()}
+                """.trimMargin()
+            }
         }
     }
 }
