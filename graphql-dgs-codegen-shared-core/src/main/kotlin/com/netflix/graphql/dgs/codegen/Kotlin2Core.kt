@@ -18,13 +18,45 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.netflix.graphql.dgs.client.codegen.InputValue
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializer
 
 @DslMarker
 annotation class QueryProjectionMarker
 
+object DefaultTracker {
+
+    // set of what defaults have been used
+    val defaults: ThreadLocal<MutableSet<String>> = ThreadLocal.withInitial { mutableSetOf() }
+
+    // add a default value
+    fun add(arg: String) {
+        defaults.get().add(arg)
+    }
+
+    // consume the set defaults & reset
+    fun getAndClear(): Set<String> {
+        try {
+            return defaults.get()
+        } finally {
+            defaults.set(mutableSetOf())
+        }
+    }
+}
+
 @QueryProjectionMarker
-abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename")) : GraphQLInput() {
+abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename")) {
+
+    companion object {
+
+        private val inputSerializer = InputValueSerializer()
+
+        @JvmStatic
+        protected fun <T> default(arg: String): T? {
+            DefaultTracker.add(arg)
+            return null
+        }
+    }
 
     private val builder = StringBuilder("{ ${defaultFields.joinToString(" ")} ")
 
@@ -39,37 +71,31 @@ abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename"
     }
 
     fun asQuery() = "$builder}"
+
+    protected fun formatArgs(vararg args: Pair<String, Any?>): String {
+        val defaults = DefaultTracker.getAndClear()
+        return args
+            .filter { (k, _) -> !defaults.contains(k) }
+            .joinToString(", ") { (k, v) -> "$k: ${inputSerializer.serialize(v)}" }
+    }
 }
 
-abstract class GraphQLInput {
+abstract class GraphQLInput : InputValue {
 
     companion object {
 
-        private val inputSerializer = InputValueSerializer()
-
-        protected fun inputToString(value: Any?): String {
-            // TODO escape newlines in InputValueSerializer
-            return inputSerializer.serialize(value).replace("\n", "\\n")
-        }
-
-        val defaults: ThreadLocal<MutableSet<String>> = ThreadLocal.withInitial { mutableSetOf() }
-
         @JvmStatic
         protected fun <T> default(arg: String): T? {
-            defaults.get().add(arg)
+            DefaultTracker.add(arg)
             return null
         }
     }
 
-    private val _defaults = defaults.get()
+    private val defaults = DefaultTracker.getAndClear()
 
-    init {
-        defaults.set(mutableSetOf())
-    }
+    abstract fun fields(): List<Pair<String, Any?>>
 
-    protected fun formatArgs(vararg args: Pair<String, Any?>): String {
-        return args
-            .filter { (k, _) -> !_defaults.contains(k) }
-            .joinToString(", ") { (k, v) -> "$k: ${inputToString(v)}" }
+    override fun inputValues(): List<Pair<String, Any?>> {
+        return fields().filter { (k, _) -> !defaults.contains(k) }
     }
 }

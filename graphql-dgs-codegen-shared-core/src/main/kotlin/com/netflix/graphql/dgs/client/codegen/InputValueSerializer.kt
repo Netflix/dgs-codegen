@@ -49,6 +49,10 @@ import kotlin.reflect.jvm.isAccessible
 @Target(AnnotationTarget.PROPERTY)
 internal annotation class Transient
 
+interface InputValue {
+    fun inputValues(): List<Pair<String, Any?>>
+}
+
 class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) {
     companion object {
         private val toStringClasses = setOf(
@@ -130,6 +134,12 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
         if (input is Map<*, *>) {
             return ObjectValue.newObjectValue()
                 .objectFields(input.map { (key, value) -> ObjectField(key.toString(), toValue(value)) })
+                .build()
+        }
+
+        if (input is InputValue) {
+            return ObjectValue.newObjectValue()
+                .objectFields(input.inputValues().map { (name, value) -> ObjectField(name, toValue(value)) })
                 .build()
         }
 
