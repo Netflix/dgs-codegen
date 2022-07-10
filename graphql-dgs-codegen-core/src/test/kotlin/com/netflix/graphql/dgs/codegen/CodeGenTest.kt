@@ -2889,11 +2889,12 @@ It takes a title and such.
                   @JsonProperty("lastname")
                   public val lastname: String? = null,
                   @JsonProperty("company")
-                  public val company: String? = null
+                  public val company: String? = null,
                 ) {
                   public companion object
                 }
-               """.trimMargin()
+                
+                """.trimIndent()
         )
 
         assertCompilesKotlin(dataTypes)
