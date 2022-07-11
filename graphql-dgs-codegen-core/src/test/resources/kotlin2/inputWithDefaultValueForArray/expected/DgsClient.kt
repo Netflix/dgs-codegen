@@ -1,3 +1,0 @@
-package kotlin2.inputWithDefaultValueForArray.expected
-
-public object DgsClient

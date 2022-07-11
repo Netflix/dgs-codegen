@@ -27,9 +27,12 @@ import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtens
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asClassName
 import graphql.language.Document
 import graphql.language.InputObjectTypeDefinition
 import graphql.language.InputValueDefinition
@@ -100,6 +103,24 @@ fun generateKotlin2InputTypes(
                             .initializer(field.name)
                             .build()
                     }
+                )
+                .addFunction(
+                    FunSpec.builder("fields")
+                        .addModifiers(KModifier.OVERRIDE)
+                        .returns(
+                            List::class.asClassName().parameterizedBy(
+                                Pair::class.asClassName().parameterizedBy(
+                                    String::class.asClassName(),
+                                    Any::class.asClassName().copy(nullable = true)
+                                )
+                            )
+                        )
+                        .addStatement(
+                            "return listOf(${
+                            fields.joinToString(", ") { """"${it.name}" to ${it.name}""" }
+                            })"
+                        )
+                        .build()
                 )
                 .build()
 

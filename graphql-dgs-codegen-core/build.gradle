@@ -19,6 +19,7 @@
 plugins {
     id 'java-library'
     id 'application'
+    id 'nebula.integtest'
 }
 
 
@@ -44,3 +45,5 @@ dependencies {
 application {
     mainClassName = 'com.netflix.graphql.dgs.codegen.CodeGenCliKt'
 }
+
+tasks.lintKotlinIntegTest.enabled = false

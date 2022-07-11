@@ -35,6 +35,7 @@ import java.io.File
 import java.lang.reflect.Method
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
 
 fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
     return assertCompilesJava(
@@ -54,13 +55,18 @@ fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
     return result
 }
 
-fun assertCompilesKotlin(codeGenResult: CodeGenResult) =
-    assertCompilesKotlin(codeGenResult.kotlinSources())
+fun assertCompilesKotlin(codeGenResult: CodeGenResult, tests: Map<String, String> = emptyMap()) =
+    assertCompilesKotlin(codeGenResult.kotlinSources(), tests)
 
-fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
+fun assertCompilesKotlin(files: Collection<FileSpec>, tests: Map<String, String> = emptyMap()): Path {
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")
     files.forEach { it.writeTo(srcDir) }
+    tests.forEach { (file, content) ->
+        val target = File("$srcDir/$file")
+        target.toPath().parent.createDirectories()
+        target.writeText(content)
+    }
 
     K2JVMCompiler().run {
         val exitCode = execImpl(
@@ -73,11 +79,7 @@ fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
             K2JVMCompilerArguments().apply {
                 freeArgs = listOf(srcDir.toAbsolutePath().toString())
                 destination = buildDir.toAbsolutePath().toString()
-                classpath = System.getProperty("java.class.path")
-                    .split(System.getProperty("path.separator"))
-                    .filter {
-                        File(it).exists() && File(it).canRead()
-                    }.joinToString(":")
+                classpath = classpath()
                 noStdlib = true
                 noReflect = true
             }
@@ -86,6 +88,14 @@ fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
     }
 
     return buildDir
+}
+
+fun classpath(): String {
+    return System.getProperty("java.class.path")
+        .split(System.getProperty("path.separator"))
+        .filter {
+            File(it).exists() && File(it).canRead()
+        }.joinToString(":")
 }
 
 fun codegenTestClassLoader(compilation: Compilation, parent: ClassLoader? = null): ClassLoader {
