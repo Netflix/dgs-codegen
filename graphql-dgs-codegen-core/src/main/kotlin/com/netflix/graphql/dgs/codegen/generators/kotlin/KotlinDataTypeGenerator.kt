@@ -66,7 +66,7 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
                 .filterSkipped()
                 .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
         val interfaces = when (config.generateInterfaces) {
-            true -> definition.implements + TypeName.newTypeName("I"+definition.name).build()
+            true -> definition.implements + TypeName.newTypeName("I" + definition.name).build()
             else -> definition.implements
         }
 
