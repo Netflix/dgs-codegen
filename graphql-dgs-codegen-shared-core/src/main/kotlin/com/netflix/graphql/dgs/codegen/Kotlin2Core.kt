@@ -20,6 +20,14 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.client.codegen.InputValue
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializer
+import graphql.language.Argument
+import graphql.language.AstPrinter
+import graphql.language.Document
+import graphql.language.Field
+import graphql.language.InlineFragment
+import graphql.language.OperationDefinition
+import graphql.language.SelectionSet
+import graphql.language.TypeName
 
 @DslMarker
 annotation class QueryProjectionMarker
@@ -27,20 +35,18 @@ annotation class QueryProjectionMarker
 object DefaultTracker {
 
     // set of what defaults have been used
-    val defaults: ThreadLocal<MutableSet<String>> = ThreadLocal.withInitial { mutableSetOf() }
+    val defaults: ThreadLocal<MutableMap<String, MutableSet<String>>> = ThreadLocal.withInitial { mutableMapOf() }
 
     // add a default value
-    fun add(arg: String) {
-        defaults.get().add(arg)
+    fun add(type: String, arg: String) {
+        defaults.get()
+            .computeIfAbsent(type) { mutableSetOf() }
+            .add(arg)
     }
 
-    // consume the set defaults & reset
-    fun getAndClear(): Set<String> {
-        try {
-            return defaults.get()
-        } finally {
-            defaults.set(mutableSetOf())
-        }
+    // consume the set defaults & reset them
+    fun getAndClear(type: String): Set<String> {
+        return defaults.get().remove(type) ?: emptySet()
     }
 }
 
@@ -52,31 +58,101 @@ abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename"
         private val inputSerializer = InputValueSerializer()
 
         @JvmStatic
-        protected fun <T> default(arg: String): T? {
-            DefaultTracker.add(arg)
+        protected fun <T> default0(arg: String): T? {
+            DefaultTracker.add(this::class.qualifiedName!!, arg)
             return null
+        }
+
+        @JvmStatic
+        protected inline fun <reified TClass, reified TValue> default(arg: String): TValue? {
+            DefaultTracker.add(TClass::class.qualifiedName!!, arg)
+            return null
+        }
+
+        fun <T : GraphQLProjection> asQuery(
+            operation: OperationDefinition.Operation,
+            projection: T,
+            projectionFields: T.() -> T
+        ): String {
+            projectionFields.invoke(projection)
+
+            val document = Document.newDocument()
+                .definition(
+                    OperationDefinition.newOperationDefinition()
+                        .operation(operation)
+                        .selectionSet(projection.builder.build())
+                        .build()
+                )
+                .build()
+
+            return AstPrinter.printAst(document)
         }
     }
 
-    private val builder = StringBuilder("{ ${defaultFields.joinToString(" ")} ")
+    private val builder = SelectionSet.newSelectionSet()
 
-    protected fun field(field: String) {
-        builder.append("$field ")
+    init {
+        // add default fields
+        defaultFields.forEach { field(it) }
     }
 
-    protected fun <T : GraphQLProjection> project(field: String, projection: T, projectionFields: T.() -> T) {
-        builder.append("$field ")
-        projectionFields.invoke(projection)
-        builder.append(projection.asQuery())
-    }
-
-    fun asQuery() = "$builder}"
-
-    protected fun formatArgs(vararg args: Pair<String, Any?>): String {
-        val defaults = DefaultTracker.getAndClear()
+    private fun arguments(
+        args: List<Pair<String, Any?>>,
+        defaults: Set<String>
+    ): List<Argument> {
         return args
             .filter { (k, _) -> !defaults.contains(k) }
-            .joinToString(", ") { (k, v) -> "$k: ${inputSerializer.serialize(v)}" }
+            .map { (arg, value) ->
+                Argument.newArgument()
+                    .name(arg)
+                    .value(inputSerializer.toValue(value))
+                    .build()
+            }
+    }
+
+    protected fun field(
+        name: String,
+        vararg args: Pair<String, Any?>
+    ) {
+        val defaults = DefaultTracker.getAndClear(this::class.qualifiedName!!)
+        builder.selection(
+            Field.newField()
+                .name(name)
+                .arguments(arguments(args.toList(), defaults))
+                .build()
+        )
+    }
+
+    protected fun <T : GraphQLProjection> field(
+        name: String,
+        projection: T,
+        projectionFields: T.() -> T,
+        vararg args: Pair<String, Any?>
+    ) {
+        val defaults = DefaultTracker.getAndClear(this::class.qualifiedName!!)
+        projectionFields.invoke(projection)
+
+        builder.selection(
+            Field.newField()
+                .name(name)
+                .arguments(arguments(args.toList(), defaults))
+                .selectionSet(projection.builder.build())
+                .build()
+        )
+    }
+
+    protected fun <T : GraphQLProjection> fragment(
+        name: String,
+        projection: T,
+        projectionFields: T.() -> T
+    ) {
+        projectionFields.invoke(projection)
+        builder.selection(
+            InlineFragment.newInlineFragment()
+                .typeCondition(TypeName(name))
+                .selectionSet(projection.builder.build())
+                .build()
+        )
     }
 }
 
@@ -85,13 +161,19 @@ abstract class GraphQLInput : InputValue {
     companion object {
 
         @JvmStatic
-        protected fun <T> default(arg: String): T? {
-            DefaultTracker.add(arg)
+        protected fun <T> default0(arg: String): T? {
+            DefaultTracker.add(this::class.qualifiedName!!, arg)
+            return null
+        }
+
+        @JvmStatic
+        protected inline fun <reified TClass, reified TValue> default(arg: String): TValue? {
+            DefaultTracker.add(TClass::class.qualifiedName!!, arg)
             return null
         }
     }
 
-    private val defaults = DefaultTracker.getAndClear()
+    private val defaults = DefaultTracker.getAndClear(this::class.qualifiedName!!)
 
     abstract fun fields(): List<Pair<String, Any?>>
 

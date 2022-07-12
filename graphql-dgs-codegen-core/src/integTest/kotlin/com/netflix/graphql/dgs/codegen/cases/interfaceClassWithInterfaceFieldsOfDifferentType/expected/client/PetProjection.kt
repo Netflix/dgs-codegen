@@ -10,12 +10,12 @@ public class PetProjection : GraphQLProjection() {
     }
 
   public fun diet(_projection: DietProjection.() -> DietProjection): PetProjection {
-    project("diet", DietProjection(), _projection)
+    field("diet", DietProjection(), _projection)
     return this
   }
 
   public fun onDog(_projection: DogProjection.() -> DogProjection): PetProjection {
-    project("... on Dog", DogProjection(), _projection)
+    fragment("Dog", DogProjection(), _projection)
     return this
   }
 }

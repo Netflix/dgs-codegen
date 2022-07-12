@@ -22,17 +22,17 @@ public class BirdProjection : GraphQLProjection() {
     }
 
   public fun mother(_projection: BirdProjection.() -> BirdProjection): BirdProjection {
-    project("mother", BirdProjection(), _projection)
+    field("mother", BirdProjection(), _projection)
     return this
   }
 
   public fun father(_projection: BirdProjection.() -> BirdProjection): BirdProjection {
-    project("father", BirdProjection(), _projection)
+    field("father", BirdProjection(), _projection)
     return this
   }
 
   public fun parents(_projection: BirdProjection.() -> BirdProjection): BirdProjection {
-    project("parents", BirdProjection(), _projection)
+    field("parents", BirdProjection(), _projection)
     return this
   }
 }

@@ -23,7 +23,7 @@ public class EngineProjection : GraphQLProjection() {
 
   public fun performance(_projection: PerformanceProjection.() -> PerformanceProjection):
       EngineProjection {
-    project("performance", PerformanceProjection(), _projection)
+    field("performance", PerformanceProjection(), _projection)
     return this
   }
 }

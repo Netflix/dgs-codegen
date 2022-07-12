@@ -33,6 +33,14 @@ class QueryTest {
             }
         }
 
-        assertEquals("query { __typename people { __typename firstname lastname }}", query)
+        assertEquals("""query {
+            |  __typename
+            |  people {
+            |    __typename
+            |    firstname
+            |    lastname
+            |  }
+            |}
+            |""".trimMargin(), query)
     }
 }

@@ -41,6 +41,7 @@ import graphql.language.NodeTraverser
 import graphql.language.NodeVisitorStub
 import graphql.language.NonNullType
 import graphql.language.ObjectTypeDefinition
+import graphql.language.OperationDefinition
 import graphql.language.ScalarTypeDefinition
 import graphql.language.StringValue
 import graphql.language.Type
@@ -55,8 +56,23 @@ import com.squareup.kotlinpoet.TypeName as KtTypeName
  */
 class Kotlin2TypeLookup(
     config: CodeGenConfig,
-    private val document: Document
+    document: Document
 ) {
+
+    /**
+     * GQL defined operations
+     */
+    val operations: Map<String, OperationDefinition.Operation> = mapOf(
+        "Query" to OperationDefinition.Operation.QUERY,
+        "Mutation" to OperationDefinition.Operation.MUTATION,
+        "Subscription" to OperationDefinition.Operation.SUBSCRIPTION
+    )
+
+    /**
+     * A set of object type names defined in the document
+     */
+    val objectTypeNames: Set<String> =
+        document.getDefinitionsOfType(ObjectTypeDefinition::class.java).map { it.name }.toSet()
 
     /**
      * A map of GQL builtin scalars to kotlin types

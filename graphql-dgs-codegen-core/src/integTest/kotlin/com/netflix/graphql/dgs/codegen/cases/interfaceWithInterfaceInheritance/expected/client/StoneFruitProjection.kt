@@ -10,7 +10,7 @@ public class StoneFruitProjection : GraphQLProjection() {
     }
 
   public fun seeds(_projection: SeedProjection.() -> SeedProjection): StoneFruitProjection {
-    project("seeds", SeedProjection(), _projection)
+    field("seeds", SeedProjection(), _projection)
     return this
   }
 }

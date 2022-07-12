@@ -4,12 +4,12 @@ import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class QueryProjection : GraphQLProjection() {
   public fun u(_projection: UProjection.() -> UProjection): QueryProjection {
-    project("u", UProjection(), _projection)
+    field("u", UProjection(), _projection)
     return this
   }
 
   public fun us(_projection: UProjection.() -> UProjection): QueryProjection {
-    project("us", UProjection(), _projection)
+    field("us", UProjection(), _projection)
     return this
   }
 }

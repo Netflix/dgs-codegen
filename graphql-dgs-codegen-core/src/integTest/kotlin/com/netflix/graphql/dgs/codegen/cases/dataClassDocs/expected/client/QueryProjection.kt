@@ -6,8 +6,7 @@ import com.netflix.graphql.dgs.codegen.cases.dataClassDocs.expected.types.MovieF
 public class QueryProjection : GraphQLProjection() {
   public fun search(movieFilter: MovieFilter, _projection: MovieProjection.() -> MovieProjection):
       QueryProjection {
-    val args = formatArgs("movieFilter" to movieFilter)
-    project("search($args)", MovieProjection(), _projection)
+    field("search", MovieProjection(), _projection, "movieFilter" to movieFilter)
     return this
   }
 }

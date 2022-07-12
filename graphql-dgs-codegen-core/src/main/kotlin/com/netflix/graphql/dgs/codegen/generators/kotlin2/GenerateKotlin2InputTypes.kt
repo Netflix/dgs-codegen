@@ -25,6 +25,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -64,8 +65,10 @@ fun generateKotlin2InputTypes(
 
             fun type(field: InputValueDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
 
+            val typeName = ClassName(config.packageNameTypes, inputDefinition.name)
+
             // create the input class
-            val typeSpec = TypeSpec.classBuilder(inputDefinition.name)
+            val typeSpec = TypeSpec.classBuilder(typeName)
                 // add docs if available
                 .apply {
                     if (inputDefinition.description != null) {
@@ -85,7 +88,7 @@ fun generateKotlin2InputTypes(
                                 )
                                     .apply {
                                         if (type.isNullable) {
-                                            defaultValue("default(%S)", field.name)
+                                            defaultValue("default<%T, %T>(%S)", typeName, type, field.name)
                                         }
                                     }
                                     .build()
