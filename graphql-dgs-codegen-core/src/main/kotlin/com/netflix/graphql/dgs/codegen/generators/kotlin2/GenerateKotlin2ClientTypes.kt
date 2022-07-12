@@ -34,6 +34,7 @@ import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
 import graphql.language.Document
 import graphql.language.InputValueDefinition
 import graphql.language.InterfaceTypeDefinition
@@ -94,39 +95,33 @@ fun generateKotlin2ClientTypes(
                         // scalars with args are functions to take the args with no projection
                         isScalar && hasArgs -> {
                             FunSpec.builder(field.name)
-                                .addInputArgs(config, typeLookup, field.inputValueDefinitions)
+                                .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
                                 .returns(typeName)
-                                .addStatement("""field("${field.name}(${'$'}args)")""")
+                                .addStatement(
+                                    """field(%S%L)""",
+                                    field.name,
+                                    field.inputValueDefinitions.joinToString(" ") { """, "${it.name}" to ${it.name}""" }
+                                )
                                 .addStatement("return this")
                                 .build()
                         }
 
-                        // types without args just have a projection
-                        !isScalar && !hasArgs -> {
-                            val projectTypeName = projectionTypeName(typeLookup.findReturnType(config.packageNameClient, field.type))
-                            val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
-
-                            FunSpec.builder(field.name)
-                                .addParameter(projection)
-                                .returns(typeName)
-                                .addStatement("project(%S, %T(), _projection)", field.name, projectionType)
-                                .addStatement("return this")
-                                .build()
-                        }
-
-                        // function that has args and a projection
+                        // otherwise it's a projection with optional args
                         // !isScalar && hasArgs
                         else -> {
-                            val projectTypeName = projectionTypeName(typeLookup.findReturnType(config.packageNameClient, field.type))
+                            val projectTypeName =
+                                projectionTypeName(typeLookup.findReturnType(config.packageNameClient, field.type))
                             val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
 
                             FunSpec.builder(field.name)
-                                .addInputArgs(config, typeLookup, field.inputValueDefinitions)
+                                .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
                                 .addParameter(projection)
                                 .returns(typeName)
                                 .addStatement(
-                                    """project("${field.name}(${'$'}args)", %T(), _projection)""",
-                                    projectionType
+                                    """field(%S, %T(), _projection%L)""",
+                                    field.name,
+                                    projectionType,
+                                    field.inputValueDefinitions.joinToString(" ") { """, "${it.name}" to ${it.name}""" }
                                 )
                                 .addStatement("return this")
                                 .build()
@@ -185,21 +180,24 @@ fun generateKotlin2ClientTypes(
         }
 
     // create a top-level client class
-    val topLevelTypes = setOf("Query", "Mutation", "Subscription")
-        .intersect(document.getDefinitionsOfType(ObjectTypeDefinition::class.java).map { it.name })
+    val topLevelTypes = typeLookup.operations.filterKeys { typeLookup.objectTypeNames.contains(it) }
 
     val clientSpec = TypeSpec.objectBuilder("DgsClient")
         .addFunctions(
-            topLevelTypes.map { type ->
+            topLevelTypes.map { (type, op) ->
 
                 val (projectionType, projection) = projectionType(config.packageNameClient, type)
 
                 FunSpec.builder("build$type")
                     .addParameter(projection)
                     .returns(String::class)
-                    .addStatement("val projection = %T()", projectionType)
-                    .addStatement("_projection.invoke(projection)")
-                    .addStatement("""return "${type.lowercase()} ${'$'}{projection.asQuery()}"""")
+                    .addStatement(
+                        """return %T.asQuery(%T.%L, %T(), _projection)""",
+                        GraphQLProjection::class.asTypeName(),
+                        op::class.asTypeName(),
+                        op.name,
+                        projectionType
+                    )
                     .build()
             }
         )
@@ -240,6 +238,7 @@ private fun projectionType(packageName: String, type: String): Pair<ClassName, P
 private fun FunSpec.Builder.addInputArgs(
     config: CodeGenConfig,
     typeLookup: Kotlin2TypeLookup,
+    typeName: ClassName,
     inputValueDefinitions: List<InputValueDefinition>
 ): FunSpec.Builder {
     return this
@@ -249,15 +248,11 @@ private fun FunSpec.Builder.addInputArgs(
                 ParameterSpec.builder(it.name, returnType)
                     .apply {
                         if (returnType.isNullable) {
-                            defaultValue("default(%S)", it.name)
+                            defaultValue("default<%T, %T>(%S)", typeName, returnType, it.name)
                         }
                     }
                     .build()
             }
-        )
-        .addStatement(
-            "val args = formatArgs(%L)",
-            inputValueDefinitions.joinToString(", ") { """"${it.name}" to ${it.name}""" }
         )
 }
 
@@ -271,7 +266,7 @@ private fun onSubclassProjection(
     return FunSpec.builder("on$subclassName")
         .addParameter(projection)
         .returns(typeName)
-        .addStatement("""project("... on $subclassName", %T(), _projection)""", projectionType)
+        .addStatement("""fragment(%S, %T(), _projection)""", subclassName, projectionType)
         .addStatement("return this")
         .build()
 }

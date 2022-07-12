@@ -10,7 +10,7 @@ public class EntityEdgeProjection : GraphQLProjection() {
     }
 
   public fun node(_projection: EntityProjection.() -> EntityProjection): EntityEdgeProjection {
-    project("node", EntityProjection(), _projection)
+    field("node", EntityProjection(), _projection)
     return this
   }
 }

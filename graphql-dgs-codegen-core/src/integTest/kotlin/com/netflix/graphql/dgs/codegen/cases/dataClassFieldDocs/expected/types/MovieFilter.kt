@@ -7,7 +7,7 @@ import kotlin.String
 import kotlin.collections.List
 
 public class MovieFilter(
-  public val titleFilter: String? = default("titleFilter"),
+  public val titleFilter: String? = default<MovieFilter, String?>("titleFilter"),
 ) : GraphQLInput() {
   public override fun fields(): List<Pair<String, Any?>> = listOf("titleFilter" to titleFilter)
 }

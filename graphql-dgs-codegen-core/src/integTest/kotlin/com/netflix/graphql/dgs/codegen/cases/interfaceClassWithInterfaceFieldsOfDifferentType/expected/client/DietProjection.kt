@@ -11,7 +11,7 @@ public class DietProjection : GraphQLProjection() {
 
   public fun onVegetarian(_projection: VegetarianProjection.() -> VegetarianProjection):
       DietProjection {
-    project("... on Vegetarian", VegetarianProjection(), _projection)
+    fragment("Vegetarian", VegetarianProjection(), _projection)
     return this
   }
 }

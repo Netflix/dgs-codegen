@@ -16,7 +16,7 @@ public class CarProjection : GraphQLProjection() {
     }
 
   public fun engine(_projection: EngineProjection.() -> EngineProjection): CarProjection {
-    project("engine", EngineProjection(), _projection)
+    field("engine", EngineProjection(), _projection)
     return this
   }
 }

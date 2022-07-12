@@ -6,8 +6,7 @@ import kotlin.String
 public class QueryProjection : GraphQLProjection() {
   public fun search(text: String,
       _projection: SearchResultPageProjection.() -> SearchResultPageProjection): QueryProjection {
-    val args = formatArgs("text" to text)
-    project("search($args)", SearchResultPageProjection(), _projection)
+    field("search", SearchResultPageProjection(), _projection, "text" to text)
     return this
   }
 }

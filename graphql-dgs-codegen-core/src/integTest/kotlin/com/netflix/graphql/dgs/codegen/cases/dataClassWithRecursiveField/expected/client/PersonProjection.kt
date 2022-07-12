@@ -16,7 +16,7 @@ public class PersonProjection : GraphQLProjection() {
     }
 
   public fun friends(_projection: PersonProjection.() -> PersonProjection): PersonProjection {
-    project("friends", PersonProjection(), _projection)
+    field("friends", PersonProjection(), _projection)
     return this
   }
 }

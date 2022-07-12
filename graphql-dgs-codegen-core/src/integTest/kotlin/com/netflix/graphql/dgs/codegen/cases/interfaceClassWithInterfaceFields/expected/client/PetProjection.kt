@@ -22,27 +22,27 @@ public class PetProjection : GraphQLProjection() {
     }
 
   public fun mother(_projection: PetProjection.() -> PetProjection): PetProjection {
-    project("mother", PetProjection(), _projection)
+    field("mother", PetProjection(), _projection)
     return this
   }
 
   public fun father(_projection: PetProjection.() -> PetProjection): PetProjection {
-    project("father", PetProjection(), _projection)
+    field("father", PetProjection(), _projection)
     return this
   }
 
   public fun parents(_projection: PetProjection.() -> PetProjection): PetProjection {
-    project("parents", PetProjection(), _projection)
+    field("parents", PetProjection(), _projection)
     return this
   }
 
   public fun onDog(_projection: DogProjection.() -> DogProjection): PetProjection {
-    project("... on Dog", DogProjection(), _projection)
+    fragment("Dog", DogProjection(), _projection)
     return this
   }
 
   public fun onBird(_projection: BirdProjection.() -> BirdProjection): PetProjection {
-    project("... on Bird", BirdProjection(), _projection)
+    fragment("Bird", BirdProjection(), _projection)
     return this
   }
 }

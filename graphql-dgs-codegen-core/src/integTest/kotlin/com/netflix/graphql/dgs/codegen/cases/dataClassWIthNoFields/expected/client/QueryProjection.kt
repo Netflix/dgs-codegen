@@ -4,7 +4,7 @@ import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class QueryProjection : GraphQLProjection() {
   public fun me(_projection: PersonProjection.() -> PersonProjection): QueryProjection {
-    project("me", PersonProjection(), _projection)
+    field("me", PersonProjection(), _projection)
     return this
   }
 }
