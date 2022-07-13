@@ -129,6 +129,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var snakeCaseConstantNames = false
 
+    @Input
+    var generateGeneratedAnnotation = false
+
     @TaskAction
     fun generate() {
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
@@ -168,7 +171,8 @@ open class GenerateJavaTask : DefaultTask() {
             maxProjectionDepth = maxProjectionDepth,
             kotlinAllFieldsOptional = kotlinAllFieldsOptional,
             snakeCaseConstantNames = snakeCaseConstantNames,
-            implementSerializable = implementSerializable
+            implementSerializable = implementSerializable,
+            generateGeneratedAnnotation = generateGeneratedAnnotation
         )
 
         logger.info("Codegen config: {}", config)

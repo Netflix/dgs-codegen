@@ -438,6 +438,7 @@ data class CodeGenConfig(
             ${if (skipEntityQueries) "--skip-entities" else ""}
             ${typeMapping.map { "--type-mapping ${it.key}=${it.value}" }.joinToString("\n")}           
             ${if (shortProjectionNames) "--short-projection-names" else ""}
+            ${if (generateGeneratedAnnotation) "--generate-generated-annotation" else ""}
             ${schemas.joinToString(" ")}
         """.trimIndent()
     }
