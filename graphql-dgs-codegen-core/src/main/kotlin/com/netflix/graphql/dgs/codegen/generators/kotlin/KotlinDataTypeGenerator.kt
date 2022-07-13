@@ -144,6 +144,7 @@ abstract class AbstractKotlinDataTypeGenerator(
         description: Description? = null
     ): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
+            .addOptionalGeneratedAnnotation(config)
 
         if (config.implementSerializable) {
             kotlinType.addSuperinterface(ClassName.bestGuess(Serializable::class.java.name))

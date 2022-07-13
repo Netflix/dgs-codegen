@@ -42,6 +42,7 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
             TypeSpec
                 .enumBuilder(definition.name)
                 .addModifiers(Modifier.PUBLIC)
+                .addOptionalGeneratedAnnotation(config)
 
         if (definition.description != null) {
             javaType.addJavadoc(definition.description.sanitizeJavaDoc())

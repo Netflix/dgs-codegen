@@ -79,6 +79,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun createQueryClass(it: FieldDefinition, operation: String, methodNames: MutableSet<String>): JavaFile {
         val methodName = generateMethodName(it.name.capitalized(), operation.lowercase(), methodNames)
         val javaType = TypeSpec.classBuilder(methodName)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(GraphQLQuery::class.java))
 
         if (it.description != null) {
@@ -101,6 +102,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val setOfStringType = ParameterizedTypeName.get(setType, ClassName.get(String::class.java))
 
         val builderClass = TypeSpec.classBuilder("Builder").addModifiers(Modifier.STATIC, Modifier.PUBLIC)
+            .addOptionalGeneratedAnnotation(config)
             .addMethod(
                 MethodSpec.methodBuilder("build")
                     .addModifiers(Modifier.PUBLIC)
@@ -213,6 +215,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun createRootProjection(type: TypeDefinition<*>, prefix: String): CodeGenResult {
         val clazzName = "${prefix}ProjectionRoot"
         val javaType = TypeSpec.classBuilder(clazzName)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
@@ -318,6 +321,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
         val clazzName = "EntitiesProjectionRoot"
         val javaType = TypeSpec.classBuilder(clazzName)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
@@ -446,6 +450,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val clazzName = "${prefix}Projection"
         if (generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
         val javaType = TypeSpec.classBuilder(clazzName)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
             .superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), parent.name), ClassName.get(getPackageName(), root.name)))
             .addMethod(

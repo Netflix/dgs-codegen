@@ -35,6 +35,7 @@ import graphql.language.*
 class KotlinConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(): CodeGenResult {
         val baseConstantsType = TypeSpec.objectBuilder("DgsConstants")
+            .addOptionalGeneratedAnnotation(config)
 
         document.definitions.filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
@@ -121,6 +122,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
             }
 
         return TypeSpec.objectBuilder(className)
+            .addOptionalGeneratedAnnotation(config)
     }
 
     private fun addFieldName(constantsType: TypeSpec.Builder, name: String) {

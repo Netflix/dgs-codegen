@@ -49,6 +49,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
 
         logger.info("Generating type ${definition.name}")
         val javaType = TypeSpec.interfaceBuilder(definition.name)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
         if (definition.description != null) {

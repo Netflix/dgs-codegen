@@ -2904,4 +2904,53 @@ It takes a title and such.
             arguments("java.util.Map<String,String,>")
         )
     }
+
+    @Test
+    fun generateSourceWithGeneratedAnnotation(){
+        val schema = """
+            type Query {
+                employees(filter:EmployeeFilterInput) : [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            type Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            input EmployeeFilterInput {
+                rank: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.JAVA,
+                generateGeneratedAnnotation = true,
+                generateClientApi = true,
+            )
+        ).generate()
+
+        with(codeGenResult) {
+            javaDataTypes.assertJavaGeneratedAnnotation()
+            javaInterfaces.assertJavaGeneratedAnnotation()
+            javaConstants.assertJavaGeneratedAnnotation()
+            javaEnumTypes.assertJavaGeneratedAnnotation()
+            javaQueryTypes.assertJavaGeneratedAnnotation()
+            clientProjections.assertJavaGeneratedAnnotation()
+        }
+        assertCompilesJava(codeGenResult)
+    }
 }

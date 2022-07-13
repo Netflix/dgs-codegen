@@ -20,9 +20,14 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.netflix.graphql.dgs.codegen.CodeGen
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.TypeName
+import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.WildcardTypeName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.Description
@@ -120,6 +125,24 @@ fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
         else -> typeClassBestGuess(normalizedClassName)
     }
 }
+
+@Suppress("DuplicatedCode") // not duplicated - this is JavaPoet, the other is KotlinPoet
+private fun generatedAnnotation(): AnnotationSpec? {
+    val generatedAnnotation = generatedAnnotationClassName
+        ?.let { ClassName.bestGuess(it) }
+        ?: return null
+    return AnnotationSpec.builder(generatedAnnotation)
+        .addMember("value", "${'$'}S", CodeGen::class.qualifiedName!!)
+        .addMember("date", "${'$'}S", generatedDate)
+        .build()
+}
+
+fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
+    apply {
+        if (config.generateGeneratedAnnotation) {
+            generatedAnnotation()?.also { it -> addAnnotation(it) }
+        }
+    }
 
 private fun typeClassBestGuess(name: String): TypeName {
     return when (name) {

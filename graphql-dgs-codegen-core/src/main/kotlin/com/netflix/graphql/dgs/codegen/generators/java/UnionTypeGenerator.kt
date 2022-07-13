@@ -36,6 +36,7 @@ class UnionTypeGenerator(private val config: CodeGenConfig) {
         }
 
         val javaType = TypeSpec.interfaceBuilder(definition.name)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
         val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()

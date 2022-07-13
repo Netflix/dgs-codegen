@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin2.logger
 import graphql.language.Document
 import graphql.language.ScalarTypeDefinition
 import graphql.language.StringValue
+import java.time.Instant
 
 internal sealed class GenericSymbol(open val index: Int) {
     class OpenBracket(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf("<", startFrom))
@@ -155,3 +156,12 @@ internal fun findSchemaTypeMapping(document: Document, typeName: String): String
     }
     return null
 }
+
+internal val generatedAnnotationClassName: String? = runCatching {
+    Class.forName("javax.annotation.processing.Generated").canonicalName
+}.getOrElse {
+    runCatching {
+        Class.forName("javax.annotation.Generated").canonicalName
+    }.getOrNull()
+}
+internal val generatedDate: String = Instant.now().toString()

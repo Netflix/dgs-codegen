@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addEnumConstants
+import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
@@ -54,6 +55,7 @@ fun generateKotlin2EnumTypes(
 
             // create the enum class
             val enumSpec = TypeSpec.classBuilder(enumDefinition.name)
+                .addOptionalGeneratedAnnotation(config)
                 .addModifiers(KModifier.ENUM)
                 // add docs if available
                 .apply {
@@ -65,6 +67,7 @@ fun generateKotlin2EnumTypes(
                 .addEnumConstants(
                     fields.map { field ->
                         TypeSpec.enumBuilder(field.name)
+                            .addOptionalGeneratedAnnotation(config)
                             .apply {
                                 if (field.description != null) {
                                     addKdoc("%L", field.description.sanitizeKdoc())
