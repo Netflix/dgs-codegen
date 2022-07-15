@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.client.codegen
 
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 
 class GraphQLMultiQueryRequestTest {
 
@@ -47,11 +48,11 @@ class GraphQLMultiQueryRequestTest {
         GraphQLQueryRequestTest.assertValidQuery(result)
         Assertions.assertThat(result).isEqualTo(
             """query {
-                | alias1: test(movie: {movieId : 1234, name : "testMovie"}) {
+                |  alias1: test(movie: {movieId : 1234, name : "testMovie"}) {
                 |    name
                 |    movieId
                 |  }
-                | alias2: test(actors: "actorA", movies: ["movie1", "movie2"]) {
+                |  alias2: test(actors: "actorA", movies: ["movie1", "movie2"]) {
                 |    name
                 |  }
                 |}
@@ -95,5 +96,28 @@ class GraphQLMultiQueryRequestTest {
               |}
             """.trimMargin()
         )
+    }
+
+    @Test
+    fun testSerializeInputClassWithProjectionAndMultipleMutations_MismatchOperationType() {
+        val query = TestGraphQLMutation().apply {
+            input["movie"] = Movie(1234, "testMovie")
+        }
+
+        val query2 = TestGraphQLQuery().apply {
+            input["actors"] = "actorA"
+            input["movies"] = listOf("movie1", "movie2")
+        }
+
+        val multiRequest = GraphQLMultiQueryRequest(
+            listOf(
+                GraphQLQueryRequest(query),
+                GraphQLQueryRequest(query2)
+            )
+        )
+
+        assertThrows<AssertionError> {
+            multiRequest.serialize()
+        }
     }
 }

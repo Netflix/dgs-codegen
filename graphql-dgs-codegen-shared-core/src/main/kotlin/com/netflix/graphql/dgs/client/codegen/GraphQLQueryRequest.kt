@@ -21,14 +21,14 @@ import graphql.schema.Coercing
 
 class GraphQLQueryRequest(
     val query: GraphQLQuery,
-    private val projection: BaseProjectionNode?,
+    val projection: BaseProjectionNode?,
     scalars: Map<Class<*>, Coercing<*, *>>?
 ) {
 
     constructor(query: GraphQLQuery) : this(query, null, null)
     constructor(query: GraphQLQuery, projection: BaseProjectionNode?) : this(query, projection, null)
-    private val inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())
-    private val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+    val inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())
+    val projectionSerializer = ProjectionSerializer(inputValueSerializer)
 
     fun serialize(): String {
         val operationDef = OperationDefinition.newOperationDefinition()

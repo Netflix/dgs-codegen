@@ -18,7 +18,7 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
-import graphql.language.OperationDefinition
+import graphql.language.*
 
 class GraphQLMultiQueryRequest(
     private val requests: List<GraphQLQueryRequest>
@@ -31,32 +31,56 @@ class GraphQLMultiQueryRequest(
             return requests[0].serialize()
         }
 
-        return mergeMultipleQueries()
+        return multiQuery()
     }
 
-    private fun mergeMultipleQueries(): String {
+    private fun multiQuery(): String {
+        val operationDef = OperationDefinition.newOperationDefinition()
+        requests[0].query.name?.let { operationDef.name(it) }
+        requests[0].query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
 
-        val sb = StringBuilder()
         val queryType = requests[0].query.getOperationType().toString()
-        sb.append("$queryType {\n")
+        val variableDefinitions = mutableListOf<VariableDefinition>()
+        val selectionList: MutableList<Field.Builder> = mutableListOf();
 
-        for (request in requests) {
-            if (request.query.getOperationType() != queryType || queryType == OperationDefinition.Operation.SUBSCRIPTION.name)
-                throw AssertionError("Can only have exclusively queries or mutations in multi operation request")
+        for (request in this.requests) {
+            val query = request.query
+            if (!query.getOperationType().equals(queryType) || queryType == OperationDefinition.Operation.SUBSCRIPTION.name)
+                throw AssertionError("Request has to have exclusively queries or mutations in a multi operation request")
 
-            sb.append(" ")
-            if (request.query.queryAlias.isNotEmpty())
-                sb.append(request.query.queryAlias).append(":")
-            sb.append(
-                stripOperationTypeAndBrackets(
-                    request.serialize(),
-                    queryType
+            if (request.query.variableDefinitions.isNotEmpty()) {
+                variableDefinitions.addAll(request.query.variableDefinitions)
+            }
+
+            val selection = Field.newField(request.query.getOperationName())
+            if (query.input.isNotEmpty()) {
+                selection.arguments(
+                    query.input.map { (name, value) ->
+                        Argument(name, request.inputValueSerializer.toValue(value))
+                    }
                 )
-            )
-        }
-        sb.append("}")
+            }
 
-        return sb.toString()
+            if ( request.projection != null) {
+                val selectionSet = if (request.projection is BaseSubProjectionNode<*, *>) {
+                    request.projectionSerializer.toSelectionSet(request.projection.root() as BaseProjectionNode)
+                } else {
+                    request.projectionSerializer.toSelectionSet(request.projection)
+                }
+                if (selectionSet.selections.isNotEmpty()) {
+                    selection.selectionSet(selectionSet)
+                }
+            }
+            if (query.queryAlias.isNotEmpty())
+                selection.alias(query.queryAlias)
+
+            selectionList.add(selection)
+        }
+
+        operationDef.selectionSet(SelectionSet.newSelectionSet(selectionList.map(Field.Builder::build).toList()).build())
+
+        return AstPrinter.printAst(operationDef.build())
+
     }
 
     private fun stripOperationTypeAndBrackets(query: String, queryType: String): String {
