@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Netflix, Inc.
+ * Copyright 2022 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,15 +16,11 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
-import graphql.language.Argument
-import graphql.language.AstPrinter
-import graphql.language.Field
-import graphql.language.OperationDefinition
-import graphql.language.SelectionSet
+import graphql.language.*
 import graphql.schema.Coercing
 
 class GraphQLQueryRequest(
-    private val query: GraphQLQuery,
+    val query: GraphQLQuery,
     private val projection: BaseProjectionNode?,
     scalars: Map<Class<*>, Coercing<*, *>>?
 ) {

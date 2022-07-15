@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Netflix, Inc.
+ * Copyright 2022 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package com.netflix.graphql.dgs.client.codegen
 
 import graphql.language.VariableDefinition
 
-abstract class GraphQLQuery(val operation: String, val name: String?) {
+abstract class GraphQLQuery(val operation: String, val name: String?, ) {
     val input: MutableMap<String, Any> = mutableMapOf()
     val variableDefinitions = mutableListOf<VariableDefinition>()
+    var queryAlias: String = ""
 
     constructor(operation: String) : this(operation, null)
     constructor() : this("query")
