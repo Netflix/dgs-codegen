@@ -90,9 +90,9 @@ class GraphQLMultiQueryRequestTest {
         GraphQLQueryRequestTest.assertValidQuery(result)
         Assertions.assertThat(result).isEqualTo(
             """mutation {
-              | alias1: testMutation(movie: {movieId : 1234, name : "testMovie"})
-              | alias2: testMutation(actors: "actorA", movies: ["movie1", "movie2"])
-              | alias3: testMutation(actors: "actorA", movies: ["movie1", "movie2"])
+              |  alias1: testMutation(movie: {movieId : 1234, name : "testMovie"})
+              |  alias2: testMutation(actors: "actorA", movies: ["movie1", "movie2"])
+              |  alias3: testMutation(actors: "actorA", movies: ["movie1", "movie2"])
               |}
             """.trimMargin()
         )
