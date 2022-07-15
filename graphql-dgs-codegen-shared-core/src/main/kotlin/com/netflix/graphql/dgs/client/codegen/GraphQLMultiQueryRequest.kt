@@ -25,7 +25,7 @@ class GraphQLMultiQueryRequest(
 ) {
 
     fun serialize(): String {
-        if (requests.isEmpty()) throw AssertionError("Must have at least one query")
+        if (requests.isEmpty()) throw AssertionError("Request must have at least one query")
 
         if (requests.size == 1) {
             return requests[0].serialize()
