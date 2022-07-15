@@ -28,7 +28,6 @@ class GraphQLMultiQueryRequestTest {
         val query = TestGraphQLQuery().apply {
             input["movie"] = Movie(1234, "testMovie")
         }
-
         val query2 = TestGraphQLQuery().apply {
             input["actors"] = "actorA"
             input["movies"] = listOf("movie1", "movie2")
@@ -36,8 +35,6 @@ class GraphQLMultiQueryRequestTest {
 
         query.queryAlias = "alias1"
         query2.queryAlias = "alias2"
-//        val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
-//        val request2 = GraphQLQueryRequest(query2, MovieProjection().name().movieId())
 
         val multiRequest = GraphQLMultiQueryRequest(
             listOf(
@@ -62,34 +59,41 @@ class GraphQLMultiQueryRequestTest {
         )
     }
 
-//    @Test
-//    fun testSerializeInputClassWithProjectionAndMultipleMutations() {
-//        val query = TestGraphQLMutation().apply {
-//            input["movie"] = Movie(1234, "testMovie")
-//        }
-//
-//        val query2 = TestGraphQLMutation().apply {
-//            input["actors"] = "actorA"
-//            input["movies"] = listOf("movie1", "movie2")
-//        }
-//
-//        query.queryAlias = "alias1"
-//        query2.queryAlias = "alias2"
-//        val request = GraphQLQueryRequest(listOf(query,query2))
-//        val result = request.serialize()
-//        GraphQLQueryRequestTest.assertValidQuery(result)
-//        Assertions.assertThat(result).isEqualTo(
-//            """mutation {
-//                | alias1: test(movie: {movieId : 1234, name : "testMovie"}) {
-//                |    name
-//                |    movieId
-//                |  }
-//                | alias2: test(actors: "actorA", movies: ["movie1", "movie2"]) {
-//                |    name
-//                |    movieId
-//                |  }
-//                |}
-//            """.trimMargin()
-//        )
-//    }
+    @Test
+    fun testSerializeInputClassWithProjectionAndMultipleMutations() {
+        val query = TestGraphQLMutation().apply {
+            input["movie"] = Movie(1234, "testMovie")
+        }
+        val query2 = TestGraphQLMutation().apply {
+            input["actors"] = "actorA"
+            input["movies"] = listOf("movie1", "movie2")
+        }
+        val query3 = TestGraphQLMutation().apply {
+            input["actors"] = "actorA"
+            input["movies"] = listOf("movie1", "movie2")
+        }
+
+        query.queryAlias = "alias1"
+        query2.queryAlias = "alias2"
+        query3.queryAlias = "alias3"
+
+        val multiRequest = GraphQLMultiQueryRequest(
+            listOf(
+                GraphQLQueryRequest(query),
+                GraphQLQueryRequest(query2),
+                GraphQLQueryRequest(query3)
+            )
+        )
+
+        val result = multiRequest.serialize()
+        GraphQLQueryRequestTest.assertValidQuery(result)
+        Assertions.assertThat(result).isEqualTo(
+            """mutation {
+              | alias1: testMutation(movie: {movieId : 1234, name : "testMovie"})
+              | alias2: testMutation(actors: "actorA", movies: ["movie1", "movie2"])
+              | alias3: testMutation(actors: "actorA", movies: ["movie1", "movie2"])
+              |}
+            """.trimMargin()
+        )
+    }
 }
