@@ -16,7 +16,11 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
-import graphql.language.*
+import graphql.language.Argument
+import graphql.language.AstPrinter
+import graphql.language.Field
+import graphql.language.OperationDefinition
+import graphql.language.SelectionSet
 import graphql.schema.Coercing
 
 class GraphQLQueryRequest(
