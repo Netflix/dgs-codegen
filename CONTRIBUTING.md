@@ -93,7 +93,7 @@ don't miss any language features of newer Java releases while supporting a broad
 Code conventions
 -----
 We use the standard Kotlin coding conventions. Intellij should select the correct style automatically because we checked
-in the `.idea/codeStyle` folder. Furthermore, we're also using [Klint](https://ktlint.github.io/). You can run
+in the `.idea/codeStyle` folder. Furthermore, we're also using [Ktlint](https://ktlint.github.io/). You can run
 formatting manually using Gradle:
 
 ```sh
