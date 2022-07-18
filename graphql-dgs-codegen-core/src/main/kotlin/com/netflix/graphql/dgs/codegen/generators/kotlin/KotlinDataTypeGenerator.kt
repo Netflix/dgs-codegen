@@ -65,7 +65,11 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
             extensions.flatMap { it.fieldDefinitions }
                 .filterSkipped()
                 .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
-        val interfaces = definition.implements
+        val interfaces = when (config.generateInterfaces) {
+            true -> definition.implements + TypeName.newTypeName("I" + definition.name).build()
+            else -> definition.implements
+        }
+
         return generate(definition.name, fields, interfaces, document, definition.description)
     }
 }
@@ -203,7 +207,7 @@ abstract class AbstractKotlinDataTypeGenerator(
                 .map { it.name }
                 .toSet()
 
-            if (field.name in interfaceFields) {
+            if (field.name in interfaceFields || config.generateInterfaces) {
                 // Properties are the syntactical element that will allow us to override things, they are the spec on
                 // which we should add the override modifier.
                 propertySpecBuilder.addModifiers(KModifier.OVERRIDE)

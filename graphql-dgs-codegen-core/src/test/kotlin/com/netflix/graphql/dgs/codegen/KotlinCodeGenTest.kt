@@ -18,8 +18,16 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LIST
+import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.data.Index
 import org.junit.jupiter.api.Nested
@@ -27,10 +35,15 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.*
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
 import java.util.stream.Stream.of
+import kotlin.math.max
 
 class KotlinCodeGenTest {
 
@@ -2701,5 +2714,124 @@ It takes a title and such.
         assertThat(codeGenResult.javaQueryTypes[8].typeSpec.name).isEqualTo("BarGraphQLQuery")
 
         assertCompilesJava(codeGenResult.javaQueryTypes)
+    }
+
+    private fun compare(s1: String, s2: String) {
+        var diff = -1
+        for (i in 0..s1.length) {
+            if (s1[i] != s2[i]) {
+                diff = i
+                break
+            }
+        }
+        if (diff >= 0) {
+            println("Found diff at $diff:")
+            println("${s1.substring(max(0, diff - 5), max(s1.length - 1, diff))}")
+            println("${s2.substring(max(0, diff - 5), max(s2.length - 1, diff))}")
+            for(i in 0 until diff) print(" ")
+            println("^")
+        }
+    }
+
+    @Test
+    fun generateKotlinDataType() {
+        val schema = """
+            type Query {
+                employees: [Employee]
+            }
+            
+            type Employee {
+                firstname: String!
+                lastname: String
+                company: String
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val employee = dataTypes.single()
+        // Check data class
+        assertThat(employee.name).isEqualTo("Employee")
+         assertThat(employee.toString()).isEqualTo(
+            """
+                package com.netflix.graphql.dgs.codegen.tests.generated.types
+                
+                import com.fasterxml.jackson.`annotation`.JsonProperty
+                import kotlin.String
+                
+                public data class Employee(
+                  @JsonProperty("firstname")
+                  public val firstname: String,
+                  @JsonProperty("lastname")
+                  public val lastname: String? = null,
+                  @JsonProperty("company")
+                  public val company: String? = null,
+                ) {
+                  public companion object
+                }
+                
+                """.trimIndent()
+        )
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun generateKotlinDataTypeWithAdditionalInterface() {
+        val schema = """
+            type Query {
+                employees: [Employee]
+            }
+            
+            type Employee {
+                firstname: String!
+                lastname: String
+                company: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateInterfaces = true,
+            )
+        ).generate()
+
+        val kotlinDataTypes = result.kotlinDataTypes
+        val kotlinInterfaces = result.kotlinInterfaces
+        assertThat(kotlinDataTypes.size).isEqualTo(1)
+        assertThat(kotlinInterfaces.size).isEqualTo(1)
+        val iemployee = kotlinInterfaces.single()
+        // Check data class
+        assertThat(iemployee.name).isEqualTo("IEmployee")
+        assertThat(iemployee.toString()).isEqualTo(
+            """
+              package com.netflix.graphql.dgs.codegen.tests.generated.types
+  
+              import kotlin.String
+              
+              public interface IEmployee {
+                public val firstname: String
+              
+                public val lastname: String?
+              
+                public val company: String?
+              
+                public companion object
+              }
+              
+              """.trimIndent()
+        )
+
+        assertCompilesKotlin(kotlinInterfaces + kotlinDataTypes)
     }
 }
