@@ -41,12 +41,13 @@ class GraphQLMultiQueryRequest(
 
         val queryType = requests[0].query.getOperationType().toString()
         val variableDefinitions = mutableListOf<VariableDefinition>()
-        val selectionList: MutableList<Field.Builder> = mutableListOf();
+        val selectionList: MutableList<Field.Builder> = mutableListOf()
 
         for (request in this.requests) {
             val query = request.query
-            if (!query.getOperationType().equals(queryType) || queryType == OperationDefinition.Operation.SUBSCRIPTION.name)
+            if (!query.getOperationType().equals(queryType) || queryType == OperationDefinition.Operation.SUBSCRIPTION.name) {
                 throw AssertionError("Request has to have exclusively queries or mutations in a multi operation request")
+            }
 
             if (request.query.variableDefinitions.isNotEmpty()) {
                 variableDefinitions.addAll(request.query.variableDefinitions)
@@ -61,7 +62,7 @@ class GraphQLMultiQueryRequest(
                 )
             }
 
-            if ( request.projection != null) {
+            if (request.projection != null) {
                 val selectionSet = if (request.projection is BaseSubProjectionNode<*, *>) {
                     request.projectionSerializer.toSelectionSet(request.projection.root() as BaseProjectionNode)
                 } else {
@@ -71,8 +72,9 @@ class GraphQLMultiQueryRequest(
                     selection.selectionSet(selectionSet)
                 }
             }
-            if (query.queryAlias.isNotEmpty())
+            if (query.queryAlias.isNotEmpty()) {
                 selection.alias(query.queryAlias)
+            }
 
             selectionList.add(selection)
         }
@@ -80,11 +82,10 @@ class GraphQLMultiQueryRequest(
         operationDef.selectionSet(SelectionSet.newSelectionSet(selectionList.map(Field.Builder::build).toList()).build())
 
         return AstPrinter.printAst(operationDef.build())
-
     }
 
     private fun stripOperationTypeAndBrackets(query: String, queryType: String): String {
         return query.removePrefix("$queryType {\n ")
-            .removeSuffix("}");
+            .removeSuffix("}")
     }
 }
