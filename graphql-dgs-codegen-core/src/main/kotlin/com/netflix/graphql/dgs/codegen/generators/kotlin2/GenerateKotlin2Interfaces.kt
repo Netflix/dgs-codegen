@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonSubTypesAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonTypeInfoAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
@@ -80,6 +81,7 @@ fun generateKotlin2Interfaces(
 
             // create the interface
             val interfaceSpec = TypeSpec.interfaceBuilder(interfaceDefinition.name)
+                .addOptionalGeneratedAnnotation(config)
                 .addModifiers(KModifier.SEALED)
                 // add docs if available
                 .apply {
@@ -142,6 +144,7 @@ fun generateKotlin2Interfaces(
 
             // create the interface
             val interfaceSpec = TypeSpec.interfaceBuilder(unionDefinition.name)
+                .addOptionalGeneratedAnnotation(config)
                 .addModifiers(KModifier.SEALED)
                 // add docs if available
                 .apply {

@@ -64,6 +64,7 @@ class DatafetcherGenerator(private val config: CodeGenConfig, private val docume
             .addStatement("return $returnValue")
 
         val javaType = TypeSpec.classBuilder(clazzName)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(DgsComponent::class.java)
             .addMethod(methodSpec.build())

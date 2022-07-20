@@ -47,6 +47,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
         logger.info("Generating type {}", definition.name)
 
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
+            .addOptionalGeneratedAnnotation(config)
         if (definition.description != null) {
             interfaceBuilder.addKdoc("%L", definition.description.sanitizeKdoc())
         }

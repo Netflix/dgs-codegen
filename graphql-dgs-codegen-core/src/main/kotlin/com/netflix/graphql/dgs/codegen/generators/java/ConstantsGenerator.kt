@@ -36,6 +36,7 @@ import javax.lang.model.element.Modifier
 class ConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(): CodeGenResult {
         val javaType = TypeSpec.classBuilder("DgsConstants")
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
         document.definitions.filterIsInstance<ObjectTypeDefinition>()

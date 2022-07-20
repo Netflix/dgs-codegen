@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen
 import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.squareup.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
 import org.assertj.core.api.Assertions.assertThat
@@ -110,6 +111,30 @@ fun Compilation.toClassLoader(): ClassLoader {
 fun <T> invokeMethod(method: Method, target: Any, vararg args: Any): T {
     val result = ReflectionUtils.invokeMethod(method, target, *args)
     return result as T
+}
+
+fun List<FileSpec>.assertKotlinGeneratedAnnotation() = apply {
+    assertThat(this).isNotEmpty
+    forEach {
+        assertThat(it.toString())
+            .contains(
+                "@Generated(",
+                "value = [\"${CodeGen::class.qualifiedName}\"]",
+                "date = \"$generatedDate\""
+            )
+    }
+}
+
+fun List<JavaFile>.assertJavaGeneratedAnnotation() = apply {
+    assertThat(this).isNotEmpty
+    forEach {
+        assertThat(it.toString())
+            .contains(
+                "@Generated(",
+                "value = \"${CodeGen::class.qualifiedName}\"",
+                "date = \"$generatedDate\""
+            )
+    }
 }
 
 const val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"

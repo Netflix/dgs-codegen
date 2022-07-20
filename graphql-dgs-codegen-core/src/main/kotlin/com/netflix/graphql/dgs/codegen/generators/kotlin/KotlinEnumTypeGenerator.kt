@@ -39,7 +39,9 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
 
         logger.info("Generating enum type ${definition.name}")
 
-        val kotlinType = TypeSpec.classBuilder(definition.name).addModifiers(KModifier.ENUM)
+        val kotlinType = TypeSpec.classBuilder(definition.name)
+            .addOptionalGeneratedAnnotation(config)
+            .addModifiers(KModifier.ENUM)
 
         if (definition.description != null) {
             kotlinType.addKdoc("%L", definition.description.sanitizeKdoc())

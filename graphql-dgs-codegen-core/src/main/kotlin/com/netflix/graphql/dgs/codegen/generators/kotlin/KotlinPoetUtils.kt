@@ -24,6 +24,10 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.CodeGen
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.squareup.kotlinpoet.*
 import graphql.introspection.Introspection
 import graphql.language.Description
@@ -125,6 +129,18 @@ fun jsonBuilderAnnotation(): AnnotationSpec {
         .build()
 }
 
+@Suppress("DuplicatedCode") // not duplicated - this is KotlinPoet, the other is JavaPoet
+private fun generatedAnnotation(): AnnotationSpec? {
+    val generatedAnnotation = generatedAnnotationClassName
+        ?.let { ClassName.bestGuess(it) }
+        ?: return null
+
+    return AnnotationSpec.builder(generatedAnnotation)
+        .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
+        .addMember("date = %S", generatedDate)
+        .build()
+}
+
 /**
  * Generate a [JsonProperty] annotation for the supplied
  * field name.
@@ -218,3 +234,10 @@ fun FunSpec.Builder.addControlFlow(
 fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.Builder = apply {
     enumSpecs.map { addEnumConstant(it.name!!, it) }
 }
+
+fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
+    apply {
+        if (config.addGeneratedAnnotation) {
+            generatedAnnotation()?.also { addAnnotation(it) }
+        }
+    }

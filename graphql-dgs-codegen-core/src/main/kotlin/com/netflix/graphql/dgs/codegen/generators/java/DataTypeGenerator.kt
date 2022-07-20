@@ -174,6 +174,7 @@ abstract class BaseDataTypeGenerator(
         description: Description? = null
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
         if (config.implementSerializable) {
@@ -215,6 +216,7 @@ abstract class BaseDataTypeGenerator(
 
     internal fun generateInterface(name: String, superInterfaces: List<Type<*>>, fields: List<Field>): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(name)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
         superInterfaces.forEach {

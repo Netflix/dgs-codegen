@@ -38,6 +38,7 @@ class KotlinUnionTypeGenerator(private val config: CodeGenConfig) {
         }
 
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
+            .addOptionalGeneratedAnnotation(config)
 
         val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
             .filterIsInstance<TypeName>()

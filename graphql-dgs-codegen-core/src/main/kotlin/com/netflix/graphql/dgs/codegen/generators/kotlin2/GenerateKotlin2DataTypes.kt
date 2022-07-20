@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addControlFlow
+import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.disableJsonTypeInfoAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonBuilderAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonDeserializeAnnotation
@@ -112,6 +113,7 @@ fun generateKotlin2DataTypes(
             // create a builder for this class; default to lambda that throws if accessed
             val builderClassName = ClassName(config.packageNameTypes, typeDefinition.name, "Builder")
             val builder = TypeSpec.classBuilder("Builder")
+                .addOptionalGeneratedAnnotation(config)
                 .addAnnotation(jsonBuilderAnnotation())
                 .addAnnotation(jsonIgnorePropertiesAnnotation("__typename"))
                 // add a backing property for each field
@@ -150,6 +152,7 @@ fun generateKotlin2DataTypes(
 
             // create the data class
             val typeSpec = TypeSpec.classBuilder(typeDefinition.name)
+                .addOptionalGeneratedAnnotation(config)
                 // add docs if available
                 .apply {
                     if (typeDefinition.description != null) {

@@ -2702,4 +2702,53 @@ It takes a title and such.
 
         assertCompilesJava(codeGenResult.javaQueryTypes)
     }
+
+    @Test
+    fun generateSourceWithGeneratedAnnotation() {
+        val schema = """
+            type Query {
+                employees(filter:EmployeeFilterInput) : [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            type Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            input EmployeeFilterInput {
+                rank: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                addGeneratedAnnotation = true,
+                generateClientApi = true
+            )
+        ).generate()
+
+        with(codeGenResult) {
+            kotlinDataTypes.assertKotlinGeneratedAnnotation()
+            kotlinInterfaces.assertKotlinGeneratedAnnotation()
+            kotlinConstants.assertKotlinGeneratedAnnotation()
+            kotlinEnumTypes.assertKotlinGeneratedAnnotation()
+            javaQueryTypes.assertJavaGeneratedAnnotation()
+            clientProjections.assertJavaGeneratedAnnotation()
+        }
+        assertCompilesKotlin(codeGenResult)
+    }
 }

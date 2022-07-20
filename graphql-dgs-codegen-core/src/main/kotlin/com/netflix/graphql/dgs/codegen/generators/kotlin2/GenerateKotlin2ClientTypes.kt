@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
+import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
@@ -135,6 +136,7 @@ fun generateKotlin2ClientTypes(
 
             // create the projection class
             val typeSpec = TypeSpec.classBuilder(typeName)
+                .addOptionalGeneratedAnnotation(config)
                 .superclass(GraphQLProjection::class)
                 // we can't ask for `__typename` on a `Subscription` object
                 .apply {
@@ -167,6 +169,7 @@ fun generateKotlin2ClientTypes(
                 .plus(extensionTypes.flatMap { it.memberTypes })
 
             val typeSpec = TypeSpec.classBuilder(typeName)
+                .addOptionalGeneratedAnnotation(config)
                 .superclass(GraphQLProjection::class)
                 .addFunctions(
                     implementations.map { subclass ->
@@ -183,6 +186,7 @@ fun generateKotlin2ClientTypes(
     val topLevelTypes = typeLookup.operations.filterKeys { typeLookup.objectTypeNames.contains(it) }
 
     val clientSpec = TypeSpec.objectBuilder("DgsClient")
+        .addOptionalGeneratedAnnotation(config)
         .addFunctions(
             topLevelTypes.map { (type, op) ->
 
