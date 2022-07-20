@@ -45,7 +45,8 @@ class GraphQLMultiQueryRequest(
 
         for (request in this.requests) {
             val query = request.query
-            //Graphl does not support multiple subscriptions in one request http://spec.graphql.org/June2018/#sec-Single-root-field
+            //Graphql only supports multiple mutations or multiple queries. Not a combination of the two.
+            //Graphql does not support multiple subscriptions in one request http://spec.graphql.org/June2018/#sec-Single-root-field
             if (!query.getOperationType().equals(queryType) || queryType == OperationDefinition.Operation.SUBSCRIPTION.name) {
                 throw AssertionError("Request has to have exclusively queries or mutations in a multi operation request")
             }
