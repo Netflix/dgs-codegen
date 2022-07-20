@@ -120,4 +120,31 @@ class GraphQLMultiQueryRequestTest {
             multiRequest.serialize()
         }
     }
+
+    @Test
+    fun testSerializeInputClassWithProjectionAndSingleQueriesAndAlias() {
+        val query = TestGraphQLQuery().apply {
+            input["movie"] = Movie(1234, "testMovie")
+        }
+
+        query.queryAlias = "alias1"
+
+        val multiRequest = GraphQLMultiQueryRequest(
+            listOf(
+                GraphQLQueryRequest(query, MovieProjection().name().movieId())
+            )
+        )
+
+        val result = multiRequest.serialize()
+        GraphQLQueryRequestTest.assertValidQuery(result)
+        Assertions.assertThat(result).isEqualTo(
+            """query {
+                |  alias1: test(movie: {movieId : 1234, name : "testMovie"}) {
+                |    name
+                |    movieId
+                |  }
+                |}
+            """.trimMargin()
+        )
+    }
 }

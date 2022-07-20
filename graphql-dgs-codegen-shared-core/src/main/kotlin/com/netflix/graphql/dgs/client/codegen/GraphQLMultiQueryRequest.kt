@@ -25,16 +25,9 @@ class GraphQLMultiQueryRequest(
 ) {
 
     fun serialize(): String {
+
         if (requests.isEmpty()) throw AssertionError("Request must have at least one query")
 
-        if (requests.size == 1) {
-            return requests[0].serialize()
-        }
-
-        return multiQuery()
-    }
-
-    private fun multiQuery(): String {
         val operationDef = OperationDefinition.newOperationDefinition()
         requests[0].query.name?.let { operationDef.name(it) }
         requests[0].query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
