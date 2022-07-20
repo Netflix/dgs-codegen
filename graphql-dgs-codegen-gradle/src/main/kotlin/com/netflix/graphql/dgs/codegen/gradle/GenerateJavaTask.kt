@@ -130,7 +130,7 @@ open class GenerateJavaTask : DefaultTask() {
     var snakeCaseConstantNames = false
 
     @Input
-    var generateGeneratedAnnotation = false
+    var addGeneratedAnnotation = false
 
     @TaskAction
     fun generate() {
@@ -172,7 +172,7 @@ open class GenerateJavaTask : DefaultTask() {
             kotlinAllFieldsOptional = kotlinAllFieldsOptional,
             snakeCaseConstantNames = snakeCaseConstantNames,
             implementSerializable = implementSerializable,
-            generateGeneratedAnnotation = generateGeneratedAnnotation
+            addGeneratedAnnotation = addGeneratedAnnotation
         )
 
         logger.info("Codegen config: {}", config)

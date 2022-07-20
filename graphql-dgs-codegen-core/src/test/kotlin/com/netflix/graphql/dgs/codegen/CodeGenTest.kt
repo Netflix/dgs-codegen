@@ -2906,7 +2906,7 @@ It takes a title and such.
     }
 
     @Test
-    fun generateSourceWithGeneratedAnnotation(){
+    fun generateSourceWithGeneratedAnnotation() {
         val schema = """
             type Query {
                 employees(filter:EmployeeFilterInput) : [Person]
@@ -2938,8 +2938,8 @@ It takes a title and such.
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.JAVA,
-                generateGeneratedAnnotation = true,
-                generateClientApi = true,
+                addGeneratedAnnotation = true,
+                generateClientApi = true
             )
         ).generate()
 

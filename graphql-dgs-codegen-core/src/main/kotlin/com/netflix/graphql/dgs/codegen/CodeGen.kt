@@ -413,7 +413,7 @@ data class CodeGenConfig(
     val generateInterfaceSetters: Boolean = true,
     var javaGenerateAllConstructor: Boolean = true,
     val implementSerializable: Boolean = false,
-    val generateGeneratedAnnotation: Boolean = false
+    val addGeneratedAnnotation: Boolean = false
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
@@ -438,7 +438,7 @@ data class CodeGenConfig(
             ${if (skipEntityQueries) "--skip-entities" else ""}
             ${typeMapping.map { "--type-mapping ${it.key}=${it.value}" }.joinToString("\n")}           
             ${if (shortProjectionNames) "--short-projection-names" else ""}
-            ${if (generateGeneratedAnnotation) "--generate-generated-annotation" else ""}
+            ${if (addGeneratedAnnotation) "--add-generated-annotation" else ""}
             ${schemas.joinToString(" ")}
         """.trimIndent()
     }

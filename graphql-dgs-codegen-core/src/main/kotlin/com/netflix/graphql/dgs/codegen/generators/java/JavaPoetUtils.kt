@@ -139,7 +139,7 @@ private fun generatedAnnotation(): AnnotationSpec? {
 
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
-        if (config.generateGeneratedAnnotation) {
+        if (config.addGeneratedAnnotation) {
             generatedAnnotation()?.also { it -> addAnnotation(it) }
         }
     }

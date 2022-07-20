@@ -237,7 +237,7 @@ fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.B
 
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
-        if (config.generateGeneratedAnnotation) {
+        if (config.addGeneratedAnnotation) {
             generatedAnnotation()?.also { addAnnotation(it) }
         }
     }
