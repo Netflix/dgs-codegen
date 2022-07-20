@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 Netflix, Inc.
+ * Copyright 2022 Netflix, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,15 +24,15 @@ import graphql.language.SelectionSet
 import graphql.schema.Coercing
 
 class GraphQLQueryRequest(
-    private val query: GraphQLQuery,
-    private val projection: BaseProjectionNode?,
+    val query: GraphQLQuery,
+    val projection: BaseProjectionNode?,
     scalars: Map<Class<*>, Coercing<*, *>>?
 ) {
 
     constructor(query: GraphQLQuery) : this(query, null, null)
     constructor(query: GraphQLQuery, projection: BaseProjectionNode?) : this(query, projection, null)
-    private val inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())
-    private val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+    val inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())
+    val projectionSerializer = ProjectionSerializer(inputValueSerializer)
 
     fun serialize(): String {
         val operationDef = OperationDefinition.newOperationDefinition()

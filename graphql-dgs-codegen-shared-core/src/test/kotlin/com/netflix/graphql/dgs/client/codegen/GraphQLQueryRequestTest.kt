@@ -332,14 +332,16 @@ class GraphQLQueryRequestTest {
     /**
      * Assert that the GraphQL query is syntactically valid.
      */
-    private fun assertValidQuery(query: String) {
-        val doc = try {
-            Parser().parseDocument(query)
-        } catch (exc: InvalidSyntaxException) {
-            throw AssertionError("The query failed to parse: ${exc.localizedMessage}")
+    companion object AssertValidQueryCompanion {
+        fun assertValidQuery(query: String) {
+            val doc = try {
+                Parser().parseDocument(query)
+            } catch (exc: InvalidSyntaxException) {
+                throw AssertionError("The query failed to parse: ${exc.localizedMessage}")
+            }
+            doc.getFirstDefinitionOfType(OperationDefinition::class.java)
+                .orElseThrow { AssertionError("No operation definition found in document") }
         }
-        doc.getFirstDefinitionOfType(OperationDefinition::class.java)
-            .orElseThrow { AssertionError("No operation definition found in document") }
     }
 }
 
