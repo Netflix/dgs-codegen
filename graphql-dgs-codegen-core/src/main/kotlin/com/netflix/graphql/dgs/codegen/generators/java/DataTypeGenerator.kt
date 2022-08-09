@@ -406,6 +406,7 @@ abstract class BaseDataTypeGenerator(
         val builderType =
             TypeSpec
                 .classBuilder("Builder")
+                .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addMethod(buildMethod)
 
