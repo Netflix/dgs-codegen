@@ -35,11 +35,8 @@ import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
-import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
-import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 import graphql.language.*
 import graphql.parser.InvalidSyntaxException
 import graphql.parser.MultiSourceReader
@@ -51,6 +48,9 @@ import java.lang.annotation.RetentionPolicy
 import java.nio.file.Path
 import java.nio.file.Paths
 import javax.lang.model.element.Modifier
+import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
+import com.squareup.kotlinpoet.ClassName as KClassName
+import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
 class CodeGen(private val config: CodeGenConfig) {
 

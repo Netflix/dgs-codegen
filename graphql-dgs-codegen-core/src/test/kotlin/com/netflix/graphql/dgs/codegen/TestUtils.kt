@@ -26,10 +26,7 @@ import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
-import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
-import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
@@ -43,6 +40,9 @@ import java.lang.reflect.Method
 import java.nio.file.Files
 import java.nio.file.Path
 import kotlin.io.path.createDirectories
+import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
+import com.squareup.kotlinpoet.ClassName as KClassName
+import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
 fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
     return assertCompilesJava(
