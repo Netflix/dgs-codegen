@@ -31,8 +31,15 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.f
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
+import com.squareup.javapoet.AnnotationSpec
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.TypeSpec
+import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
+import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 import graphql.language.*
 import graphql.parser.InvalidSyntaxException
 import graphql.parser.MultiSourceReader
@@ -40,8 +47,10 @@ import graphql.parser.Parser
 import graphql.parser.ParserOptions
 import java.io.File
 import java.io.Reader
+import java.lang.annotation.RetentionPolicy
 import java.nio.file.Path
 import java.nio.file.Paths
+import javax.lang.model.element.Modifier
 
 class CodeGen(private val config: CodeGenConfig) {
 
@@ -149,6 +158,7 @@ class CodeGen(private val config: CodeGenConfig) {
         val entitiesRepresentationsTypes = generateJavaClientEntitiesRepresentations(definitions)
         // Data Fetchers
         val dataFetchersResult = generateJavaDataFetchers(definitions)
+        val generatedAnnotation = generateJavaGeneratedAnnotation(config)
 
         return dataTypesResult
             .merge(dataFetchersResult)
@@ -160,6 +170,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .merge(entitiesClient)
             .merge(entitiesRepresentationsTypes)
             .merge(constantsClass)
+            .merge(generatedAnnotation)
     }
 
     private fun generateJavaEnums(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -237,6 +248,23 @@ class CodeGen(private val config: CodeGenConfig) {
             .filter { it.name == "Query" }
             .map { DatafetcherGenerator(config, document).generate(it) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+    }
+
+    private fun generateJavaGeneratedAnnotation(config: CodeGenConfig): CodeGenResult {
+        return if (config.addGeneratedAnnotation) {
+            val retention = AnnotationSpec.builder(java.lang.annotation.Retention::class.java)
+                .addMember("value", "${'$'}T.${'$'}N", RetentionPolicy::class.java, "CLASS")
+                .build()
+            val generated =
+                TypeSpec.annotationBuilder(ClassName.get(config.packageName, "Generated"))
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(retention)
+                    .build()
+            val generatedFile = JavaFile.builder(config.packageName, generated).build()
+            CodeGenResult(javaInterfaces = listOf(generatedFile))
+        } else {
+            CodeGenResult()
+        }
     }
 
     private fun generateJavaDataType(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -327,7 +355,29 @@ class CodeGen(private val config: CodeGenConfig) {
             client.merge(entitiesClient).merge(entitiesRepresentationsTypes)
         }
 
+        val generatedAnnotation = generateKotlinGeneratedAnnotation(config)
+
         return dataTypes.merge(clientTypes)
+            .merge(generatedAnnotation)
+    }
+
+    private fun generateKotlinGeneratedAnnotation(config: CodeGenConfig): CodeGenResult {
+        return if (config.addGeneratedAnnotation) {
+            val generated = KTypeSpec.annotationBuilder(KClassName(config.packageName, "Generated"))
+                .addModifiers(KModifier.PUBLIC)
+                .addAnnotation(
+                    KAnnotationSpec
+                        .builder(Retention::class)
+                        .addMember("value = %T.%N", AnnotationRetention::class, "BINARY")
+                        .build()
+                )
+                .build()
+            val generatedFile =
+                FileSpec.builder(config.packageName, "Generated").addType(generated).build()
+            CodeGenResult(kotlinInterfaces = listOf(generatedFile))
+        } else {
+            CodeGenResult()
+        }
     }
 
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
