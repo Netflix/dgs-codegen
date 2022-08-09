@@ -90,6 +90,7 @@ fun generateKotlin2DataTypes(
 
             // create a companion object to store defaults for each field
             val companionObject = TypeSpec.companionObjectBuilder()
+                .addOptionalGeneratedAnnotation(config)
                 // add a default lambda for each field that throws if accessed
                 .addProperties(
                     fields.map { field ->
