@@ -160,16 +160,23 @@ fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec {
         .build()
 }
 
-@Suppress("DuplicatedCode") // not duplicated - this is KotlinPoet, the other is JavaPoet
-private fun generatedAnnotation(): AnnotationSpec? {
-    val generatedAnnotation = generatedAnnotationClassName
-        ?.let { ClassName.bestGuess(it) }
-        ?: return null
-
-    return AnnotationSpec.builder(generatedAnnotation)
-        .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
-        .addMember("date = %S", generatedDate)
+private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
+    val graphqlGenerated = AnnotationSpec
+        .builder(ClassName(packageName, "Generated"))
         .build()
+
+    return if (generatedAnnotationClassName == null) {
+        listOf(graphqlGenerated)
+    } else {
+        val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
+
+        val javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
+            .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
+            .addMember("date = %S", generatedDate)
+            .build()
+
+        listOf(javaxGenerated, graphqlGenerated)
+    }
 }
 
 /**
@@ -269,6 +276,6 @@ fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.B
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
-            generatedAnnotation()?.also { addAnnotation(it) }
+            generatedAnnotation(config.packageName).forEach { addAnnotation(it) }
         }
     }
