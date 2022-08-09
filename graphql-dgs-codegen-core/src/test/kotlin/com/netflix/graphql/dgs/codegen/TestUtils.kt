@@ -21,9 +21,15 @@ package com.netflix.graphql.dgs.codegen
 import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
-import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
+import com.squareup.javapoet.AnnotationSpec
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.TypeSpec
+import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
+import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.kotlin.cli.common.ExitCode
 import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
@@ -113,29 +119,50 @@ fun <T> invokeMethod(method: Method, target: Any, vararg args: Any): T {
     return result as T
 }
 
-fun List<FileSpec>.assertKotlinGeneratedAnnotation() = apply {
-    assertThat(this).isNotEmpty
-    forEach {
-        assertThat(it.toString())
-            .contains(
-                "@Generated(",
-                "value = [\"${CodeGen::class.qualifiedName}\"]",
-                "date = \"$generatedDate\""
-            )
-    }
+fun List<FileSpec>.assertKotlinGeneratedAnnotation() = onEach {
+    it.members
+        .filterIsInstance(KTypeSpec::class.java)
+        .forEach { typeSpec -> typeSpec.assertKotlinGeneratedAnnotation(it) }
 }
 
-fun List<JavaFile>.assertJavaGeneratedAnnotation() = apply {
-    assertThat(this).isNotEmpty
-    forEach {
-        assertThat(it.toString())
-            .contains(
-                "@Generated(",
-                "value = \"${CodeGen::class.qualifiedName}\"",
-                "date = \"$generatedDate\""
-            )
-    }
+fun List<JavaFile>.assertJavaGeneratedAnnotation() = onEach {
+    it.typeSpec.assertJavaGeneratedAnnotation()
 }
+
+fun KTypeSpec.assertKotlinGeneratedAnnotation(fileSpec: FileSpec) {
+    val generatedSpec = annotationSpecs
+        .firstOrNull { it.canonicalName() == "$basePackageName.Generated" }
+    assertThat(generatedSpec)
+        .`as`("@Generated annotation exists in %s at %s", this, fileSpec)
+        .isNotNull
+
+    val javaxGeneratedSpec =
+        annotationSpecs.firstOrNull { it.canonicalName() == generatedAnnotationClassName }
+    assertThat(javaxGeneratedSpec)
+        .`as`("$generatedAnnotationClassName annotation exists in %s at %s", this, fileSpec)
+        .isNotNull
+
+    typeSpecs.forEach { it.assertKotlinGeneratedAnnotation(fileSpec) }
+}
+
+fun TypeSpec.assertJavaGeneratedAnnotation() {
+    val generatedSpec = annotations
+        .firstOrNull { it.canonicalName() == "$basePackageName.Generated" }
+    assertThat(generatedSpec)
+        .`as`("@Generated annotation exists in %s", this)
+        .isNotNull
+
+    val javaxGeneratedSpec =
+        annotations.firstOrNull { it.canonicalName() == generatedAnnotationClassName }
+    assertThat(javaxGeneratedSpec)
+        .`as`("$generatedAnnotationClassName annotation exists in %s", this)
+        .isNotNull
+
+    this.typeSpecs.forEach { it.assertJavaGeneratedAnnotation() }
+}
+
+fun AnnotationSpec.canonicalName(): String = (type as ClassName).canonicalName()
+fun KAnnotationSpec.canonicalName() = (typeName as KClassName).canonicalName
 
 const val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
 const val typesPackageName = "$basePackageName.types"
