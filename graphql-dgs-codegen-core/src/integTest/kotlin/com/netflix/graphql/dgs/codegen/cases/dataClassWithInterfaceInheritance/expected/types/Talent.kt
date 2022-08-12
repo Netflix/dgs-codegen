@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.Suppress
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Talent.Builder::class)
@@ -24,15 +26,22 @@ public class Talent(
 
   private val _imdbProfile: () -> String? = imdbProfile
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getFirstname")
   public override val firstname: String
     get() = _firstname.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getLastname")
   public override val lastname: String?
     get() = _lastname.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getCompany")
   public override val company: String?
     get() = _company.invoke()
 
+  @get:JvmName("getImdbProfile")
   public val imdbProfile: String?
     get() = _imdbProfile.invoke()
 

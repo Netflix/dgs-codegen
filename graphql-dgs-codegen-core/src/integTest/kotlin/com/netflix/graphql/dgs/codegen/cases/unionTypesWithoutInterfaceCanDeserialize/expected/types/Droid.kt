@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Droid.Builder::class)
@@ -21,12 +22,15 @@ public class Droid(
 
   private val _primaryFunction: () -> String? = primaryFunction
 
+  @get:JvmName("getId")
   public val id: String
     get() = _id.invoke()
 
+  @get:JvmName("getName")
   public val name: String
     get() = _name.invoke()
 
+  @get:JvmName("getPrimaryFunction")
   public val primaryFunction: String?
     get() = _primaryFunction.invoke()
 

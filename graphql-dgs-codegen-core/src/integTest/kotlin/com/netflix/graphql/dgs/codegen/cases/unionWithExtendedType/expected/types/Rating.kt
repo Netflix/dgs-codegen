@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.Int
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Rating.Builder::class)
@@ -15,6 +16,7 @@ public class Rating(
 ) : SearchResult {
   private val _stars: () -> Int? = stars
 
+  @get:JvmName("getStars")
   public val stars: Int?
     get() = _stars.invoke()
 

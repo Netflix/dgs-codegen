@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.Boolean
 import kotlin.String
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = PageInfo.Builder::class)
@@ -25,15 +26,19 @@ public class PageInfo(
 
   private val _hasPreviousPage: () -> Boolean = hasPreviousPage
 
+  @get:JvmName("getStartCursor")
   public val startCursor: String?
     get() = _startCursor.invoke()
 
+  @get:JvmName("getEndCursor")
   public val endCursor: String?
     get() = _endCursor.invoke()
 
+  @get:JvmName("getHasNextPage")
   public val hasNextPage: Boolean
     get() = _hasNextPage.invoke()
 
+  @get:JvmName("getHasPreviousPage")
   public val hasPreviousPage: Boolean
     get() = _hasPreviousPage.invoke()
 

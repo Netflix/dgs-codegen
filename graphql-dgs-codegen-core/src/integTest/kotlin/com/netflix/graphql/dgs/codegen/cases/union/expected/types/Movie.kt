@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Movie.Builder::class)
@@ -15,6 +16,7 @@ public class Movie(
 ) : SearchResult {
   private val _title: () -> String? = title
 
+  @get:JvmName("getTitle")
   public val title: String?
     get() = _title.invoke()
 

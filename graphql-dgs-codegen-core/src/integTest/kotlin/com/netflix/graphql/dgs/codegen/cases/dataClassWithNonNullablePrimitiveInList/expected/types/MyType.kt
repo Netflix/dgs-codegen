@@ -10,6 +10,7 @@ import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
 import kotlin.collections.List
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = MyType.Builder::class)
@@ -24,12 +25,15 @@ public class MyType(
 
   private val _floaty: () -> List<Double>? = floaty
 
+  @get:JvmName("getCount")
   public val count: List<Int>?
     get() = _count.invoke()
 
+  @get:JvmName("getTruth")
   public val truth: List<Boolean>?
     get() = _truth.invoke()
 
+  @get:JvmName("getFloaty")
   public val floaty: List<Double>?
     get() = _floaty.invoke()
 

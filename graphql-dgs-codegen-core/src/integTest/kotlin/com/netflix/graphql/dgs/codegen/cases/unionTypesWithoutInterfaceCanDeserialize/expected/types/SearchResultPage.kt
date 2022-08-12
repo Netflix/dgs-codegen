@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.collections.List
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = SearchResultPage.Builder::class)
@@ -15,6 +16,7 @@ public class SearchResultPage(
 ) {
   private val _items: () -> List<SearchResult?>? = items
 
+  @get:JvmName("getItems")
   public val items: List<SearchResult?>?
     get() = _items.invoke()
 

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = MyType.Builder::class)
@@ -14,6 +15,7 @@ public class MyType(
 ) {
   private val _other: () -> OtherType = other
 
+  @get:JvmName("getOther")
   public val other: OtherType
     get() = _other.invoke()
 

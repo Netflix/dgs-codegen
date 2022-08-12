@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.jvm.JvmName
 
 /**
  * Movies are fun to watch.
@@ -19,6 +20,7 @@ public class Movie(
 ) {
   private val _title: () -> String? = title
 
+  @get:JvmName("getTitle")
   public val title: String?
     get() = _title.invoke()
 

@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.Suppress
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Employee.Builder::class)
@@ -21,12 +23,17 @@ public class Employee(
 
   private val _company: () -> String? = company
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getFirstname")
   public override val firstname: String
     get() = _firstname.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getLastname")
   public override val lastname: String?
     get() = _lastname.invoke()
 
+  @get:JvmName("getCompany")
   public val company: String?
     get() = _company.invoke()
 

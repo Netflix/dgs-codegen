@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Car.Builder::class)
@@ -21,12 +22,15 @@ public class Car(
 
   private val _engine: () -> Engine? = engine
 
+  @get:JvmName("getMake")
   public val make: String?
     get() = _make.invoke()
 
+  @get:JvmName("getModel")
   public val model: String?
     get() = _model.invoke()
 
+  @get:JvmName("getEngine")
   public val engine: Engine?
     get() = _engine.invoke()
 

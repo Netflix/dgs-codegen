@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.collections.List
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = EntityConnection.Builder::class)
@@ -18,9 +19,11 @@ public class EntityConnection(
 
   private val _edges: () -> List<EntityEdge?>? = edges
 
+  @get:JvmName("getPageInfo")
   public val pageInfo: PageInfo
     get() = _pageInfo.invoke()
 
+  @get:JvmName("getEdges")
   public val edges: List<EntityEdge?>?
     get() = _edges.invoke()
 

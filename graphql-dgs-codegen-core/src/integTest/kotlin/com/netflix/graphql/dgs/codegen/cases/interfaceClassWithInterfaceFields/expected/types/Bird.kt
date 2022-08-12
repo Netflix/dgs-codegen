@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.Suppress
 import kotlin.collections.List
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Bird.Builder::class)
@@ -31,21 +33,33 @@ public class Bird(
 
   private val _parents: () -> List<Bird?>? = parents
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getId")
   public override val id: String
     get() = _id.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getName")
   public override val name: String?
     get() = _name.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getAddress")
   public override val address: List<String>
     get() = _address.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getMother")
   public override val mother: Bird
     get() = _mother.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getFather")
   public override val father: Bird?
     get() = _father.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getParents")
   public override val parents: List<Bird?>?
     get() = _parents.invoke()
 

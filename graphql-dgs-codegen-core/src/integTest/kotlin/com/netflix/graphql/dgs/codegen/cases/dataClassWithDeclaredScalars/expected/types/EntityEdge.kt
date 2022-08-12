@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = EntityEdge.Builder::class)
@@ -18,9 +19,11 @@ public class EntityEdge(
 
   private val _node: () -> Entity? = node
 
+  @get:JvmName("getCursor")
   public val cursor: String
     get() = _cursor.invoke()
 
+  @get:JvmName("getNode")
   public val node: Entity?
     get() = _node.invoke()
 
