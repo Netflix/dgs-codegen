@@ -2741,14 +2741,15 @@ It takes a title and such.
             )
         ).generate()
 
-        with(codeGenResult) {
-            kotlinDataTypes.assertKotlinGeneratedAnnotation()
-            kotlinInterfaces.assertKotlinGeneratedAnnotation()
-            kotlinConstants.assertKotlinGeneratedAnnotation()
-            kotlinEnumTypes.assertKotlinGeneratedAnnotation()
-            javaQueryTypes.assertJavaGeneratedAnnotation()
-            clientProjections.assertJavaGeneratedAnnotation()
-        }
+        val (generatedAnnotationFile, allKotlinSources) = codeGenResult.kotlinSources()
+            .partition { it.name == "Generated" }
+
+        allKotlinSources.assertKotlinGeneratedAnnotation()
+        codeGenResult.javaSources().assertJavaGeneratedAnnotation()
+
+        assertThat(generatedAnnotationFile.single().toString())
+            .contains("@Retention(value = AnnotationRetention.BINARY)")
+
         assertCompilesKotlin(codeGenResult)
     }
 }

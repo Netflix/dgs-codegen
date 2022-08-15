@@ -229,7 +229,7 @@ abstract class AbstractKotlinDataTypeGenerator(
         }
 
         kotlinType.primaryConstructor(funConstructorBuilder.build())
-        kotlinType.addType(TypeSpec.companionObjectBuilder().build())
+        kotlinType.addType(TypeSpec.companionObjectBuilder().addOptionalGeneratedAnnotation(config).build())
 
         val typeSpec = kotlinType.build()
 

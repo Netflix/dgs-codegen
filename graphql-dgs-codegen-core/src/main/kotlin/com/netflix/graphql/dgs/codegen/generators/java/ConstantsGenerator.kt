@@ -125,6 +125,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
 
         return TypeSpec
             .classBuilder(className)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
     }
 

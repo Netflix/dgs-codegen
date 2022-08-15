@@ -95,7 +95,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
             interfaceBuilder.addAnnotation(jsonSubTypesAnnotation(implementations))
         }
 
-        interfaceBuilder.addType(TypeSpec.companionObjectBuilder().build())
+        interfaceBuilder.addType(TypeSpec.companionObjectBuilder().addOptionalGeneratedAnnotation(config).build())
 
         val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
         return CodeGenResult(kotlinInterfaces = listOf(fileSpec))

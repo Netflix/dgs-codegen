@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnota
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.WildcardTypeName
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
@@ -2943,14 +2944,12 @@ It takes a title and such.
             )
         ).generate()
 
-        with(codeGenResult) {
-            javaDataTypes.assertJavaGeneratedAnnotation()
-            javaInterfaces.assertJavaGeneratedAnnotation()
-            javaConstants.assertJavaGeneratedAnnotation()
-            javaEnumTypes.assertJavaGeneratedAnnotation()
-            javaQueryTypes.assertJavaGeneratedAnnotation()
-            clientProjections.assertJavaGeneratedAnnotation()
-        }
+        val (generatedAnnotationFile, allSources) = codeGenResult.javaSources()
+            .partition { it.typeSpec.name == "Generated" && it.typeSpec.kind == TypeSpec.Kind.ANNOTATION }
+
+        allSources.assertJavaGeneratedAnnotation()
+        assertThat(generatedAnnotationFile.single().toString())
+            .contains("java.lang.annotation.Retention", "RetentionPolicy.CLASS")
         assertCompilesJava(codeGenResult)
     }
 }
