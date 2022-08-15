@@ -28,7 +28,9 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonBuilderAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonDeserializeAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonIgnorePropertiesAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonPropertyAnnotation
+import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
+import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
@@ -215,8 +217,10 @@ fun generateKotlin2DataTypes(
                             .apply {
                                 if (field.name in overrideFields) {
                                     addModifiers(KModifier.OVERRIDE)
+                                    addAnnotation(suppressInapplicableJvmNameAnnotation())
                                 }
                             }
+                            .addAnnotation(jvmNameAnnotation(field.name))
                             .getter(
                                 FunSpec.getterBuilder()
                                     .addStatement("return _${field.name}.invoke()")

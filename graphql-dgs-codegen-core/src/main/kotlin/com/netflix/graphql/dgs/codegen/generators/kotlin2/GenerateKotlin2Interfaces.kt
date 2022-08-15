@@ -23,7 +23,9 @@ import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonSubTypesAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonTypeInfoAnnotation
+import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
+import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
@@ -117,6 +119,8 @@ fun generateKotlin2Interfaces(
                                     addModifiers(KModifier.OVERRIDE)
                                 }
                             }
+                            .addAnnotation(suppressInapplicableJvmNameAnnotation())
+                            .addAnnotation(jvmNameAnnotation(field.name))
                             .build()
                     }
                 )

@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.Int
 import kotlin.String
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Human.Builder::class)
@@ -22,12 +23,15 @@ public class Human(
 
   private val _totalCredits: () -> Int? = totalCredits
 
+  @get:JvmName("getId")
   public val id: String
     get() = _id.invoke()
 
+  @get:JvmName("getName")
   public val name: String
     get() = _name.invoke()
 
+  @get:JvmName("getTotalCredits")
   public val totalCredits: Int?
     get() = _totalCredits.invoke()
 

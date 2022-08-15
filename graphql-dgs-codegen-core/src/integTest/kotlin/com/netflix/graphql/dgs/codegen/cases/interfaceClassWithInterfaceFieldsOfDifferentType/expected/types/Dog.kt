@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.Suppress
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Dog.Builder::class)
@@ -18,9 +20,13 @@ public class Dog(
 
   private val _diet: () -> Vegetarian? = diet
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getName")
   public override val name: String?
     get() = _name.invoke()
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getDiet")
   public override val diet: Vegetarian?
     get() = _diet.invoke()
 

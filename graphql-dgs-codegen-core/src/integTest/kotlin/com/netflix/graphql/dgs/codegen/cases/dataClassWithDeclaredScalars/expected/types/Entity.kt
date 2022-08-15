@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import java.time.OffsetDateTime
 import kotlin.Long
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Entity.Builder::class)
@@ -19,9 +20,11 @@ public class Entity(
 
   private val _dateTime: () -> OffsetDateTime? = dateTime
 
+  @get:JvmName("getLong")
   public val long: Long?
     get() = _long.invoke()
 
+  @get:JvmName("getDateTime")
   public val dateTime: OffsetDateTime?
     get() = _dateTime.invoke()
 

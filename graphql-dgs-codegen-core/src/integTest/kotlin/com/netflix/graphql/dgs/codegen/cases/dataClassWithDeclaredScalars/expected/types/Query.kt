@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.collections.List
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
@@ -18,9 +19,11 @@ public class Query(
 
   private val _entityConnection: () -> EntityConnection? = entityConnection
 
+  @get:JvmName("getEntity")
   public val entity: List<Entity?>?
     get() = _entity.invoke()
 
+  @get:JvmName("getEntityConnection")
   public val entityConnection: EntityConnection?
     get() = _entityConnection.invoke()
 

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.squareup.kotlinpoet.*
@@ -126,6 +127,36 @@ fun jsonDeserializeAnnotation(builderType: ClassName): AnnotationSpec {
  */
 fun jsonBuilderAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonPOJOBuilder::class)
+        .build()
+}
+
+/**
+ * Generate a [JvmName] annotation for a kotlin property.
+ *
+ * Example generated annotation:
+ * ```
+ * @JvmName("getIsRequired")
+ * ```
+ */
+fun jvmNameAnnotation(name: String): AnnotationSpec {
+    return AnnotationSpec.builder(JvmName::class)
+        .useSiteTarget(AnnotationSpec.UseSiteTarget.GET)
+        .addMember("%S", "get${name.capitalized()}")
+        .build()
+}
+
+/**
+ * Generate a [Suppress] annotation for a kotlin property.
+ * See: https://youtrack.jetbrains.com/issue/KT-31420
+ *
+ * Example generated annotation:
+ * ```
+ * @Suppress("INAPPLICABLE_JVM_NAME")
+ * ```
+ */
+fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec {
+    return AnnotationSpec.builder(Suppress::class)
+        .addMember("%S", "INAPPLICABLE_JVM_NAME")
         .build()
 }
 

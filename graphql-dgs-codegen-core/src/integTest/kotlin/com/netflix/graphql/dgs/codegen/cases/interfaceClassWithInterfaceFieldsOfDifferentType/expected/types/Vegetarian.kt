@@ -7,7 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
+import kotlin.Suppress
 import kotlin.collections.List
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Vegetarian.Builder::class)
@@ -19,9 +21,12 @@ public class Vegetarian(
 
   private val _vegetables: () -> List<String?>? = vegetables
 
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getCalories")
   public override val calories: String?
     get() = _calories.invoke()
 
+  @get:JvmName("getVegetables")
   public val vegetables: List<String?>?
     get() = _vegetables.invoke()
 

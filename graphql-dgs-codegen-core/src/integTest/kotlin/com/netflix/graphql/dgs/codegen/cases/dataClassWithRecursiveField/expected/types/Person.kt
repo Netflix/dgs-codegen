@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.collections.List
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Person.Builder::class)
@@ -22,12 +23,15 @@ public class Person(
 
   private val _friends: () -> List<Person?>? = friends
 
+  @get:JvmName("getFirstname")
   public val firstname: String?
     get() = _firstname.invoke()
 
+  @get:JvmName("getLastname")
   public val lastname: String?
     get() = _lastname.invoke()
 
+  @get:JvmName("getFriends")
   public val friends: List<Person?>?
     get() = _friends.invoke()
 

@@ -9,6 +9,7 @@ import java.lang.IllegalStateException
 import kotlin.Double
 import kotlin.Int
 import kotlin.String
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Engine.Builder::class)
@@ -26,15 +27,19 @@ public class Engine(
 
   private val _performance: () -> Performance? = performance
 
+  @get:JvmName("getType")
   public val type: String?
     get() = _type.invoke()
 
+  @get:JvmName("getBhp")
   public val bhp: Int?
     get() = _bhp.invoke()
 
+  @get:JvmName("getSize")
   public val size: Double?
     get() = _size.invoke()
 
+  @get:JvmName("getPerformance")
   public val performance: Performance?
     get() = _performance.invoke()
 

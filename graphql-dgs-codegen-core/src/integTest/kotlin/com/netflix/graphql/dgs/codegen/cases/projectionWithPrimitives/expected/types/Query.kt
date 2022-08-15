@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.collections.List
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
@@ -19,9 +20,11 @@ public class Query(
 
   private val _strings: () -> List<String?>? = strings
 
+  @get:JvmName("getString")
   public val string: String?
     get() = _string.invoke()
 
+  @get:JvmName("getStrings")
   public val strings: List<String?>?
     get() = _strings.invoke()
 

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.Double
+import kotlin.jvm.JvmName
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Performance.Builder::class)
@@ -18,9 +19,11 @@ public class Performance(
 
   private val _quarterMile: () -> Double? = quarterMile
 
+  @get:JvmName("getZeroToSixty")
   public val zeroToSixty: Double?
     get() = _zeroToSixty.invoke()
 
+  @get:JvmName("getQuarterMile")
   public val quarterMile: Double?
     get() = _quarterMile.invoke()
 
