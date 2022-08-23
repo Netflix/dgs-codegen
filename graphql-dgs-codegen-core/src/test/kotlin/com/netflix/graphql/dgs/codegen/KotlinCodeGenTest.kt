@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.tuple
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -28,6 +29,7 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
+import java.math.BigInteger
 import java.util.stream.Stream
 import java.util.stream.Stream.of
 
@@ -1685,29 +1687,23 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import kotlin.Deprecated
-                |import kotlin.ReplaceWith
-                |import kotlin.String
-                |
-                |@Deprecated(message = "This is going bye bye")
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @Deprecated(
-                |    message = "This field is no longer available",
-                |    replaceWith = ReplaceWith("firstName")
-                |  )
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
+        assertThat(annotationSpec.members).hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("This is going bye bye"))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
+        assertThat(parameterSpec.annotations[1].members).hasSize(2)
+        assertThat(parameterSpec.annotations[1].members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("This field is no longer available"))
+        assertThat(parameterSpec.annotations[1].members[1]).extracting("formatParts", "args").asString().contains("replaceWith = ", "%M", "(", "%S", ")", "kotlin.ReplaceWith", "firstName")
     }
 
     @Test
@@ -1725,29 +1721,21 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import ValidName
-                |import ValidPerson
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import kotlin.String
-                |
-                |@ValidPerson(
-                |  maxLimit = 10,
-                |  types = ["husband", "wife"]
-                |)
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
     }
 
     @Test
@@ -1765,29 +1753,21 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import ValidName
-                |import ValidPerson
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import kotlin.String
-                |
-                |@ValidPerson(
-                |  maxLimit = 10,
-                |  types = ["husband", "wife"]
-                |)
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
     }
 
     @Test
@@ -1805,29 +1785,21 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import ValidName
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import com.validator.ValidPerson
-                |import kotlin.String
-                |
-                |@ValidPerson(
-                |  maxLimit = 10,
-                |  types = ["husband", "wife"]
-                |)
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.validator.ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
     }
 
     @Test
@@ -1865,29 +1837,21 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"))
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import com.test.anotherValidator.ValidName
-                |import com.test.validator.ValidPerson
-                |import kotlin.String
-                |
-                |@ValidPerson(
-                |  maxLimit = 10,
-                |  types = ["husband", "wife"]
-                |)
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -1906,29 +1870,21 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"))
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import com.test.anotherValidator.ValidName
-                |import com.test.validator.ValidPerson
-                |import kotlin.String
-                |
-                |@ValidPerson(
-                |  maxLimit = 10,
-                |  types = ["husband", "wife"]
-                |)
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -1947,27 +1903,20 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("sexType", "com.enums"))
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.enums.MALE
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import com.test.anotherValidator.ValidName
-                |import com.test.validator.ValidPerson
-                |import kotlin.String
-                |
-                |@ValidPerson(sexType = MALE)
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.MALE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -1986,26 +1935,20 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import com.test.anotherValidator.ValidName
-                |import com.test.validator.ValidPerson
-                |import kotlin.String
-                |
-                |@ValidPerson(types = [com.enums.HUSBAND, com.enums.WIFE])
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -2024,26 +1967,20 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import com.test.anotherValidator.ValidName
-                |import com.test.validator.ValidPerson
-                |import kotlin.String
-                |
-                |@ValidPerson(types = [com.enums.HUSBAND, com.enums.WIFE])
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -2062,28 +1999,21 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
             )
         ).generate().kotlinDataTypes
-        assertThat(dataTypes[0].toString()).isEqualTo(
-            """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types
-                |
-                |import com.fasterxml.jackson.`annotation`.JsonProperty
-                |import com.test.anotherValidator.ValidName
-                |import com.test.nullValidator.NullValue
-                |import com.test.validator.ValidPerson
-                |import kotlin.String
-                |
-                |@ValidPerson(types = [com.enums.HUSBAND, com.enums.WIFE])
-                |public data class Person(
-                |  @JsonProperty("name")
-                |  @ValidName
-                |  @NullValue
-                |  public val name: String? = null
-                |) {
-                |  public companion object
-                |}
 
-        """.trimMargin()
-        )
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(3)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.nullValidator.NullValue")
     }
 
     @Test
