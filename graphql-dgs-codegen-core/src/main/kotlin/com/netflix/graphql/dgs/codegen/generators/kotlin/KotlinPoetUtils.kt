@@ -22,9 +22,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.squareup.kotlinpoet.*
 import graphql.introspection.Introspection
 import graphql.language.ArrayValue
@@ -240,7 +240,6 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
     }
 }
 
-
 /**
  * Creates custom annotation from arguments
  * name -> Name of the class to be annotated. It will contain className with oor without the package name (Mandatory)
@@ -291,7 +290,6 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, prefix: 
             else CodeBlock.of("$prefix[%L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, type = if (v is EnumValue) prefix else "").toString() })
         else -> CodeBlock.of("$prefix%L", value)
     }
-}
 
 /**
  * Parses the inputs argument in the directive to get the input parameters of the annotation
