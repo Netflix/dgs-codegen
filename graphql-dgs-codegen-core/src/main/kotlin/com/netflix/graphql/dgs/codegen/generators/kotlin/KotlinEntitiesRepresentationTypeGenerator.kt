@@ -121,7 +121,8 @@ class KotlinEntitiesRepresentationTypeGenerator(config: CodeGenConfig, document:
             interfaces = emptyList(),
             fields = fieldDefinitions.plus(typeName),
             description = null,
-            document = document
+            document = document,
+            directives = emptyList()
         )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
         // Merge all results.
