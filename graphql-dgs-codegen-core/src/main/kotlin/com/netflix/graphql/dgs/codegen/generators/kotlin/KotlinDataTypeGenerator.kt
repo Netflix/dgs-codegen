@@ -38,13 +38,13 @@ import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.STRING
+import com.squareup.kotlinpoet.TypeName as KtTypeName
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.IllegalArgumentException
 import java.io.Serializable
-import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
     AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
@@ -169,13 +169,17 @@ abstract class AbstractKotlinDataTypeGenerator(
     private fun applyDirectives(directives: List<Directive>): MutableList<AnnotationSpec> {
         return directives.fold(mutableListOf()) { annotations, directive ->
             val argumentMap = createArgumentMap(directive)
-            if (directive.name == ParserConstants.CUSTOM_ANNOTATION)
+            if (directive.name == ParserConstants.CUSTOM_ANNOTATION) {
                 annotations.add(customAnnotation(argumentMap, config))
-            if (directive.name == ParserConstants.DEPRECATED)
-                if (argumentMap.containsKey(ParserConstants.REASON))
+            }
+            if (directive.name == ParserConstants.DEPRECATED) {
+                if (argumentMap.containsKey(ParserConstants.REASON)) {
                     annotations.add(deprecatedAnnotation((argumentMap[ParserConstants.REASON] as StringValue).value))
-                else
+                }
+                else {
                     throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
+                }
+            }
 
             annotations
         }
@@ -209,7 +213,6 @@ abstract class AbstractKotlinDataTypeGenerator(
         }
 
         val funConstructorBuilder = FunSpec.constructorBuilder()
-
 
         fields.forEach { field ->
             val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
