@@ -31,16 +31,26 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.f
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
+import com.squareup.javapoet.AnnotationSpec
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.KModifier
 import graphql.language.*
+import graphql.parser.InvalidSyntaxException
 import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
-import graphql.schema.idl.TypeUtil
 import java.io.File
+import java.io.Reader
+import java.lang.annotation.RetentionPolicy
 import java.nio.file.Path
 import java.nio.file.Paths
+import javax.lang.model.element.Modifier
+import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
+import com.squareup.kotlinpoet.ClassName as KClassName
+import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
 class CodeGen(private val config: CodeGenConfig) {
 
@@ -58,7 +68,6 @@ class CodeGen(private val config: CodeGenConfig) {
 
     @Suppress("DuplicatedCode")
     fun generate(): CodeGenResult {
-
         val codeGenResult = when (config.language) {
             Language.JAVA -> generateJava()
             Language.KOTLIN -> generateKotlin()
@@ -99,62 +108,37 @@ class CodeGen(private val config: CodeGenConfig) {
             builder.maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
         }
         val parser = Parser()
+
         val readerBuilder = MultiSourceReader.newMultiSourceReader()
+        val debugReaderBuilder = MultiSourceReader.newMultiSourceReader()
 
-        val schemaFiles = config.schemaFiles
-            .flatMap { it.walkTopDown() }
-            .filter { it.isFile }
-
-        for (schemaFile in schemaFiles) {
-            readerBuilder.reader(schemaFile.reader(), schemaFile.name)
-        }
-
-        for (schema in config.schemas) {
-            readerBuilder.string(schema, null)
-        }
-
+        loadSchemaReaders(readerBuilder, debugReaderBuilder)
         val document = readerBuilder.build().use { reader ->
-            parser.parseDocument(reader, options)
+            try {
+                parser.parseDocument(reader, options)
+            } catch (exception: InvalidSyntaxException) {
+                throw CodeGenSchemaParsingException(debugReaderBuilder.build(), exception)
+            }
         }
 
-        return document.transform {
+        return document
+    }
 
-            // for kotlin2, add implicit types like PageInfo to the schema so classes are generated
-            if (config.generateKotlinNullableClasses || config.generateKotlinClosureProjections) {
-                val objectTypeDefs = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
-                if (!objectTypeDefs.any { def -> def.name == "PageInfo" } &&
-                    objectTypeDefs.any { def -> def.fieldDefinitions.any { field -> TypeUtil.unwrapAll(field.type).name == "PageInfo" } }
-                ) {
-                    it.definition(
-                        ObjectTypeDefinition.newObjectTypeDefinition()
-                            .name("PageInfo")
-                            .fieldDefinition(
-                                FieldDefinition.newFieldDefinition()
-                                    .name("hasNextPage")
-                                    .type(NonNullType(TypeName("Boolean")))
-                                    .build()
-                            )
-                            .fieldDefinition(
-                                FieldDefinition.newFieldDefinition()
-                                    .name("hasPreviousPage")
-                                    .type(NonNullType(TypeName("Boolean")))
-                                    .build()
-                            )
-                            .fieldDefinition(
-                                FieldDefinition.newFieldDefinition()
-                                    .name("startCursor")
-                                    .type(TypeName("String"))
-                                    .build()
-                            )
-                            .fieldDefinition(
-                                FieldDefinition.newFieldDefinition()
-                                    .name("endCursor")
-                                    .type(TypeName("String"))
-                                    .build()
-                            )
-                            .build()
-                    )
-                }
+    /**
+     * Loads the given [MultiSourceReader.Builder] references with the sources that will be used to provide
+     * the schema information for the parser.
+     */
+    private fun loadSchemaReaders(vararg readerBuilders: MultiSourceReader.Builder) {
+        readerBuilders.forEach { rb ->
+            val schemaFiles = config.schemaFiles.sorted()
+                .flatMap { it.walkTopDown() }
+                .filter { it.isFile }
+            for (schemaFile in schemaFiles) {
+                rb.string("\n", "codegen")
+                rb.reader(schemaFile.reader(), schemaFile.name)
+            }
+            for (schema in config.schemas) {
+                rb.string(schema, null)
             }
         }
     }
@@ -174,6 +158,7 @@ class CodeGen(private val config: CodeGenConfig) {
         val entitiesRepresentationsTypes = generateJavaClientEntitiesRepresentations(definitions)
         // Data Fetchers
         val dataFetchersResult = generateJavaDataFetchers(definitions)
+        val generatedAnnotation = generateJavaGeneratedAnnotation(config)
 
         return dataTypesResult
             .merge(dataFetchersResult)
@@ -185,6 +170,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .merge(entitiesClient)
             .merge(entitiesRepresentationsTypes)
             .merge(constantsClass)
+            .merge(generatedAnnotation)
     }
 
     private fun generateJavaEnums(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -223,11 +209,13 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
+        val methodNames = mutableSetOf<String>()
         return if (config.generateClientApi) {
             definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
-                .map { ClientApiGenerator(config, document).generate(it) }
+                .sortedBy { it.name.length }
+                .map { ClientApiGenerator(config, document).generate(it, methodNames) }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
     }
@@ -262,6 +250,23 @@ class CodeGen(private val config: CodeGenConfig) {
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
+    private fun generateJavaGeneratedAnnotation(config: CodeGenConfig): CodeGenResult {
+        return if (config.addGeneratedAnnotation) {
+            val retention = AnnotationSpec.builder(java.lang.annotation.Retention::class.java)
+                .addMember("value", "${'$'}T.${'$'}N", RetentionPolicy::class.java, "CLASS")
+                .build()
+            val generated =
+                TypeSpec.annotationBuilder(ClassName.get(config.packageName, "Generated"))
+                    .addModifiers(Modifier.PUBLIC)
+                    .addAnnotation(retention)
+                    .build()
+            val generatedFile = JavaFile.builder(config.packageName, generated).build()
+            CodeGenResult(javaInterfaces = listOf(generatedFile))
+        } else {
+            CodeGenResult()
+        }
+    }
+
     private fun generateJavaDataType(definitions: Collection<Definition<*>>): CodeGenResult {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
@@ -292,21 +297,19 @@ class CodeGen(private val config: CodeGenConfig) {
             document = document,
             queries = config.includeQueries,
             mutations = config.includeMutations,
-            subscriptions = config.includeSubscriptions,
+            subscriptions = config.includeSubscriptions
         )
         val requiredTypes = requiredTypeCollector.requiredTypes
 
         val dataTypes = if (config.generateKotlinNullableClasses) {
-
             CodeGenResult(
                 kotlinDataTypes = generateKotlin2DataTypes(config, document, requiredTypes),
                 kotlinInputTypes = generateKotlin2InputTypes(config, document, requiredTypes),
                 kotlinInterfaces = generateKotlin2Interfaces(config, document),
                 kotlinEnumTypes = generateKotlin2EnumTypes(config, document, requiredTypes),
-                kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants,
+                kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants
             )
         } else {
-
             val datatypesResult = generateKotlinDataTypes(definitions)
             val inputTypes = generateKotlinInputTypes(definitions)
             val interfacesResult = generateKotlinInterfaceTypes(definitions)
@@ -342,10 +345,9 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val clientTypes = if (config.generateKotlinClosureProjections) {
             CodeGenResult(
-                kotlinClientTypes = generateKotlin2ClientTypes(config, document),
+                kotlinClientTypes = generateKotlin2ClientTypes(config, document)
             )
         } else {
-
             val client = generateJavaClientApi(definitions)
             val entitiesClient = generateJavaClientEntitiesApi(definitions)
             val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
@@ -353,7 +355,29 @@ class CodeGen(private val config: CodeGenConfig) {
             client.merge(entitiesClient).merge(entitiesRepresentationsTypes)
         }
 
+        val generatedAnnotation = generateKotlinGeneratedAnnotation(config)
+
         return dataTypes.merge(clientTypes)
+            .merge(generatedAnnotation)
+    }
+
+    private fun generateKotlinGeneratedAnnotation(config: CodeGenConfig): CodeGenResult {
+        return if (config.addGeneratedAnnotation) {
+            val generated = KTypeSpec.annotationBuilder(KClassName(config.packageName, "Generated"))
+                .addModifiers(KModifier.PUBLIC)
+                .addAnnotation(
+                    KAnnotationSpec
+                        .builder(Retention::class)
+                        .addMember("value = %T.%N", AnnotationRetention::class, "BINARY")
+                        .build()
+                )
+                .build()
+            val generatedFile =
+                FileSpec.builder(config.packageName, "Generated").addType(generated).build()
+            CodeGenResult(kotlinInterfaces = listOf(generatedFile))
+        } else {
+            CodeGenResult()
+        }
     }
 
     private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -437,7 +461,10 @@ data class CodeGenConfig(
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
-    val includeImports: Map<String, String> = emptyMap()
+    val includeImports: Map<String, String> = emptyMap(),
+    var javaGenerateAllConstructor: Boolean = true,
+    val implementSerializable: Boolean = false,
+    val addGeneratedAnnotation: Boolean = false
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
@@ -462,6 +489,7 @@ data class CodeGenConfig(
             ${if (skipEntityQueries) "--skip-entities" else ""}
             ${typeMapping.map { "--type-mapping ${it.key}=${it.value}" }.joinToString("\n")}           
             ${if (shortProjectionNames) "--short-projection-names" else ""}
+            ${if (addGeneratedAnnotation) "--add-generated-annotation" else ""}
             ${schemas.joinToString(" ")}
         """.trimIndent()
     }
@@ -486,7 +514,7 @@ data class CodeGenResult(
     val kotlinEnumTypes: List<FileSpec> = listOf(),
     val kotlinDataFetchers: List<FileSpec> = listOf(),
     val kotlinConstants: List<FileSpec> = listOf(),
-    val kotlinClientTypes: List<FileSpec> = listOf(),
+    val kotlinClientTypes: List<FileSpec> = listOf()
 ) {
     fun merge(current: CodeGenResult): CodeGenResult {
         val javaDataTypes = this.javaDataTypes.plus(current.javaDataTypes)
@@ -518,7 +546,7 @@ data class CodeGenResult(
             kotlinEnumTypes = kotlinEnumTypes,
             kotlinDataFetchers = kotlinDataFetchers,
             kotlinConstants = kotlinConstants,
-            kotlinClientTypes = kotlinClientTypes,
+            kotlinClientTypes = kotlinClientTypes
         )
     }
 
@@ -655,6 +683,33 @@ fun Type<*>.findBaseTypeDefinition(): TypeDefinition<*>? {
         }
         else -> {
             null
+        }
+    }
+}
+
+class CodeGenSchemaParsingException(
+    schemaReader: Reader,
+    invalidSyntaxException: InvalidSyntaxException
+) : RuntimeException(buildMessage(schemaReader, invalidSyntaxException), invalidSyntaxException) {
+    companion object {
+        private fun buildMessage(
+            schemaReader: Reader,
+            invalidSyntaxException: InvalidSyntaxException
+        ): String {
+            schemaReader.use { reader ->
+                return """
+                |Unable to parse the schema...
+                |${invalidSyntaxException.message}
+                | 
+                |Schema Section:
+                |>>>
+                |${invalidSyntaxException.sourcePreview}
+                |<<<
+                |
+                |Full Schema:
+                |${reader.readText()}
+                """.trimMargin()
+            }
         }
     }
 }

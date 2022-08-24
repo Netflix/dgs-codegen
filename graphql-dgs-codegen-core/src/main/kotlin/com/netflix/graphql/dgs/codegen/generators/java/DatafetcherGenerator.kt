@@ -36,7 +36,6 @@ import javax.lang.model.element.Modifier
 
 class DatafetcherGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(query: ObjectTypeDefinition): CodeGenResult {
-
         return query.fieldDefinitions.asSequence().map { field ->
             createDatafetcher(field)
         }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
@@ -65,6 +64,7 @@ class DatafetcherGenerator(private val config: CodeGenConfig, private val docume
             .addStatement("return $returnValue")
 
         val javaType = TypeSpec.classBuilder(clazzName)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(DgsComponent::class.java)
             .addMethod(methodSpec.build())

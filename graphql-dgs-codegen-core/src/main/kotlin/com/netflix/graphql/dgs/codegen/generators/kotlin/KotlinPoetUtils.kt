@@ -25,6 +25,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize
 import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.CodeGen
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.squareup.kotlinpoet.*
 import graphql.introspection.Introspection
 import graphql.language.ArrayValue
@@ -116,7 +121,8 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
 
     val formatString = subTypes.joinToString(
         separator = ",\n",
-        prefix = "value = [\n⇥", postfix = "⇤\n]"
+        prefix = "value = [\n⇥",
+        postfix = "⇤\n]"
     ) { "%L" }
 
     return AnnotationSpec.builder(JsonSubTypes::class)
@@ -149,6 +155,55 @@ fun jsonDeserializeAnnotation(builderType: ClassName): AnnotationSpec {
 fun jsonBuilderAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonPOJOBuilder::class)
         .build()
+}
+
+/**
+ * Generate a [JvmName] annotation for a kotlin property.
+ *
+ * Example generated annotation:
+ * ```
+ * @JvmName("getIsRequired")
+ * ```
+ */
+fun jvmNameAnnotation(name: String): AnnotationSpec {
+    return AnnotationSpec.builder(JvmName::class)
+        .useSiteTarget(AnnotationSpec.UseSiteTarget.GET)
+        .addMember("%S", "get${name.capitalized()}")
+        .build()
+}
+
+/**
+ * Generate a [Suppress] annotation for a kotlin property.
+ * See: https://youtrack.jetbrains.com/issue/KT-31420
+ *
+ * Example generated annotation:
+ * ```
+ * @Suppress("INAPPLICABLE_JVM_NAME")
+ * ```
+ */
+fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec {
+    return AnnotationSpec.builder(Suppress::class)
+        .addMember("%S", "INAPPLICABLE_JVM_NAME")
+        .build()
+}
+
+private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
+    val graphqlGenerated = AnnotationSpec
+        .builder(ClassName(packageName, "Generated"))
+        .build()
+
+    return if (generatedAnnotationClassName == null) {
+        listOf(graphqlGenerated)
+    } else {
+        val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
+
+        val javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
+            .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
+            .addMember("date = %S", generatedDate)
+            .build()
+
+        listOf(javaxGenerated, graphqlGenerated)
+    }
 }
 
 /**
@@ -199,8 +254,9 @@ fun Description.sanitizeKdoc(): String {
 fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
-    if (!isGenericParam)
+    if (!isGenericParam) {
         ktTypeClassBestGuess(normalizedClassName)
+    }
 
     return when {
         normalizedClassName == "*" -> STAR
@@ -320,7 +376,7 @@ private fun parsePackage(config: CodeGenConfig, name: String, type: String? = nu
 fun FunSpec.Builder.addControlFlow(
     controlFlow: String,
     vararg args: Any,
-    builder: FunSpec.Builder.() -> Unit,
+    builder: FunSpec.Builder.() -> Unit
 ): FunSpec.Builder {
     this.beginControlFlow(controlFlow, *args)
     builder.invoke(this)
@@ -331,3 +387,10 @@ fun FunSpec.Builder.addControlFlow(
 fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.Builder = apply {
     enumSpecs.map { addEnumConstant(it.name!!, it) }
 }
+
+fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
+    apply {
+        if (config.addGeneratedAnnotation) {
+            generatedAnnotation(config.packageName).forEach { addAnnotation(it) }
+        }
+    }

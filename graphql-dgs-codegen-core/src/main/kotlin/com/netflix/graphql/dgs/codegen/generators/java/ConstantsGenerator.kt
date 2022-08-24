@@ -30,16 +30,13 @@ import com.squareup.javapoet.FieldSpec
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
-import graphql.language.Document
-import graphql.language.InputObjectTypeDefinition
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.ObjectTypeDefinition
-import graphql.language.UnionTypeDefinition
+import graphql.language.*
 import javax.lang.model.element.Modifier
 
 class ConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
     fun generate(): CodeGenResult {
         val javaType = TypeSpec.classBuilder("DgsConstants")
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
         document.definitions.filterIsInstance<ObjectTypeDefinition>()
@@ -55,6 +52,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
 
                 fields.forEach { field ->
                     addFieldNameConstant(constantsType, field.name)
+                    addQueryInputArgument(constantsType, field)
                 }
 
                 javaType.addType(constantsType.build())
@@ -119,13 +117,15 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
 
     private fun createConstantTypeBuilder(conf: CodeGenConfig, name: String): TypeSpec.Builder {
         val className =
-            if (conf.snakeCaseConstantNames)
+            if (conf.snakeCaseConstantNames) {
                 CodeGeneratorUtils.camelCaseToSnakeCase(name, CodeGeneratorUtils.Case.UPPERCASE)
-            else
+            } else {
                 name.uppercase()
+            }
 
         return TypeSpec
             .classBuilder(className)
+            .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
     }
 
@@ -137,5 +137,16 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
             )
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""$fieldName"""").build()
         )
+    }
+
+    private fun addQueryInputArgument(constantsType: TypeSpec.Builder, field: FieldDefinition) {
+        val inputFields = field.inputValueDefinitions
+        if (inputFields.isNotEmpty()) {
+            val inputConstantsType = createConstantTypeBuilder(config, field.name + "_INPUT_ARGUMENT")
+            inputFields.forEach { inputField ->
+                addFieldNameConstant(inputConstantsType, inputField.name)
+            }
+            constantsType.addType(inputConstantsType.build())
+        }
     }
 }

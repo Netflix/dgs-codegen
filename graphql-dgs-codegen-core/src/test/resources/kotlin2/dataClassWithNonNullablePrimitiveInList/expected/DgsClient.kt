@@ -1,3 +1,0 @@
-package kotlin2.dataClassWithNonNullablePrimitiveInList.expected
-
-public object DgsClient

@@ -1,0 +1,29 @@
+type Query {
+  entity: [Entity]
+  entityConnection: EntityConnection
+}
+
+type Entity {
+  long: Long
+  dateTime: DateTime
+}
+
+type EntityConnection {
+  pageInfo: PageInfo!
+  edges: [EntityEdge]
+}
+
+type EntityEdge {
+  cursor: String!
+  node: Entity
+}
+
+type PageInfo {
+  startCursor: String
+  endCursor: String
+  hasNextPage: Boolean!
+  hasPreviousPage: Boolean!
+}
+
+scalar Long @javaType(name : "kotlin.Long")
+scalar DateTime @javaType(name : "java.time.OffsetDateTime")

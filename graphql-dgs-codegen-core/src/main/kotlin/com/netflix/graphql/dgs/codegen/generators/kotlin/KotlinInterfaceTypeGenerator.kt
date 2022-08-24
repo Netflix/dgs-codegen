@@ -47,6 +47,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
         logger.info("Generating type {}", definition.name)
 
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
+            .addOptionalGeneratedAnnotation(config)
         if (definition.description != null) {
             interfaceBuilder.addKdoc("%L", definition.description.sanitizeKdoc())
         }
@@ -94,7 +95,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
             interfaceBuilder.addAnnotation(jsonSubTypesAnnotation(implementations))
         }
 
-        interfaceBuilder.addType(TypeSpec.companionObjectBuilder().build())
+        interfaceBuilder.addType(TypeSpec.companionObjectBuilder().addOptionalGeneratedAnnotation(config).build())
 
         val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
         return CodeGenResult(kotlinInterfaces = listOf(fileSpec))

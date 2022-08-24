@@ -20,9 +20,14 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
+import com.netflix.graphql.dgs.codegen.CodeGen
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.squareup.javapoet.AnnotationSpec
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.TypeName
+import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.WildcardTypeName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.Description
@@ -83,7 +88,8 @@ fun jsonSubTypeAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
 
     for (type in subTypes) {
         annotationSpec.addMember(
-            "value", "\$L",
+            "value",
+            "\$L",
             AnnotationSpec.builder(JsonSubTypes.Type::class.java)
                 .addMember("value", "\$T.class", type)
                 .addMember("name", "\$S", type.simpleName())
@@ -105,8 +111,9 @@ fun Description.sanitizeJavaDoc(): String {
 fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
-    if (!isGenericParam)
+    if (!isGenericParam) {
         return typeClassBestGuess(normalizedClassName)
+    }
 
     val superKeyword = normalizedClassName.split(" super ")
     val extendsKeyword = normalizedClassName.split(" extends ")
@@ -118,6 +125,32 @@ fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
         else -> typeClassBestGuess(normalizedClassName)
     }
 }
+
+private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
+    val graphqlGenerated = AnnotationSpec
+        .builder(ClassName.get(packageName, "Generated"))
+        .build()
+
+    return if (generatedAnnotationClassName == null) {
+        listOf(graphqlGenerated)
+    } else {
+        val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
+
+        val javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
+            .addMember("value", "${'$'}S", CodeGen::class.qualifiedName!!)
+            .addMember("date", "${'$'}S", generatedDate)
+            .build()
+
+        listOf(javaxGenerated, graphqlGenerated)
+    }
+}
+
+fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
+    apply {
+        if (config.addGeneratedAnnotation) {
+            generatedAnnotation(config.packageName).forEach { addAnnotation(it) }
+        }
+    }
 
 private fun typeClassBestGuess(name: String): TypeName {
     return when (name) {

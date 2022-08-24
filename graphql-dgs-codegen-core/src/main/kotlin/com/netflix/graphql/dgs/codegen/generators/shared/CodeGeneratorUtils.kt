@@ -44,7 +44,6 @@ object CodeGeneratorUtils {
      * Mostly copied from Apache Commons StringUtils.splitByCharacterType
      */
     private fun splitByCharacterTypeCamelCase(str: String): Array<String> {
-
         if (str.isEmpty()) {
             return emptyArray()
         }

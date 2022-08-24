@@ -39,7 +39,9 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
 
         logger.info("Generating enum type ${definition.name}")
 
-        val kotlinType = TypeSpec.classBuilder(definition.name).addModifiers(KModifier.ENUM)
+        val kotlinType = TypeSpec.classBuilder(definition.name)
+            .addOptionalGeneratedAnnotation(config)
+            .addModifiers(KModifier.ENUM)
 
         if (definition.description != null) {
             kotlinType.addKdoc("%L", definition.description.sanitizeKdoc())
@@ -54,7 +56,7 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
             }
         }
 
-        kotlinType.addType(TypeSpec.companionObjectBuilder().build())
+        kotlinType.addType(TypeSpec.companionObjectBuilder().addOptionalGeneratedAnnotation(config).build())
 
         val typeSpec = kotlinType.build()
         val fileSpec = FileSpec.builder(getPackageName(), typeSpec.name!!).addType(typeSpec).build()

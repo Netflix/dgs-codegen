@@ -33,7 +33,7 @@ class CodegenGradlePluginClientUtilsConventionsTest {
     private val inferredVersion = ClientUtilsConventions.pluginMetaInfVersion
 
     @Test
-    fun `If disabled, will not add the graphql-dgs-codegen-client-core`() {
+    fun `If disabled, will not add the graphql-dgs-codegen-shared-core`() {
         prepareBuildGradleFile(
             """
 plugins {
@@ -46,7 +46,7 @@ repositories { mavenCentral() }
 dependencies { }
 
 codegen.clientCoreConventionsEnabled = false
-""".trimMargin()
+            """.trimMargin()
         )
 
         val runner = GradleRunner.create()
@@ -59,13 +59,13 @@ codegen.clientCoreConventionsEnabled = false
         val result = runner.build()
 
         assertThat(result.output)
-            .doesNotContain("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core")
+            .doesNotContain("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core")
         assertThat(result.output)
-            .doesNotContain("com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core")
+            .doesNotContain("com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core")
     }
 
     @Test
-    fun `Adds the graphql-dgs-codegen-client-core to the classpath`() {
+    fun `Adds the graphql-dgs-codegen-shared-core to the classpath`() {
         // given a build file with the plugin.
         prepareBuildGradleFile(
             """
@@ -78,7 +78,7 @@ repositories { mavenCentral() }
 
 dependencies { }
 
-""".trimMargin()
+            """.trimMargin()
         )
         // when the build is executed
         val runner = GradleRunner.create()
@@ -91,13 +91,13 @@ dependencies { }
         val result = runner.build()
         // then we assert that the dependency was resolved to the proper version
         assertThat(result.output)
-            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:${inferredVersion.get()}")
+            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()}")
         assertThat(result.output)
-            .contains("- com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:${inferredVersion.get()}")
+            .contains("- com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()}")
     }
 
     @Test
-    fun `Can define the cofiguration the graphql-dgs-codegen-client-core module will be added to`() {
+    fun `Can define the cofiguration the graphql-dgs-codegen-shared-core module will be added to`() {
         // configuration
         val configuration = "api"
         // and a build file that configures the client core version to use such version
@@ -128,11 +128,11 @@ dependencies { }
         val result = runner.build()
         // then we assert that the dependency was resolved to the higher version.
         assertThat(result.output)
-            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:${inferredVersion.get()}] to the $configuration dependencies.")
+            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()}] to the $configuration dependencies.")
     }
 
     @Test
-    fun `Can define the specific version for the graphql-dgs-codegen-client-core`() {
+    fun `Can define the specific version for the graphql-dgs-codegen-shared-core`() {
         // given a higher version
         val higherVersion = "123456"
         // and a build file that configures the client core version to use such version
@@ -150,7 +150,7 @@ dependencies { }
 codegen {
     clientCoreVersion = "$higherVersion"
 }
-""".trimMargin()
+            """.trimMargin()
         )
         // when the build is executed
         val runner = GradleRunner.create()
@@ -163,13 +163,13 @@ codegen {
         val result = runner.build()
         // then we assert that the dependency was resolved to the higher version.
         assertThat(result.output)
-            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:$higherVersion")
+            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:$higherVersion")
         assertThat(result.output)
-            .contains("- com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:$higherVersion FAILED")
+            .contains("- com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:$higherVersion FAILED")
     }
 
     @Test
-    fun `Can be overridden by an explicit dependency to graphql-dgs-codegen-client-core`() {
+    fun `Can be overridden by an explicit dependency to graphql-dgs-codegen-shared-core`() {
         // given a higher version
         val higherVersion = "123456"
         // and a build file that depends on it.
@@ -183,9 +183,9 @@ plugins {
 repositories { mavenCentral() }
 
 dependencies { 
-    implementation 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:$higherVersion'
+    implementation 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:$higherVersion'
 }
-""".trimMargin()
+            """.trimMargin()
         )
         // when the build is executed
         val runner = GradleRunner.create()
@@ -198,9 +198,9 @@ dependencies {
         val result = runner.build()
         // then we assert that the dependency was resolved to the higher version.
         assertThat(result.output)
-            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core")
+            .contains("DGS CodeGen added [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core")
         assertThat(result.output)
-            .contains("- com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-client-core:${inferredVersion.get()} -> $higherVersion FAILED")
+            .contains("- com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()} -> $higherVersion FAILED")
     }
 
     private fun prepareBuildGradleFile(content: String) {

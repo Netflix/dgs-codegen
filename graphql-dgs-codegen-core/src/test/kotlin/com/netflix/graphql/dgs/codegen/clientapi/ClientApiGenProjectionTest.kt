@@ -30,7 +30,6 @@ import org.junit.jupiter.api.fail
 class ClientApiGenProjectionTest {
     @Test
     fun generateProjectionRoot() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -46,7 +45,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -58,7 +57,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateProjectionRootTestWithCycles() {
-
         val schema = """
             type Query @extends {
                 persons: [Person]
@@ -74,7 +72,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
@@ -114,7 +112,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -179,7 +177,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateSubProjectionsWithDifferentRootTypes() {
-
         val schema = """
             type Query @extends {
                 persons: [Person]
@@ -195,7 +192,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
@@ -206,7 +203,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateSubProjectionsWithDifferentParentTypes() {
-
         val schema = """
             type Query @extends {
                 persons: [Person]
@@ -227,7 +223,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
@@ -239,7 +235,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateSubProjectionTypes() {
-
         val schema = """
             type Query {
                 movies: [Movie]
@@ -262,7 +257,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -275,7 +270,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateSubProjectionTypesWithSimilarQueryAndFieldNames() {
-
         val schema = """
             type Query {
                 user: User
@@ -299,7 +293,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -314,7 +308,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateSubProjectionTypesWithShortNames() {
-
         val schema = """
             type Query {
                 movies: [Movie]
@@ -338,7 +331,7 @@ class ClientApiGenProjectionTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                shortProjectionNames = true,
+                shortProjectionNames = true
             )
         ).generate()
 
@@ -372,7 +365,7 @@ class ClientApiGenProjectionTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val projections = codeGenResult.clientProjections
@@ -409,7 +402,7 @@ class ClientApiGenProjectionTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val projections = codeGenResult.clientProjections
@@ -446,7 +439,7 @@ class ClientApiGenProjectionTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val projections = codeGenResult.clientProjections
@@ -460,7 +453,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateSubProjectionTypesMaxDepth() {
-
         val schema = """
             type Query {
                 movies: [Movie]
@@ -504,7 +496,7 @@ class ClientApiGenProjectionTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                maxProjectionDepth = 2,
+                maxProjectionDepth = 2
             )
         ).generate()
 
@@ -545,7 +537,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -584,7 +576,7 @@ class ClientApiGenProjectionTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val projections = codeGenResult.clientProjections
@@ -594,7 +586,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateProjectionRootWithReservedNames() {
-
         val schema = """
             type Query {
                 weirdType: WeirdType
@@ -613,7 +604,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -627,7 +618,6 @@ class ClientApiGenProjectionTest {
 
     @Test
     fun generateSubProjectionWithReservedNames() {
-
         val schema = """
             type Query {
                 normalType: NormalType
@@ -650,7 +640,7 @@ class ClientApiGenProjectionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -731,7 +721,7 @@ class ClientApiGenProjectionTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                maxProjectionDepth = 2,
+                maxProjectionDepth = 2
             )
         ).generate()
 
