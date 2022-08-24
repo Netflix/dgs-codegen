@@ -351,11 +351,10 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, prefix: 
  */
 private fun parseInputs(config: CodeGenConfig, inputs: ObjectValue): List<CodeBlock> {
     val objectFields: List<ObjectField> = inputs.objectFields
-    return objectFields.fold(mutableListOf(), {
-        codeBlocks, objectField ->
+    return objectFields.fold(mutableListOf()) { codeBlocks, objectField ->
         codeBlocks.add(generateCode(config, objectField.value, objectField.name + ParserConstants.ASSIGNMENT_OPERATOR))
         codeBlocks
-    })
+    }
 }
 
 /**

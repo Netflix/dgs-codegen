@@ -157,19 +157,17 @@ abstract class AbstractKotlinDataTypeGenerator(
      * Creates an argument map of the input Arguments
      */
     private fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
-        return directive.arguments.fold(mutableMapOf(), {
-            argMap, argument ->
+        return directive.arguments.fold(mutableMapOf()) { argMap, argument ->
             argMap[argument.name] = argument.value
             argMap
-        })
+        }
     }
 
     /**
      * Applies directives like customAnnotation
      */
     private fun applyDirectives(directives: List<Directive>): MutableList<AnnotationSpec> {
-        return directives.fold(mutableListOf(), {
-            annotations, directive ->
+        return directives.fold(mutableListOf()) { annotations, directive ->
             val argumentMap = createArgumentMap(directive)
             if (directive.name == ParserConstants.CUSTOM_ANNOTATION)
                 annotations.add(customAnnotation(argumentMap, config))
@@ -180,7 +178,7 @@ abstract class AbstractKotlinDataTypeGenerator(
                     throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
 
             annotations
-        })
+        }
     }
 
     internal fun generate(
