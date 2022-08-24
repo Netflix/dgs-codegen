@@ -28,7 +28,6 @@ import org.junit.jupiter.api.Test
 class ClientApiGenMutationTest {
     @Test
     fun generateMutationType() {
-
         val schema = """
             type Mutation {
                 updateMovie(movieId: ID, title: String): Movie
@@ -44,7 +43,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -56,7 +55,6 @@ class ClientApiGenMutationTest {
 
     @Test
     fun generateMutationWithInputType() {
-
         val schema = """
             type Mutation {
                 updateMovie(movie: MovieDescription): Movie
@@ -78,7 +76,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -92,7 +90,6 @@ class ClientApiGenMutationTest {
 
     @Test
     fun generateMutationWithInputDescription() {
-
         val schema = """
             type Mutation {
                 updateMovie(
@@ -118,7 +115,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -132,7 +129,6 @@ class ClientApiGenMutationTest {
 
     @Test
     fun generateMutationAddsNullChecksDuringInit() {
-
         val schema = """
             type Mutation {
                 updateMovie(movie: MovieDescription, reviews: [String], uuid: UUID): Movie
@@ -156,7 +152,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -182,7 +178,6 @@ class ClientApiGenMutationTest {
 
     @Test
     fun generateMutationDoesNotAddNullChecksForPrimitiveTypesDuringInit() {
-
         val schema = """
             type Mutation {
                 updateMovie(movieId: Int!): Movie
@@ -283,7 +278,6 @@ class ClientApiGenMutationTest {
 
     @Test
     fun includeMutationConfig() {
-
         val schema = """
             type Mutation {
                 updateMovieTitle: String
@@ -296,7 +290,7 @@ class ClientApiGenMutationTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                includeMutations = setOf("updateMovieTitle"),
+                includeMutations = setOf("updateMovieTitle")
             )
         ).generate()
 

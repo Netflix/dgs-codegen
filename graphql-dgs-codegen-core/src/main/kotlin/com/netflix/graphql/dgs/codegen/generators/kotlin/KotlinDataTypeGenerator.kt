@@ -43,6 +43,7 @@ import graphql.language.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.lang.IllegalArgumentException
+import java.io.Serializable
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
@@ -68,10 +69,6 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
                 .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description, it.directives) }
         val interfaces = definition.implements
         return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
-    }
-
-    override fun getPackageName(): String {
-        return config.packageNameTypes
     }
 }
 
@@ -120,10 +117,6 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
             is ParameterizedTypeName -> typeArguments[0].className
             else -> TODO()
         }
-
-    override fun getPackageName(): String {
-        return config.packageNameTypes
-    }
 }
 
 internal data class Field(
@@ -135,7 +128,11 @@ internal data class Field(
     val directives: List<Directive> = emptyList()
 )
 
-abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected val config: CodeGenConfig, protected val document: Document) {
+abstract class AbstractKotlinDataTypeGenerator(
+    packageName: String,
+    protected val config: CodeGenConfig,
+    protected val document: Document
+) {
     protected val typeUtils = KotlinTypeUtils(
         packageName = packageName,
         config = config,
@@ -195,6 +192,11 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
         directives: List<Directive> = emptyList()
     ): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
+            .addOptionalGeneratedAnnotation(config)
+
+        if (config.implementSerializable) {
+            kotlinType.addSuperinterface(ClassName.bestGuess(Serializable::class.java.name))
+        }
 
         if (fields.isNotEmpty()) {
             kotlinType.addModifiers(KModifier.DATA)
@@ -208,12 +210,16 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
             applyDirectives(directives, kotlinType)
         }
 
-        val constructorBuilder = FunSpec.constructorBuilder()
+        val funConstructorBuilder = FunSpec.constructorBuilder()
+
 
         fields.forEach { field ->
             val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
-            val parameterSpec = ParameterSpec.builder(field.name, returnType)
-                .addAnnotation(jsonPropertyAnnotation(field.name))
+
+            val parameterSpec =
+                ParameterSpec
+                    .builder(field.name, returnType)
+                    .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.directives.isNotEmpty()) {
                 applyDirectives(field.directives, parameterSpec)
@@ -231,6 +237,18 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
                     else -> if (field.nullable) parameterSpec.defaultValue("null")
                 }
             }
+            funConstructorBuilder.addParameter(parameterSpec.build())
+        }
+        kotlinType.primaryConstructor(funConstructorBuilder.build())
+
+        fields.forEach { field ->
+            val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
+            val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
+
+            if (field.description != null) {
+                propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
+            }
+            propertySpecBuilder.initializer(field.name)
 
             val interfaceNames = interfaces.asSequence()
                 .map { it as NamedNode<*> }
@@ -244,15 +262,11 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
                 .toSet()
 
             if (field.name in interfaceFields) {
-                parameterSpec.addModifiers(KModifier.OVERRIDE)
+                // Properties are the syntactical element that will allow us to override things, they are the spec on
+                // which we should add the override modifier.
+                propertySpecBuilder.addModifiers(KModifier.OVERRIDE)
             }
 
-            constructorBuilder.addParameter(parameterSpec.build())
-            val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
-            if (field.description != null) {
-                propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
-            }
-            propertySpecBuilder.initializer(field.name)
             kotlinType.addProperty(propertySpecBuilder.build())
         }
 
@@ -271,8 +285,8 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
             kotlinType.addAnnotation(disableJsonTypeInfoAnnotation())
         }
 
-        kotlinType.primaryConstructor(constructorBuilder.build())
-        kotlinType.addType(TypeSpec.companionObjectBuilder().build())
+        kotlinType.primaryConstructor(funConstructorBuilder.build())
+        kotlinType.addType(TypeSpec.companionObjectBuilder().addOptionalGeneratedAnnotation(config).build())
 
         val typeSpec = kotlinType.build()
 
@@ -281,5 +295,7 @@ abstract class AbstractKotlinDataTypeGenerator(packageName: String, protected va
         return CodeGenResult(kotlinDataTypes = listOf(fileSpec))
     }
 
-    abstract fun getPackageName(): String
+    open fun getPackageName(): String {
+        return config.packageNameTypes
+    }
 }

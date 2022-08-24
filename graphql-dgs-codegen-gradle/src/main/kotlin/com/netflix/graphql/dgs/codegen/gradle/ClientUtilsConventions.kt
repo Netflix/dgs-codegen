@@ -28,7 +28,7 @@ object ClientUtilsConventions {
     const val GRADLE_CLASSPATH_CONFIGURATION = "implementation"
 
     private const val CLIENT_UTILS_ARTIFACT_GROUP = "com.netflix.graphql.dgs.codegen"
-    private const val CLIENT_UTILS_ARTIFACT_NAME = "graphql-dgs-codegen-client-core"
+    private const val CLIENT_UTILS_ARTIFACT_NAME = "graphql-dgs-codegen-shared-core"
 
     private val logger = Logging.getLogger(ClientUtilsConventions::class.java)
 

@@ -22,26 +22,64 @@ import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnota
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.WildcardTypeName
+import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
-import org.junit.jupiter.params.provider.ArgumentsProvider
-import org.junit.jupiter.params.provider.ArgumentsSource
-import org.junit.jupiter.params.provider.MethodSource
-import org.junit.jupiter.params.provider.ValueSource
+import java.io.Serializable
 import java.util.stream.Stream
 
 class CodeGenTest {
 
     @Test
-    fun generateDataClassWithStringProperties() {
+    fun `When the schema fails to parse, is able to print the error message along with the schema`() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            type Mutation {
+        """.trimIndent()
 
+        Assertions.assertThatThrownBy {
+            CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+        }.isInstanceOf(CodeGenSchemaParsingException::class.java)
+            .hasMessageContainingAll(
+                "Invalid Syntax : offending token '<EOF>' at line 8 column 16",
+                """
+                |Schema Section:
+                |>>>
+                |    firstname: String
+                |    lastname: String
+                |}
+                |type Mutation {
+                |
+                """.trimMargin(),
+                """Full Schema:
+                |type Query {
+                |    people: [Person]
+                |}
+                |type Person {
+                |    firstname: String
+                |    lastname: String
+                |}
+                |type Mutation {
+                """.trimMargin()
+            )
+    }
+
+    @Test
+    fun generateDataClassWithStringProperties() {
         val schema = """
             type Query {
                 people: [Person]
@@ -56,7 +94,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -85,7 +123,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val typeSpec = dataTypes[0].typeSpec
@@ -107,7 +145,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val typeSpec = dataTypes[0].typeSpec
@@ -146,7 +184,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val typeSpec = dataTypes[0].typeSpec
@@ -157,7 +195,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithToString() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -172,7 +209,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -186,7 +223,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithEquals() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -201,7 +237,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -214,7 +250,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithNoFields() {
-
         val schema = """
             type Query {
                 me: Person
@@ -227,7 +262,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -240,7 +275,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithBuilder() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -255,7 +289,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -272,7 +306,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithHashcode() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -287,7 +320,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -300,7 +333,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithCustomPackagename() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -315,7 +347,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = "com.mypackage",
+                packageName = "com.mypackage"
             )
         ).generate()
 
@@ -328,7 +360,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithListProperties() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -343,7 +374,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -360,7 +391,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithNonNullableProperties() {
-
         val schema = """
             type Query {
                 people: [Person!]
@@ -375,7 +405,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -412,7 +442,7 @@ class CodeGenTest {
         val (dataTypes, interfaces) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -450,7 +480,8 @@ class CodeGenTest {
                |
                |  void setLastname(String lastname);
                |}
-               |""".trimMargin()
+               |
+            """.trimMargin()
         )
 
         assertCompilesJava(dataTypes + interfaces)
@@ -461,31 +492,33 @@ class CodeGenTest {
         // schema contains nullable, non-nullable and list types as interface fields  and fields that are
         // not interfaces
         val schema = """
-            interface Pet {
-                id: ID!
-	            name: String
-                address: [String!]!
-                mother: Pet!
-                father: Pet
-            	parents: [Pet]
-             }
-            type Dog implements Pet {
-                id: ID!
-	            name: String
-                address: [String!]!
-                mother: Dog!
-                father: Dog
-            	parents: [Dog]
-            }
-            type Bird implements Pet {
-                id: ID!
-	            name: String
-                address: [String!]!
-                mother: Bird!
-                father: Bird
-            	parents: [Bird]
-            }
-        """.trimIndent()
+            |interface Pet {
+            |   id: ID!
+            |   name: String
+            |   address: [String!]!
+            |   mother: Pet!
+            |   father: Pet
+            |   parents: [Pet]
+            |}
+            |
+            |type Dog implements Pet {
+            |    id: ID!
+            |    name: String
+            |    address: [String!]!
+            |    mother: Dog!
+            |    father: Dog
+            |    parents: [Dog]
+            |}
+            | 
+            |type Bird implements Pet {
+            |   id: ID!
+            |   name: String
+            |   address: [String!]!
+            |   mother: Bird!
+            |   father: Bird
+            |   parents: [Bird]
+            |}
+        """.trimMargin()
 
         val (dataTypes, interfaces) = CodeGen(
             CodeGenConfig(
@@ -525,7 +558,8 @@ class CodeGenTest {
                 |
                 |  void setAddress(List<String> address);
                 |}
-            |""".trimMargin()
+            |
+            """.trimMargin()
         )
 
         assertCompilesJava(dataTypes + interfaces)
@@ -534,30 +568,30 @@ class CodeGenTest {
     @Test
     fun generateInterfaceClassWithInterfaceFieldsOfDifferentType() {
         val schema = """
-            interface Pet {
-	            name: String
-                diet: Diet
-             }
-             
-            interface Diet {
-                calories: String
-            }
-            
-            type Vegetarian implements Diet {
-                calories: String
-                vegetables: [String]
-            }
-            
-            type Dog implements Pet {
-	            name: String
-                diet: Vegetarian
-            }
-        """.trimIndent()
+            |interface Pet {
+            |   name: String
+            |   diet: Diet
+            |}
+            |     
+            |interface Diet {
+            |   calories: String
+            |}
+            |    
+            |type Vegetarian implements Diet {
+            |    calories: String
+            |    vegetables: [String]
+            |}
+            |    
+            |type Dog implements Pet {
+            |    name: String
+            |    diet: Vegetarian
+            |}
+        """.trimMargin()
 
         val (dataTypes, interfaces) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -580,7 +614,8 @@ class CodeGenTest {
                 |
                 |  void setName(String name);
                 |}
-            |""".trimMargin()
+            |
+            """.trimMargin()
         )
 
         assertCompilesJava(dataTypes + interfaces)
@@ -588,7 +623,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithInterface() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -609,7 +643,7 @@ class CodeGenTest {
         val (dataTypes, interfaces) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -647,7 +681,8 @@ class CodeGenTest {
                |
                |  void setLastname(String lastname);
                |}
-               |""".trimMargin()
+               |
+            """.trimMargin()
         )
 
         assertCompilesJava(dataTypes + interfaces)
@@ -655,7 +690,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWitRecursiveField() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -672,7 +706,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -722,7 +756,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -735,6 +769,55 @@ class CodeGenTest {
             .extracting("type.simpleName")
             .containsExactly("Performance")
 
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateDataClassWithNoAllConstructor() {
+        val schema = """
+            type Query {
+                cars: [Car]
+            }
+            
+            type Car {
+                make: String
+                model: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                javaGenerateAllConstructor = false
+            )
+        ).generate()
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn { it.name.equals("<init>") && it.parameters.size > 0 }.hasSize(0)
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateDataClassWithAllConstructor() {
+        val schema = """
+            type Query {
+                cars: [Car]
+            }
+            
+            type Car {
+                make: String
+                model: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn { it.name.equals("<init>") && it.parameters.size > 0 }.hasSize(1)
         assertCompilesJava(dataTypes)
     }
 
@@ -755,7 +838,7 @@ class CodeGenTest {
         val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -789,7 +872,7 @@ class CodeGenTest {
         val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -804,7 +887,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataFetcherClass() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -819,7 +901,7 @@ class CodeGenTest {
         val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val dataFetchers = codeGenResult.javaDataFetchers
@@ -841,14 +923,14 @@ class CodeGenTest {
             arguments("ArrayList<String>", "java.util.ArrayList<java.lang.String>"),
             arguments("java.util.Map", "java.util.Map"),
             arguments("java.lang.String", "java.lang.String"),
-            arguments("Map<String, Object>", "java.util.Map<java.lang.String, java.lang.Object>",),
+            arguments("Map<String, Object>", "java.util.Map<java.lang.String, java.lang.Object>"),
             arguments("ArrayList<? extends Number>", "java.util.ArrayList<? extends java.lang.Number>"),
             arguments("ArrayList<? super Integer>", "java.util.ArrayList<? super java.lang.Integer>"),
             arguments("Map<? extends Double, ? super Float>", "java.util.Map<? extends java.lang.Double, ? super java.lang.Float>"),
             arguments("ArrayList<LinkedList<Set<HashSet<String>>>>", "java.util.ArrayList<java.util.LinkedList<java.util.Set<java.util.HashSet<java.lang.String>>>>"),
             arguments("Map<Map<Byte, Short>, Map<Long, Boolean>>", "java.util.Map<java.util.Map<java.lang.Byte, java.lang.Short>, java.util.Map<java.lang.Long, java.lang.Boolean>>"),
             arguments("ArrayList<?>", "java.util.ArrayList<java.lang.Object>"),
-            arguments("Map<?, ?>", "java.util.Map<java.lang.Object, java.lang.Object>"),
+            arguments("Map<?, ?>", "java.util.Map<java.lang.Object, java.lang.Object>")
         )
     }
 
@@ -876,7 +958,7 @@ class CodeGenTest {
                     CodeGenConfig(
                         schemas = setOf(schema),
                         packageName = basePackageName,
-                        typeMapping = mapOf("JSON" to mappedTypeAsString),
+                        typeMapping = mapOf("JSON" to mappedTypeAsString)
                     )
                 ).generate()
                 assertThat(dataTypes.size).isEqualTo(1)
@@ -908,7 +990,7 @@ class CodeGenTest {
                     "java.util.Map<? super>",
                     "java.util.Map<extends>",
                     "java.util.Map<super>",
-                    "?",
+                    "?"
                 ]
             )
             fun testWrongCase(mappedTypeAsString: String) {
@@ -917,7 +999,7 @@ class CodeGenTest {
                         CodeGenConfig(
                             schemas = setOf(schema),
                             packageName = basePackageName,
-                            typeMapping = mapOf("JSON" to mappedTypeAsString),
+                            typeMapping = mapOf("JSON" to mappedTypeAsString)
                         )
                     ).generate()
                 }
@@ -927,7 +1009,6 @@ class CodeGenTest {
 
     @Test
     fun `Skip generating a data class when the type is mapped`() {
-
         val schema = """
             type Query {
                 person: Person
@@ -944,7 +1025,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                typeMapping = mapOf("Person" to "mypackage.Person"),
+                typeMapping = mapOf("Person" to "mypackage.Person")
             )
         ).generate()
 
@@ -953,7 +1034,6 @@ class CodeGenTest {
 
     @Test
     fun `Use mapped type name when the type is mapped`() {
-
         val schema = """
             type Query {                
                 search: SearchResult
@@ -974,7 +1054,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                typeMapping = mapOf("Person" to "mypackage.Person"),
+                typeMapping = mapOf("Person" to "mypackage.Person")
             )
         ).generate()
 
@@ -984,7 +1064,6 @@ class CodeGenTest {
 
     @Test
     fun `Use mapped type name when the type is mapped for interface`() {
-
         val schema = """
             type Query {                
                 search: SearchResult
@@ -1009,8 +1088,8 @@ class CodeGenTest {
                 packageName = basePackageName,
                 typeMapping = mapOf(
                     "SomethingWithAName" to "mypackage.SomethingWithAName",
-                    "Person" to "mypackage.Person",
-                ),
+                    "Person" to "mypackage.Person"
+                )
             )
         ).generate()
 
@@ -1022,7 +1101,6 @@ class CodeGenTest {
 
     @Test
     fun `Use mapped type name when the type is mapped for union`() {
-
         val schema = """
             type Query {                
                 search: SearchResult
@@ -1046,8 +1124,8 @@ class CodeGenTest {
                 typeMapping = mapOf(
                     "SearchResult" to "mypackage.SearchResult",
                     "Movie" to "mypackage.Movie",
-                    "Actor" to "mypackage.Actor",
-                ),
+                    "Actor" to "mypackage.Actor"
+                )
             )
         ).generate()
 
@@ -1057,7 +1135,6 @@ class CodeGenTest {
 
     @Test
     fun `Use mapped type name when a concrete type of a union is mapped`() {
-
         val schema = """
             type Query {                
                 search: SearchResult
@@ -1079,8 +1156,8 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 typeMapping = mapOf(
-                    "Actor" to "mypackage.Actor",
-                ),
+                    "Actor" to "mypackage.Actor"
+                )
             )
         ).generate()
 
@@ -1091,7 +1168,6 @@ class CodeGenTest {
 
     @Test
     fun `Use mapped type name for input type`() {
-
         val schema = """
             type Query {                
                 search(input: SearchInput): String
@@ -1107,8 +1183,8 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 typeMapping = mapOf(
-                    "SearchInput" to "mypackage.SearchInput",
-                ),
+                    "SearchInput" to "mypackage.SearchInput"
+                )
             )
         ).generate()
 
@@ -1117,7 +1193,6 @@ class CodeGenTest {
 
     @Test
     fun `Use mapped type name for enum`() {
-
         val schema = """
             type Query {                
                 state: State
@@ -1134,8 +1209,8 @@ class CodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 typeMapping = mapOf(
-                    "State" to "mypackage.State",
-                ),
+                    "State" to "mypackage.State"
+                )
             )
         ).generate()
 
@@ -1145,7 +1220,6 @@ class CodeGenTest {
 
     @Test
     fun generateInputTypes() {
-
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
@@ -1159,7 +1233,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -1320,7 +1394,6 @@ class CodeGenTest {
 
     @Test
     fun generateExtendedInputTypes() {
-
         val schema = """
             type Query {
                 movies(filter: MovieFilter)
@@ -1338,7 +1411,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -1353,7 +1426,6 @@ class CodeGenTest {
 
     @Test
     fun generateToStringMethodForTypes() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -1368,7 +1440,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -1383,7 +1455,6 @@ class CodeGenTest {
 
     @Test
     fun generateToStringMethodForSensitiveType() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -1400,7 +1471,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -1415,7 +1486,6 @@ class CodeGenTest {
 
     @Test
     fun generateToStringMethodForSensitiveInputType() {
-
         val schema = """
             type Query {
                 people(filter: PersonFilter): [Person]
@@ -1429,7 +1499,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -1446,7 +1516,7 @@ class CodeGenTest {
     @MethodSource("generateConstantsArguments")
     fun `Generates constants from Type names available via the DgsConstants class`(
         snakeCaseEnabled: Boolean,
-        constantNames: List<String>,
+        constantNames: List<String>
     ) {
         val schema = """
             type Query {
@@ -1469,7 +1539,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                snakeCaseConstantNames = snakeCaseEnabled,
+                snakeCaseConstantNames = snakeCaseEnabled
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
@@ -1498,7 +1568,7 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
@@ -1531,7 +1601,7 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
@@ -1559,7 +1629,7 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
@@ -1587,12 +1657,44 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
         assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People", "Friends")
+    }
+
+    @Test
+    fun generateConstantsForQueryInputArguments() {
+        val schema = """
+            type Query {
+                shows(titleFilter: String,moveFilter: MovieFilter): [Show]
+            }
+            
+            type Show {
+                name: String
+            }
+            
+            input MovieFilter {
+                title: String
+                genre: Genre
+                language: Language
+                tags: [String]
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+        val type = result.javaConstants[0].typeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "SHOW", "MOVIEFILTER")
+        assertThat(type.typeSpecs[0].typeSpecs).extracting("name").containsExactly("SHOWS_INPUT_ARGUMENT")
+        assertThat(type.typeSpecs[0].typeSpecs[0].fieldSpecs).extracting("name")
+            .containsExactly("TitleFilter", "MoveFilter")
     }
 
     @Test
@@ -1616,7 +1718,7 @@ class CodeGenTest {
         val (dataTypes, interfaces) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Movie")
@@ -1654,7 +1756,7 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         assertThat(result.javaDataTypes[0].typeSpec.name).isEqualTo("Movie")
@@ -1681,7 +1783,8 @@ class CodeGenTest {
                 |})
                 |public interface SearchResult {
                 |}
-            |""".trimMargin()
+            |
+            """.trimMargin()
         )
 
         assertCompilesJava(result.javaDataTypes + result.javaInterfaces)
@@ -1702,7 +1805,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         assertThat(dataTypes.size).isEqualTo(1)
@@ -1721,7 +1824,7 @@ class CodeGenTest {
         val (dataTypes) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
@@ -1740,7 +1843,7 @@ class CodeGenTest {
         val (_, interfaces) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
         assertThat(interfaces[0].typeSpec.name).isEqualTo("Person")
@@ -1749,7 +1852,6 @@ class CodeGenTest {
 
     @Test
     fun generateWithCustomSubPackageName() {
-
         val schema = """
             type Person {
                 firstname: String
@@ -1768,7 +1870,6 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithInterfaceInheritance() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -1832,7 +1933,8 @@ class CodeGenTest {
                |
                |  void setLastname(String lastname);
                |}
-               |""".trimMargin()
+               |
+            """.trimMargin()
         )
 
         val employee = interfaces[1]
@@ -1863,7 +1965,8 @@ class CodeGenTest {
                |
                |  void setCompany(String company);
                |}
-               |""".trimMargin()
+               |
+            """.trimMargin()
         )
 
         assertThat(JavaFile.builder("$basePackageName.types", talent).build().toString()).isEqualTo(
@@ -1997,7 +2100,8 @@ class CodeGenTest {
                 |    }
                 |  }
                 |}
-                |""".trimMargin()
+                |
+            """.trimMargin()
         )
 
         assertCompilesJava(dataTypes + interfaces)
@@ -2005,7 +2109,6 @@ class CodeGenTest {
 
     @Test
     fun generateInterfacesWithoutSetters() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -2023,7 +2126,7 @@ class CodeGenTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = basePackageName,
-                    generateInterfaceSetters = false,
+                    generateInterfaceSetters = false
                 )
             ).generate()
 
@@ -2041,7 +2144,8 @@ class CodeGenTest {
                |
                |  String getLastname();
                |}
-               |""".trimMargin()
+               |
+            """.trimMargin()
         )
         assertCompilesJava(dataTypes + interfaces)
     }
@@ -2066,7 +2170,7 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -2625,7 +2729,7 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -2669,7 +2773,7 @@ It takes a title and such.
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -2698,7 +2802,7 @@ It takes a title and such.
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -2722,7 +2826,7 @@ It takes a title and such.
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -2746,7 +2850,7 @@ It takes a title and such.
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -2754,6 +2858,28 @@ It takes a title and such.
             """Some options
             """.trimIndent()
         )
+    }
+
+    @Test
+    fun generateSerializableDataClass() {
+        val schema = """
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                implementSerializable = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+        assertThat(dataTypes[0].typeSpec.superinterfaces).contains(ClassName.get(Serializable::class.java))
     }
 
     private val CodeGenResult.javaFiles: Collection<JavaFile>
@@ -2770,13 +2896,60 @@ It takes a title and such.
                 arguments(
                     false,
                     listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
-                ),
+                )
             )
         }
 
         @JvmStatic
         fun generateDataClassesWithParameterizedMappedTypesWrongCases(): Stream<Arguments> = Stream.of(
-            arguments("java.util.Map<String,String,>"),
+            arguments("java.util.Map<String,String,>")
         )
+    }
+
+    @Test
+    fun generateSourceWithGeneratedAnnotation() {
+        val schema = """
+            type Query {
+                employees(filter:EmployeeFilterInput) : [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            type Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            input EmployeeFilterInput {
+                rank: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.JAVA,
+                addGeneratedAnnotation = true,
+                generateClientApi = true
+            )
+        ).generate()
+
+        val (generatedAnnotationFile, allSources) = codeGenResult.javaSources()
+            .partition { it.typeSpec.name == "Generated" && it.typeSpec.kind == TypeSpec.Kind.ANNOTATION }
+
+        allSources.assertJavaGeneratedAnnotation()
+        assertThat(generatedAnnotationFile.single().toString())
+            .contains("java.lang.annotation.Retention", "RetentionPolicy.CLASS")
+        assertCompilesJava(codeGenResult)
     }
 }

@@ -25,7 +25,6 @@ import org.junit.jupiter.api.Test
 class ClientApiGenQueryTest {
     @Test
     fun generateQueryType() {
-
         val schema = """
             type Query {
                 people: [Person]
@@ -41,7 +40,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -53,7 +52,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateQueryTypeWithComments() {
-
         val schema = """
             type Query {
                 ""${'"'}
@@ -72,7 +70,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -89,7 +87,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateQueryTypesWithTypeExtensions() {
-
         val schema = """
             extend type Person {
                 preferences: Preferences
@@ -122,7 +119,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -222,7 +219,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateRecursiveInputTypes() {
-
         val schema = """
             type Query {
                 movies(filter: MovieQuery): [String]
@@ -258,7 +254,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateArgumentsForSimpleTypes() {
-
         val schema = """
             type Query {
                 personSearch(lastname: String): [Person]
@@ -275,7 +270,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("lastname")
@@ -285,7 +280,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateArgumentsForEnum() {
-
         val schema = """
             type Query {
                 personSearch(index: SearchIndex): [Person]
@@ -306,7 +300,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -319,7 +313,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateArgumentsForObjectType() {
-
         val schema = """
             type Query {
                 personSearch(index: SearchIndex): [Person]
@@ -340,7 +333,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -354,7 +347,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun includeQueryConfig() {
-
         val schema = """
             type Query {
                 movieTitles: [String]
@@ -367,7 +359,7 @@ class ClientApiGenQueryTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                includeQueries = setOf("movieTitles"),
+                includeQueries = setOf("movieTitles")
             )
         ).generate()
 
@@ -379,7 +371,6 @@ class ClientApiGenQueryTest {
 
     @Test
     fun skipCodegen() {
-
         val schema = """
             type Query {
                 persons: [Person]
@@ -401,7 +392,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -440,7 +431,7 @@ class ClientApiGenQueryTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApi = true
             )
         ).generate()
 
@@ -453,6 +444,52 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs[2].name).isEqualTo("duration")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("Search_SeriesProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[2].name).isEqualTo("episodes")
+
+        assertCompilesJava(
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
+        )
+    }
+
+    @Test
+    fun interfaceWithKeywords() {
+        val schema = """
+            type Query {
+              queryRoot: QueryRoot
+            }
+
+            interface HasDefaultField {
+              default: String
+              public: String
+              private: Boolean
+            }
+            
+            type QueryRoot implements HasDefaultField {
+                name: String
+                default: String
+                public: String
+                private: Boolean
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("QueryRootGraphQLQuery")
+
+        assertThat(codeGenResult.javaInterfaces.size).isEqualTo(1)
+        assertThat(codeGenResult.javaInterfaces[0].typeSpec.name).isEqualTo("HasDefaultField")
+
+        assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].name).isEqualTo("name")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[1].name).isEqualTo("_default")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[2].name).isEqualTo("_public")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
@@ -517,7 +554,8 @@ class ClientApiGenQueryTest {
 
         assertThat(
             rootProjectionClass.getMethod(
-                "stringField", java.lang.Boolean::class.java
+                "stringField",
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(stringFieldProjectionClass) { it.returnType }
@@ -578,7 +616,8 @@ class ClientApiGenQueryTest {
 
         assertThat(
             rootProjectionClass.getMethod(
-                "booleanArrayField", java.lang.Boolean::class.java
+                "booleanArrayField",
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(booleanArrayFieldProjectionClass) { it.returnType }
@@ -598,7 +637,8 @@ class ClientApiGenQueryTest {
 
         assertThat(
             rootProjectionClass.getMethod(
-                "floatField", java.lang.Boolean::class.java
+                "floatField",
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(floatFieldProjectionClass) { it.returnType }
@@ -618,7 +658,8 @@ class ClientApiGenQueryTest {
 
         assertThat(
             rootProjectionClass.getMethod(
-                "floatArrayField", java.lang.Boolean::class.java
+                "floatArrayField",
+                java.lang.Boolean::class.java
             )
         ).isNotNull
             .returns(floatArrayFieldProjectionClass) { it.returnType }
@@ -646,7 +687,7 @@ class ClientApiGenQueryTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val projections = codeGenResult.clientProjections
@@ -738,7 +779,8 @@ class ClientApiGenQueryTest {
             try: Boolean            
             void: Boolean           
             volatile: Boolean       
-            while: Boolean          
+            while: Boolean         
+            class: Int
           }
           
           scalar Long
@@ -750,7 +792,7 @@ class ClientApiGenQueryTest {
                 packageName = basePackageName,
                 generateDataTypes = true,
                 generateClientApi = true,
-                typeMapping = mapOf("Long" to "java.lang.Long"),
+                typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
         val projections = codeGenResult.clientProjections
@@ -816,7 +858,151 @@ class ClientApiGenQueryTest {
             "_try",
             "_void",
             "_volatile",
-            "_while"
+            "_while",
+            "_class"
         )
+    }
+
+    @Test
+    fun `Should be able to generate successfully when java keywords and default value are used as input types`() {
+        val schema = """
+            type Query {
+                foo(fooInput: FooInput): Baz
+                bar(barInput: BarInput): Baz
+            }
+            
+            input FooInput {
+                public: Boolean = true
+            }
+            
+            input BarInput {
+                public: Boolean
+            }
+
+            type Baz {
+                public: Boolean
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateDataTypes = false,
+                generateClientApi = true,
+                includeQueries = setOf("foo", "bar")
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaDataTypes.size).isEqualTo(2)
+
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.name).isEqualTo("FooInput")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].name).isEqualTo("_public")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("true")
+
+        assertThat(codeGenResult.javaDataTypes[1].typeSpec.name).isEqualTo("BarInput")
+        assertThat(codeGenResult.javaDataTypes[1].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("")
+
+        assertCompilesJava(codeGenResult.javaDataTypes)
+    }
+
+    @Test
+    fun `generate client code for both query and subscription with same definitions`() {
+        val schema = """
+            type Subscription {
+                shows: [Show]
+                movie(id: ID!): Movie
+                foo: Boolean
+                bar: Boolean
+            }
+            
+            type Mutation {
+                shows: [String]
+                movie(id: ID!, title: String): Movie
+                foo: String
+            }
+            
+            type Query {
+                shows: [Show]
+                movie: Movie
+            }
+            type Show {
+                id: Int
+                title: String
+            }
+            
+            type Movie {
+                title: String
+                duration: Int
+                related: Related
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(9)
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("ShowsGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[1].typeSpec.name).isEqualTo("MovieGraphQLQuery")
+
+        assertThat(codeGenResult.javaQueryTypes[2].typeSpec.name).isEqualTo("ShowsGraphQLMutation")
+        assertThat(codeGenResult.javaQueryTypes[3].typeSpec.name).isEqualTo("MovieGraphQLMutation")
+        assertThat(codeGenResult.javaQueryTypes[4].typeSpec.name).isEqualTo("FooGraphQLQuery")
+
+        assertThat(codeGenResult.javaQueryTypes[5].typeSpec.name).isEqualTo("ShowsGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[6].typeSpec.name).isEqualTo("MovieGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[7].typeSpec.name).isEqualTo("FooGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[8].typeSpec.name).isEqualTo("BarGraphQLQuery")
+
+        assertCompilesJava(codeGenResult.javaQueryTypes)
+    }
+
+    @Test
+    fun `Should be able to generate successfully when java keywords are used as types`() {
+        val schema = """
+            type Query {
+                bar: Bar
+            }
+            
+            interface Foo {
+                class: Int
+            }
+
+            type Bar implements Foo {
+                object: Int
+                class: Int
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateDataTypes = true,
+                generateClientApi = true,
+                includeQueries = setOf("bar")
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
+
+        val typeSpec = codeGenResult.javaDataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Bar")
+        assertThat(typeSpec.fieldSpecs[0].name).isEqualTo("object")
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs[1].name).isEqualTo("_class")
+
+        assertThat(typeSpec.methodSpecs.size).isGreaterThan(0)
+        assertThat(typeSpec.methodSpecs[0].name).isEqualTo("getObject")
+        assertThat(typeSpec.methodSpecs[1].name).isEqualTo("setObject")
+        assertThat(typeSpec.methodSpecs[2].name).isEqualTo("getClassField")
+        assertThat(typeSpec.methodSpecs[3].name).isEqualTo("setClassField")
+
+        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaInterfaces)
     }
 }

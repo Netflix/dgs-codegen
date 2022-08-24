@@ -21,7 +21,11 @@ package com.netflix.graphql.dgs.codegen
 import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
+import com.squareup.javapoet.AnnotationSpec
+import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.kotlin.cli.common.ExitCode
@@ -35,6 +39,10 @@ import java.io.File
 import java.lang.reflect.Method
 import java.nio.file.Files
 import java.nio.file.Path
+import kotlin.io.path.createDirectories
+import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
+import com.squareup.kotlinpoet.ClassName as KClassName
+import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
 fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
     return assertCompilesJava(
@@ -54,30 +62,31 @@ fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
     return result
 }
 
-fun assertCompilesKotlin(codeGenResult: CodeGenResult) =
-    assertCompilesKotlin(codeGenResult.kotlinSources())
+fun assertCompilesKotlin(codeGenResult: CodeGenResult, tests: Map<String, String> = emptyMap()) =
+    assertCompilesKotlin(codeGenResult.kotlinSources(), tests)
 
-fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
+fun assertCompilesKotlin(files: Collection<FileSpec>, tests: Map<String, String> = emptyMap()): Path {
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")
     files.forEach { it.writeTo(srcDir) }
+    tests.forEach { (file, content) ->
+        val target = File("$srcDir/$file")
+        target.toPath().parent.createDirectories()
+        target.writeText(content)
+    }
 
     K2JVMCompiler().run {
         val exitCode = execImpl(
             PrintingMessageCollector(
                 System.out,
                 MessageRenderer.WITHOUT_PATHS,
-                false,
+                false
             ),
             Services.EMPTY,
             K2JVMCompilerArguments().apply {
                 freeArgs = listOf(srcDir.toAbsolutePath().toString())
                 destination = buildDir.toAbsolutePath().toString()
-                classpath = System.getProperty("java.class.path")
-                    .split(System.getProperty("path.separator"))
-                    .filter {
-                        File(it).exists() && File(it).canRead()
-                    }.joinToString(":")
+                classpath = classpath()
                 noStdlib = true
                 noReflect = true
             }
@@ -86,6 +95,14 @@ fun assertCompilesKotlin(files: Collection<FileSpec>): Path {
     }
 
     return buildDir
+}
+
+fun classpath(): String {
+    return System.getProperty("java.class.path")
+        .split(System.getProperty("path.separator"))
+        .filter {
+            File(it).exists() && File(it).canRead()
+        }.joinToString(":")
 }
 
 fun codegenTestClassLoader(compilation: Compilation, parent: ClassLoader? = null): ClassLoader {
@@ -101,6 +118,51 @@ fun <T> invokeMethod(method: Method, target: Any, vararg args: Any): T {
     val result = ReflectionUtils.invokeMethod(method, target, *args)
     return result as T
 }
+
+fun List<FileSpec>.assertKotlinGeneratedAnnotation() = onEach {
+    it.members
+        .filterIsInstance(KTypeSpec::class.java)
+        .forEach { typeSpec -> typeSpec.assertKotlinGeneratedAnnotation(it) }
+}
+
+fun List<JavaFile>.assertJavaGeneratedAnnotation() = onEach {
+    it.typeSpec.assertJavaGeneratedAnnotation()
+}
+
+fun KTypeSpec.assertKotlinGeneratedAnnotation(fileSpec: FileSpec) {
+    val generatedSpec = annotationSpecs
+        .firstOrNull { it.canonicalName() == "$basePackageName.Generated" }
+    assertThat(generatedSpec)
+        .`as`("@Generated annotation exists in %s at %s", this, fileSpec)
+        .isNotNull
+
+    val javaxGeneratedSpec =
+        annotationSpecs.firstOrNull { it.canonicalName() == generatedAnnotationClassName }
+    assertThat(javaxGeneratedSpec)
+        .`as`("$generatedAnnotationClassName annotation exists in %s at %s", this, fileSpec)
+        .isNotNull
+
+    typeSpecs.forEach { it.assertKotlinGeneratedAnnotation(fileSpec) }
+}
+
+fun TypeSpec.assertJavaGeneratedAnnotation() {
+    val generatedSpec = annotations
+        .firstOrNull { it.canonicalName() == "$basePackageName.Generated" }
+    assertThat(generatedSpec)
+        .`as`("@Generated annotation exists in %s", this)
+        .isNotNull
+
+    val javaxGeneratedSpec =
+        annotations.firstOrNull { it.canonicalName() == generatedAnnotationClassName }
+    assertThat(javaxGeneratedSpec)
+        .`as`("$generatedAnnotationClassName annotation exists in %s", this)
+        .isNotNull
+
+    this.typeSpecs.forEach { it.assertJavaGeneratedAnnotation() }
+}
+
+fun AnnotationSpec.canonicalName(): String = (type as ClassName).canonicalName()
+fun KAnnotationSpec.canonicalName() = (typeName as KClassName).canonicalName
 
 const val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
 const val typesPackageName = "$basePackageName.types"

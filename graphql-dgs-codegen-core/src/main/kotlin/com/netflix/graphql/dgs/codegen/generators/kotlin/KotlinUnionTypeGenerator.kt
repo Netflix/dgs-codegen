@@ -38,6 +38,7 @@ class KotlinUnionTypeGenerator(private val config: CodeGenConfig) {
         }
 
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
+            .addOptionalGeneratedAnnotation(config)
 
         val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
             .filterIsInstance<TypeName>()
@@ -49,7 +50,7 @@ class KotlinUnionTypeGenerator(private val config: CodeGenConfig) {
             interfaceBuilder.addAnnotation(jsonSubTypesAnnotation(memberTypes))
         }
 
-        interfaceBuilder.addType(TypeSpec.companionObjectBuilder().build())
+        interfaceBuilder.addType(TypeSpec.companionObjectBuilder().addOptionalGeneratedAnnotation(config).build())
 
         val fileSpec = FileSpec.get(packageName, interfaceBuilder.build())
         return CodeGenResult(kotlinInterfaces = listOf(fileSpec))

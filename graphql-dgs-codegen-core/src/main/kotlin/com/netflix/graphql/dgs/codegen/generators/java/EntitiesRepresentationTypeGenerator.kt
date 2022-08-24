@@ -21,38 +21,33 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.fieldDefinitions
+import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils
+import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils.findType
+import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils.toRepresentationName
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
-import graphql.language.*
+import graphql.language.Document
+import graphql.language.EnumTypeDefinition
+import graphql.language.FieldDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.ObjectTypeDefinition
 import org.slf4j.LoggerFactory
 
 @Suppress("UNCHECKED_CAST")
 class EntitiesRepresentationTypeGenerator(
-    val config: CodeGenConfig,
-    private val document: Document
+    config: CodeGenConfig,
+    document: Document
 ) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
 
-    fun generate(definition: ObjectTypeDefinition, generatedRepresentations: MutableMap<String, Any>): CodeGenResult {
-        if (config.skipEntityQueries) {
-            return CodeGenResult()
-        }
-        val representationName = toRepresentationName(definition)
-        if (generatedRepresentations.containsKey(representationName)) {
-            return CodeGenResult()
-        }
-        val directiveArg =
-            definition
-                .getDirectives("key")
-                .map { it.argumentsByName["fields"]?.value as StringValue }
-                .map { it.value }
-
-        val keyFields = parseKeyDirectiveValue(directiveArg)
-        return generateRepresentations(
-            definition.name,
-            representationName,
-            definition.fieldDefinitions,
+    fun generate(
+        definition: ObjectTypeDefinition,
+        generatedRepresentations: MutableMap<String, Any>
+    ): CodeGenResult {
+        return EntitiesRepresentationTypeGeneratorUtils.generate(
+            config,
+            definition,
             generatedRepresentations,
-            keyFields
+            this::generateRepresentations
         )
     }
 
@@ -74,7 +69,6 @@ class EntitiesRepresentationTypeGenerator(
                 .filter { keyFields.containsKey(it.name) }
                 .map {
                     val type = findType(it.type, document)
-
                     if (type != null &&
                         (
                             type is ObjectTypeDefinition ||
@@ -105,8 +99,7 @@ class EntitiesRepresentationTypeGenerator(
                         }
                         Field(it.name, ClassName.get("", fieldRepresentationType))
                     } else {
-                        val returnType = typeUtils.findReturnType(it.type)
-                        Field(it.name, returnType)
+                        Field(it.name, typeUtils.findReturnType(it.type))
                     }
                 }
         // Generate base type representation...
@@ -121,61 +114,8 @@ class EntitiesRepresentationTypeGenerator(
         return parentRepresentationCodeGen.merge(fieldsCodeGenAccumulator)
     }
 
-    private fun findType(typeName: Type<*>, document: Document): TypeDefinition<*>? {
-        return when (typeName) {
-            is NonNullType -> {
-                findType(typeName.type, document)
-            }
-            is ListType -> {
-                findType(typeName.type, document)
-            }
-            else -> document.definitions.filterIsInstance<TypeDefinition<*>>()
-                .find { it.name == (typeName as TypeName).name }
-        }
-    }
-
-    private fun parseKeyDirectiveValue(keyDirective: List<String>): Map<String, Any> {
-        data class Node(val key: String, val map: MutableMap<String, Any>, val parent: Node?)
-
-        val keys = keyDirective.map { ds ->
-            ds.map { if (it == '{' || it == '}') " $it " else "$it" }
-                .joinToString("", "", "")
-                .split(" ")
-        }.flatten()
-
-        // handle simple keys and nested keys by constructing the path to each  key
-        // e.g. type Movie @key(fields: "movieId") or type MovieCast @key(fields: movie { movieId } actors { name } }
-        val mappedKeyTypes = mutableMapOf<String, Any>()
-        var parent = Node("", mappedKeyTypes, null)
-        var current = Node("", mappedKeyTypes, null)
-        keys.filter { it != " " && it != "" }
-            .forEach {
-                when (it) {
-                    "{" -> {
-                        // push a new map for the next level
-                        val previous = parent
-                        parent = current
-                        current = Node("", current.map[current.key] as MutableMap<String, Any>, previous)
-                    }
-                    "}" -> {
-                        // pop back to parent level
-                        current = parent
-                        parent = parent.parent!!
-                    }
-                    else -> {
-                        // make an entry at the current level
-                        current.map.putIfAbsent(it, mutableMapOf<String, Any>())
-                        current = Node(it, current.map, parent)
-                    }
-                }
-            }
-        return mappedKeyTypes
-    }
-
     companion object {
         private val logger: org.slf4j.Logger =
             LoggerFactory.getLogger(EntitiesRepresentationTypeGenerator::class.java)
-
-        private fun toRepresentationName(definition: TypeDefinition<*>) = "${definition.name}Representation"
     }
 }

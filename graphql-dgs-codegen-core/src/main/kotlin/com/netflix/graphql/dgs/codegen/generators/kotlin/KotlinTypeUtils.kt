@@ -46,8 +46,12 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
         "RelayPageInfo" to PageInfo::class.asTypeName(),
         "PageInfo" to PageInfo::class.asTypeName(),
         "PresignedUrlResponse" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse".toKtTypeName(),
-        "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName(),
+        "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName()
     )
+
+    fun qualifyName(name: String): String {
+        return "$packageName.$name"
+    }
 
     fun findReturnType(fieldType: Type<*>): KtTypeName {
         val visitor = object : NodeVisitorStub() {
@@ -73,20 +77,10 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
     }
 
     fun isNullable(fieldType: Type<*>): Boolean {
-        return if (config.kotlinAllFieldsOptional)
+        return if (config.kotlinAllFieldsOptional) {
             true
-        else
+        } else {
             fieldType !is NonNullType
-    }
-
-    private val builtinScalars = setOf("ID", "Boolean", "Int", "Long", "Float", "String", "DateTime")
-
-    fun isScalar(type: Type<*>, enums: Set<String>): Boolean {
-        return when (type) {
-            is TypeName -> builtinScalars.contains(type.name) || enums.contains(type.name)
-            is ListType -> isScalar(type.type, enums)
-            is NonNullType -> isScalar(type.type, enums)
-            else -> throw UnsupportedOperationException(type::class.qualifiedName)
         }
     }
 

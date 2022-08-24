@@ -18,9 +18,11 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.logger
 import graphql.language.Document
 import graphql.language.ScalarTypeDefinition
 import graphql.language.StringValue
+import java.time.Instant
 
 internal sealed class GenericSymbol(open val index: Int) {
     class OpenBracket(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf("<", startFrom))
@@ -34,7 +36,7 @@ internal sealed class GenericSymbol(open val index: Int) {
             return GenericSymbolsAhead(
                 openBracket = OpenBracket(mappedTypeArg, startFrom),
                 closeBracket = CloseBracket(mappedTypeArg, startFrom),
-                comma = Comma(mappedTypeArg, startFrom),
+                comma = Comma(mappedTypeArg, startFrom)
             )
         }
     }
@@ -43,7 +45,7 @@ internal sealed class GenericSymbol(open val index: Int) {
 internal data class GenericSymbolsAhead(
     val openBracket: GenericSymbol.OpenBracket,
     val closeBracket: GenericSymbol.CloseBracket,
-    val comma: GenericSymbol.Comma,
+    val comma: GenericSymbol.Comma
 ) {
     fun nextSymbol(): GenericSymbol? {
         return listOf(openBracket, closeBracket, comma).filterNot { it.notFound() }.minByOrNull { it.index }
@@ -84,8 +86,9 @@ internal fun <T> parseMappedType(
     val stack = mutableListOf<Pair<T, MutableList<T>>>()
     val iterator = genericSymbolsAheadIterator(mappedType)
 
-    if (!iterator.hasNext())
+    if (!iterator.hasNext()) {
         return mappedType.toTypeName(false)
+    }
 
     for (genericSymbolsAhead in iterator) {
         when (val symbolAhead = genericSymbolsAhead.nextSymbol()) {
@@ -113,11 +116,14 @@ internal fun <T> parseMappedType(
 
                 val parameterized = parameterize(current)
 
-                if (stack.isEmpty())
+                if (stack.isEmpty()) {
                     return parameterized
+                }
 
                 stack.last().second.add(parameterized)
             }
+            else ->
+                logger.info("Symbol ahead [$symbolAhead] didn't match any of the expected variations.")
         }
     }
 
@@ -125,7 +131,7 @@ internal fun <T> parseMappedType(
     return mappedType.toTypeName(true)
 }
 
-private const val JAVA_TYPE_DIRECTIVE_NAME = "javaType"
+internal const val JAVA_TYPE_DIRECTIVE_NAME = "javaType"
 
 /**
  * Find the type mapping to use for [typeName] if one exists in the [document].
@@ -150,3 +156,12 @@ internal fun findSchemaTypeMapping(document: Document, typeName: String): String
     }
     return null
 }
+
+internal val generatedAnnotationClassName: String? = runCatching {
+    Class.forName("javax.annotation.processing.Generated").canonicalName
+}.getOrElse {
+    runCatching {
+        Class.forName("javax.annotation.Generated").canonicalName
+    }.getOrNull()
+}
+internal val generatedDate: String = Instant.now().toString()
