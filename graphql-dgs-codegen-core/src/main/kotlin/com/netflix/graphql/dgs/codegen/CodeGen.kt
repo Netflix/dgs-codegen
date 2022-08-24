@@ -461,6 +461,7 @@ data class CodeGenConfig(
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
+    val includeImports: Map<String, String> = emptyMap(),
     var javaGenerateAllConstructor: Boolean = true,
     val implementSerializable: Boolean = false,
     val addGeneratedAnnotation: Boolean = false
