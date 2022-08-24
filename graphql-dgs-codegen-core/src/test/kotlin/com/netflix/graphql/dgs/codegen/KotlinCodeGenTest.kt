@@ -254,6 +254,32 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `input type with kotlinAllFieldsOptional setting`() {
+        val schema = """
+            input PersonUpdate {
+                 id: ID!
+                 name: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                kotlinAllFieldsOptional = true
+            )
+        ).generate()
+        val dataTypes = result.kotlinDataTypes
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.propertySpecs[0].type.isNullable).isFalse // id: ID!
+        assertThat(type.propertySpecs[1].type.isNullable).isTrue // name: String
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
     fun `interface classes are not generated with generateDataTypes setting set to false`() {
         val schema = """
             interface Person {
