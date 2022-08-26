@@ -31,7 +31,33 @@ import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClas
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.squareup.kotlinpoet.*
 import graphql.introspection.Introspection
+import graphql.language.ArrayValue
+import graphql.language.BooleanValue
 import graphql.language.Description
+import graphql.language.EnumValue
+import graphql.language.FloatValue
+import graphql.language.IntValue
+import graphql.language.NullValue
+import graphql.language.ObjectField
+import graphql.language.ObjectValue
+import graphql.language.StringValue
+import graphql.language.Value
+import java.lang.IllegalArgumentException
+
+object ParserConstants {
+    const val ASSIGNMENT_OPERATOR = " = "
+    const val TYPE = "type"
+    const val NAME = "name"
+    const val REASON = "reason"
+    const val CUSTOM_ANNOTATION = "annotate"
+    const val DEPRECATED = "deprecated"
+    const val INPUTS = "inputs"
+    const val DOT = "."
+    const val REPLACE_WITH_STR = ", replace with "
+    const val MESSAGE = "message"
+    const val REPLACE_WITH = "replaceWith"
+    const val REPLACE_WITH_CLASS = "ReplaceWith"
+}
 
 /**
  * Generate a [JsonTypeInfo] annotation, which allows for Jackson
@@ -194,6 +220,17 @@ fun jsonPropertyAnnotation(name: String): AnnotationSpec {
         .build()
 }
 
+fun deprecatedAnnotation(reason: String): AnnotationSpec {
+    // TODO support for level
+    val replace = reason.substringAfter(ParserConstants.REPLACE_WITH_STR, "")
+    val builder: AnnotationSpec.Builder = AnnotationSpec.builder(Deprecated::class)
+        .addMember("${ParserConstants.MESSAGE}${ParserConstants.ASSIGNMENT_OPERATOR}%S", reason.substringBefore(ParserConstants.REPLACE_WITH_STR))
+    if (replace.isNotEmpty()) {
+        builder.addMember(CodeBlock.of("${ParserConstants.REPLACE_WITH}${ParserConstants.ASSIGNMENT_OPERATOR}%M(%S)", MemberName("kotlin", ParserConstants.REPLACE_WITH_CLASS), reason.substringAfter(ParserConstants.REPLACE_WITH_STR)))
+    }
+    return builder.build()
+}
+
 /**
  * Generate a [JsonIgnoreProperties] annotation for the supplied
  * property name.
@@ -256,6 +293,80 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
         DOUBLE_ARRAY.simpleName -> DOUBLE_ARRAY
         else -> ClassName.bestGuess(name)
     }
+}
+
+/**
+ * Creates custom annotation from arguments
+ * name -> Name of the class to be annotated. It will contain className with oor without the package name (Mandatory)
+ * type -> The type of operation intended with this annotation. This value is also used to look up if there is any default packages associated with this annotation in the config
+ * inputs -> These are the input parameters needed for the annotation. If empty no inputs will be present for the annotation
+ */
+fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>, config: CodeGenConfig): AnnotationSpec {
+    if (annotationArgumentMap.isEmpty() || !annotationArgumentMap.containsKey(ParserConstants.NAME) || annotationArgumentMap[ParserConstants.NAME] is NullValue || (annotationArgumentMap[ParserConstants.NAME] as StringValue).value.isEmpty()) {
+        throw IllegalArgumentException("Invalid annotate directive")
+    }
+    val (packageName, simpleName) = parsePackage(
+        config,
+        (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
+        if (annotationArgumentMap.containsKey(ParserConstants.TYPE) && annotationArgumentMap[ParserConstants.TYPE] !is NullValue) (annotationArgumentMap[ParserConstants.TYPE] as StringValue).value else null
+    )
+    val className = ClassName(packageName = packageName, simpleNames = listOf(simpleName))
+    val annotation: AnnotationSpec.Builder = AnnotationSpec.builder(className)
+    if (annotationArgumentMap.containsKey(ParserConstants.INPUTS)) {
+        val codeBlocks: List<CodeBlock> = parseInputs(config, annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue)
+        codeBlocks.forEach { codeBlock ->
+            annotation.addMember(codeBlock)
+        }
+    }
+    return annotation.build()
+}
+
+/**
+ * Generates the code block containing the parameters of an annotation in the format key = value
+ */
+private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, prefix: String = "", type: String = ""): CodeBlock =
+    when (value) {
+        is BooleanValue -> CodeBlock.of("$prefix%L", (value as BooleanValue).isValue)
+        is IntValue -> CodeBlock.of("$prefix%L", (value as IntValue).value)
+        is StringValue -> CodeBlock.of("$prefix%S", (value as StringValue).value)
+        is FloatValue -> CodeBlock.of("$prefix%L", (value as FloatValue).value)
+        // If an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
+        // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
+        is EnumValue -> CodeBlock.of(
+            "$prefix%M",
+            MemberName(
+                if (prefix.isNotEmpty()) config.includeImports.getOrDefault(prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR), "")
+                else config.includeImports.getOrDefault(type.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR), ""),
+                (value as EnumValue).name
+            )
+        )
+        is ArrayValue ->
+            if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("[]")
+            else CodeBlock.of("$prefix[%L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, type = if (v is EnumValue) prefix else "").toString() })
+        else -> CodeBlock.of("$prefix%L", value)
+    }
+
+/**
+ * Parses the inputs argument in the directive to get the input parameters of the annotation
+ */
+private fun parseInputs(config: CodeGenConfig, inputs: ObjectValue): List<CodeBlock> {
+    val objectFields: List<ObjectField> = inputs.objectFields
+    return objectFields.fold(mutableListOf()) { codeBlocks, objectField ->
+        codeBlocks.add(generateCode(config, objectField.value, objectField.name + ParserConstants.ASSIGNMENT_OPERATOR))
+        codeBlocks
+    }
+}
+
+/**
+ * Parses the package value in the directive.
+ * If not present uses the default package in the config for that particular type of annotation.
+ * If neither of them are supplied the package name will be an empty String
+ * Also parses the  simpleName/className from the name argument in the directive
+ */
+private fun parsePackage(config: CodeGenConfig, name: String, type: String? = null): Pair<String, String> {
+    var packageName = name.substringBeforeLast(".", "")
+    packageName = if (packageName.isEmpty() && type != null) config.includeImports.getOrDefault(type, "") else packageName
+    return packageName to name.substringAfterLast(".")
 }
 
 fun FunSpec.Builder.addControlFlow(

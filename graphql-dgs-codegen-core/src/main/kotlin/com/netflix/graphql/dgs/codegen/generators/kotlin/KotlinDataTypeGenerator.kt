@@ -23,6 +23,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
 import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
@@ -61,12 +62,12 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
         val fields = definition.fieldDefinitions
             .filterSkipped()
             .filter(ReservedKeywordFilter.filterInvalidNames)
-            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) } +
+            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description, it.directives) } +
             extensions.flatMap { it.fieldDefinitions }
                 .filterSkipped()
-                .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description) }
+                .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description, it.directives) }
         val interfaces = definition.implements
-        return generate(definition.name, fields, interfaces, document, definition.description)
+        return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
     }
 }
 
@@ -86,14 +87,14 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
             .map {
                 val type = typeUtils.findReturnType(it.type)
                 val defaultValue = it.defaultValue?.let { value -> generateCode(value, type) }
-                Field(name = it.name, type = type, nullable = it.type !is NonNullType, default = defaultValue, description = it.description)
+                Field(name = it.name, type = type, nullable = it.type !is NonNullType, default = defaultValue, description = it.description, directives = it.directives)
             }.plus(
                 extensions.flatMap { it.inputValueDefinitions }.map {
-                    Field(name = it.name, type = typeUtils.findReturnType(it.type), nullable = it.type !is NonNullType, default = null, description = it.description)
+                    Field(name = it.name, type = typeUtils.findReturnType(it.type), nullable = it.type !is NonNullType, default = null, description = it.description, directives = it.directives)
                 }
             )
         val interfaces = emptyList<Type<*>>()
-        return generate(definition.name, fields, interfaces, document, definition.description)
+        return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
     }
 
     private fun generateCode(value: Value<Value<*>>, type: KtTypeName): CodeBlock =
@@ -122,7 +123,8 @@ internal data class Field(
     val type: KtTypeName,
     val nullable: Boolean,
     val default: CodeBlock? = null,
-    val description: Description? = null
+    val description: Description? = null,
+    val directives: List<Directive> = emptyList()
 )
 
 abstract class AbstractKotlinDataTypeGenerator(
@@ -136,12 +138,58 @@ abstract class AbstractKotlinDataTypeGenerator(
         document = document
     )
 
+    /**
+     * Applies the directives on a field
+     */
+    private fun applyDirectives(directives: List<Directive>, parameterSpec: ParameterSpec.Builder) {
+        parameterSpec.addAnnotations(applyDirectives(directives))
+    }
+
+    /**
+     * Applies the directives on a graphQL input or type
+     */
+    private fun applyDirectives(directives: List<Directive>, typeSpec: TypeSpec.Builder) {
+        typeSpec.addAnnotations(applyDirectives(directives))
+    }
+
+    /**
+     * Creates an argument map of the input Arguments
+     */
+    private fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
+        return directive.arguments.fold(mutableMapOf()) { argMap, argument ->
+            argMap[argument.name] = argument.value
+            argMap
+        }
+    }
+
+    /**
+     * Applies directives like customAnnotation
+     */
+    private fun applyDirectives(directives: List<Directive>): MutableList<AnnotationSpec> {
+        return directives.fold(mutableListOf()) { annotations, directive ->
+            val argumentMap = createArgumentMap(directive)
+            if (directive.name == ParserConstants.CUSTOM_ANNOTATION) {
+                annotations.add(customAnnotation(argumentMap, config))
+            }
+            if (directive.name == ParserConstants.DEPRECATED) {
+                if (argumentMap.containsKey(ParserConstants.REASON)) {
+                    annotations.add(deprecatedAnnotation((argumentMap[ParserConstants.REASON] as StringValue).value))
+                } else {
+                    throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
+                }
+            }
+
+            annotations
+        }
+    }
+
     internal fun generate(
         name: String,
         fields: List<Field>,
         interfaces: List<Type<*>>,
         document: Document,
-        description: Description? = null
+        description: Description? = null,
+        directives: List<Directive> = emptyList()
     ): CodeGenResult {
         val kotlinType = TypeSpec.classBuilder(name)
             .addOptionalGeneratedAnnotation(config)
@@ -158,6 +206,10 @@ abstract class AbstractKotlinDataTypeGenerator(
             kotlinType.addKdoc("%L", description.sanitizeKdoc())
         }
 
+        if (directives.isNotEmpty()) {
+            applyDirectives(directives, kotlinType)
+        }
+
         val funConstructorBuilder = FunSpec.constructorBuilder()
 
         fields.forEach { field ->
@@ -167,6 +219,10 @@ abstract class AbstractKotlinDataTypeGenerator(
                 ParameterSpec
                     .builder(field.name, returnType)
                     .addAnnotation(jsonPropertyAnnotation(field.name))
+
+            if (field.directives.isNotEmpty()) {
+                applyDirectives(field.directives, parameterSpec)
+            }
 
             if (field.default != null) {
                 parameterSpec.defaultValue(field.default)

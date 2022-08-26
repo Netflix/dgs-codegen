@@ -29,6 +29,7 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
+import java.math.BigInteger
 import java.util.stream.Stream
 import java.util.stream.Stream.of
 
@@ -1898,6 +1899,409 @@ class KotlinCodeGenTest {
         ).generate()
         assertThat(codeGenResult.kotlinDataTypes).extracting("name").containsExactly("Person")
         assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun deprecateAnnotation() {
+        val schema = """
+            input Person @deprecated(reason: "This is going bye bye") {
+                name: String @deprecated(reason: "This field is no longer available, replace with firstName")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
+        assertThat(annotationSpec.members).hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("This is going bye bye"))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
+        assertThat(parameterSpec.annotations[1].members).hasSize(2)
+        assertThat(parameterSpec.annotations[1].members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("This field is no longer available"))
+        assertThat(parameterSpec.annotations[1].members[1]).extracting("formatParts", "args").asString().contains("replaceWith = ", "%M", "(", "%S", ")", "kotlin.ReplaceWith", "firstName")
+    }
+
+    @Test
+    fun annotateOnInput() {
+        val schema = """
+            input Person @annotate(name: "ValidPerson", type: "validator", inputs: {maxLimit: 10, types: ["husband", "wife"]}) {
+                name: String @annotate(name: "ValidName", type: "validator")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
+    }
+
+    @Test
+    fun annotateOnTypes() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {maxLimit: 10, types: ["husband", "wife"]}) {
+                name: String @annotate(name: "ValidName", type: "validator")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
+    }
+
+    @Test
+    fun annotateWithNullType() {
+        val schema = """
+            type Person @annotate(name: "com.validator.ValidPerson", type: null, inputs: {maxLimit: 10, types: ["husband", "wife"]}) {
+                name: String @annotate(name: "ValidName", type: "validator")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.validator.ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
+    }
+
+    @Test
+    fun annotateWithNullName() {
+        val schema = """
+            type Person @annotate(name: "com.validator.ValidPerson", type: null, inputs: {maxLimit: 10, types: ["husband", "wife"]}) {
+                name: String @annotate(name: null, type: "validator")
+            }
+        """.trimIndent()
+
+        assertThrows<IllegalArgumentException> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN
+                )
+            ).generate()
+        }
+    }
+
+    @Test
+    fun annotateOnTypesWithDefaultPackage() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {maxLimit: 10, types: ["husband", "wife"]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                includeImports = mapOf(Pair("validator", "com.test.validator"))
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithDefaultPackageAndType() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {maxLimit: 10, types: ["husband", "wife"]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName", type: "validator")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                includeImports = mapOf(Pair("validator", "com.test.validator"))
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members).hasSize(2)
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithEnums() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {sexType: MALE}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("sexType", "com.enums"))
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.MALE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithListOfEnums() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithEmptyType() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName", type: "")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithMultipleAnnotations() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(3)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.nullValidator.NullValue")
+    }
+
+    @Test
+    fun annotateOnTypesWithoutName() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate
+            }
+        """.trimIndent()
+
+        assertThrows<IllegalArgumentException> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+                )
+            ).generate()
+        }
+    }
+
+    @Test
+    fun annotateOnTypesWithEmptyName() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "")
+            }
+        """.trimIndent()
+
+        assertThrows<IllegalArgumentException> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+                )
+            ).generate()
+        }
+    }
+
+    @Test
+    fun deprecateAnnotationWithNoMesssage() {
+        val schema = """
+            input Person @deprecated(message: "This is going bye bye") {
+                name: String @deprecated
+            }
+        """.trimIndent()
+
+        assertThrows<IllegalArgumentException> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN
+                )
+            ).generate()
+        }
     }
 
     @Test
