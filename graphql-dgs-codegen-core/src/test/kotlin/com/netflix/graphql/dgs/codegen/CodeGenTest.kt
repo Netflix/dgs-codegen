@@ -19,11 +19,7 @@
 package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeSpec
-import com.squareup.javapoet.WildcardTypeName
+import com.squareup.javapoet.*
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -34,6 +30,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
 import java.io.Serializable
+import java.math.BigInteger
 import java.util.stream.Stream
 
 class CodeGenTest {
@@ -2952,4 +2949,74 @@ It takes a title and such.
             .contains("java.lang.annotation.Retention", "RetentionPolicy.CLASS")
         assertCompilesJava(codeGenResult)
     }
+
+    @Test
+    fun deprecateAnnotation() {
+        val schema = """
+            input Person @deprecated(reason: "This is going bye bye") {
+                name: String @deprecated(reason: "This field is no longer available, replace with firstName")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.javadoc.toString()).isEqualTo("This is going bye bye")
+        assertThat(person.annotations).hasSize(1)
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].javadoc.toString()).isEqualTo("@deprecated This field is no longer available. Replaced by firstName")
+        assertThat(fields[0].annotations).hasSize(1)
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+    }
+
+//    @Test
+//    fun annotateOnInput() {
+//        val schema = """
+//            input Person @annotate(name: "ValidPerson", type: "validator", inputs: {maxLimit: 10, types: ["husband", "wife"]}) {
+//                name: String @annotate(name: "ValidName", type: "validator")
+//            }
+//        """.trimIndent()
+//
+//        val (dataTypes) = CodeGen(
+//            CodeGenConfig(
+//                schemas = setOf(schema),
+//                packageName = basePackageName,
+//                includeImports = mapOf(Pair("validator", "com.test.validator")),
+//                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+//                generateCustomAnnotations = true
+//            )
+//        ).generate()
+//
+//        assertThat(dataTypes.size).isEqualTo(1)
+//        val person = dataTypes.single().typeSpec
+//        assertThat(person.name).isEqualTo("Person")
+//        assertThat(person.annotations).hasSize(1)
+//        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
+//        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
+//        assertThat(person.members).hasSize(2)
+//        assertThat(person.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(
+//            BigInteger("10")
+//        ))
+//        assertThat(person.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+//        val fields = person.fieldSpecs
+//        assertThat(fields).hasSize(1)
+//        assertThat(fields[0].javadoc.toString()).isEqualTo("@deprecated This field is no longer available. Replaced by firstName")
+//        assertThat(fields[0].annotations).hasSize(1)
+//        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+//        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidName")
+//    }
 }

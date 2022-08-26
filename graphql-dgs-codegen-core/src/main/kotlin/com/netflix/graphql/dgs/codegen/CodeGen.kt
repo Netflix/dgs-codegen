@@ -462,6 +462,8 @@ data class CodeGenConfig(
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
     val includeImports: Map<String, String> = emptyMap(),
+    val includeEnumImports: Map<String, Map<String, String>> = emptyMap(),
+    val generateCustomAnnotations: Boolean = false,
     var javaGenerateAllConstructor: Boolean = true,
     val implementSerializable: Boolean = false,
     val addGeneratedAnnotation: Boolean = false

@@ -22,15 +22,14 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.PackageParserUtil
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
-import com.squareup.javapoet.AnnotationSpec
-import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.*
 import com.squareup.javapoet.TypeName
-import com.squareup.javapoet.TypeSpec
-import com.squareup.javapoet.WildcardTypeName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
-import graphql.language.Description
+import graphql.language.*
+import java.lang.IllegalArgumentException
 
 /**
  * Generate a [JsonTypeInfo] annotation, which allows for Jackson
@@ -44,6 +43,20 @@ import graphql.language.Description
  *   property = "__typename")
  * ```
  */
+
+object ParserConstants {
+    const val TYPE = "type"
+    const val NAME = "name"
+    const val INPUTS = "inputs"
+}
+
+/**
+ * Adds @Deprecated annotation
+ */
+fun deprecatedAnnotation(): AnnotationSpec {
+    return AnnotationSpec.builder(java.lang.Deprecated::class.java).build()
+}
+
 fun jsonTypeInfoAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonTypeInfo::class.java)
         .addMember("use", "\$T.\$L", JsonTypeInfo.Id::class.java, JsonTypeInfo.Id.NAME.name)
@@ -150,6 +163,54 @@ fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): Type
         if (config.addGeneratedAnnotation) {
             generatedAnnotation(config.packageName).forEach { addAnnotation(it) }
         }
+    }
+
+/**
+ * Creates custom annotation from arguments
+ * name -> Name of the class to be annotated. It will contain className with oor without the package name (Mandatory)
+ * type -> The type of operation intended with this annotation. This value is also used to look up if there is any default packages associated with this annotation in the config
+ * inputs -> These are the input parameters needed for the annotation. If empty no inputs will be present for the annotation
+ */
+fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>, config: CodeGenConfig): AnnotationSpec {
+    if (annotationArgumentMap.isEmpty() || !annotationArgumentMap.containsKey(ParserConstants.NAME) || annotationArgumentMap[ParserConstants.NAME] is NullValue || (annotationArgumentMap[ParserConstants.NAME] as StringValue).value.isEmpty()) {
+        throw IllegalArgumentException("Invalid annotate directive")
+    }
+    val (packageName, simpleName) = PackageParserUtil.getAnnotationPackage(
+        config,
+        (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
+        if (annotationArgumentMap.containsKey(ParserConstants.TYPE) && annotationArgumentMap[ParserConstants.TYPE] !is NullValue) (annotationArgumentMap[ParserConstants.TYPE] as StringValue).value else null
+    )
+    val className = ClassName.get(packageName, simpleName)
+    val annotation: AnnotationSpec.Builder = AnnotationSpec.builder(className)
+    if (annotationArgumentMap.containsKey(ParserConstants.INPUTS)) {
+        val objectFields: List<ObjectField> = (annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue).objectFields
+        for (objectField in objectFields) {
+            val codeBlock: CodeBlock = generateCode(objectField.value,
+                PackageParserUtil.getEnumPackage(config, (annotationArgumentMap[ParserConstants.NAME] as StringValue).value, objectField.name))
+            annotation.addMember(objectField.name, codeBlock)
+        }
+    }
+    return annotation.build()
+}
+
+/**
+ * Generates the code block containing the parameters of an annotation in the format value
+ */
+private fun generateCode(value: Value<Value<*>>, packageName: String = ""): CodeBlock =
+    when (value) {
+        is BooleanValue -> CodeBlock.of("\$L", (value as BooleanValue).isValue)
+        is IntValue -> CodeBlock.of("\$L", (value as IntValue).value)
+        is StringValue -> CodeBlock.of("\$S", (value as StringValue).value)
+        is FloatValue -> CodeBlock.of("\$L", (value as FloatValue).value)
+        // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
+        // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
+        is EnumValue -> CodeBlock.of(
+            "\$T", ClassName.get(packageName, (value as EnumValue).name)
+        )
+        is ArrayValue ->
+            if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("[]")
+            else CodeBlock.of("[\$L]", (value as ArrayValue).values.joinToString { v -> generateCode(value = v, if (v is EnumValue) packageName else "").toString()})
+        else -> CodeBlock.of("\$L", value)
     }
 
 private fun typeClassBestGuess(name: String): TypeName {
