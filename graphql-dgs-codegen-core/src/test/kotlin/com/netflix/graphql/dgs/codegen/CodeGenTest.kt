@@ -3367,4 +3367,33 @@ It takes a title and such.
             ).generate()
         }
     }
+
+    @Test
+    fun annotateOnTypesWithCustomAnnotationsDisabled() {
+        val schema = """
+            type Person @deprecated(reason: "This is going bye bye") @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = false
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(1)
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(0)
+    }
 }
