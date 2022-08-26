@@ -185,8 +185,10 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
     if (annotationArgumentMap.containsKey(ParserConstants.INPUTS)) {
         val objectFields: List<ObjectField> = (annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue).objectFields
         for (objectField in objectFields) {
-            val codeBlock: CodeBlock = generateCode(objectField.value,
-                PackageParserUtil.getEnumPackage(config, (annotationArgumentMap[ParserConstants.NAME] as StringValue).value, objectField.name))
+            val codeBlock: CodeBlock = generateCode(
+                objectField.value,
+                PackageParserUtil.getEnumPackage(config, (annotationArgumentMap[ParserConstants.NAME] as StringValue).value, objectField.name)
+            )
             annotation.addMember(objectField.name, codeBlock)
         }
     }
@@ -205,11 +207,12 @@ private fun generateCode(value: Value<Value<*>>, packageName: String = ""): Code
         // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
         // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
         is EnumValue -> CodeBlock.of(
-            "\$T", ClassName.get(packageName, (value as EnumValue).name)
+            "\$T",
+            ClassName.get(packageName, (value as EnumValue).name)
         )
         is ArrayValue ->
             if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("[]")
-            else CodeBlock.of("[\$L]", (value as ArrayValue).values.joinToString { v -> generateCode(value = v, if (v is EnumValue) packageName else "").toString()})
+            else CodeBlock.of("[\$L]", (value as ArrayValue).values.joinToString { v -> generateCode(value = v, if (v is EnumValue) packageName else "").toString() })
         else -> CodeBlock.of("\$L", value)
     }
 

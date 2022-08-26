@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.generators.kotlin.ParserConstants
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
@@ -205,6 +206,8 @@ abstract class BaseDataTypeGenerator(
                         if (replace.isNotEmpty()) {
                             commentFormat = "@deprecated ${reason.substringBefore(ParserConstants.REPLACE_WITH_STR)}. Replaced by $replace"
                         }
+                    } else {
+                        throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
                     }
                 }
                 annotations
@@ -235,8 +238,9 @@ abstract class BaseDataTypeGenerator(
         if (directives.isNotEmpty()) {
             val (annotations, comments) = applyDirectives(directives)
             javaType.addAnnotations(annotations)
-            if (!comments.isNullOrBlank())
+            if (!comments.isNullOrBlank()) {
                 javaType.addJavadoc("\$L", comments)
+            }
         }
 
         interfaces.forEach {
@@ -342,7 +346,7 @@ abstract class BaseDataTypeGenerator(
         val methodBuilder = MethodSpec.methodBuilder("toString").addAnnotation(Override::class.java).addModifiers(Modifier.PUBLIC).returns(String::class.java)
         val toStringBody = StringBuilder("return \"${javaType.build().name}{\" + ")
         fieldDefinitions.forEachIndexed { index, field ->
-            val fieldValueStatement = if (field.directives.stream().anyMatch{ it -> it.name.equals("sensitive") }) "\"*****\"" else ReservedKeywordSanitizer.sanitize(field.name)
+            val fieldValueStatement = if (field.directives.stream().anyMatch { it -> it.name.equals("sensitive") }) "\"*****\"" else ReservedKeywordSanitizer.sanitize(field.name)
             toStringBody.append(
                 """
                 "${field.name}='" + $fieldValueStatement + "'${if (index < fieldDefinitions.size - 1) "," else ""}" +
@@ -397,8 +401,9 @@ abstract class BaseDataTypeGenerator(
         if (fieldDefinition.directives.isNotEmpty()) {
             val (annotations, comments) = applyDirectives(fieldDefinition.directives)
             fieldBuilder.addAnnotations(annotations)
-            if (!comments.isNullOrBlank())
+            if (!comments.isNullOrBlank()) {
                 fieldBuilder.addJavadoc("\$L", comments)
+            }
         }
 
         if (fieldDefinition.description != null) {

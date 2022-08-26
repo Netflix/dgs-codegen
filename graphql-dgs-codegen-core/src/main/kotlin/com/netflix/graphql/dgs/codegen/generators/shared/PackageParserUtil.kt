@@ -19,8 +19,6 @@
 package com.netflix.graphql.dgs.codegen.generators.shared
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.generators.java.ParserConstants
-import graphql.language.StringValue
 
 class PackageParserUtil {
 
@@ -46,7 +44,8 @@ class PackageParserUtil {
          */
         fun getEnumPackage(config: CodeGenConfig, annotationName: String, enumType: String): String {
             return config.includeEnumImports[annotationName]?.getOrDefault(
-                enumType, ""
+                enumType,
+                ""
             ) ?: ""
         }
     }
