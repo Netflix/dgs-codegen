@@ -27,6 +27,8 @@ import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.netflix.graphql.dgs.codegen.generators.shared.PackageParserUtil
+import com.netflix.graphql.dgs.codegen.generators.shared.ParserConstants
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.squareup.kotlinpoet.*
@@ -43,21 +45,6 @@ import graphql.language.ObjectValue
 import graphql.language.StringValue
 import graphql.language.Value
 import java.lang.IllegalArgumentException
-
-object ParserConstants {
-    const val ASSIGNMENT_OPERATOR = " = "
-    const val TYPE = "type"
-    const val NAME = "name"
-    const val REASON = "reason"
-    const val CUSTOM_ANNOTATION = "annotate"
-    const val DEPRECATED = "deprecated"
-    const val INPUTS = "inputs"
-    const val DOT = "."
-    const val REPLACE_WITH_STR = ", replace with "
-    const val MESSAGE = "message"
-    const val REPLACE_WITH = "replaceWith"
-    const val REPLACE_WITH_CLASS = "ReplaceWith"
-}
 
 /**
  * Generate a [JsonTypeInfo] annotation, which allows for Jackson
@@ -305,7 +292,7 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
     if (annotationArgumentMap.isEmpty() || !annotationArgumentMap.containsKey(ParserConstants.NAME) || annotationArgumentMap[ParserConstants.NAME] is NullValue || (annotationArgumentMap[ParserConstants.NAME] as StringValue).value.isEmpty()) {
         throw IllegalArgumentException("Invalid annotate directive")
     }
-    val (packageName, simpleName) = parsePackage(
+    val (packageName, simpleName) = PackageParserUtil.getAnnotationPackage(
         config,
         (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
         if (annotationArgumentMap.containsKey(ParserConstants.TYPE) && annotationArgumentMap[ParserConstants.TYPE] !is NullValue) (annotationArgumentMap[ParserConstants.TYPE] as StringValue).value else null
@@ -330,7 +317,7 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, prefix: 
         is IntValue -> CodeBlock.of("$prefix%L", (value as IntValue).value)
         is StringValue -> CodeBlock.of("$prefix%S", (value as StringValue).value)
         is FloatValue -> CodeBlock.of("$prefix%L", (value as FloatValue).value)
-        // If an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
+        // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
         // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
         is EnumValue -> CodeBlock.of(
             "$prefix%M",
@@ -355,18 +342,6 @@ private fun parseInputs(config: CodeGenConfig, inputs: ObjectValue): List<CodeBl
         codeBlocks.add(generateCode(config, objectField.value, objectField.name + ParserConstants.ASSIGNMENT_OPERATOR))
         codeBlocks
     }
-}
-
-/**
- * Parses the package value in the directive.
- * If not present uses the default package in the config for that particular type of annotation.
- * If neither of them are supplied the package name will be an empty String
- * Also parses the  simpleName/className from the name argument in the directive
- */
-private fun parsePackage(config: CodeGenConfig, name: String, type: String? = null): Pair<String, String> {
-    var packageName = name.substringBeforeLast(".", "")
-    packageName = if (packageName.isEmpty() && type != null) config.includeImports.getOrDefault(type, "") else packageName
-    return packageName to name.substringAfterLast(".")
 }
 
 fun FunSpec.Builder.addControlFlow(

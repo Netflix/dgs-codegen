@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
+import com.netflix.graphql.dgs.codegen.generators.shared.ParserConstants
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.BOOLEAN
@@ -139,20 +140,6 @@ abstract class AbstractKotlinDataTypeGenerator(
     )
 
     /**
-     * Applies the directives on a field
-     */
-    private fun applyDirectives(directives: List<Directive>, parameterSpec: ParameterSpec.Builder) {
-        parameterSpec.addAnnotations(applyDirectives(directives))
-    }
-
-    /**
-     * Applies the directives on a graphQL input or type
-     */
-    private fun applyDirectives(directives: List<Directive>, typeSpec: TypeSpec.Builder) {
-        typeSpec.addAnnotations(applyDirectives(directives))
-    }
-
-    /**
      * Creates an argument map of the input Arguments
      */
     private fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
@@ -207,7 +194,7 @@ abstract class AbstractKotlinDataTypeGenerator(
         }
 
         if (directives.isNotEmpty()) {
-            applyDirectives(directives, kotlinType)
+            kotlinType.addAnnotations(applyDirectives(directives))
         }
 
         val funConstructorBuilder = FunSpec.constructorBuilder()
@@ -221,7 +208,7 @@ abstract class AbstractKotlinDataTypeGenerator(
                     .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.directives.isNotEmpty()) {
-                applyDirectives(field.directives, parameterSpec)
+                parameterSpec.addAnnotations(applyDirectives(field.directives))
             }
 
             if (field.default != null) {
