@@ -107,7 +107,8 @@ class EntitiesRepresentationTypeGenerator(
             name = representationName,
             interfaces = emptyList(),
             fields = fieldDefinitions.plus(typeName),
-            description = null
+            description = null,
+            directives = emptyList()
         )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
         // Merge all results.

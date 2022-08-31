@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.generators.shared.ParserConstants
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
@@ -88,7 +89,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
                         typeUtils.findReturnType(it.type, useInterfaceType),
                         overrideGetter = overrideGetter,
                         description = it.description,
-                        directives = it.directives.map { directive -> directive.name }
+                        directives = it.directives
                     )
                 }
                 .plus(
@@ -98,12 +99,12 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
                             typeUtils.findReturnType(it.type, useInterfaceType),
                             overrideGetter = overrideGetter,
                             description = it.description,
-                            directives = it.directives.map { directive -> directive.name }
+                            directives = it.directives
                         )
                     }
                 )
 
-            return generate(name, unionTypes + implements, fieldDefinitions, definition.description)
+            return generate(name, unionTypes + implements, fieldDefinitions, definition.description, definition.directives)
                 .merge(interfaceCodeGenResult)
         }
 
@@ -151,14 +152,14 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                 type = typeUtils.findReturnType(it.type),
                 initialValue = defaultValue,
                 description = it.description,
-                directives = it.directives.map { directive -> directive.name }
+                directives = it.directives
             )
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
-        return generate(name, emptyList(), fieldDefinitions, definition.description)
+        return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)
     }
 }
 
-internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<String> = listOf<String>())
+internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<Directive> = listOf())
 
 abstract class BaseDataTypeGenerator(
     internal val packageName: String,
@@ -167,11 +168,52 @@ abstract class BaseDataTypeGenerator(
 ) {
     internal val typeUtils = TypeUtils(packageName, config, document)
 
+    /**
+     * Creates an argument map of the input Arguments
+     */
+    private fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
+        return directive.arguments.fold(mutableMapOf()) { argMap, argument ->
+            argMap[argument.name] = argument.value
+            argMap
+        }
+    }
+
+    /**
+     * Applies directives like customAnnotation
+     */
+    private fun applyDirectives(directives: List<Directive>): Pair<MutableList<AnnotationSpec>, String?> {
+        var commentFormat: String? = null
+        return Pair(
+            directives.fold(mutableListOf()) { annotations, directive ->
+                val argumentMap = createArgumentMap(directive)
+                if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
+                    annotations.add(customAnnotation(argumentMap, config))
+                }
+                if (directive.name == ParserConstants.DEPRECATED) {
+                    annotations.add(deprecatedAnnotation())
+                    if (argumentMap.containsKey(ParserConstants.REASON)) {
+                        val reason: String = (argumentMap[ParserConstants.REASON] as StringValue).value
+                        val replace = reason.substringAfter(ParserConstants.REPLACE_WITH_STR, "")
+                        commentFormat = reason.substringBefore(ParserConstants.REPLACE_WITH_STR)
+                        if (replace.isNotEmpty()) {
+                            commentFormat = "@deprecated ${reason.substringBefore(ParserConstants.REPLACE_WITH_STR)}. Replaced by $replace"
+                        }
+                    } else {
+                        throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
+                    }
+                }
+                annotations
+            },
+            commentFormat
+        )
+    }
+
     internal fun generate(
         name: String,
         interfaces: List<String>,
         fields: List<Field>,
-        description: Description? = null
+        description: Description? = null,
+        directives: List<Directive> = emptyList()
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addOptionalGeneratedAnnotation(config)
@@ -183,6 +225,14 @@ abstract class BaseDataTypeGenerator(
 
         if (description != null) {
             javaType.addJavadoc(description.sanitizeJavaDoc())
+        }
+
+        if (directives.isNotEmpty()) {
+            val (annotations, comments) = applyDirectives(directives)
+            javaType.addAnnotations(annotations)
+            if (!comments.isNullOrBlank()) {
+                javaType.addJavadoc("\$L", comments)
+            }
         }
 
         interfaces.forEach {
@@ -288,7 +338,7 @@ abstract class BaseDataTypeGenerator(
         val methodBuilder = MethodSpec.methodBuilder("toString").addAnnotation(Override::class.java).addModifiers(Modifier.PUBLIC).returns(String::class.java)
         val toStringBody = StringBuilder("return \"${javaType.build().name}{\" + ")
         fieldDefinitions.forEachIndexed { index, field ->
-            val fieldValueStatement = if (field.directives.contains("sensitive")) "\"*****\"" else ReservedKeywordSanitizer.sanitize(field.name)
+            val fieldValueStatement = if (field.directives.stream().anyMatch { it -> it.name.equals("sensitive") }) "\"*****\"" else ReservedKeywordSanitizer.sanitize(field.name)
             toStringBody.append(
                 """
                 "${field.name}='" + $fieldValueStatement + "'${if (index < fieldDefinitions.size - 1) "," else ""}" +
@@ -338,6 +388,14 @@ abstract class BaseDataTypeGenerator(
                 .initializer(fieldDefinition.initialValue)
         } else {
             FieldSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE)
+        }
+
+        if (fieldDefinition.directives.isNotEmpty()) {
+            val (annotations, comments) = applyDirectives(fieldDefinition.directives)
+            fieldBuilder.addAnnotations(annotations)
+            if (!comments.isNullOrBlank()) {
+                fieldBuilder.addJavadoc("\$L", comments)
+            }
         }
 
         if (fieldDefinition.description != null) {
