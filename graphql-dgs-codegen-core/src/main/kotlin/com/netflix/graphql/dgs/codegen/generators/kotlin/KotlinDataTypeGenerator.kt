@@ -155,7 +155,7 @@ abstract class AbstractKotlinDataTypeGenerator(
     private fun applyDirectives(directives: List<Directive>): MutableList<AnnotationSpec> {
         return directives.fold(mutableListOf()) { annotations, directive ->
             val argumentMap = createArgumentMap(directive)
-            if (directive.name == ParserConstants.CUSTOM_ANNOTATION) {
+            if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
                 annotations.add(customAnnotation(argumentMap, config))
             }
             if (directive.name == ParserConstants.DEPRECATED) {
