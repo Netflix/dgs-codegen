@@ -321,8 +321,8 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotati
         // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
         is EnumValue -> CodeBlock.of(
             "$prefix%M",
-            // argName = prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR
             MemberName(
+                // Use annotationName in the PackagerParserUtil to get Enum Package name.
                 if (prefix.isNotEmpty()) PackageParserUtil.getEnumPackage(config, annotationName, prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR))
                 else PackageParserUtil.getEnumPackage(config, annotationName, type.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR)),
                 (value as EnumValue).name
