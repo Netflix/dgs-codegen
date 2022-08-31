@@ -300,7 +300,7 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
     val className = ClassName(packageName = packageName, simpleNames = listOf(simpleName))
     val annotation: AnnotationSpec.Builder = AnnotationSpec.builder(className)
     if (annotationArgumentMap.containsKey(ParserConstants.INPUTS)) {
-        val codeBlocks: List<CodeBlock> = parseInputs(config, annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue)
+        val codeBlocks: List<CodeBlock> = parseInputs(config, annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue, (annotationArgumentMap[ParserConstants.NAME] as StringValue).value)
         codeBlocks.forEach { codeBlock ->
             annotation.addMember(codeBlock)
         }
@@ -311,7 +311,7 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
 /**
  * Generates the code block containing the parameters of an annotation in the format key = value
  */
-private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, prefix: String = "", type: String = ""): CodeBlock =
+private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotationName: String, prefix: String = "", type: String = ""): CodeBlock =
     when (value) {
         is BooleanValue -> CodeBlock.of("$prefix%L", (value as BooleanValue).isValue)
         is IntValue -> CodeBlock.of("$prefix%L", (value as IntValue).value)
@@ -321,25 +321,26 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, prefix: 
         // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
         is EnumValue -> CodeBlock.of(
             "$prefix%M",
+            // argName = prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR
             MemberName(
-                if (prefix.isNotEmpty()) config.includeImports.getOrDefault(prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR), "")
-                else config.includeImports.getOrDefault(type.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR), ""),
+                if (prefix.isNotEmpty()) PackageParserUtil.getEnumPackage(config, annotationName, prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR))
+                else PackageParserUtil.getEnumPackage(config, annotationName, type.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR)),
                 (value as EnumValue).name
             )
         )
         is ArrayValue ->
             if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("[]")
-            else CodeBlock.of("$prefix[%L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, type = if (v is EnumValue) prefix else "").toString() })
+            else CodeBlock.of("$prefix[%L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, annotationName = annotationName, type = if (v is EnumValue) prefix else "").toString() })
         else -> CodeBlock.of("$prefix%L", value)
     }
 
 /**
  * Parses the inputs argument in the directive to get the input parameters of the annotation
  */
-private fun parseInputs(config: CodeGenConfig, inputs: ObjectValue): List<CodeBlock> {
+private fun parseInputs(config: CodeGenConfig, inputs: ObjectValue, annotationName: String): List<CodeBlock> {
     val objectFields: List<ObjectField> = inputs.objectFields
     return objectFields.fold(mutableListOf()) { codeBlocks, objectField ->
-        codeBlocks.add(generateCode(config, objectField.value, objectField.name + ParserConstants.ASSIGNMENT_OPERATOR))
+        codeBlocks.add(generateCode(config, objectField.value, annotationName, objectField.name + ParserConstants.ASSIGNMENT_OPERATOR))
         codeBlocks
     }
 }

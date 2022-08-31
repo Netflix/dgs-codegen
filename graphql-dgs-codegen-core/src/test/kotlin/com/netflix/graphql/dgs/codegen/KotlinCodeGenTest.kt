@@ -2103,7 +2103,10 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("sexType", "com.enums"))
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("sexType", "com.enums")),
+                includeEnumImports = mapOf(
+                    "ValidPerson" to mapOf(Pair("sexType", "com.enums"))
+                )
             )
         ).generate().kotlinDataTypes
 
@@ -2135,7 +2138,10 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                includeEnumImports = mapOf(
+                    "ValidPerson" to mapOf(Pair("types", "com.enums"))
+                )
             )
         ).generate().kotlinDataTypes
 
@@ -2155,6 +2161,49 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun annotateOnTypesWithMultipleListOfEnums() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName")
+                type: String @annotate(name: "ValidType", type: "personType", inputs: {types: [PRIMARY, SECONDARY]}) 
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("personType", "com.personType.enums")),
+                includeEnumImports = mapOf(
+                    "ValidPerson" to mapOf(Pair("types", "com.enums")),
+                    "ValidType" to mapOf(Pair("types", "com.personType.enums"))
+                )
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
+        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+
+        val parameterSpec2 = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[1]
+        val annotationSpec2 = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[1].annotations[1]
+        assertThat((parameterSpec2.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec2.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.personType.enums.ValidType")
+        assertThat(annotationSpec2.members[0]).extracting("args").asString().contains("com.personType.enums.PRIMARY", "com.personType.enums.SECONDARY")
+    }
+
+    @Test
     fun annotateOnTypesWithEmptyType() {
         val schema = """
             type Person @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
@@ -2167,7 +2216,10 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                includeEnumImports = mapOf(
+                    "ValidPerson" to mapOf(Pair("types", "com.enums"))
+                )
             )
         ).generate().kotlinDataTypes
 
@@ -2199,7 +2251,10 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                includeEnumImports = mapOf(
+                    "ValidPerson" to mapOf(Pair("types", "com.enums"))
+                )
             )
         ).generate().kotlinDataTypes
 
