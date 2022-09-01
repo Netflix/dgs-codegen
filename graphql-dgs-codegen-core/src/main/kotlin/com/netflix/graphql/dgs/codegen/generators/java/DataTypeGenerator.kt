@@ -189,7 +189,7 @@ abstract class BaseDataTypeGenerator(
                 if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
                     annotations.add(customAnnotation(argumentMap, config))
                 }
-                if (directive.name == ParserConstants.DEPRECATED) {
+                if (directive.name == ParserConstants.DEPRECATED && config.addDeprecatedAnnotation) {
                     annotations.add(deprecatedAnnotation())
                     if (argumentMap.containsKey(ParserConstants.REASON)) {
                         val reason: String = (argumentMap[ParserConstants.REASON] as StringValue).value
