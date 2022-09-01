@@ -1921,7 +1921,8 @@ class KotlinCodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                language = Language.KOTLIN
+                language = Language.KOTLIN,
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -1953,7 +1954,8 @@ class KotlinCodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                language = Language.KOTLIN
+                language = Language.KOTLIN,
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -1985,7 +1987,8 @@ class KotlinCodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                language = Language.KOTLIN
+                language = Language.KOTLIN,
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -2018,7 +2021,8 @@ class KotlinCodeGenTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = basePackageName,
-                    language = Language.KOTLIN
+                    language = Language.KOTLIN,
+                    generateCustomAnnotations = true
                 )
             ).generate()
         }
@@ -2037,7 +2041,8 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"))
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -2070,7 +2075,8 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"))
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -2106,7 +2112,8 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("sexType", "com.enums")),
                 includeEnumImports = mapOf(
                     "ValidPerson" to mapOf(Pair("sexType", "com.enums"))
-                )
+                ),
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -2141,7 +2148,8 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
                 includeEnumImports = mapOf(
                     "ValidPerson" to mapOf(Pair("types", "com.enums"))
-                )
+                ),
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -2178,7 +2186,8 @@ class KotlinCodeGenTest {
                 includeEnumImports = mapOf(
                     "ValidPerson" to mapOf(Pair("types", "com.enums")),
                     "ValidType" to mapOf(Pair("types", "com.personType.enums"))
-                )
+                ),
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -2219,7 +2228,8 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
                 includeEnumImports = mapOf(
                     "ValidPerson" to mapOf(Pair("types", "com.enums"))
-                )
+                ),
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -2254,7 +2264,8 @@ class KotlinCodeGenTest {
                 includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
                 includeEnumImports = mapOf(
                     "ValidPerson" to mapOf(Pair("types", "com.enums"))
-                )
+                ),
+                generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
 
@@ -2288,7 +2299,8 @@ class KotlinCodeGenTest {
                     schemas = setOf(schema),
                     packageName = basePackageName,
                     language = Language.KOTLIN,
-                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                    generateCustomAnnotations = true
                 )
             ).generate()
         }
@@ -2308,7 +2320,8 @@ class KotlinCodeGenTest {
                     schemas = setOf(schema),
                     packageName = basePackageName,
                     language = Language.KOTLIN,
-                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums"))
+                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                    generateCustomAnnotations = true
                 )
             ).generate()
         }
@@ -3210,5 +3223,37 @@ It takes a title and such.
             .contains("@Retention(value = AnnotationRetention.BINARY)")
 
         assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun annotateOnTypesWithCustomAnnotationsDisabled() {
+        val schema = """
+            type Person @deprecated(reason: "This is going bye bye") @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = false,
+                generateClientApi = true
+            )
+        ).generate()
+
+        assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(1)
+        val person = codeGenResult.kotlinDataTypes.single()
+        assertThat(person.name).isEqualTo("Person")
+        assertThat((person.members[0] as TypeSpec).annotationSpecs).hasSize(1)
+        val deprecatedAnnotationSpec = ((person.members[0] as TypeSpec).annotationSpecs)[0]
+        assertThat((deprecatedAnnotationSpec.typeName as ClassName).simpleNames[0]).isEqualTo("Deprecated")
+        assertThat(deprecatedAnnotationSpec.canonicalName()).isEqualTo("kotlin.Deprecated")
+        val fields = ((person.members[0]) as TypeSpec).propertySpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(0)
     }
 }
