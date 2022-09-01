@@ -2963,7 +2963,8 @@ It takes a title and such.
                 packageName = basePackageName,
                 includeImports = mapOf(Pair("validator", "com.test.validator")),
                 includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
-                generateCustomAnnotations = true
+                generateCustomAnnotations = true,
+                addDeprecatedAnnotation = true
             )
         ).generate()
 
@@ -3362,7 +3363,8 @@ It takes a title and such.
                     packageName = basePackageName,
                     includeImports = mapOf(Pair("validator", "com.test.validator")),
                     includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
-                    generateCustomAnnotations = true
+                    generateCustomAnnotations = true,
+                    addDeprecatedAnnotation = true
                 )
             ).generate()
         }
@@ -3382,7 +3384,8 @@ It takes a title and such.
                 packageName = basePackageName,
                 includeImports = mapOf(Pair("validator", "com.test.validator")),
                 includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
-                generateCustomAnnotations = false
+                generateCustomAnnotations = false,
+                addDeprecatedAnnotation = true
             )
         ).generate()
 

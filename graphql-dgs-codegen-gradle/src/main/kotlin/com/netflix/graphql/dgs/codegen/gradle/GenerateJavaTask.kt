@@ -133,6 +133,9 @@ open class GenerateJavaTask : DefaultTask() {
     var addGeneratedAnnotation = false
 
     @Input
+    var addDeprecatedAnnotation = false
+
+    @Input
     var generateCustomAnnotations = false
 
     @Input
@@ -182,6 +185,7 @@ open class GenerateJavaTask : DefaultTask() {
             snakeCaseConstantNames = snakeCaseConstantNames,
             implementSerializable = implementSerializable,
             addGeneratedAnnotation = addGeneratedAnnotation,
+            addDeprecatedAnnotation = addDeprecatedAnnotation,
             includeImports = includeImports,
             includeEnumImports = includeEnumImports,
             generateCustomAnnotations = generateCustomAnnotations

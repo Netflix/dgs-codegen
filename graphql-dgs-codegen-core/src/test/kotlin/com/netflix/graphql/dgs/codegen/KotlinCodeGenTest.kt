@@ -1887,7 +1887,8 @@ class KotlinCodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                language = Language.KOTLIN
+                language = Language.KOTLIN,
+                addDeprecatedAnnotation = true
             )
         ).generate().kotlinDataTypes
 
@@ -2340,7 +2341,8 @@ class KotlinCodeGenTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = basePackageName,
-                    language = Language.KOTLIN
+                    language = Language.KOTLIN,
+                    addDeprecatedAnnotation = true
                 )
             ).generate()
         }
@@ -3241,7 +3243,8 @@ It takes a title and such.
                 includeImports = mapOf(Pair("validator", "com.test.validator")),
                 includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
                 generateCustomAnnotations = false,
-                generateClientApi = true
+                generateClientApi = true,
+                addDeprecatedAnnotation = true
             )
         ).generate()
 

@@ -466,7 +466,8 @@ data class CodeGenConfig(
     val generateCustomAnnotations: Boolean = false,
     var javaGenerateAllConstructor: Boolean = true,
     val implementSerializable: Boolean = false,
-    val addGeneratedAnnotation: Boolean = false
+    val addGeneratedAnnotation: Boolean = false,
+    val addDeprecatedAnnotation: Boolean = false
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 

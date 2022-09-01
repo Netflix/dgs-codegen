@@ -158,7 +158,7 @@ abstract class AbstractKotlinDataTypeGenerator(
             if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
                 annotations.add(customAnnotation(argumentMap, config))
             }
-            if (directive.name == ParserConstants.DEPRECATED) {
+            if (directive.name == ParserConstants.DEPRECATED && config.addDeprecatedAnnotation) {
                 if (argumentMap.containsKey(ParserConstants.REASON)) {
                     annotations.add(deprecatedAnnotation((argumentMap[ParserConstants.REASON] as StringValue).value))
                 } else {
