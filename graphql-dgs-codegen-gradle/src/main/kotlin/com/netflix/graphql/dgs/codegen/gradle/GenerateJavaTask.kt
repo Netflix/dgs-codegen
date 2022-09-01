@@ -132,6 +132,15 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var addGeneratedAnnotation = false
 
+    @Input
+    var generateCustomAnnotations = false
+
+    @Input
+    var includeImports = mutableMapOf<String, String>()
+
+    @Input
+    var includeEnumImports = mutableMapOf<String, MutableMap<String, String>>()
+
     @TaskAction
     fun generate() {
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
@@ -172,7 +181,10 @@ open class GenerateJavaTask : DefaultTask() {
             kotlinAllFieldsOptional = kotlinAllFieldsOptional,
             snakeCaseConstantNames = snakeCaseConstantNames,
             implementSerializable = implementSerializable,
-            addGeneratedAnnotation = addGeneratedAnnotation
+            addGeneratedAnnotation = addGeneratedAnnotation,
+            includeImports = includeImports,
+            includeEnumImports = includeEnumImports,
+            generateCustomAnnotations = generateCustomAnnotations
         )
 
         logger.info("Codegen config: {}", config)
