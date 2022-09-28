@@ -20,11 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2ClientTypes
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2DataTypes
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2EnumTypes
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2InputTypes
-import com.netflix.graphql.dgs.codegen.generators.kotlin2.generateKotlin2Interfaces
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.*
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
@@ -42,11 +38,14 @@ import graphql.parser.InvalidSyntaxException
 import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
-import java.io.File
-import java.io.Reader
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+import java.io.*
 import java.lang.annotation.RetentionPolicy
+import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.zip.ZipFile
 import javax.lang.model.element.Modifier
 import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
 import com.squareup.kotlinpoet.ClassName as KClassName
@@ -56,6 +55,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     companion object {
         private const val SDL_MAX_ALLOWED_SCHEMA_TOKENS: Int = Int.MAX_VALUE
+        private val logger: Logger = LoggerFactory.getLogger(CodeGen::class.java)
     }
 
     private val document = buildDocument()
@@ -113,6 +113,20 @@ class CodeGen(private val config: CodeGenConfig) {
         val debugReaderBuilder = MultiSourceReader.newMultiSourceReader()
 
         loadSchemaReaders(readerBuilder, debugReaderBuilder)
+        // process schema from dependencies
+        config.schemaJarFilesFromDependencies.forEach {
+            val zipFile = ZipFile(it)
+            zipFile.entries().toList().forEach { entry ->
+                if (!entry.isDirectory && entry.name.startsWith("META-INF") && (entry.name.endsWith(".graphqls")) || entry.name.endsWith(
+                        ".graphql"
+                    )
+                ) {
+                    logger.info("Generating schema from ${it.name}:  ${entry.name}")
+                    readerBuilder.reader(InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8), "codegen")
+                }
+            }
+        }
+
         val document = readerBuilder.build().use { reader ->
             try {
                 parser.parseDocument(reader, options)
@@ -120,7 +134,6 @@ class CodeGen(private val config: CodeGenConfig) {
                 throw CodeGenSchemaParsingException(debugReaderBuilder.build(), exception)
             }
         }
-
         return document
     }
 
@@ -435,6 +448,7 @@ class CodeGen(private val config: CodeGenConfig) {
 data class CodeGenConfig(
     val schemas: Set<String> = emptySet(),
     val schemaFiles: Set<File> = emptySet(),
+    val schemaJarFilesFromDependencies: List<java.io.File> = emptyList(),
     val outputDir: Path = Paths.get("generated"),
     val examplesOutputDir: Path = Paths.get("generated-examples"),
     val writeToFiles: Boolean = false,

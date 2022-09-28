@@ -22,13 +22,8 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.GradleException
+import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
@@ -42,6 +37,9 @@ open class GenerateJavaTask : DefaultTask() {
     @PathSensitive(PathSensitivity.RELATIVE)
     @InputFiles
     var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
+
+    @Input
+    var schemaJarsFromDependencies = mutableListOf<String>()
 
     @Input
     var packageName = "com.netflix.dgs.codegen.generated"
@@ -146,6 +144,21 @@ open class GenerateJavaTask : DefaultTask() {
 
     @TaskAction
     fun generate() {
+        val schemaJarFilesFromDependencies = emptyList<File>().toMutableList()
+        val configuration = project.configurations.find { it.name == "compileClasspath" }
+        if (configuration != null && configuration.isCanBeResolved) {
+            schemaJarsFromDependencies.forEach { dependency ->
+                val dependencyWithSchema = configuration.incoming.artifacts.resolvedArtifacts.get()
+                    .find { it.id.displayName.contains(dependency) }
+                if (dependencyWithSchema != null) {
+                    schemaJarFilesFromDependencies.add(dependencyWithSchema.file)
+                } else {
+                    logger.error("Could not find a dependency named $dependency")
+                    throw GradleException("Could not find a dependency named $dependency")
+                }
+            }
+        }
+
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
         schemaPaths.filter { !it.exists() }.forEach {
             logger.warn("Schema location ${it.absolutePath} does not exist")
@@ -158,6 +171,7 @@ open class GenerateJavaTask : DefaultTask() {
         val config = CodeGenConfig(
             schemas = emptySet(),
             schemaFiles = schemaPaths,
+            schemaJarFilesFromDependencies = schemaJarFilesFromDependencies,
             outputDir = getOutputDir().toPath(),
             examplesOutputDir = getExampleOutputDir().toPath(),
             writeToFiles = true,
