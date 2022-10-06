@@ -22,7 +22,6 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
-import org.gradle.api.GradleException
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
@@ -145,17 +144,13 @@ open class GenerateJavaTask : DefaultTask() {
     @TaskAction
     fun generate() {
         val schemaJarFilesFromDependencies = emptyList<File>().toMutableList()
-        val configuration = project.configurations.find { it.name == "compileClasspath" }
-        if (configuration != null && configuration.isCanBeResolved) {
-            schemaJarsFromDependencies.forEach { dependency ->
-                val dependencyWithSchema = configuration.incoming.artifacts.resolvedArtifacts.get()
-                    .find { it.id.displayName.contains(dependency) }
-                if (dependencyWithSchema != null) {
-                    schemaJarFilesFromDependencies.add(dependencyWithSchema.file)
-                } else {
-                    logger.error("Could not find a dependency named $dependency")
-                    throw GradleException("Could not find a dependency named $dependency")
-                }
+        val dgsCodegenConfig = project.configurations.findByName("dgsCodegen")
+        dgsCodegenConfig?.incoming?.dependencies?.forEach { dependency ->
+            logger.info("Found DgsCodegen Dependendency: ${dependency.name}")
+            val found = dgsCodegenConfig.incoming.artifacts.resolvedArtifacts.get().find { it.id.componentIdentifier.displayName.contains(dependency.group + ":" + dependency.name) }
+            if (found != null) {
+                logger.info("Found DgsCodegen Artifact: ${found.id.displayName}")
+                schemaJarFilesFromDependencies.add(found.file)
             }
         }
 
