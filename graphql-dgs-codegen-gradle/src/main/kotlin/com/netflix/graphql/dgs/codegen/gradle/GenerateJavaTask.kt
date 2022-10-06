@@ -22,13 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.OutputDirectory
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
@@ -146,6 +140,17 @@ open class GenerateJavaTask : DefaultTask() {
 
     @TaskAction
     fun generate() {
+        val schemaJarFilesFromDependencies = emptyList<File>().toMutableList()
+        val dgsCodegenConfig = project.configurations.findByName("dgsCodegen")
+        dgsCodegenConfig?.incoming?.dependencies?.forEach { dependency ->
+            logger.info("Found DgsCodegen Dependendency: ${dependency.name}")
+            val found = dgsCodegenConfig.incoming.artifacts.resolvedArtifacts.get().find { it.id.componentIdentifier.displayName.contains(dependency.group + ":" + dependency.name) }
+            if (found != null) {
+                logger.info("Found DgsCodegen Artifact: ${found.id.displayName}")
+                schemaJarFilesFromDependencies.add(found.file)
+            }
+        }
+
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
         schemaPaths.filter { !it.exists() }.forEach {
             logger.warn("Schema location ${it.absolutePath} does not exist")
@@ -158,6 +163,7 @@ open class GenerateJavaTask : DefaultTask() {
         val config = CodeGenConfig(
             schemas = emptySet(),
             schemaFiles = schemaPaths,
+            schemaJarFilesFromDependencies = schemaJarFilesFromDependencies,
             outputDir = getOutputDir().toPath(),
             examplesOutputDir = getExampleOutputDir().toPath(),
             writeToFiles = true,
