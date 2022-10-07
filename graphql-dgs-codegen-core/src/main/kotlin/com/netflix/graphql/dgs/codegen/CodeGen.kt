@@ -196,24 +196,19 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaUnions(definitions: Collection<Definition<*>>): CodeGenResult {
-        if (!config.generateDataTypes) {
-            return CodeGenResult()
-        }
         return definitions.asSequence()
             .filterIsInstance<UnionTypeDefinition>()
             .excludeSchemaTypeExtension()
+            .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
             .map { UnionTypeGenerator(config).generate(it, findUnionExtensions(it.name, definitions)) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
     private fun generateJavaInterfaces(definitions: Collection<Definition<*>>): CodeGenResult {
-        if (!config.generateDataTypes && !config.generateInterfaces) {
-            return CodeGenResult()
-        }
-
         return definitions.asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
             .excludeSchemaTypeExtension()
+            .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 val extensions = findInterfaceExtensions(it.name, definitions)
                 InterfaceGenerator(config, document).generate(it, extensions)
