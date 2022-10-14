@@ -200,7 +200,7 @@ abstract class BaseDataTypeGenerator(
                     }
                 }
                 if (directive.name == ParserConstants.DEPRECATED && config.addDeprecatedAnnotation) {
-                    annotations.add(deprecatedAnnotation())
+                    annotations[siteTarget] = mutableListOf(deprecatedAnnotation())
                     if (argumentMap.containsKey(ParserConstants.REASON)) {
                         val reason: String = (argumentMap[ParserConstants.REASON] as StringValue).value
                         val replace = reason.substringAfter(ParserConstants.REPLACE_WITH_STR, "")
