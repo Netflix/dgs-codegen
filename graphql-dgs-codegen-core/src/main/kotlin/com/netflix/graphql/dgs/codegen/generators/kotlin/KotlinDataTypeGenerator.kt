@@ -88,10 +88,10 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
             .map {
                 val type = typeUtils.findReturnType(it.type)
                 val defaultValue = it.defaultValue?.let { value -> generateCode(value, type) }
-                Field(name = it.name, type = type, nullable = typeUtils.isNullable(it.type), default = defaultValue, description = it.description, directives = it.directives)
+                Field(name = it.name, type = type, nullable = it.type !is NonNullType, default = defaultValue, description = it.description, directives = it.directives)
             }.plus(
                 extensions.flatMap { it.inputValueDefinitions }.map {
-                    Field(name = it.name, type = typeUtils.findReturnType(it.type), nullable = typeUtils.isNullable(it.type), default = null, description = it.description, directives = it.directives)
+                    Field(name = it.name, type = typeUtils.findReturnType(it.type), nullable = it.type !is NonNullType, default = null, description = it.description, directives = it.directives)
                 }
             )
         val interfaces = emptyList<Type<*>>()
@@ -158,7 +158,7 @@ abstract class AbstractKotlinDataTypeGenerator(
             if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
                 annotations.add(customAnnotation(argumentMap, config))
             }
-            if (directive.name == ParserConstants.DEPRECATED) {
+            if (directive.name == ParserConstants.DEPRECATED && config.addDeprecatedAnnotation) {
                 if (argumentMap.containsKey(ParserConstants.REASON)) {
                     annotations.add(deprecatedAnnotation((argumentMap[ParserConstants.REASON] as StringValue).value))
                 } else {

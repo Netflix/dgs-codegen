@@ -1787,6 +1787,157 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateOnlyRequiredDataTypesForQuery() {
+        val schema = """
+            type Query {
+                shows(showFilter: ShowFilter): [Video]
+                people(personFilter: PersonFilter): [Person]
+            }
+            
+            union Video = Show | Movie
+            
+            type Movie {
+                title: String
+                duration: Int
+                related: Related
+            }
+            
+            type Related {
+                 video: Video
+            }
+            
+            type Show {
+                title: String
+                tags(from: Int, to: Int, sourceType: SourceType): [ShowTag]
+                isLive(countryFilter: CountryFilter): Boolean
+            }
+            
+            enum ShouldNotInclude { YES, NO }
+            
+            input NotUsed {
+                field: String
+            }
+            
+            input ShowFilter {
+                title: String
+                showType: ShowType
+                similarTo: SimilarityInput
+            }
+            
+            input SimilarityInput {
+                tags: [String]
+            }
+            
+            enum ShowType {
+                MOVIE, SERIES
+            }
+            
+            input CountryFilter {
+                countriesToExclude: [String]
+            }
+                 
+            enum SourceType { FOO, BAR }
+           
+            type Person {
+                name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeQueries = setOf("shows"),
+                generateDataTypes = false,
+                writeToFiles = false
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaDataTypes)
+            .extracting("typeSpec").extracting("name").containsExactly("ShowFilter", "SimilarityInput", "CountryFilter")
+        assertThat(codeGenResult.javaEnumTypes)
+            .extracting("typeSpec").extracting("name").containsExactly("ShowType", "SourceType")
+        assertThat(codeGenResult.clientProjections).isEmpty()
+
+        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
+    }
+
+    @Test
+    fun generateAllDataTypesForAllQueriesWhenSetToTrue() {
+        val schema = """
+            type Query {
+                shows(showFilter: ShowFilter): [Video]
+                people(personFilter: PersonFilter): [Person]
+            }
+            
+            union Video = Show | Movie
+            
+            type Movie {
+                title: String
+                duration: Int
+                related: Related
+            }
+            
+            type Related {
+                 video: Video
+            }
+            
+            type Show {
+                title: String
+                isLive(countryFilter: CountryFilter): Boolean
+            }
+            
+            enum ShouldNotInclude { YES, NO }
+            
+            input NotUsed {
+                field: String
+            }
+            
+            input ShowFilter {
+                title: String
+                showType: ShowType
+                similarTo: SimilarityInput
+            }
+            
+            input SimilarityInput {
+                tags: [String]
+            }
+            
+            enum ShowType {
+                MOVIE, SERIES
+            }
+            
+            input CountryFilter {
+                countriesToExclude: [String]
+            }
+                 
+            enum SourceType { FOO, BAR }
+           
+            type Person {
+                name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeQueries = setOf("shows"),
+                generateDataTypes = true,
+                writeToFiles = false
+            )
+        ).generate()
+
+        assertThat(codeGenResult.javaDataTypes)
+            .extracting("typeSpec").extracting("name").containsExactly("Movie", "Related", "Show", "Person", "NotUsed", "ShowFilter", "SimilarityInput", "CountryFilter")
+        assertThat(codeGenResult.javaEnumTypes)
+            .extracting("typeSpec").extracting("name").containsExactly("ShouldNotInclude", "ShowType", "SourceType")
+        assertThat(codeGenResult.clientProjections).isEmpty()
+
+        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes + codeGenResult.javaInterfaces)
+    }
+
+    @Test
     fun skipCodegenOnTypes() {
         val schema = """
             type Person {
@@ -2690,6 +2841,7 @@ class CodeGenTest {
         assertThat(searchResultPage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("ISearchResultPage")
         assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
         parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
+        parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("SearchResult")
 
@@ -2963,7 +3115,8 @@ It takes a title and such.
                 packageName = basePackageName,
                 includeImports = mapOf(Pair("validator", "com.test.validator")),
                 includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
-                generateCustomAnnotations = true
+                generateCustomAnnotations = true,
+                addDeprecatedAnnotation = true
             )
         ).generate()
 
@@ -3362,7 +3515,8 @@ It takes a title and such.
                     packageName = basePackageName,
                     includeImports = mapOf(Pair("validator", "com.test.validator")),
                     includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
-                    generateCustomAnnotations = true
+                    generateCustomAnnotations = true,
+                    addDeprecatedAnnotation = true
                 )
             ).generate()
         }
@@ -3382,7 +3536,8 @@ It takes a title and such.
                 packageName = basePackageName,
                 includeImports = mapOf(Pair("validator", "com.test.validator")),
                 includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
-                generateCustomAnnotations = false
+                generateCustomAnnotations = false,
+                addDeprecatedAnnotation = true
             )
         ).generate()
 

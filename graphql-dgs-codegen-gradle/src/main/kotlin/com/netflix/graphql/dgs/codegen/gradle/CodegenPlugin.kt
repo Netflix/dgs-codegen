@@ -47,6 +47,9 @@ class CodegenPlugin : Plugin<Project> {
         val outputDir = generateJavaTaskProvider.map(GenerateJavaTask::getOutputDir)
         mainSourceSet.java.srcDirs(project.files(outputDir).builtBy(generateJavaTaskProvider))
 
+        project.configurations.create("dgsCodegen")
+        project.configurations.findByName("dgsCodegen")?.isCanBeResolved = true
+
         project.afterEvaluate { p ->
             if (extensions.clientCoreConventionsEnabled.getOrElse(true)) {
                 logger.info("Applying CodegenPlugin Client Utils conventions.")
