@@ -18,17 +18,16 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
-object ParserConstants {
-    const val ASSIGNMENT_OPERATOR = " = "
-    const val TYPE = "type"
-    const val NAME = "name"
-    const val REASON = "reason"
-    const val CUSTOM_ANNOTATION = "annotate"
-    const val DEPRECATED = "deprecated"
-    const val INPUTS = "inputs"
-    const val REPLACE_WITH_STR = ", replace with "
-    const val MESSAGE = "message"
-    const val REPLACE_WITH = "replaceWith"
-    const val REPLACE_WITH_CLASS = "ReplaceWith"
-    const val SITE_TARGET = "target"
+// The site targets as defined https://kotlinlang.org/docs/annotations.html#annotation-use-site-targets.
+enum class SiteTarget {
+    DEFAULT,
+    FILE,
+    PROPERTY,
+    FIELD,
+    GET,
+    SET,
+    RECEIVER,
+    PARAM,
+    SETPARAM,
+    DELEGATE;
 }

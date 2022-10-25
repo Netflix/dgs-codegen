@@ -3551,4 +3551,201 @@ It takes a title and such.
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(0)
     }
+
+    @Test
+    fun annotateOnTypesWithTargetsOnGet() {
+        val schema = """
+            type Person @deprecated(reason: "This is going bye bye") @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName", target: "get") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = true,
+                addDeprecatedAnnotation = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(2)
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(1)
+        val methods = person.methodSpecs
+        assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")
+        assertThat(methods[0].annotations).hasSize(1)
+        assertThat(((methods[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithTargetsOnField() {
+        val schema = """
+            type Person @deprecated(reason: "This is going bye bye") @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName", target: "field") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = true,
+                addDeprecatedAnnotation = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(2)
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(2)
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat(((fields[0].annotations[1] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("NullValue")
+        assertThat(((fields[0].annotations[1] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.nullValidator.NullValue")
+        val methods = person.methodSpecs
+        assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")
+        assertThat(methods[0].annotations).hasSize(0)
+    }
+
+    @Test
+    fun annotateOnTypesWithTargetsOnSet() {
+        val schema = """
+            type Person @deprecated(reason: "This is going bye bye") @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName", target: "set") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = true,
+                addDeprecatedAnnotation = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(2)
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(1)
+        val methods = person.methodSpecs
+        assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")
+        assertThat(methods[0].annotations).hasSize(0)
+        assertThat((methods[1] as MethodSpec).name).isEqualTo("setName")
+        assertThat(methods[1].annotations).hasSize(1)
+        assertThat(((methods[1].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithTargetsOnSetParam() {
+        val schema = """
+            type Person @deprecated(reason: "This is going bye bye") @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName", target: "setparam") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = true,
+                addDeprecatedAnnotation = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(2)
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(1)
+        val methods = person.methodSpecs
+        assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")
+        assertThat(methods[0].annotations).hasSize(0)
+        assertThat((methods[1] as MethodSpec).name).isEqualTo("setName")
+        assertThat(methods[1].annotations).hasSize(0)
+        val parameters = (methods[1] as MethodSpec).parameters
+        assertThat(parameters).hasSize(1)
+        assertThat(((parameters[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithTargetsOnParam() {
+        val schema = """
+            type Person @deprecated(reason: "This is going bye bye") @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName", target: "param") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = true,
+                addDeprecatedAnnotation = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(2)
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(1)
+        val methods = person.methodSpecs
+        assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")
+        assertThat(methods[0].annotations).hasSize(0)
+        assertThat((methods[1] as MethodSpec).name).isEqualTo("setName")
+        assertThat(methods[1].annotations).hasSize(0)
+        assertThat((methods[3] as MethodSpec).name).isEqualTo("<init>")
+        assertThat(methods[3].annotations).hasSize(0)
+        val parameters = (methods[3] as MethodSpec).parameters
+        assertThat(parameters).hasSize(1)
+        assertThat(((parameters[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithTargetsOnInvalidTarget() {
+        val schema = """
+            type Person @deprecated(reason: "This is going bye bye") @annotate(name: "ValidPerson", type: "validator", inputs: {types: [HUSBAND, WIFE]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName", target: "invalid") @annotate(name: "com.test.nullValidator.NullValue")
+            }
+        """.trimIndent()
+
+        assertThrows<IllegalArgumentException> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    includeImports = mapOf(Pair("validator", "com.test.validator")),
+                    includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                    generateCustomAnnotations = true,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+        }
+    }
 }
