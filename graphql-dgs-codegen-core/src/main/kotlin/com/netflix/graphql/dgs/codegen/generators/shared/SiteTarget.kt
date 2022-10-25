@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
+// The site targets as defined https://kotlinlang.org/docs/annotations.html#annotation-use-site-targets.
 enum class SiteTarget {
     DEFAULT,
     FILE,
