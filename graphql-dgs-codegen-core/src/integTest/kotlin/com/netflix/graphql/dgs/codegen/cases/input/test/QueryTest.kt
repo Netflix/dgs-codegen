@@ -31,7 +31,7 @@ class QueryTest {
             movies()
         }
 
-        Assertions.assertEquals("""query {
+        Assertions.assertEquals("""{
             |  __typename
             |  movies
             |}
@@ -44,7 +44,7 @@ class QueryTest {
             movies(filter = MovieFilter())
         }
 
-        Assertions.assertEquals("""query {
+        Assertions.assertEquals("""{
             |  __typename
             |  movies(filter: {})
             |}
@@ -57,7 +57,7 @@ class QueryTest {
             movies(filter = MovieFilter(genre = null))
         }
 
-        Assertions.assertEquals("""query {
+        Assertions.assertEquals("""{
             |  __typename
             |  movies(filter: {genre : null})
             |}
@@ -70,7 +70,7 @@ class QueryTest {
             movies(filter = MovieFilter(genre = "horror"))
         }
 
-        Assertions.assertEquals("""query {
+        Assertions.assertEquals("""{
             |  __typename
             |  movies(filter: {genre : "horror"})
             |}
@@ -83,7 +83,7 @@ class QueryTest {
             movies(filter = MovieFilter(genre = "horror\ncomedy"))
         }
 
-        Assertions.assertEquals("""query {
+        Assertions.assertEquals("""{
             |  __typename
             |  movies(filter: {genre : "horror\ncomedy"})
             |}

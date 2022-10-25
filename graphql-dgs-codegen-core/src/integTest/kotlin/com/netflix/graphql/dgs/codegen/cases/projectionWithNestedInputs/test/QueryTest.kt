@@ -37,7 +37,7 @@ class QueryTest {
         }
 
         Assertions.assertEquals(
-            """query {
+            """{
             |  __typename
             |  q1(arg2: {arg2 : ""})
             |}
@@ -57,7 +57,7 @@ class QueryTest {
         }
 
         Assertions.assertEquals(
-            """query {
+            """{
             |  __typename
             |  q2(arg1: {arg1 : {}})
             |}

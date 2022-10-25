@@ -33,7 +33,7 @@ class QueryTest {
             }
         }
 
-        assertEquals("""query {
+        assertEquals("""{
             |  __typename
             |  people {
             |    __typename
