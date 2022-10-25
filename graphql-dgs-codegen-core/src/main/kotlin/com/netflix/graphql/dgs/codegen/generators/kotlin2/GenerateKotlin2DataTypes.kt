@@ -174,7 +174,7 @@ fun generateKotlin2DataTypes(
                 .addType(builder)
                 // add interfaces to implement
                 .addSuperinterfaces(
-                    superInterfaces.map { ClassName.bestGuess("${config.packageNameTypes}.$it") }
+                    superInterfaces.map { typeLookup.findKtInterfaceName(it, config.packageNameTypes) }
                 )
                 // add a constructor with a supplier for every field
                 .primaryConstructor(

@@ -100,7 +100,7 @@ fun generateKotlin2Interfaces(
                 }
                 // add interfaces to implement
                 .addSuperinterfaces(
-                    implementedInterfaces.map { ClassName(config.packageNameTypes, it) }
+                    implementedInterfaces.map { typeLookup.findKtInterfaceName(it, config.packageNameTypes) }
                 )
                 // add fields, overriding if needed
                 .addProperties(
