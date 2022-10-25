@@ -371,8 +371,17 @@ abstract class BaseDataTypeGenerator(
     private fun addParameterizedConstructor(fieldDefinitions: List<Field>, javaType: TypeSpec.Builder) {
         val constructorBuilder = MethodSpec.constructorBuilder()
         fieldDefinitions.forEach {
+            val parameterBuilder = ParameterSpec.builder(it.type, ReservedKeywordSanitizer.sanitize(it.name))
+            if (it.directives.isNotEmpty()) {
+                val (annotations, comments) = applyDirectives(it.directives)
+                annotations.forEach { entry ->
+                    if (SiteTarget.valueOf(entry.key) == SiteTarget.PARAM) {
+                        parameterBuilder.addAnnotations(annotations[SiteTarget.PARAM.name])
+                    }
+                }
+            }
             constructorBuilder
-                .addParameter(it.type, ReservedKeywordSanitizer.sanitize(it.name))
+                .addParameter(parameterBuilder.build())
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(it.name), ReservedKeywordSanitizer.sanitize(it.name))
         }
@@ -431,12 +440,13 @@ abstract class BaseDataTypeGenerator(
             if (!comments.isNullOrBlank()) {
                 fieldBuilder.addJavadoc("\$L", comments)
             }
-            annotations.forEach { entry ->
+            for (entry in annotations) {
                 when (SiteTarget.valueOf(entry.key)) {
                     SiteTarget.FIELD -> fieldBuilder.addAnnotations(annotations[SiteTarget.FIELD.name])
                     SiteTarget.GET -> getterMethodBuilder.addAnnotations(annotations[SiteTarget.GET.name])
                     SiteTarget.SET -> setterMethodBuilder.addAnnotations(annotations[SiteTarget.SET.name])
                     SiteTarget.SETPARAM -> parameterBuilder.addAnnotations(annotations[SiteTarget.SETPARAM.name])
+                    SiteTarget.PARAM -> continue
                     else -> fieldBuilder.addAnnotations(annotations[entry.key])
                 }
             }
