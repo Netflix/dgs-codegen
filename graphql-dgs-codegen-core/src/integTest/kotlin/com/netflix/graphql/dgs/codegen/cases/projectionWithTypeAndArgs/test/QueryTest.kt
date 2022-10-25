@@ -36,7 +36,7 @@ class QueryTest {
         }
 
         assertEquals(
-            """query {
+            """{
             |  __typename
             |  person(a2: "name") {
             |    __typename
