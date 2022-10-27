@@ -54,7 +54,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
 
         superInterfacesNames(definition)
             .forEach {
-                interfaceBuilder.addSuperinterface(ClassName(packageName, it))
+                interfaceBuilder.addSuperinterface(typeUtils.findKtInterfaceName(it, packageName))
             }
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
