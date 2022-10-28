@@ -115,7 +115,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
     /**
      * Takes a GQL interface type name and returns the appropriate kotlin type given all of the mappings defined in the schema and config
      */
-    fun findKtInterfaceName(interfaceName: String, packageName: String): JavaTypeName {
+    fun findJavaInterfaceName(interfaceName: String, packageName: String): JavaTypeName {
         // check config
         if (interfaceName in config.typeMapping) {
             val mappedType = config.typeMapping.getValue(interfaceName)

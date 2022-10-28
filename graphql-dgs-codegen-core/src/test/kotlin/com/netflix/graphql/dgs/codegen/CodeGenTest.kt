@@ -1096,6 +1096,43 @@ class CodeGenTest {
     }
 
     @Test
+    fun `Use mapped type name when the type is mapped for interface without custom implementation type`() {
+        val schema = """
+            type Query {                
+                search: SearchResult
+            }
+            
+            type SearchResult {
+                item: SomethingWithAName
+            }
+            
+            interface SomethingWithAName {
+                name: String
+            }
+            
+            type Person implements SomethingWithAName {
+                name: String
+            }
+        """.trimIndent()
+
+        val (dataTypes, javaInterfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "SomethingWithAName" to "mypackage.SomethingWithAName"
+                )
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(2)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].type.toString()).isEqualTo("mypackage.SomethingWithAName")
+        assertThat((dataTypes[1].typeSpec.superinterfaces[0].toString())).contains("mypackage.SomethingWithAName")
+
+        assertThat(javaInterfaces).isEmpty()
+    }
+
+    @Test
     fun `Use mapped type name when the type is mapped for union`() {
         val schema = """
             type Query {                
