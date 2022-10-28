@@ -244,6 +244,19 @@ class Kotlin2TypeLookup(
         return NodeTraverser().postOrder(visitor, fieldType) as KtTypeName
     }
 
+    /**
+     * Takes a GQL interface type name and returns the appropriate kotlin type given all of the mappings defined in the schema and config
+     */
+    fun findKtInterfaceName(interfaceName: String, packageName: String): KtTypeName {
+        // check config
+        val mappedType = mappedTypes[interfaceName]
+        if (mappedType != null) {
+            return mappedType
+        }
+
+        return "$packageName.$interfaceName".toKtTypeName()
+    }
+
     private fun findKtTypeName(typeName: TypeName, packageName: String): KtTypeName {
         // check config
         val mappedType = mappedTypes[typeName.name]

@@ -263,7 +263,7 @@ abstract class AbstractKotlinDataTypeGenerator(
         val interfaceTypes = interfaces + unionTypes
         interfaceTypes.forEach {
             if (it is NamedNode<*>) {
-                kotlinType.addSuperinterface(ClassName.bestGuess("${getPackageName()}.${it.name}"))
+                kotlinType.addSuperinterface(typeUtils.findKtInterfaceName(it.name, getPackageName()))
             }
         }
 
