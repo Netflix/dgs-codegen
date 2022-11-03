@@ -3325,6 +3325,123 @@ It takes a title and such.
     }
 
     @Test
+    fun annotateOnTypesWithClassObjects() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {groups: "BasicValidation.class"}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeClassImports = mapOf("ValidPerson" to mapOf(Pair("BasicValidation", "com.test.validator.groups"))),
+                generateCustomAnnotations = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(1)
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
+        assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
+        assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("\$L", "com.test.validator.groups.BasicValidation.class")))
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(1)
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithListOfClassObjects() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {groups: ["BasicValidation.class","AdvanceValidation.class"]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName")
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeClassImports = mapOf("ValidPerson" to mapOf(
+                    Pair("BasicValidation", "com.test.validator.groups"),
+                    Pair("AdvanceValidation", "com.test.validator.groups")
+                )),
+                generateCustomAnnotations = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(1)
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
+        assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
+        assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class")))
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(1)
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
+    }
+
+    @Test
+    fun annotateOnTypesWithMultipleListsOfClassObjects() {
+        val schema = """
+            type Person @annotate(name: "ValidPerson", type: "validator", inputs: {groups: ["BasicValidation.class","AdvanceValidation.class"]}) {
+                name: String @annotate(name: "com.test.anotherValidator.ValidName")
+                type: String @annotate(name: "ValidDateOfBirth", type: "dateOfBirth", inputs: {levels: ["PreliminaryValidation.class","SecondaryValidation.class"]}) 
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("dateOfBirth", "com.test.validator.dob")),
+                includeClassImports = mapOf(
+                    "ValidPerson" to mapOf(
+                        Pair("BasicValidation", "com.test.validator.groups"),
+                        Pair("AdvanceValidation", "com.test.validator.groups")
+                    ),
+                    "ValidDateOfBirth" to mapOf(
+                        Pair("PreliminaryValidation", "com.test.validator.dob.levels"),
+                        Pair("SecondaryValidation", "com.test.validator.dob.levels")
+                    )
+                ),
+                generateCustomAnnotations = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(1)
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
+        assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
+        assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class")))
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(2)
+        assertThat(fields[0].annotations).hasSize(1)
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
+
+        assertThat(fields[1].annotations).hasSize(1)
+        assertThat(((fields[1].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidDateOfBirth")
+        assertThat(((fields[1].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.dob.ValidDateOfBirth")
+        assertThat((fields[1].annotations[0] as AnnotationSpec).members["levels"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.test.validator.dob.levels.PreliminaryValidation.class, com.test.validator.dob.levels.SecondaryValidation.class")))
+    }
+
+    @Test
     fun annotateOnTypesWithEnums() {
         val schema = """
             type Person @annotate(name: "ValidPerson", type: "validator", inputs: {sexType: MALE}) {
