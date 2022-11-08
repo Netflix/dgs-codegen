@@ -31,4 +31,6 @@ object ParserConstants {
     const val REPLACE_WITH = "replaceWith"
     const val REPLACE_WITH_CLASS = "ReplaceWith"
     const val SITE_TARGET = "target"
+    const val CLASS_STRING = ".class"
+    const val CLASS_LENGTH = CLASS_STRING.length
 }

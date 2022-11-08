@@ -195,8 +195,10 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
         val objectFields: List<ObjectField> = (annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue).objectFields
         for (objectField in objectFields) {
             val codeBlock: CodeBlock = generateCode(
+                config,
                 objectField.value,
-                PackageParserUtil.getEnumPackage(config, (annotationArgumentMap[ParserConstants.NAME] as StringValue).value, objectField.name)
+                (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
+                objectField.name
             )
             annotation.addMember(objectField.name, codeBlock)
         }
@@ -207,21 +209,31 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
 /**
  * Generates the code block containing the parameters of an annotation in the format value
  */
-private fun generateCode(value: Value<Value<*>>, packageName: String = ""): CodeBlock =
+private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotationName: String, prefix: String = ""): CodeBlock =
     when (value) {
         is BooleanValue -> CodeBlock.of("\$L", (value as BooleanValue).isValue)
         is IntValue -> CodeBlock.of("\$L", (value as IntValue).value)
-        is StringValue -> CodeBlock.of("\$S", (value as StringValue).value)
+        is StringValue -> {
+            // If string value ends with .class and classImports mapping is provided, treat as Java Class
+            val string = (value as StringValue).value
+            if (string.endsWith(ParserConstants.CLASS_STRING)) {
+                val className = string.dropLast(ParserConstants.CLASS_LENGTH)
+                // Use annotationName and className in the PackagerParserUtil to get Class Package name.
+                val classPackage = PackageParserUtil.getClassPackage(config, annotationName, className)
+                if (classPackage.isNotEmpty()) CodeBlock.of("\$T.class", ClassName.get(classPackage, className))
+                else CodeBlock.of("\$S", string)
+            } else CodeBlock.of("\$S", string)
+        }
         is FloatValue -> CodeBlock.of("\$L", (value as FloatValue).value)
-        // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
+        // In an enum value the prefix (key in the parameters map for the enum) is used to get the package name from the config
         // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
         is EnumValue -> CodeBlock.of(
             "\$T",
-            ClassName.get(packageName, (value as EnumValue).name)
+            ClassName.get(PackageParserUtil.getEnumPackage(config, annotationName, prefix), (value as EnumValue).name)
         )
         is ArrayValue ->
             if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("[]")
-            else CodeBlock.of("[\$L]", (value as ArrayValue).values.joinToString { v -> generateCode(value = v, if (v is EnumValue) packageName else "").toString() })
+            else CodeBlock.of("[\$L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, annotationName = annotationName, prefix = if (v is EnumValue) prefix else "").toString() })
         else -> CodeBlock.of("\$L", value)
     }
 

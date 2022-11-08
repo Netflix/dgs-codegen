@@ -319,10 +319,19 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotati
     when (value) {
         is BooleanValue -> CodeBlock.of("$prefix%L", (value as BooleanValue).isValue)
         is IntValue -> CodeBlock.of("$prefix%L", (value as IntValue).value)
-        is StringValue -> CodeBlock.of("$prefix%S", (value as StringValue).value)
+        is StringValue -> {
+            // If string value ends with .class and classImports mapping is provided, treat as Kotlin KClass
+            val string = (value as StringValue).value
+            if (string.endsWith(ParserConstants.CLASS_STRING)) {
+                val className = string.dropLast(ParserConstants.CLASS_LENGTH)
+                // Use annotationName and className in the PackagerParserUtil to get Class Package name.
+                val classPackage = PackageParserUtil.getClassPackage(config, annotationName, className)
+                if (classPackage.isNotEmpty()) CodeBlock.of("$prefix%T::class", ClassName(classPackage, className))
+                else CodeBlock.of("$prefix%S", string)
+            } else CodeBlock.of("$prefix%S", string)
+        }
         is FloatValue -> CodeBlock.of("$prefix%L", (value as FloatValue).value)
         // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
-        // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
         is EnumValue -> CodeBlock.of(
             "$prefix%M",
             MemberName(
