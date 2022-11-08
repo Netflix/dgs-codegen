@@ -84,6 +84,32 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
         }
     }
 
+    /**
+     * Takes a GQL interface type name and returns the appropriate kotlin type given all of the mappings defined in the schema and config
+     */
+    fun findKtInterfaceName(interfaceName: String, packageName: String): KtTypeName {
+        // check config
+        if (interfaceName in config.typeMapping) {
+            val mappedType = config.typeMapping.getValue(interfaceName)
+
+            return parseMappedType(
+                mappedType = mappedType,
+                toTypeName = String::toKtTypeName,
+                parameterize = { (it.first as ClassName).parameterizedBy(it.second) },
+                onCloseBracketCallBack = { current, typeString ->
+                    if (typeString.trim() == "?") {
+                        val last = current.second.removeLast()
+                        current.second.add(last.copy(nullable = true))
+                    } else {
+                        current.second.add(typeString.toKtTypeName(true))
+                    }
+                }
+            )
+        }
+
+        return "$packageName.$interfaceName".toKtTypeName()
+    }
+
     private fun TypeName.toKtTypeName(): KtTypeName {
         if (name in config.typeMapping) {
             val mappedType = config.typeMapping.getValue(name)

@@ -112,6 +112,30 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         return NodeTraverser().postOrder(visitor, fieldType) as JavaTypeName
     }
 
+    /**
+     * Takes a GQL interface type name and returns the appropriate kotlin type given all of the mappings defined in the schema and config
+     */
+    fun findJavaInterfaceName(interfaceName: String, packageName: String): JavaTypeName {
+        // check config
+        if (interfaceName in config.typeMapping) {
+            val mappedType = config.typeMapping.getValue(interfaceName)
+
+            return parseMappedType(
+                mappedType = mappedType,
+                toTypeName = String::toTypeName,
+                parameterize = { current ->
+                    ParameterizedTypeName.get(
+                        current.first as ClassName,
+                        *current.second.toTypedArray()
+                    )
+                },
+                onCloseBracketCallBack = { current, typeString -> current.second.add(typeString.toTypeName(true)) }
+            )
+        }
+
+        return ClassName.get(packageName, interfaceName)
+    }
+
     private fun unboxType(typeName: JavaTypeName): JavaTypeName {
         return if (typeName.isBoxedPrimitive) {
             typeName.unbox()

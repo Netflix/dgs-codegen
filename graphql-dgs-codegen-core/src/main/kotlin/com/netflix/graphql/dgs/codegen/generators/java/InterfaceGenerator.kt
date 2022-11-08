@@ -59,7 +59,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         definition.implements
             .filterIsInstance<TypeName>()
             .forEach {
-                javaType.addSuperinterface(ClassName.get(packageName, it.name))
+                javaType.addSuperinterface(typeUtils.findJavaInterfaceName(it.name, packageName))
             }
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }

@@ -55,6 +55,9 @@ class Kotlin2CodeGenTest {
                         "DateTime" to "java.time.OffsetDateTime",
                         "PageInfo" to "graphql.relay.PageInfo"
                     )
+                    "dataClassWithMappedInterfaces" -> mapOf(
+                        "Node" to "com.netflix.graphql.dgs.codegen.fixtures.Node"
+                    )
                     else -> emptyMap()
                 }
             )

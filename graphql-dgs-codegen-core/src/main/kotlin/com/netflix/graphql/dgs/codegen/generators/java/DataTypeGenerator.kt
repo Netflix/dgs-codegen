@@ -282,7 +282,7 @@ abstract class BaseDataTypeGenerator(
             .addModifiers(Modifier.PUBLIC)
 
         superInterfaces.forEach {
-            javaType.addSuperinterface(ClassName.get(packageName, (it as TypeName).name))
+            javaType.addSuperinterface(typeUtils.findJavaInterfaceName((it as TypeName).name, packageName))
         }
 
         fields.forEach {
