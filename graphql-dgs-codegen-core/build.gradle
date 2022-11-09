@@ -19,7 +19,7 @@
 plugins {
     id 'java-library'
     id 'application'
-    id 'nebula.integtest'
+    id 'com.netflix.nebula.integtest'
 }
 
 
