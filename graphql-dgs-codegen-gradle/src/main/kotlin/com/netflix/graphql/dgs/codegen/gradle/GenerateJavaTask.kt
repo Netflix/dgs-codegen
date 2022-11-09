@@ -138,6 +138,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var includeEnumImports = mutableMapOf<String, MutableMap<String, String>>()
 
+    @Input
+    var includeClassImports = mutableMapOf<String, MutableMap<String, String>>()
+
     @TaskAction
     fun generate() {
         val schemaJarFilesFromDependencies = emptyList<File>().toMutableList()
@@ -194,6 +197,7 @@ open class GenerateJavaTask : DefaultTask() {
             addDeprecatedAnnotation = addDeprecatedAnnotation,
             includeImports = includeImports,
             includeEnumImports = includeEnumImports,
+            includeClassImports = includeClassImports,
             generateCustomAnnotations = generateCustomAnnotations
         )
 
