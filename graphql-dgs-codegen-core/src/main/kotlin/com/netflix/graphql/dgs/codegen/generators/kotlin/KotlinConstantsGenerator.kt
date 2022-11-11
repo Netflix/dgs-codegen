@@ -102,11 +102,11 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
         }
 
         if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Mutation" }) {
-            baseConstantsType.addProperty(PropertySpec.builder("Mutation_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Mutation"""").build())
+            baseConstantsType.addProperty(PropertySpec.builder("MUTATION_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Mutation"""").build())
         }
 
         if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Subscription" }) {
-            baseConstantsType.addProperty(PropertySpec.builder("Subscription_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Subscription"""").build())
+            baseConstantsType.addProperty(PropertySpec.builder("SUBSCRIPTION_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Subscription"""").build())
         }
 
         val fileSpec = FileSpec.builder(config.packageName, "DgsConstants").addType(baseConstantsType.build()).build()
