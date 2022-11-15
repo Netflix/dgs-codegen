@@ -3198,7 +3198,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(2)
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "\"husband\", \"wife\"")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3232,7 +3232,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(2)
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "\"husband\", \"wife\"")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3266,7 +3266,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(2)
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "\"husband\", \"wife\"")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3319,7 +3319,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(2)
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "\"husband\", \"wife\"")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3353,7 +3353,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(2)
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "\"husband\", \"wife\"")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3456,7 +3456,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
-        assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3499,7 +3499,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
-        assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3509,7 +3509,7 @@ It takes a title and such.
         assertThat(fields[1].annotations).hasSize(1)
         assertThat(((fields[1].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidDateOfBirth")
         assertThat(((fields[1].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.dob.ValidDateOfBirth")
-        assertThat((fields[1].annotations[0] as AnnotationSpec).members["levels"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.test.validator.dob.levels.PreliminaryValidation.class, com.test.validator.dob.levels.SecondaryValidation.class")))
+        assertThat((fields[1].annotations[0] as AnnotationSpec).members["levels"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.test.validator.dob.levels.PreliminaryValidation.class, com.test.validator.dob.levels.SecondaryValidation.class")))
     }
 
     @Test
@@ -3570,7 +3570,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
-        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.enums.HUSBAND, com.enums.WIFE")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3603,7 +3603,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
-        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.enums.HUSBAND, com.enums.WIFE")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
@@ -3636,7 +3636,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidPerson")
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidPerson")
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
-        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("[\$L]", "com.enums.HUSBAND, com.enums.WIFE")))
+        assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(2)

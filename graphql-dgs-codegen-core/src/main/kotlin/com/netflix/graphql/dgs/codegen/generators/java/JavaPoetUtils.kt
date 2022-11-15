@@ -232,8 +232,8 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotati
             ClassName.get(PackageParserUtil.getEnumPackage(config, annotationName, prefix), (value as EnumValue).name)
         )
         is ArrayValue ->
-            if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("[]")
-            else CodeBlock.of("[\$L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, annotationName = annotationName, prefix = if (v is EnumValue) prefix else "").toString() })
+            if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("{}")
+            else CodeBlock.of("{\$L}", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, annotationName = annotationName, prefix = if (v is EnumValue) prefix else "").toString() })
         else -> CodeBlock.of("\$L", value)
     }
 
