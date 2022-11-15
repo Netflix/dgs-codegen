@@ -30,7 +30,6 @@ import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 import java.time.*
-import java.util.*
 import com.squareup.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
@@ -41,7 +40,6 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "TimeZone" to ClassName.get(String::class.java),
         "Date" to ClassName.get(LocalDate::class.java),
         "DateTime" to ClassName.get(OffsetDateTime::class.java),
-        "Currency" to ClassName.get(Currency::class.java),
         "Instant" to ClassName.get(Instant::class.java),
         "RelayPageInfo" to ClassName.get(PageInfo::class.java),
         "PageInfo" to ClassName.get(PageInfo::class.java),

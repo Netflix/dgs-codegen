@@ -29,7 +29,6 @@ import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 import java.time.*
-import java.util.*
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinTypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
@@ -39,7 +38,6 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
         "LocalDate" to LocalDate::class.asTypeName(),
         "LocalDateTime" to LocalDateTime::class.asTypeName(),
         "TimeZone" to STRING,
-        "Currency" to Currency::class.asTypeName(),
         "Instant" to Instant::class.asTypeName(),
         "Date" to LocalDate::class.asTypeName(),
         "DateTime" to OffsetDateTime::class.asTypeName(),
