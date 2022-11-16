@@ -30,6 +30,7 @@ import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 import java.time.*
+import java.util.*
 import com.squareup.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
@@ -40,6 +41,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "TimeZone" to ClassName.get(String::class.java),
         "Date" to ClassName.get(LocalDate::class.java),
         "DateTime" to ClassName.get(OffsetDateTime::class.java),
+        "Currency" to ClassName.get(Currency::class.java),
         "Instant" to ClassName.get(Instant::class.java),
         "RelayPageInfo" to ClassName.get(PageInfo::class.java),
         "PageInfo" to ClassName.get(PageInfo::class.java),
@@ -72,7 +74,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 if (useWildcardType) {
                     if (typeName is ClassName) {
                         if (document.definitions.filterIsInstance<ObjectTypeDefinition>()
-                            .any { e -> "I${e.name}" == typeName.simpleName() }
+                                .any { e -> "I${e.name}" == typeName.simpleName() }
                         ) {
                             canUseWildcardType = true
                         }
@@ -172,7 +174,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             return schemaType.toTypeName()
         }
 
-        if (name in commonScalars) {
+        if (name in commonScalars && !isFieldTypeDefinedInDocument(name)) {
             return commonScalars.getValue(name)
         }
 
@@ -244,6 +246,11 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             originName
         }
     }
+
+    private fun isFieldTypeDefinedInDocument(name: String): Boolean =
+        document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||
+                document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name } ||
+                document.definitions.filterIsInstance<ScalarTypeDefinition>().any { e -> e.name == name }
 
     companion object {
         const val getClass = "getClass"

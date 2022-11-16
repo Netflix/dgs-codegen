@@ -29,6 +29,7 @@ import graphql.relay.PageInfo
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 import java.time.*
+import java.util.*
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
 class KotlinTypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
@@ -38,6 +39,7 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
         "LocalDate" to LocalDate::class.asTypeName(),
         "LocalDateTime" to LocalDateTime::class.asTypeName(),
         "TimeZone" to STRING,
+        "Currency" to Currency::class.asTypeName(),
         "Instant" to Instant::class.asTypeName(),
         "Date" to LocalDate::class.asTypeName(),
         "DateTime" to OffsetDateTime::class.asTypeName(),
@@ -132,7 +134,7 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
             return schemaType.toKtTypeName()
         }
 
-        if (name in commonScalars) {
+        if (name in commonScalars && !isFieldTypeDefinedInDocument(name)) {
             return commonScalars.getValue(name)
         }
 
@@ -150,4 +152,9 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
             else -> "$packageName.$name".toKtTypeName()
         }
     }
+
+    private fun isFieldTypeDefinedInDocument(name: String): Boolean =
+        document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||
+                document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name } ||
+                document.definitions.filterIsInstance<ScalarTypeDefinition>().any { e -> e.name == name }
 }
