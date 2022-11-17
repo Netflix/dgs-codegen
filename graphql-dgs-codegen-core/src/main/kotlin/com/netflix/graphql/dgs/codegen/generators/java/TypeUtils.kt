@@ -74,7 +74,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 if (useWildcardType) {
                     if (typeName is ClassName) {
                         if (document.definitions.filterIsInstance<ObjectTypeDefinition>()
-                            .any { e -> "I${e.name}" == typeName.simpleName() }
+                                .any { e -> "I${e.name}" == typeName.simpleName() }
                         ) {
                             canUseWildcardType = true
                         }
@@ -174,7 +174,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             return schemaType.toTypeName()
         }
 
-        if (name in commonScalars) {
+        if (name in commonScalars && !isFieldTypeDefinedInDocument(name)) {
             return commonScalars.getValue(name)
         }
 
@@ -246,6 +246,11 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
             originName
         }
     }
+
+    private fun isFieldTypeDefinedInDocument(name: String): Boolean =
+        document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||
+                document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name } ||
+                document.definitions.filterIsInstance<ScalarTypeDefinition>().any { e -> e.name == name }
 
     companion object {
         const val getClass = "getClass"

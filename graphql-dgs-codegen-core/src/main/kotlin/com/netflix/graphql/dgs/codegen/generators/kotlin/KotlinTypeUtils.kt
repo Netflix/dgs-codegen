@@ -134,7 +134,7 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
             return schemaType.toKtTypeName()
         }
 
-        if (name in commonScalars) {
+        if (name in commonScalars && !isFieldTypeDefinedInDocument(name)) {
             return commonScalars.getValue(name)
         }
 
@@ -152,4 +152,9 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
             else -> "$packageName.$name".toKtTypeName()
         }
     }
+
+    private fun isFieldTypeDefinedInDocument(name: String): Boolean =
+        document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||
+                document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name } ||
+                document.definitions.filterIsInstance<ScalarTypeDefinition>().any { e -> e.name == name }
 }
