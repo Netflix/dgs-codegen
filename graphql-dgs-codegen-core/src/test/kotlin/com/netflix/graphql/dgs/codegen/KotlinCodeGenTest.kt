@@ -3548,30 +3548,4 @@ It takes a title and such.
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(0)
     }
-
-    @Test
-    fun `Use schema type when type name clashes with commonScalars`() {
-        val schema = """
-            type Price {
-                amount: Double
-                currency: Currency
-                date: Date
-            }
-            enum Currency {
-                EUR
-                GBP
-            }
-        """.trimIndent()
-
-        val (dataTypes) = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName
-            )
-        ).generate()
-
-        assertThat(dataTypes.size).isEqualTo(1)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).contains(basePackageName)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.time.LocalDate")
-    }
 }
