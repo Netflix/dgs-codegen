@@ -82,4 +82,60 @@ class ClientApiGenBuilderTest {
         assertThat(result2QueryObject.input.keys).isEmpty()
         assertThat(result2QueryObject.input["nameFilter"]).isNull()
     }
+
+    @Test
+    fun `Query name should be null if not set`() {
+        val schema = """
+            type Query {
+                filter(nameFilter: String): [String]
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                maxProjectionDepth = 2
+            )
+        ).generate()
+
+        val builderClass = assertCompilesJava(codeGenResult).toClassLoader()
+            .loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
+        val buildMethod = builderClass.getMethod("build")
+
+        val builder = builderClass.constructors[0].newInstance()
+        val result2QueryObject: GraphQLQuery = buildMethod.invoke(builder) as GraphQLQuery
+        assertThat(result2QueryObject.name).isNull()
+    }
+
+    @Test
+    fun `Query name should be accessible via GraphQLQuery#name if set`() {
+        val schema = """
+            type Query {
+                filter(nameFilter: String): [String]
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                maxProjectionDepth = 2
+            )
+        ).generate()
+
+        val builderClass = assertCompilesJava(codeGenResult).toClassLoader()
+            .loadClass("$basePackageName.client.FilterGraphQLQuery\$Builder")
+        val nameMethod = builderClass.getMethod("queryName", String::class.java)
+        val buildMethod = builderClass.getMethod("build")
+
+        val builder = builderClass.constructors[0].newInstance()
+        nameMethod.invoke(builder, "test")
+
+        val result2QueryObject: GraphQLQuery = buildMethod.invoke(builder) as GraphQLQuery
+        assertThat(result2QueryObject.name).isNotNull
+        assertThat(result2QueryObject.name).isEqualTo("test")
+    }
 }
