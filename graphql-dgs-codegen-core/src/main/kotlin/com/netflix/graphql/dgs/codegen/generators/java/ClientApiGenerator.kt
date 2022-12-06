@@ -110,12 +110,12 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .addCode(
                         if (it.inputValueDefinitions.isNotEmpty()) {
                             """
-                            |return new $methodName(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, fieldsSet);
+                            |return new $methodName(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, queryName, fieldsSet);
                             |         
                             """.trimMargin()
                         } else {
                             """
-                            |return new $methodName();                                     
+                            |return new $methodName(queryName);                                     
                             """.trimMargin()
                         }
                     )
@@ -126,7 +126,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC)
         constructorBuilder.addCode(
             """
-            |super("${operation.lowercase()}");
+            |super("${operation.lowercase()}", queryName);
             |
             """.trimMargin()
         )
@@ -169,6 +169,22 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 )
             }
         }
+
+        val nameMethodBuilder = MethodSpec.methodBuilder("queryName")
+            .addParameter(String::class.java, "queryName")
+            .returns(ClassName.get("", "Builder"))
+            .addModifiers(Modifier.PUBLIC)
+            .addCode(
+                """
+                |this.queryName = queryName;
+                |return this;
+                """.trimMargin()
+            )
+
+        builderClass.addField(FieldSpec.builder(String::class.java, "queryName", Modifier.PRIVATE).build())
+            .addMethod(nameMethodBuilder.build())
+
+        constructorBuilder.addParameter(String::class.java, "queryName")
 
         if (it.inputValueDefinitions.size > 0) {
             constructorBuilder.addParameter(setOfStringType, "fieldsSet")

@@ -160,7 +160,7 @@ class ClientApiGenMutationTest {
             .find { it.name == "<init>" }?.code.toString()
 
         val expected = """
-            |super("mutation");
+            |super("mutation", queryName);
             |if (movie != null || fieldsSet.contains("movie")) {
             |    getInput().put("movie", movie);
             |}if (reviews != null || fieldsSet.contains("reviews")) {
@@ -200,7 +200,7 @@ class ClientApiGenMutationTest {
         assert(
             codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs
                 .find { it.name == "<init>" }?.code.toString()
-                .contains("super(\"mutation\");\ngetInput().put(\"movieId\", movieId);")
+                .contains("super(\"mutation\", queryName);\ngetInput().put(\"movieId\", movieId);")
         )
 
         assertCompilesJava(
