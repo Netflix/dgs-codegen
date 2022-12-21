@@ -363,9 +363,11 @@ class CodeGen(private val config: CodeGenConfig) {
             client.merge(entitiesClient).merge(entitiesRepresentationsTypes)
         }
 
+        val dataFetchersResult = generateJavaDataFetchers(definitions) // TODO kotlin data fetchers
         val generatedAnnotation = generateKotlinGeneratedAnnotation(config)
 
         return dataTypes.merge(clientTypes)
+            .merge(dataFetchersResult)
             .merge(generatedAnnotation)
     }
 
