@@ -40,7 +40,7 @@ class CodegenGradlePluginCompatibilityTest {
     lateinit var projectDir: File
 
     @ParameterizedTest
-    @ValueSource(strings = ["6.8.1", "7.0.2", "7.1.1", "7.2"])
+    @ValueSource(strings = ["7.1", "7.2", "7.3", "7.4"])
     fun `Test generateJava against multiple Gradle Versions`(gradleVersion: String) {
         prepareBuildGraphQLSchema(
             """
