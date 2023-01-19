@@ -42,7 +42,7 @@ class GraphQLQueryRequestTest {
         val result = request.serialize()
         assertValidQuery(result)
         assertThat(result).isEqualTo(
-            """query {
+            """{
             |  test(actors: "actorA", movies: ["movie1", "movie2"])
             |}
             """.trimMargin()
@@ -58,7 +58,7 @@ class GraphQLQueryRequestTest {
         val result = request.serialize()
         assertValidQuery(result)
         assertThat(result).isEqualTo(
-            """query {
+            """{
             |  test(movies: [1234, 5678])
             |}
             """.trimMargin()
@@ -75,7 +75,7 @@ class GraphQLQueryRequestTest {
         val result = request.serialize()
         assertValidQuery(result)
         assertThat(result).isEqualTo(
-            """query {
+            """{
             |  test(name: "noname", age: 30)
             |}
             """.trimMargin()
@@ -91,7 +91,7 @@ class GraphQLQueryRequestTest {
         val result = request.serialize()
         assertValidQuery(result)
         assertThat(result).isEqualTo(
-            """query {
+            """{
             |  test(movie: {movieId : 1234, name : "testMovie"})
             |}
             """.trimMargin()
@@ -107,7 +107,7 @@ class GraphQLQueryRequestTest {
         val result = request.serialize()
         assertValidQuery(result)
         assertThat(result).isEqualTo(
-            """query {
+            """{
             |  test(movie: {movieId : 1234, name : "testMovie"}) {
             |    name
             |    movieId
@@ -295,7 +295,7 @@ class GraphQLQueryRequestTest {
 
         assertValidQuery(result)
         assertThat(result).isEqualTo(
-            """query {
+            """{
             |  test(actors: {name : "actorA", movies : ["movie1", "movie2"]}, movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"})
             |}
             """.trimMargin()

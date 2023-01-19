@@ -6,10 +6,10 @@
     },
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.5.0"
@@ -18,19 +18,19 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "18.1"
+            "locked": "19.2"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -50,10 +50,10 @@
     },
     "implementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.5.0"
@@ -62,19 +62,19 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "18.1"
+            "locked": "19.2"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -92,8 +92,205 @@
             "locked": "1.7.30"
         }
     },
+    "integTestCompileClasspath": {
+        "com.fasterxml.jackson.core:jackson-annotations": {
+            "locked": "2.13.4"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.13.4"
+        },
+        "com.github.ajalt.clikt:clikt": {
+            "locked": "3.5.0"
+        },
+        "com.google.testing.compile:compile-testing": {
+            "locked": "0.21.0"
+        },
+        "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "19.2"
+        },
+        "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
+            "project": true
+        },
+        "com.netflix.graphql.dgs:graphql-dgs": {
+            "locked": "5.5.1"
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "5.5.1"
+        },
+        "com.squareup:javapoet": {
+            "locked": "1.13.0"
+        },
+        "com.squareup:kotlinpoet": {
+            "locked": "1.12.0"
+        },
+        "org.assertj:assertj-core": {
+            "locked": "3.23.1"
+        },
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.7.0"
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "1.7.0"
+        },
+        "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.8.2"
+        },
+        "org.junit.jupiter:junit-jupiter-params": {
+            "locked": "5.8.2"
+        },
+        "org.junit:junit-bom": {
+            "locked": "5.8.2"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.30"
+        }
+    },
+    "integTestImplementationDependenciesMetadata": {
+        "com.fasterxml.jackson.core:jackson-annotations": {
+            "locked": "2.13.4"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.13.4"
+        },
+        "com.github.ajalt.clikt:clikt": {
+            "locked": "3.5.0"
+        },
+        "com.google.testing.compile:compile-testing": {
+            "locked": "0.21.0"
+        },
+        "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "19.2"
+        },
+        "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
+            "project": true
+        },
+        "com.netflix.graphql.dgs:graphql-dgs": {
+            "locked": "5.5.1"
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "5.5.1"
+        },
+        "com.squareup:javapoet": {
+            "locked": "1.13.0"
+        },
+        "com.squareup:kotlinpoet": {
+            "locked": "1.12.0"
+        },
+        "org.assertj:assertj-core": {
+            "locked": "3.23.1"
+        },
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.7.0"
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "1.7.0"
+        },
+        "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.8.2"
+        },
+        "org.junit.jupiter:junit-jupiter-params": {
+            "locked": "5.8.2"
+        },
+        "org.junit:junit-bom": {
+            "locked": "5.8.2"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.30"
+        }
+    },
+    "integTestRuntimeClasspath": {
+        "com.fasterxml.jackson.core:jackson-annotations": {
+            "locked": "2.13.4"
+        },
+        "com.fasterxml.jackson.core:jackson-databind": {
+            "locked": "2.13.4"
+        },
+        "com.github.ajalt.clikt:clikt": {
+            "locked": "3.5.0"
+        },
+        "com.google.testing.compile:compile-testing": {
+            "locked": "0.21.0"
+        },
+        "com.graphql-java:graphql-java": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "19.2"
+        },
+        "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
+            "project": true
+        },
+        "com.netflix.graphql.dgs:graphql-dgs": {
+            "locked": "5.5.1"
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "5.5.1"
+        },
+        "com.squareup:javapoet": {
+            "locked": "1.13.0"
+        },
+        "com.squareup:kotlinpoet": {
+            "locked": "1.12.0"
+        },
+        "org.assertj:assertj-core": {
+            "locked": "3.23.1"
+        },
+        "org.jetbrains.kotlin:kotlin-compiler": {
+            "locked": "1.7.0"
+        },
+        "org.jetbrains.kotlin:kotlin-reflect": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "1.7.0"
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "1.7.0"
+        },
+        "org.junit.jupiter:junit-jupiter": {
+            "locked": "5.8.2"
+        },
+        "org.junit.jupiter:junit-jupiter-params": {
+            "locked": "5.8.2"
+        },
+        "org.junit:junit-bom": {
+            "locked": "5.8.2"
+        },
+        "org.slf4j:slf4j-api": {
+            "locked": "1.7.35"
+        }
+    },
     "kotlinCompilerClasspath": {
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
+            "locked": "1.7.0"
+        }
+    },
+    "kotlinCompilerPluginClasspathIntegTest": {
+        "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
             "locked": "1.7.0"
         }
     },
@@ -114,10 +311,10 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.5.0"
@@ -126,19 +323,19 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "18.1"
+            "locked": "19.2"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -164,34 +361,34 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.5.0"
         },
         "com.google.testing.compile:compile-testing": {
-            "locked": "0.19"
+            "locked": "0.21.0"
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "18.1"
+            "locked": "19.2"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -226,34 +423,34 @@
     },
     "testImplementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.5.0"
         },
         "com.google.testing.compile:compile-testing": {
-            "locked": "0.19"
+            "locked": "0.21.0"
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "18.1"
+            "locked": "19.2"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
@@ -288,34 +485,34 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.2"
+            "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
             "locked": "3.5.0"
         },
         "com.google.testing.compile:compile-testing": {
-            "locked": "0.19"
+            "locked": "0.21.0"
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "18.1"
+            "locked": "19.2"
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "5.0.4"
+            "locked": "5.5.1"
         },
         "com.squareup:javapoet": {
             "locked": "1.13.0"
