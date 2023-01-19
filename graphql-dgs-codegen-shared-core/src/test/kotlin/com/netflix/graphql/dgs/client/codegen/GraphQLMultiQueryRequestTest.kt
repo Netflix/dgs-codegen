@@ -47,7 +47,7 @@ class GraphQLMultiQueryRequestTest {
         val result = multiRequest.serialize()
         GraphQLQueryRequestTest.assertValidQuery(result)
         Assertions.assertThat(result).isEqualTo(
-            """query {
+            """{
                 |  alias1: test(movie: {movieId : 1234, name : "testMovie"}) {
                 |    name
                 |    movieId
@@ -138,7 +138,7 @@ class GraphQLMultiQueryRequestTest {
         val result = multiRequest.serialize()
         GraphQLQueryRequestTest.assertValidQuery(result)
         Assertions.assertThat(result).isEqualTo(
-            """query {
+            """{
                 |  alias1: test(movie: {movieId : 1234, name : "testMovie"}) {
                 |    name
                 |    movieId

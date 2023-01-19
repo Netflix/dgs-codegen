@@ -193,13 +193,11 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         javaType.addMethod(constructorBuilder.build())
 
         // No-arg constructor
-        if (it.inputValueDefinitions.size > 0) {
-            javaType.addMethod(
-                MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
-                    .addStatement("super(\"${operation.lowercase()}\")")
-                    .build()
-            )
-        }
+        javaType.addMethod(
+            MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC)
+                .addStatement("super(\"${operation.lowercase()}\")")
+                .build()
+        )
 
         javaType.addMethod(
             MethodSpec.methodBuilder("newRequest")

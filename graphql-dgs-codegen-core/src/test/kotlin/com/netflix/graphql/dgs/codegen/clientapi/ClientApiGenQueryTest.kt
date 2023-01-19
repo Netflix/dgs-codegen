@@ -46,6 +46,8 @@ class ClientApiGenQueryTest {
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PeopleGraphQLQuery")
+        codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs.find { it -> it.isConstructor && it.parameters.isEmpty() }
+        codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs.find { it -> it.isConstructor && (it.parameters.find { param -> param.name == "queryName" } != null) }
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
