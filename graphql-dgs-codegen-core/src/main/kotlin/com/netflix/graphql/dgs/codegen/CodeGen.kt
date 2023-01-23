@@ -105,7 +105,7 @@ class CodeGen(private val config: CodeGenConfig) {
      */
     private fun buildDocument(): Document {
         val options = ParserOptions.getDefaultParserOptions().transform { builder ->
-            builder.maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
+            builder.maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS).maxWhitespaceTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
         }
         val parser = Parser()
 
