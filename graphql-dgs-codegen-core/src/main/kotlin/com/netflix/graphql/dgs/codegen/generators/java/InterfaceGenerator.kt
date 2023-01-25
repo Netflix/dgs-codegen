@@ -81,7 +81,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
             // implementation classes. This is not an issue if the overridden field has the same base type,
             // however.
             // Ref: https://github.com/graphql/graphql-js/issues/776
-            if (!isFieldAnInterface(it)) {
+            if (!isFieldAnInterface(it) || config.generateInterfaceMethodsForInterfaceFields) {
                 addInterfaceMethod(it, javaType)
             }
         }
@@ -110,7 +110,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun addInterfaceMethod(fieldDefinition: FieldDefinition, javaType: TypeSpec.Builder) {
-        val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType)
+        val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType, true)
 
         val fieldName = fieldDefinition.name
         val getterBuilder = MethodSpec.methodBuilder(typeUtils.transformIfDefaultClassMethodExists("get${fieldName.capitalized()}", TypeUtils.Companion.getClass))
