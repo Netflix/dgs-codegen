@@ -87,7 +87,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
                 .map {
                     Field(
                         it.name,
-                        typeUtils.findReturnType(it.type, useInterfaceType),
+                        typeUtils.findReturnType(it.type, useInterfaceType, true),
                         overrideGetter = overrideGetter,
                         description = it.description,
                         directives = it.directives
@@ -97,7 +97,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
                     extensions.flatMap { it.fieldDefinitions }.filterSkipped().map {
                         Field(
                             it.name,
-                            typeUtils.findReturnType(it.type, useInterfaceType),
+                            typeUtils.findReturnType(it.type, useInterfaceType, true),
                             overrideGetter = overrideGetter,
                             description = it.description,
                             directives = it.directives

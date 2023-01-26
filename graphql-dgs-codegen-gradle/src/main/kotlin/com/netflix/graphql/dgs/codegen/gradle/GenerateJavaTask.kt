@@ -28,12 +28,10 @@ import java.io.File
 import java.nio.file.Paths
 import java.util.*
 
-@CacheableTask
 open class GenerateJavaTask : DefaultTask() {
     @Input
     var generatedSourcesDir: String = project.buildDir.absolutePath
 
-    @PathSensitive(PathSensitivity.RELATIVE)
     @InputFiles
     var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
 
@@ -82,6 +80,9 @@ open class GenerateJavaTask : DefaultTask() {
 
     @Input
     var generateInterfaceSetters = true
+
+    @Input
+    var generateInterfaceMethodsForInterfaceFields = false
 
     @Input
     var implementSerializable = false
@@ -181,6 +182,7 @@ open class GenerateJavaTask : DefaultTask() {
             generateKotlinClosureProjections = generateKotlinClosureProjections,
             generateInterfaces = generateInterfaces,
             generateInterfaceSetters = generateInterfaceSetters,
+            generateInterfaceMethodsForInterfaceFields = generateInterfaceMethodsForInterfaceFields,
             typeMapping = typeMapping,
             includeQueries = includeQueries.toSet(),
             includeMutations = includeMutations.toSet(),

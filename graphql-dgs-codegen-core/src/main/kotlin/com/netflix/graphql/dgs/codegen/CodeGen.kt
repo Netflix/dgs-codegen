@@ -470,6 +470,7 @@ data class CodeGenConfig(
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
     val snakeCaseConstantNames: Boolean = false,
     val generateInterfaceSetters: Boolean = true,
+    val generateInterfaceMethodsForInterfaceFields: Boolean = false,
     val includeImports: Map<String, String> = emptyMap(),
     val includeEnumImports: Map<String, Map<String, String>> = emptyMap(),
     val includeClassImports: Map<String, Map<String, String>> = emptyMap(),
