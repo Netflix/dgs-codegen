@@ -2503,7 +2503,6 @@ class CodeGenTest {
         val iapple = interfaces[0]
         assertThat(iapple.typeSpec.name).isEqualTo("IApple")
 
-
         val iseed = interfaces[1]
         assertThat(iseed.typeSpec.name).isEqualTo("ISeed")
         assertThat(iseed.typeSpec.fieldSpecs).isEmpty()
