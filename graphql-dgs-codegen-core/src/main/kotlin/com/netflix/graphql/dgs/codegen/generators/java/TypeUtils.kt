@@ -74,8 +74,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
                 if (useWildcardType) {
                     if (typeName is ClassName) {
                         if (document.definitions.filterIsInstance<ObjectTypeDefinition>()
-                            .any { e -> "I${e.name}" == typeName.simpleName() } ||
-                            (config.generateInterfaces && document.definitions.filterIsInstance<InterfaceTypeDefinition>().any { e -> "${e.name}" == typeName.simpleName() })
+                            .any { e -> "I${e.name}" == typeName.simpleName() } || (config.generateInterfaces && document.definitions.filterIsInstance<InterfaceTypeDefinition>().any { e -> "${e.name}" == typeName.simpleName() })
                         ) {
                             canUseWildcardType = true
                         }

@@ -2417,6 +2417,122 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInterfaceMethodsForInterfaceFields() {
+        val schema = """
+            interface Fruit {
+              seeds: [Seed]
+            }
+            
+            interface FruitCategory {
+                color: String
+                fruit: Fruit
+            }
+
+            type Apple implements Fruit {
+              seeds: [Seed]
+            }
+
+            type Seed {
+              shape: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaceMethodsForInterfaceFields = true
+            )
+        ).generate()
+
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
+
+        val fruit = interfaces[0]
+        assertThat(fruit.typeSpec.name).isEqualTo("Fruit")
+        assertThat(fruit.typeSpec.fieldSpecs).isEmpty()
+        assertThat(fruit.typeSpec.methodSpecs.size).isEqualTo(2)
+        assertThat(fruit.typeSpec.methodSpecs[0].name).isEqualTo("getSeeds")
+        assertThat(fruit.typeSpec.methodSpecs[1].name).isEqualTo("setSeeds")
+
+        val category = interfaces[1]
+        assertThat(category.typeSpec.name).isEqualTo("FruitCategory")
+        assertThat(category.typeSpec.fieldSpecs).isEmpty()
+        assertThat(category.typeSpec.methodSpecs.size).isEqualTo(4)
+        assertThat(category.typeSpec.methodSpecs[0].name).isEqualTo("getColor")
+        assertThat(category.typeSpec.methodSpecs[1].name).isEqualTo("setColor")
+        assertThat(category.typeSpec.methodSpecs[2].name).isEqualTo("getFruit")
+        assertThat(category.typeSpec.methodSpecs[3].name).isEqualTo("setFruit")
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateInterfacesWithMethodsForInterfaceFields() {
+        val schema = """
+            interface Fruit {
+              seeds: [Seed]
+            }
+            
+            interface FruitCategory {
+                color: String
+                fruit: Fruit
+            }
+
+            type Apple implements Fruit {
+              seeds: [Seed]
+            }
+
+            type Seed {
+              shape: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaceMethodsForInterfaceFields = true,
+                generateInterfaces = true
+            )
+        ).generate()
+
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
+
+        val iapple = interfaces[0]
+        assertThat(iapple.typeSpec.name).isEqualTo("IApple")
+
+
+        val iseed = interfaces[1]
+        assertThat(iseed.typeSpec.name).isEqualTo("ISeed")
+        assertThat(iseed.typeSpec.fieldSpecs).isEmpty()
+        assertThat(iseed.typeSpec.methodSpecs.size).isEqualTo(1)
+        assertThat(iseed.typeSpec.methodSpecs[0].name).isEqualTo("getShape")
+
+        val fruit = interfaces[2]
+        assertThat(fruit.typeSpec.name).isEqualTo("Fruit")
+        assertThat(fruit.typeSpec.fieldSpecs).isEmpty()
+        assertThat(fruit.typeSpec.methodSpecs.size).isEqualTo(2)
+        assertThat(fruit.typeSpec.methodSpecs[0].name).isEqualTo("getSeeds")
+        val parameterizedTypeName = fruit.typeSpec.methodSpecs[0].returnType as ParameterizedTypeName
+        val wildcardTypeName = parameterizedTypeName.typeArguments[0] as WildcardTypeName
+        assertThat(wildcardTypeName.upperBounds[0]).extracting("simpleName").isEqualTo("ISeed")
+        assertThat(fruit.typeSpec.methodSpecs[1].name).isEqualTo("setSeeds")
+
+        val category = interfaces[3]
+        assertThat(category.typeSpec.name).isEqualTo("FruitCategory")
+        assertThat(category.typeSpec.fieldSpecs).isEmpty()
+        assertThat(category.typeSpec.methodSpecs.size).isEqualTo(4)
+        assertThat(category.typeSpec.methodSpecs[0].name).isEqualTo("getColor")
+        assertThat(category.typeSpec.methodSpecs[1].name).isEqualTo("setColor")
+        assertThat(category.typeSpec.methodSpecs[2].name).isEqualTo("getFruit")
+        assertThat(category.typeSpec.methodSpecs[3].name).isEqualTo("setFruit")
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateObjectTypeInterfaceWithInterfaceInheritance() {
         val schema = """
         
@@ -2669,7 +2785,8 @@ class CodeGenTest {
         assertThat(moviePage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
         parameterizedTypeName = moviePage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("IMovie")
+        val movieTypeName = parameterizedTypeName.typeArguments[0] as WildcardTypeName
+        assertThat(movieTypeName.upperBounds[0]).extracting("simpleName").isEqualTo("IMovie")
 
         val genre = dataTypes[2]
         assertThat(genre.typeSpec.name).isEqualTo("Genre")
