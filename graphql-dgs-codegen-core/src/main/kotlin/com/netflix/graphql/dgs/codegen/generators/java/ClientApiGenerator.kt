@@ -24,14 +24,7 @@ import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
 import com.netflix.graphql.dgs.codegen.generators.shared.ClassnameShortener
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.CodeBlock
-import com.squareup.javapoet.FieldSpec
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterSpec
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeSpec
+import com.squareup.javapoet.*
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.Document
 import graphql.language.FieldDefinition
@@ -228,9 +221,27 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
     private fun createRootProjection(type: TypeDefinition<*>, prefix: String): CodeGenResult {
         val clazzName = "${prefix}ProjectionRoot"
+        val className = ClassName.get(BaseSubProjectionNode::class.java)
+
+        /*val javaType = TypeSpec.classBuilder(clazzName)
+            .addOptionalGeneratedAnnotation(config)
+            .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))*/
+        val parentJavaType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val rootJavaType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType = TypeSpec.classBuilder(clazzName)
             .addOptionalGeneratedAnnotation(config)
-            .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
+            .addTypeVariable(parentJavaType)
+            .addTypeVariable(rootJavaType)
+            .addModifiers(Modifier.PUBLIC)
+            .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+            .addMethod(
+                MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    // .addParameter(ParameterSpec.builder(ClassName.get("", "PARENT"), "parent").build())
+                    // .addParameter(ParameterSpec.builder(ClassName.get("", "ROOT"), "root").build())
+                    .addCode("""super(null, null, java.util.Optional.of("${type.name}"));""")
+                    .build()
+            )
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
 
@@ -248,7 +259,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 if (typeDefinition != null) it to typeDefinition else null
             }
             .map { (fieldDef, typeDef) ->
-                val projectionName = "${prefix}_${fieldDef.name.capitalized()}Projection"
+                val projectionName = "${typeDef.name.capitalized()}Projection"
 
                 if (typeDef !is ScalarTypeDefinition) {
                     val noArgMethodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDef.name))
@@ -270,7 +281,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
                 val processedEdges = mutableSetOf<Pair<String, String>>()
                 processedEdges.add(typeDef.name to type.name)
-                createSubProjection(typeDef, javaType.build(), javaType.build(), "${prefix}_${fieldDef.name.capitalized()}", processedEdges, 1)
+                createSubProjection(typeDef, javaType.build(), javaType.build(), "${typeDef.name.capitalized()}", processedEdges, 1)
             }
             .fold(CodeGenResult()) { total, current -> total.merge(current) }
 
@@ -388,7 +399,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     private fun addFragmentProjectionMethod(javaType: TypeSpec.Builder, rootType: TypeSpec, prefix: String, it: TypeDefinition<*>, processedEdges: Set<Pair<String, String>>, queryDepth: Int): CodeGenResult {
         val rootRef = if (javaType.build().name == rootType.name) "this" else "getRoot()"
 
-        val projectionName = "${prefix}_${it.name.capitalized()}Projection"
+        val projectionName = "${it.name.capitalized()}Projection"
         javaType.addMethod(
             MethodSpec.methodBuilder("on${it.name}")
                 .addModifiers(Modifier.PUBLIC)
@@ -403,7 +414,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .build()
         )
 
-        return createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${prefix}_${it.name.capitalized()}", processedEdges, queryDepth)
+        return createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${it.name.capitalized()}", processedEdges, queryDepth)
     }
 
     private fun createFragment(type: ObjectTypeDefinition, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>, queryDepth: Int): CodeGenResult {
@@ -463,7 +474,25 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val className = ClassName.get(BaseSubProjectionNode::class.java)
         val clazzName = "${prefix}Projection"
         if (generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
+
+        val parentJavaType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val rootJavaType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType = TypeSpec.classBuilder(clazzName)
+            .addOptionalGeneratedAnnotation(config)
+            .addTypeVariable(parentJavaType)
+            .addTypeVariable(rootJavaType)
+            .addModifiers(Modifier.PUBLIC)
+            .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+            .addMethod(
+                MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(ParameterSpec.builder(ClassName.get("", "PARENT"), "parent").build())
+                    .addParameter(ParameterSpec.builder(ClassName.get("", "ROOT"), "root").build())
+                    .addCode("""super(parent, root, java.util.Optional.of("${type.name}"));""")
+                    .build()
+            )
+
+        /*val javaType = TypeSpec.classBuilder(clazzName)
             .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
             .superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), parent.name), ClassName.get(getPackageName(), root.name)))
@@ -474,7 +503,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .addParameter(ParameterSpec.builder(ClassName.get(getPackageName(), root.name), "root").build())
                     .addCode("""super(parent, root, java.util.Optional.of("${type.name}"));""")
                     .build()
-            )
+            )*/
 
         val fieldDefinitions = type.fieldDefinitions() +
             document.definitions
@@ -489,9 +518,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     val typeDefinition = it.type.findTypeDefinition(document, true)
                     if (typeDefinition != null) it to typeDefinition else null
                 }
-                .filter { (_, typeDef) -> (typeDef.name to type.name) !in processedEdges }
+                // .filter { (_, typeDef) -> (typeDef.name to type.name) !in processedEdges }
                 .map { (fieldDef, typeDef) ->
-                    val projectionName = "${truncatePrefix(prefix)}_${fieldDef.name.capitalized()}Projection"
+                    val projectionName = "${typeDef.name.capitalized()}Projection"
                     val methodName = ReservedKeywordSanitizer.sanitize(fieldDef.name)
                     javaType.addMethod(
                         MethodSpec.methodBuilder(methodName)
@@ -513,7 +542,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
                     val updatedProcessedEdges = processedEdges.toMutableSet()
                     updatedProcessedEdges.add(typeDef.name to type.name)
-                    createSubProjection(typeDef, javaType.build(), root, "${truncatePrefix(prefix)}_${fieldDef.name.capitalized()}", updatedProcessedEdges, queryDepth + 1)
+                    createSubProjection(typeDef, javaType.build(), root, "${typeDef.name.capitalized()}", updatedProcessedEdges, queryDepth + 1)
                 }
                 .fold(CodeGenResult()) { total, current -> total.merge(current) }
         } else CodeGenResult()

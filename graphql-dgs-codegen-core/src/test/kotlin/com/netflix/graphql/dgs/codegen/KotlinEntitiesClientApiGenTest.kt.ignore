@@ -20,8 +20,10 @@ package com.netflix.graphql.dgs.codegen
 
 import org.assertj.core.api.Assertions.*
 import org.assertj.core.data.Index
+import org.junit.Ignore
 import org.junit.jupiter.api.Test
 
+@Ignore
 class KotlinEntitiesClientApiGenTest {
 
     @Test

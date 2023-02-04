@@ -271,7 +271,7 @@ class ClientApiGenMutationTest {
         assertThat(codeGenResult.javaQueryTypes)
             .extracting("typeSpec").extracting("name").containsExactly("ShowsGraphQLQuery")
         assertThat(codeGenResult.clientProjections)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot", "Shows_IsLiveProjection")
+            .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot", "BooleanProjection")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
     }
