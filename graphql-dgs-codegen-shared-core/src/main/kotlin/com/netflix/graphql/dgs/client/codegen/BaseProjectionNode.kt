@@ -33,7 +33,7 @@ abstract class BaseProjectionNode(
 ) {
 
     val fields: MutableMap<String, Any?> = LinkedHashMap()
-    val fragments: MutableList<BaseSubProjectionNode<*, *>> = LinkedList()
+    val fragments: MutableList<BaseProjectionNode> = LinkedList()
     val inputArguments: MutableMap<String, List<InputArgument>> = LinkedHashMap()
 
     data class InputArgument(val name: String, val value: Any?)
