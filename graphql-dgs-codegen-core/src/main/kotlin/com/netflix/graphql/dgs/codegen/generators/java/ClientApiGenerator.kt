@@ -301,11 +301,14 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         javaType: TypeSpec.Builder,
         projectionRoot: String
     ): TypeSpec.Builder? {
+        val clazzName = javaType.build().name
+        val rootTypeName = if (projectionRoot == "this") "$clazzName<PARENT, ROOT>" else "ROOT"
+        val returnTypeName = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName>")
         val methodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
-            .returns(ClassName.get(getPackageName(), projectionName))
+            .returns(returnTypeName)
             .addCode(
                 """
-                |$projectionName projection = new $projectionName(this, $projectionRoot);    
+                |$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName> projection = new $projectionName<>(this, $projectionRoot);    
                 |getFields().put("${fieldDefinition.name}", projection);
                 |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());                      
                 |${

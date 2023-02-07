@@ -22,7 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
 import com.netflix.graphql.dgs.codegen.basePackageName
-import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.TypeVariableName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -757,8 +757,8 @@ class ClientApiGenProjectionTest {
         val methodSpecs = codeGenResult.clientProjections[1].typeSpec.methodSpecs
         val methodWithArgs = methodSpecs.find { !it.isConstructor && it.parameters.size > 0 }
             ?: fail("Method not found")
-        assertThat(methodWithArgs.returnType).extracting { (it as ClassName).simpleName() }
-            .isEqualTo("AwardProjection")
+        assertThat(methodWithArgs.returnType).extracting { (it as TypeVariableName).name }
+            .isEqualTo("AwardProjection<ActorProjection<PARENT, ROOT>, ROOT>")
         assertThat(methodWithArgs.parameters[0].name).isEqualTo("oscarsOnly")
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
     }
