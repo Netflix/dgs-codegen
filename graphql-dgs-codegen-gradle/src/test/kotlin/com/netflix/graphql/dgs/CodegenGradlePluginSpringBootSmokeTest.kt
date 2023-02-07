@@ -18,11 +18,9 @@
 
 package com.netflix.graphql.dgs
 
-import org.gradle.internal.impldep.org.junit.Ignore
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
-@Ignore
 class CodegenGradlePluginSpringBootSmokeTest {
 
     @TempDir
