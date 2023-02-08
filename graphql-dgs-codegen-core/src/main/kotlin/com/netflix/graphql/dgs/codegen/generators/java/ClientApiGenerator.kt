@@ -18,7 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.client.codegen.BaseProjectionNode
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
@@ -333,19 +332,34 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
         val clazzName = "EntitiesProjectionRoot"
+        val className = ClassName.get(BaseSubProjectionNode::class.java)
+        val parentType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val rootType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType = TypeSpec.classBuilder(clazzName)
             .addOptionalGeneratedAnnotation(config)
-            .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(BaseProjectionNode::class.java))
+            .addTypeVariable(parentType)
+            .addTypeVariable(rootType)
+            .addModifiers(Modifier.PUBLIC)
+            .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+            .addMethod(
+                MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addCode("""super(null, null, java.util.Optional.of("${"_entities"}"));""")
+                    .build()
+            )
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
+
         val codeGenResult = federatedTypes.map { objTypeDef ->
+            val projectionName = "Entities${objTypeDef.name.capitalized()}KeyProjection"
+            val returnType = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>>")
             javaType.addMethod(
                 MethodSpec.methodBuilder("on${objTypeDef.name}")
                     .addModifiers(Modifier.PUBLIC)
-                    .returns(ClassName.get(getPackageName(), "Entities${objTypeDef.name.capitalized()}KeyProjection"))
+                    .returns(returnType)
                     .addCode(
                         """
-                        | Entities${objTypeDef.name.capitalized()}KeyProjection fragment = new Entities${objTypeDef.name.capitalized()}KeyProjection(this, this);
+                        | Entities${objTypeDef.name.capitalized()}KeyProjection<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>> fragment = new Entities${objTypeDef.name.capitalized()}KeyProjection(this, this);
                         | getFragments().add(fragment);
                         | return fragment;
                         """.trimMargin()
