@@ -217,10 +217,9 @@ class EntitiesClientApiGenTest {
         val projections = codeGenResult.clientProjections.filter { it.typeSpec.name.startsWith("Entities") }
         assertThat(projections[0].typeSpec.name).isEqualTo("EntitiesProjectionRoot")
         assertThat(projections[0].typeSpec.methodSpecs).extracting("name")
-            .containsExactlyInAnyOrder("<init>","onMovie", "onMovieCast")
+            .containsExactlyInAnyOrder("<init>", "onMovie", "onMovieCast")
         assertThat(projections[1].typeSpec.name).isEqualTo("EntitiesMovieKeyProjection")
         assertThat(projections[2].typeSpec.name).isEqualTo("EntitiesMovieCastKeyProjection")
-
 
         val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
         assertThat(representations).hasSize(3)
