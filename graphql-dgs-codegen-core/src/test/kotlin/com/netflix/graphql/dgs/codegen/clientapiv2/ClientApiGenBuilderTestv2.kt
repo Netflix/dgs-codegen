@@ -23,7 +23,7 @@ import com.netflix.graphql.dgs.codegen.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class ClientApiGenBuilderTest {
+class ClientApiGenBuilderTestv2 {
     @Test
     fun `Fields explicitly set to null in the builder should be included`() {
         val schema = """

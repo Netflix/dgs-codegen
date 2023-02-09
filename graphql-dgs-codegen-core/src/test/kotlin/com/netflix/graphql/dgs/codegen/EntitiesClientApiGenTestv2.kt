@@ -24,7 +24,7 @@ import org.junit.Ignore
 import org.junit.jupiter.api.Test
 
 @Ignore
-class EntitiesClientApiGenTest {
+class EntitiesClientApiGenTestv2 {
 
     @Test
     fun `We can have federated entities`() {

@@ -25,7 +25,7 @@ import com.netflix.graphql.dgs.codegen.basePackageName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class ClientApiGenSubscriptionTest {
+class ClientApiGenSubscriptionTestv2 {
     @Test
     fun generateSubscriptionType() {
         val schema = """
