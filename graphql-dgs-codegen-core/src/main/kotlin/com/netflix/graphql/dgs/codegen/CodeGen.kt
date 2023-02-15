@@ -249,7 +249,7 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi) {
+        return if (config.generateClientApi || config.generateClientApiv2) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
