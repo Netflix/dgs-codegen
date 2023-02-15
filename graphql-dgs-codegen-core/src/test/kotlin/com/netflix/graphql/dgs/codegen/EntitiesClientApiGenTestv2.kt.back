@@ -554,7 +554,7 @@ class EntitiesClientApiGenTestv2 {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = basePackageName,
-                    generateClientApi = true,
+                    generateClientApiv2 = true,
                     language = Language.JAVA
                 )
             ).generate()

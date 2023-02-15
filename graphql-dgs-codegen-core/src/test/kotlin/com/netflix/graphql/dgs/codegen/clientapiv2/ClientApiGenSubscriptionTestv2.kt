@@ -43,7 +43,7 @@ class ClientApiGenSubscriptionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -76,7 +76,7 @@ class ClientApiGenSubscriptionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -101,7 +101,7 @@ class ClientApiGenSubscriptionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeSubscriptions = setOf("movieTitle")
             )
         ).generate()

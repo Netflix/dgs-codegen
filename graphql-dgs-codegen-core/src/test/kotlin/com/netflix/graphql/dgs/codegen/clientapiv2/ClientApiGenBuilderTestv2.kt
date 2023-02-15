@@ -36,7 +36,7 @@ class ClientApiGenBuilderTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
@@ -67,7 +67,7 @@ class ClientApiGenBuilderTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
@@ -95,7 +95,7 @@ class ClientApiGenBuilderTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
@@ -121,7 +121,7 @@ class ClientApiGenBuilderTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()

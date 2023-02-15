@@ -45,7 +45,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -72,7 +72,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
         assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
@@ -112,7 +112,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -156,7 +156,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -189,7 +189,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
@@ -220,7 +220,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("PersonsProjectionRoot")
@@ -254,7 +254,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -290,7 +290,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -326,7 +326,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 shortProjectionNames = true
             )
         ).generate()
@@ -360,7 +360,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
@@ -397,7 +397,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
@@ -434,7 +434,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
@@ -491,7 +491,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
@@ -533,7 +533,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -571,7 +571,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
@@ -600,7 +600,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -636,7 +636,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -679,7 +679,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 writeToFiles = false
             )
         ).generate()
@@ -711,7 +711,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
@@ -749,7 +749,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 writeToFiles = true
             )
         ).generate()

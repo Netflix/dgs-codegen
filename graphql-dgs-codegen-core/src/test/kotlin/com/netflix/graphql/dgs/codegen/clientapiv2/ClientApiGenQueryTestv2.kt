@@ -42,7 +42,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -74,7 +74,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -123,7 +123,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -194,7 +194,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeQueries = setOf("shows"),
                 generateDataTypes = false,
                 writeToFiles = false
@@ -242,7 +242,7 @@ class ClientApiGenQueryTestv2 {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateDataTypes = false,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeQueries = setOf("movies")
             )
         ).generate()
@@ -272,7 +272,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("lastname")
@@ -302,7 +302,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -335,7 +335,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -360,7 +360,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeQueries = setOf("movieTitles")
             )
         ).generate()
@@ -394,7 +394,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -433,7 +433,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -477,7 +477,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -522,7 +522,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 writeToFiles = true
             )
         ).generate()
@@ -660,7 +660,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
@@ -760,7 +760,7 @@ class ClientApiGenQueryTestv2 {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateDataTypes = true,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 typeMapping = mapOf("Long" to "java.lang.Long")
             )
         ).generate()
@@ -858,7 +858,7 @@ class ClientApiGenQueryTestv2 {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateDataTypes = false,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeQueries = setOf("foo", "bar")
             )
         ).generate()
@@ -911,7 +911,7 @@ class ClientApiGenQueryTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -953,7 +953,7 @@ class ClientApiGenQueryTestv2 {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 generateDataTypes = true,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeQueries = setOf("bar")
             )
         ).generate()

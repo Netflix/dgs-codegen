@@ -54,7 +54,7 @@ class ClientApiGenFragmentTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -108,7 +108,7 @@ class ClientApiGenFragmentTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -154,7 +154,7 @@ class ClientApiGenFragmentTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -201,7 +201,7 @@ class ClientApiGenFragmentTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
