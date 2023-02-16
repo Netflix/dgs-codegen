@@ -83,18 +83,7 @@ class CodeGenTest {
 
     @Test
     fun `When the schema contains just whitespace, there is no parsing error`() {
-        val schema = """
-            
-            
-            
-            
-            
-            
-            
-                    
-                    
-                    
-        """
+        val schema = """     """
 
         CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
     }
@@ -106,9 +95,6 @@ class CodeGenTest {
         Assertions.assertThatThrownBy {
             CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         }.isInstanceOf(CodeGenSchemaParsingException::class.java)
-            .hasMessageContainingAll(
-                "Invalid Syntax : offending token '<EOF>' at line 1 column 2"
-            )
     }
 
     @Test

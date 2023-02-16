@@ -133,6 +133,7 @@ class CodeGen(private val config: CodeGenConfig) {
             } catch (exception: InvalidSyntaxException) {
                 // check if the schema is empty
                 if (exception.sourcePreview.trim() == "") {
+                    logger.info("Schema is empty")
                     // return an empty document
                     return Document.newDocument().build()
                 } else {
