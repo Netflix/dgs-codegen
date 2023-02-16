@@ -75,6 +75,43 @@ class CodeGenTest {
     }
 
     @Test
+    fun `When the schema is empty, there is no parsing error`() {
+        val schema = """"""
+
+        CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+    }
+
+    @Test
+    fun `When the schema contains just whitespace, there is no parsing error`() {
+        val schema = """
+            
+            
+            
+            
+            
+            
+            
+                    
+                    
+                    
+        """
+
+        CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+    }
+
+    @Test
+    fun `When the schema is just an opening bracket, an invalid syntax (EOF) error is thrown`() {
+        val schema = """{""".trimIndent()
+
+        Assertions.assertThatThrownBy {
+            CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+        }.isInstanceOf(CodeGenSchemaParsingException::class.java)
+            .hasMessageContainingAll(
+                "Invalid Syntax : offending token '<EOF>' at line 1 column 2",
+            )
+    }
+
+    @Test
     fun generateDataClassWithStringProperties() {
         val schema = """
             type Query {
@@ -4078,4 +4115,7 @@ It takes a title and such.
         assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).contains(basePackageName)
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.time.LocalDate")
     }
+
+
 }
+

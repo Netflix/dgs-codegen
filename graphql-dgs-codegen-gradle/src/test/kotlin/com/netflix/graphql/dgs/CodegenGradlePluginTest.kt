@@ -140,8 +140,34 @@ class CodegenGradlePluginTest {
         assertThat(File(EXPECTED_DEFAULT_PATH + "Filter.java").exists()).isTrue
     }
 
+    @Test
+    fun nothingIsGeneratedForNoSchema() {
+        // build a project
+        val result = GradleRunner.create()
+            .withProjectDir(File("src/test/resources/test-project-no-schema-files/"))
+            .withPluginClasspath()
+            .withArguments(
+                "--stacktrace",
+                "-c",
+                "smoke_test_settings_with_default_dir.gradle",
+                "-b",
+                "build_with_default_dir.gradle",
+                "clean",
+                "build"
+            ).forwardOutput()
+            .withDebug(true)
+            .build()
+
+        // Verify the result
+        assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+
+        // Check that the generated directory is empty
+        assertThat(File(EXPECTED_PATH_EMPTY_SCHEMA).walk().count()).isEqualTo(0)
+    }
+
     companion object {
         const val EXPECTED_PATH = "src/test/resources/test-project/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
         const val EXPECTED_DEFAULT_PATH = "src/test/resources/test-project/build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
+        const val EXPECTED_PATH_EMPTY_SCHEMA = "src/test/resources/test-project-no-schema-files/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
     }
 }
