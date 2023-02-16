@@ -107,7 +107,7 @@ class CodeGenTest {
             CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         }.isInstanceOf(CodeGenSchemaParsingException::class.java)
             .hasMessageContainingAll(
-                "Invalid Syntax : offending token '<EOF>' at line 1 column 2",
+                "Invalid Syntax : offending token '<EOF>' at line 1 column 2"
             )
     }
 
@@ -4115,7 +4115,4 @@ It takes a title and such.
         assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).contains(basePackageName)
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.time.LocalDate")
     }
-
-
 }
-
