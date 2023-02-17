@@ -131,7 +131,14 @@ class CodeGen(private val config: CodeGenConfig) {
             try {
                 parser.parseDocument(reader, options)
             } catch (exception: InvalidSyntaxException) {
-                throw CodeGenSchemaParsingException(debugReaderBuilder.build(), exception)
+                // check if the schema is empty
+                if (exception.sourcePreview.trim() == "") {
+                    logger.warn("Schema is empty")
+                    // return an empty document
+                    return Document.newDocument().build()
+                } else {
+                    throw CodeGenSchemaParsingException(debugReaderBuilder.build(), exception)
+                }
             }
         }
         return document

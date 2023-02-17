@@ -75,6 +75,29 @@ class CodeGenTest {
     }
 
     @Test
+    fun `When the schema is empty, there is no parsing error`() {
+        val schema = """"""
+
+        CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+    }
+
+    @Test
+    fun `When the schema contains just whitespace, there is no parsing error`() {
+        val schema = """     """
+
+        CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+    }
+
+    @Test
+    fun `When the schema is just an opening bracket, a parsing error is thrown`() {
+        val schema = """{""".trimIndent()
+
+        Assertions.assertThatThrownBy {
+            CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+        }.isInstanceOf(CodeGenSchemaParsingException::class.java)
+    }
+
+    @Test
     fun generateDataClassWithStringProperties() {
         val schema = """
             type Query {
