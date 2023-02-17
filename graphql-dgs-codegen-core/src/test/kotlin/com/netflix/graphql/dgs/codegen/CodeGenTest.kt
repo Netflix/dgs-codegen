@@ -89,7 +89,7 @@ class CodeGenTest {
     }
 
     @Test
-    fun `When the schema is just an opening bracket, an invalid syntax (EOF) error is thrown`() {
+    fun `When the schema is just an opening bracket, a parsing error is thrown`() {
         val schema = """{""".trimIndent()
 
         Assertions.assertThatThrownBy {
