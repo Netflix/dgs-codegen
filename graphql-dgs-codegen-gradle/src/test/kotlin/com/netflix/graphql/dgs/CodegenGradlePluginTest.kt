@@ -165,6 +165,33 @@ class CodegenGradlePluginTest {
         assertThat(File(EXPECTED_PATH_EMPTY_SCHEMA).walk().count()).isEqualTo(0)
     }
 
+    @Test
+    fun nonGraphQLFilesInSchemaDirectoryAreIgnored() {
+        // build a project
+        val result = GradleRunner.create()
+            .withProjectDir(File("src/test/resources/test-project/"))
+            .withPluginClasspath()
+            .withArguments(
+                "--stacktrace",
+                "-c",
+                "smoke_test_settings_with_default_dir.gradle",
+                "-b",
+                "build_with_default_dir.gradle",
+                "clean",
+                "build"
+            ).forwardOutput()
+            .withDebug(true)
+            .build()
+
+        // Verify that the build succeeded.
+        // This means there was no parsing error caused by the incorrect syntax in the schema.graphqlconfig file
+        assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+
+        // Verify that a NotSchema POJO has not been created
+        // NotSchema is defined in notSchema.notgraphql, which has a non-GraphQL file extension but is a valid schema
+        assertThat(File(EXPECTED_DEFAULT_PATH + "NotSchema.java").exists()).isFalse()
+    }
+
     companion object {
         const val EXPECTED_PATH = "src/test/resources/test-project/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
         const val EXPECTED_DEFAULT_PATH = "src/test/resources/test-project/build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
