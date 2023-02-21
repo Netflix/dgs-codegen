@@ -153,6 +153,7 @@ class CodeGen(private val config: CodeGenConfig) {
             val schemaFiles = config.schemaFiles.sorted()
                 .flatMap { it.walkTopDown() }
                 .filter { it.isFile }
+                .filter { it.name.endsWith(".graphql") || it.name.endsWith(".graphqls") }
             for (schemaFile in schemaFiles) {
                 rb.string("\n", "codegen")
                 rb.reader(schemaFile.reader(), schemaFile.name)
