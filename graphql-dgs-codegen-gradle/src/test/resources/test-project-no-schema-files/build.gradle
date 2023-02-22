@@ -31,6 +31,8 @@ generateJava {
     packageName = 'com.netflix.testproject.graphql'
     generatedSourcesDir = "${projectDir}/build/graphql"
     typeMapping = [Date:"java.time.LocalDateTime"]
+    typeMapping = [Upload: "org.springframework.web.multipart.MultipartFile"]
+
 }
 
 codegen.clientCoreConventionsEnabled = false
