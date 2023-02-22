@@ -43,12 +43,14 @@ import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
+import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.buildCodeBlock
 import graphql.language.Document
 import graphql.language.FieldDefinition
 import graphql.language.ObjectTypeDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.Serializable
 
 internal val logger: Logger = LoggerFactory.getLogger("com.netflix.graphql.dgs.codegen.generators.kotlin2")
 
@@ -176,6 +178,12 @@ fun generateKotlin2DataTypes(
                 .addSuperinterfaces(
                     superInterfaces.map { typeLookup.findKtInterfaceName(it, config.packageNameTypes) }
                 )
+                // add Serializable interface if requested
+                .apply {
+                    if (config.implementSerializable) {
+                        addSuperinterface(Serializable::class.asClassName())
+                    }
+                }
                 // add a constructor with a supplier for every field
                 .primaryConstructor(
                     FunSpec.constructorBuilder()
