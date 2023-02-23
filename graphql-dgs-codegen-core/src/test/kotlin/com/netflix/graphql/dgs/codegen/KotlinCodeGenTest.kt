@@ -2537,7 +2537,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotationSpecs[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")

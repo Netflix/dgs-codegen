@@ -54,7 +54,7 @@ class GraphQLQueryRequest(
         }
 
         if (projection != null) {
-            val selectionSet = if (projection is BaseSubProjectionNode<*, *>) {
+            val selectionSet = if (projection is BaseSubProjectionNode<*, *> && projection.root() != null) {
                 projectionSerializer.toSelectionSet(projection.root() as BaseProjectionNode)
             } else {
                 projectionSerializer.toSelectionSet(projection)

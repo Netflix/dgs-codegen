@@ -23,7 +23,7 @@ import com.netflix.graphql.dgs.codegen.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class ClientApiGenBuilderTest {
+class ClientApiGenBuilderTestv2 {
     @Test
     fun `Fields explicitly set to null in the builder should be included`() {
         val schema = """
@@ -36,7 +36,7 @@ class ClientApiGenBuilderTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
@@ -67,7 +67,7 @@ class ClientApiGenBuilderTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
@@ -95,7 +95,7 @@ class ClientApiGenBuilderTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
@@ -121,7 +121,7 @@ class ClientApiGenBuilderTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 maxProjectionDepth = 2
             )
         ).generate()
