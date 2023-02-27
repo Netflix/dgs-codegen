@@ -183,7 +183,7 @@ open class GenerateJavaTask : DefaultTask() {
             generateInterfaces = generateInterfaces,
             generateInterfaceSetters = generateInterfaceSetters,
             generateInterfaceMethodsForInterfaceFields = generateInterfaceMethodsForInterfaceFields,
-            typeMapping = typeMapping,
+            typeMapping = typeMapping + mapOf("Upload" to "org.springframework.web.multipart.MultipartFile"),
             includeQueries = includeQueries.toSet(),
             includeMutations = includeMutations.toSet(),
             includeSubscriptions = includeSubscriptions.toSet(),
