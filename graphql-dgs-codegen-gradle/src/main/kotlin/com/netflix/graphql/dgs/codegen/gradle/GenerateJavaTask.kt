@@ -67,7 +67,7 @@ open class GenerateJavaTask : DefaultTask() {
     var generateClient = false
 
     @Input
-    var generateClientApiv2 = false
+    var generateClientv2 = false
 
     @Input
     var generateKotlinNullableClasses = false
@@ -181,7 +181,7 @@ open class GenerateJavaTask : DefaultTask() {
             language = Language.valueOf(language.uppercase(Locale.getDefault())),
             generateBoxedTypes = generateBoxedTypes,
             generateClientApi = generateClient,
-            generateClientApiv2 = generateClientApiv2,
+            generateClientApiv2 = generateClientv2,
             generateKotlinNullableClasses = generateKotlinNullableClasses,
             generateKotlinClosureProjections = generateKotlinClosureProjections,
             generateInterfaces = generateInterfaces,
