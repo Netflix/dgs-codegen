@@ -1,0 +1,9 @@
+scalar Upload
+
+type Query {
+    folders: [Folder]
+}
+
+type Folder {
+    uploadFile: Upload
+}
