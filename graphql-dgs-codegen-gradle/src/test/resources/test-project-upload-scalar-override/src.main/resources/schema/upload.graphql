@@ -1,9 +1,0 @@
-scalar Upload
-
-type Query {
-    folders: [Folder]
-}
-
-type FolderOverride {
-    uploadFile: Upload
-}
