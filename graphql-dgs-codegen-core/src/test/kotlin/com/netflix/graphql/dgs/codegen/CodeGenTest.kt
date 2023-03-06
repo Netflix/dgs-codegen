@@ -4101,4 +4101,54 @@ It takes a title and such.
         assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).contains(basePackageName)
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.time.LocalDate")
     }
+
+    @Test
+    fun `The Upload scalar typeMapping works by default`() {
+        val schema = """
+            scalar Upload
+            type Person {
+                name: String
+                age: Int
+                uploadFile: Upload
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("org.springframework.web.multipart.MultipartFile")
+    }
+
+    @Test
+    fun `The default Upload scalar can be overridden`() {
+        val schema = """
+            scalar Upload
+            type Person {
+                name: String
+                age: Int
+                uploadFile: Upload
+            }
+        """.trimIndent()
+
+        val (dataTypes, javaInterfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "Upload" to "java.lang.Integer"
+                )
+            )
+        ).generate()
+
+        // Check that the Person type is generated
+        assertThat(dataTypes.size).isEqualTo(1)
+
+        // Check that the third field of the Person type is an Integer
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Integer")
+    }
 }
