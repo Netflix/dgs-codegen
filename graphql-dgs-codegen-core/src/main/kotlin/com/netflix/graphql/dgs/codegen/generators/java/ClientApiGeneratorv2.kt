@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.generators.kotlin2.Kotlin2TypeLookup
 import com.netflix.graphql.dgs.codegen.generators.shared.ClassnameShortener
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.squareup.javapoet.*
@@ -31,6 +32,8 @@ import javax.lang.model.element.Modifier
 class ClientApiGeneratorv2(private val config: CodeGenConfig, private val document: Document) {
     private val generatedClasses = mutableSetOf<String>()
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, document)
+    private val typeLookup = Kotlin2TypeLookup(config, document)
+
 
     fun generate(definition: ObjectTypeDefinition, methodNames: MutableSet<String>): CodeGenResult {
         return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
@@ -139,6 +142,14 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
                 constructorBuilder.addCode(
                     """
                     |getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});                   
+                    """.trimMargin()
+                )
+            } else if (typeLookup.isScalar(inputValue.type)) {
+                constructorBuilder.addCode(
+                    """
+                    |if (${ReservedKeywordSanitizer.sanitize(inputValue.name)} != null || fieldsSet.contains("${inputValue.name}")) {
+                    |    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
+                    |}
                     """.trimMargin()
                 )
             } else {
