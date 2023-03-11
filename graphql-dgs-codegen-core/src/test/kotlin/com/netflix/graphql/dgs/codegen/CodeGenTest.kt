@@ -4151,4 +4151,39 @@ It takes a title and such.
         // Check that the third field of the Person type is an Integer
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Integer")
     }
+
+
+    @Test
+    fun testReservedKeywords() {
+        val schema = """
+            type Query {
+              interface(params: InterfaceParams): String
+            }
+            
+            input InterfaceParams {
+                class: String
+            }
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val interfaceParams = dataTypes.single().typeSpec
+        // Check data class
+        assertThat(interfaceParams.name).isEqualTo("InterfaceParams")
+        assertThat(interfaceParams.fieldSpecs.size).isEqualTo(1)
+        assertThat(interfaceParams.fieldSpecs).extracting("name").contains("_class")
+
+        val test = interfaceParams.toString()
+
+        assertThat(test).contains("public java.util.Map getAllFields()");
+        assertThat(test).contains("fields.put(\"class\", this._class)");
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
 }

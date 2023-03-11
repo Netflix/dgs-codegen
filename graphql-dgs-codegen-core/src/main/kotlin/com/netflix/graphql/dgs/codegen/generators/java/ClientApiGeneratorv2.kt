@@ -145,7 +145,7 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
                 constructorBuilder.addCode(
                     """
                     |if (${ReservedKeywordSanitizer.sanitize(inputValue.name)} != null || fieldsSet.contains("${inputValue.name}")) {
-                    |    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
+                    |    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)}.getAllFields());
                     |}
                     """.trimMargin()
                 )

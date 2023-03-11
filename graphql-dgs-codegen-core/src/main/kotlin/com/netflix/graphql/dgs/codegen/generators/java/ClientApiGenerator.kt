@@ -163,7 +163,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 constructorBuilder.addCode(
                     """
                     |if (${ReservedKeywordSanitizer.sanitize(inputValue.name)} != null || fieldsSet.contains("${inputValue.name}")) {
-                    |    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
+                    |    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)}.getAllFields());
                     |}
                     """.trimMargin()
                 )

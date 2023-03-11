@@ -31,6 +31,7 @@ class CodegenGradlePluginSpringBootSmokeTest {
             type Query {
                 result: Result!
                 find(filter: Filter!): Result!
+                interface(params: InterfaceParams): String
             }
             
             type Result {
@@ -66,6 +67,10 @@ class CodegenGradlePluginSpringBootSmokeTest {
                 data: [String]
                 lastUpdated: DateTime
                 lastUpdatedBy: String
+            }
+
+            input InterfaceParams {
+                class: String
             }
             
             scalar Date 

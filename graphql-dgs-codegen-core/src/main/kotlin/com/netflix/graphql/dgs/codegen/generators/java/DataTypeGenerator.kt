@@ -255,9 +255,18 @@ abstract class BaseDataTypeGenerator(
             javaType.addAnnotation(disableJsonTypeInfoAnnotation())
         }
 
+        val setterMethodBuilder = MethodSpec.methodBuilder("getAllFields")
+            .addModifiers(Modifier.PUBLIC)
+            .addStatement("java.util.Map<String, Object> fields = new java.util.HashMap()")
+            .returns(ClassName.get("java.util", "Map"));
+
         fields.forEach {
             addField(it, javaType)
+            setterMethodBuilder.addStatement("fields.put(\"\$N\", this.\$N)", it.name, ReservedKeywordSanitizer.sanitize(it.name))
         }
+
+        setterMethodBuilder.addStatement("return fields")
+        javaType.addMethod(setterMethodBuilder.build())
 
         addDefaultConstructor(javaType)
 

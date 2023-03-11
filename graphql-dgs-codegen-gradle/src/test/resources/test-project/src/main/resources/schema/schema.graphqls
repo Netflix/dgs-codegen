@@ -1,6 +1,7 @@
 type Query {
     result: Result!
     find(filter: Filter!): Result!
+    interface(params: InterfaceParams): String
 }
 
 type Result {
@@ -13,4 +14,9 @@ input Filter {
     optionalString: String
     mandatoryNumber: Int!
     optionalNumber: Int
+}
+
+
+input InterfaceParams {
+    class: String
 }
