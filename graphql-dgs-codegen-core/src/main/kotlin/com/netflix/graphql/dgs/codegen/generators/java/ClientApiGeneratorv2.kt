@@ -34,7 +34,6 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, document)
     private val typeLookup = Kotlin2TypeLookup(config, document)
 
-
     fun generate(definition: ObjectTypeDefinition, methodNames: MutableSet<String>): CodeGenResult {
         return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
             val javaFile = createQueryClass(it, definition.name, methodNames)

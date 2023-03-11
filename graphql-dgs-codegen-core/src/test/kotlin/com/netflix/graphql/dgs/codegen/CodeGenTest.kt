@@ -2178,136 +2178,146 @@ class CodeGenTest {
 
         assertThat(JavaFile.builder("$basePackageName.types", talent).build().toString()).isEqualTo(
             """
-                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
-                |
-                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
-                |import java.lang.Object;
-                |import java.lang.Override;
-                |import java.lang.String;
-                |
-                |@JsonTypeInfo(
-                |    use = JsonTypeInfo.Id.NONE
-                |)
-                |public class Talent implements com.netflix.graphql.dgs.codegen.tests.generated.types.Employee {
-                |  private String firstname;
-                |
-                |  private String lastname;
-                |
-                |  private String company;
-                |
-                |  private String imdbProfile;
-                |
-                |  public Talent() {
-                |  }
-                |
-                |  public Talent(String firstname, String lastname, String company, String imdbProfile) {
-                |    this.firstname = firstname;
-                |    this.lastname = lastname;
-                |    this.company = company;
-                |    this.imdbProfile = imdbProfile;
-                |  }
-                |
-                |  public String getFirstname() {
-                |    return firstname;
-                |  }
-                |
-                |  public void setFirstname(String firstname) {
-                |    this.firstname = firstname;
-                |  }
-                |
-                |  public String getLastname() {
-                |    return lastname;
-                |  }
-                |
-                |  public void setLastname(String lastname) {
-                |    this.lastname = lastname;
-                |  }
-                |
-                |  public String getCompany() {
-                |    return company;
-                |  }
-                |
-                |  public void setCompany(String company) {
-                |    this.company = company;
-                |  }
-                |
-                |  public String getImdbProfile() {
-                |    return imdbProfile;
-                |  }
-                |
-                |  public void setImdbProfile(String imdbProfile) {
-                |    this.imdbProfile = imdbProfile;
-                |  }
-                |
-                |  @Override
-                |  public String toString() {
-                |    return "Talent{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'," +"company='" + company + "'," +"imdbProfile='" + imdbProfile + "'" +"}";
-                |  }
-                |
-                |  @Override
-                |  public boolean equals(Object o) {
-                |    if (this == o) return true;
-                |        if (o == null || getClass() != o.getClass()) return false;
-                |        Talent that = (Talent) o;
-                |        return java.util.Objects.equals(firstname, that.firstname) &&
-                |                            java.util.Objects.equals(lastname, that.lastname) &&
-                |                            java.util.Objects.equals(company, that.company) &&
-                |                            java.util.Objects.equals(imdbProfile, that.imdbProfile);
-                |  }
-                |
-                |  @Override
-                |  public int hashCode() {
-                |    return java.util.Objects.hash(firstname, lastname, company, imdbProfile);
-                |  }
-                |
-                |  public static com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder newBuilder() {
-                |    return new Builder();
-                |  }
-                |
-                |  public static class Builder {
-                |    private String firstname;
-                |
-                |    private String lastname;
-                |
-                |    private String company;
-                |
-                |    private String imdbProfile;
-                |
-                |    public Talent build() {
-                |                  com.netflix.graphql.dgs.codegen.tests.generated.types.Talent result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Talent();
-                |                      result.firstname = this.firstname;
-                |          result.lastname = this.lastname;
-                |          result.company = this.company;
-                |          result.imdbProfile = this.imdbProfile;
-                |                      return result;
-                |    }
-                |
-                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder firstname(
-                |        String firstname) {
-                |      this.firstname = firstname;
-                |      return this;
-                |    }
-                |
-                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder lastname(
-                |        String lastname) {
-                |      this.lastname = lastname;
-                |      return this;
-                |    }
-                |
-                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder company(
-                |        String company) {
-                |      this.company = company;
-                |      return this;
-                |    }
-                |
-                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder imdbProfile(
-                |        String imdbProfile) {
-                |      this.imdbProfile = imdbProfile;
-                |      return this;
-                |    }
-                |  }
-                |}
-                |
+              |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+              |
+              |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+              |import java.lang.Object;
+              |import java.lang.Override;
+              |import java.lang.String;
+              |import java.util.Map;
+              |
+              |@JsonTypeInfo(
+              |    use = JsonTypeInfo.Id.NONE
+              |)
+              |public class Talent implements com.netflix.graphql.dgs.codegen.tests.generated.types.Employee {
+              |  private String firstname;
+              |
+              |  private String lastname;
+              |
+              |  private String company;
+              |
+              |  private String imdbProfile;
+              |
+              |  public Talent() {
+              |  }
+              |
+              |  public Talent(String firstname, String lastname, String company, String imdbProfile) {
+              |    this.firstname = firstname;
+              |    this.lastname = lastname;
+              |    this.company = company;
+              |    this.imdbProfile = imdbProfile;
+              |  }
+              |
+              |  public String getFirstname() {
+              |    return firstname;
+              |  }
+              |
+              |  public void setFirstname(String firstname) {
+              |    this.firstname = firstname;
+              |  }
+              |
+              |  public String getLastname() {
+              |    return lastname;
+              |  }
+              |
+              |  public void setLastname(String lastname) {
+              |    this.lastname = lastname;
+              |  }
+              |
+              |  public String getCompany() {
+              |    return company;
+              |  }
+              |
+              |  public void setCompany(String company) {
+              |    this.company = company;
+              |  }
+              |
+              |  public String getImdbProfile() {
+              |    return imdbProfile;
+              |  }
+              |
+              |  public void setImdbProfile(String imdbProfile) {
+              |    this.imdbProfile = imdbProfile;
+              |  }
+              |
+              |  public Map getAllFields() {
+              |    Map<String, Object> fields = new java.util.HashMap();
+              |    fields.put("firstname", this.firstname);
+              |    fields.put("lastname", this.lastname);
+              |    fields.put("company", this.company);
+              |    fields.put("imdbProfile", this.imdbProfile);
+              |    return fields;
+              |  }
+              |
+              |  @Override
+              |  public String toString() {
+              |    return "Talent{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'," +"company='" + company + "'," +"imdbProfile='" + imdbProfile + "'" +"}";
+              |  }
+              |
+              |  @Override
+              |  public boolean equals(Object o) {
+              |    if (this == o) return true;
+              |        if (o == null || getClass() != o.getClass()) return false;
+              |        Talent that = (Talent) o;
+              |        return java.util.Objects.equals(firstname, that.firstname) &&
+              |                            java.util.Objects.equals(lastname, that.lastname) &&
+              |                            java.util.Objects.equals(company, that.company) &&
+              |                            java.util.Objects.equals(imdbProfile, that.imdbProfile);
+              |  }
+              |
+              |  @Override
+              |  public int hashCode() {
+              |    return java.util.Objects.hash(firstname, lastname, company, imdbProfile);
+              |  }
+              |
+              |  public static com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder newBuilder() {
+              |    return new Builder();
+              |  }
+              |
+              |  public static class Builder {
+              |    private String firstname;
+              |
+              |    private String lastname;
+              |
+              |    private String company;
+              |
+              |    private String imdbProfile;
+              |
+              |    public Talent build() {
+              |                  com.netflix.graphql.dgs.codegen.tests.generated.types.Talent result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Talent();
+              |                      result.firstname = this.firstname;
+              |          result.lastname = this.lastname;
+              |          result.company = this.company;
+              |          result.imdbProfile = this.imdbProfile;
+              |                      return result;
+              |    }
+              |
+              |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder firstname(
+              |        String firstname) {
+              |      this.firstname = firstname;
+              |      return this;
+              |    }
+              |
+              |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder lastname(
+              |        String lastname) {
+              |      this.lastname = lastname;
+              |      return this;
+              |    }
+              |
+              |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder company(
+              |        String company) {
+              |      this.company = company;
+              |      return this;
+              |    }
+              |
+              |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder imdbProfile(
+              |        String imdbProfile) {
+              |      this.imdbProfile = imdbProfile;
+              |      return this;
+              |    }
+              |  }
+              |}
+              |
             """.trimMargin()
         )
 
@@ -4047,9 +4057,9 @@ It takes a title and such.
         assertThat(methods[0].annotations).hasSize(0)
         assertThat((methods[1] as MethodSpec).name).isEqualTo("setName")
         assertThat(methods[1].annotations).hasSize(0)
-        assertThat((methods[3] as MethodSpec).name).isEqualTo("<init>")
-        assertThat(methods[3].annotations).hasSize(0)
-        val parameters = (methods[3] as MethodSpec).parameters
+        assertThat((methods[4] as MethodSpec).name).isEqualTo("<init>")
+        assertThat(methods[4].annotations).hasSize(0)
+        val parameters = (methods[4] as MethodSpec).parameters
         assertThat(parameters).hasSize(1)
         assertThat(((parameters[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
     }
@@ -4152,7 +4162,6 @@ It takes a title and such.
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Integer")
     }
 
-
     @Test
     fun testReservedKeywords() {
         val schema = """
@@ -4181,8 +4190,8 @@ It takes a title and such.
 
         val test = interfaceParams.toString()
 
-        assertThat(test).contains("public java.util.Map getAllFields()");
-        assertThat(test).contains("fields.put(\"class\", this._class)");
+        assertThat(test).contains("public java.util.Map getAllFields()")
+        assertThat(test).contains("fields.put(\"class\", this._class)")
 
         assertCompilesJava(dataTypes + interfaces)
     }

@@ -162,7 +162,7 @@ class ClientApiGenMutationTest {
         val expected = """
             |super("mutation", queryName);
             |if (movie != null || fieldsSet.contains("movie")) {
-            |    getInput().put("movie", movie);
+            |    getInput().put("movie", movie.getAllFields());
             |}if (reviews != null || fieldsSet.contains("reviews")) {
             |    getInput().put("reviews", reviews);
             |}if (uuid != null || fieldsSet.contains("uuid")) {
