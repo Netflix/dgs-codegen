@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
 import graphql.language.*
@@ -46,7 +47,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
 
         logger.info("Generating type {}", definition.name)
 
-        val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
+        val interfaceBuilder = TypeSpec.interfaceBuilder(definition.templatedClassName(config.nameTemplate))
             .addOptionalGeneratedAnnotation(config)
         if (definition.description != null) {
             interfaceBuilder.addKdoc("%L", definition.description.sanitizeKdoc())

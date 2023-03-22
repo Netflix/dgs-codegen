@@ -5040,4 +5040,23 @@ It takes a title and such.
         ).generate()
         assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString() == "java.lang.String")
     }
+
+    @TemplateClassNameTest
+    fun generateSerializedDataClassWithCustomName(
+        schema: String,
+        nameTemplate: String?,
+        expectedName: String
+    ) {
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                nameTemplate = nameTemplate
+            )
+        )
+            .generate()
+            .javaSources()
+
+        assertThat(dataTypes.firstOrNull()?.typeSpec?.name).isEqualTo(expectedName)
+    }
 }

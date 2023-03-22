@@ -26,6 +26,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonTypeInfoAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
@@ -82,7 +83,7 @@ fun generateKotlin2Interfaces(
             val overrideFields = typeLookup.overrideFields(implementedInterfaces)
 
             // create the interface
-            val interfaceSpec = TypeSpec.interfaceBuilder(interfaceDefinition.name)
+            val interfaceSpec = TypeSpec.interfaceBuilder(interfaceDefinition.templatedClassName(config.nameTemplate))
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(KModifier.SEALED)
                 // add docs if available
