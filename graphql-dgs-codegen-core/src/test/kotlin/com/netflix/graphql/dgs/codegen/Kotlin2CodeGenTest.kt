@@ -18,13 +18,16 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.Serializable
 
-class Kotline2CodeGenTest {
+class Kotlin2CodeGenTest {
     @Test
     fun generateSerializableDataClass() {
         val schema = """
@@ -53,6 +56,37 @@ class Kotline2CodeGenTest {
             .satisfies({ member ->
                 val typeSpec = member as TypeSpec
                 assertThat(typeSpec.superinterfaces).containsKey(Serializable::class.asClassName())
+            })
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun generateSealedInterfaces(sealedInterfaces: Boolean) {
+        val schema = """
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateKotlinNullableClasses = true,
+                generateKotlinClosureProjections = true,
+                kotlinv2GenerateSealedInterfaces = sealedInterfaces
+            )
+        ).generate()
+
+        val interfaces = codeGenResult.kotlinInterfaces
+
+        assertThat(interfaces).hasSize(1)
+        assertThat(interfaces.first().members).singleElement()
+            .satisfies({ member ->
+                val typeSpec = member as TypeSpec
+                assertThat(typeSpec.modifiers.contains(KModifier.SEALED)).isEqualTo(sealedInterfaces)
             })
     }
 }

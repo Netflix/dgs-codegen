@@ -145,6 +145,9 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var includeClassImports = mutableMapOf<String, MutableMap<String, String>>()
 
+    @Input
+    var kotlinv2GenerateSealedInterfaces = true
+
     @TaskAction
     fun generate() {
         val schemaJarFilesFromDependencies = emptyList<File>().toMutableList()
@@ -204,7 +207,8 @@ open class GenerateJavaTask : DefaultTask() {
             includeImports = includeImports,
             includeEnumImports = includeEnumImports,
             includeClassImports = includeClassImports,
-            generateCustomAnnotations = generateCustomAnnotations
+            generateCustomAnnotations = generateCustomAnnotations,
+            kotlinv2GenerateSealedInterfaces = kotlinv2GenerateSealedInterfaces
         )
 
         logger.info("Codegen config: {}", config)

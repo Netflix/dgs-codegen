@@ -497,7 +497,8 @@ class CodeGenConfig(
     var javaGenerateAllConstructor: Boolean = true,
     var implementSerializable: Boolean = false,
     var addGeneratedAnnotation: Boolean = false,
-    var addDeprecatedAnnotation: Boolean = false
+    var addDeprecatedAnnotation: Boolean = false,
+    var kotlinv2GenerateSealedInterfaces: Boolean = true
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 

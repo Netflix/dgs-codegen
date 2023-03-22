@@ -84,7 +84,11 @@ fun generateKotlin2Interfaces(
             // create the interface
             val interfaceSpec = TypeSpec.interfaceBuilder(interfaceDefinition.name)
                 .addOptionalGeneratedAnnotation(config)
-                .addModifiers(KModifier.SEALED)
+                .apply {
+                    if (config.kotlinv2GenerateSealedInterfaces) {
+                        addModifiers(KModifier.SEALED)
+                    }
+                }
                 // add docs if available
                 .apply {
                     if (interfaceDefinition.description != null) {
