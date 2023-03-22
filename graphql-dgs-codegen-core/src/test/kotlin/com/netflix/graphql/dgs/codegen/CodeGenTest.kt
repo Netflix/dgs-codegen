@@ -4554,4 +4554,23 @@ It takes a title and such.
         assertThat(dataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
         assertCompilesJava(dataTypes)
     }
+
+    @TemplateClassNameTest
+    fun generateSerializedDataClassWithCustomName(
+        schema: String,
+        nameTemplate: String?,
+        expectedName: String
+    ) {
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                nameTemplate = nameTemplate
+            )
+        )
+            .generate()
+            .javaSources()
+
+        assertThat(dataTypes.firstOrNull()?.typeSpec?.name).isEqualTo(expectedName)
+    }
 }

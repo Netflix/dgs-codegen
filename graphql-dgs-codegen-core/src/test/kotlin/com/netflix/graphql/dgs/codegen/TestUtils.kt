@@ -34,6 +34,8 @@ import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
 import org.jetbrains.kotlin.config.Services
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import org.junit.platform.commons.util.ReflectionUtils
 import java.io.File
 import java.lang.reflect.Method
@@ -165,6 +167,38 @@ fun TypeSpec.assertJavaGeneratedAnnotation() {
 fun AnnotationSpec.canonicalName(): String = (type as ClassName).canonicalName()
 fun KAnnotationSpec.canonicalName() = (typeName as KClassName).canonicalName
 
+@ParameterizedTest
+@CsvSource(
+    value = [
+        "'$PERSON_TYPE_SCHEMA',,Person",
+        "'$PERSON_TYPE_SCHEMA',{name}Dto,PersonDto",
+        "'$PERSON_TYPE_SCHEMA',{name}{schemaType}Dto,PersonTypeDto",
+        "'$PERSON_TYPE_SCHEMA',{name}GraphQL{schemaType},PersonGraphQLType",
+        "'$PERSON_TYPE_SCHEMA',{name}{schemaType},PersonType",
+        "'$PERSON_INPUT_SCHEMA',,Person",
+        "'$PERSON_INPUT_SCHEMA',{name}Dto,PersonDto",
+        "'$PERSON_INPUT_SCHEMA',{name}{schemaType}Dto,PersonInputDto",
+        "'$PERSON_INPUT_SCHEMA',{name}GraphQL{schemaType},PersonGraphQLInput",
+        "'$PERSON_INPUT_SCHEMA',{name}{schemaType},PersonInput",
+        "'$PERSON_INTERFACE_SCHEMA',,Person",
+        "'$PERSON_INTERFACE_SCHEMA',{name}Dto,PersonDto",
+        "'$PERSON_INTERFACE_SCHEMA',{name}{schemaType}Dto,PersonInterfaceDto",
+        "'$PERSON_INTERFACE_SCHEMA',{name}GraphQL{schemaType},PersonGraphQLInterface",
+        "'$PERSON_INTERFACE_SCHEMA',{name}{schemaType},PersonInterface",
+        "'$ENUM_SCHEMA',,Color",
+        "'$ENUM_SCHEMA',{name}Dto,ColorDto",
+        "'$ENUM_SCHEMA',{name}{schemaType}Dto,ColorEnumDto",
+        "'$ENUM_SCHEMA',{name}GraphQL{schemaType},ColorGraphQLEnum",
+        "'$ENUM_SCHEMA',{name}{schemaType},ColorEnum"
+    ]
+)
+@Target(AnnotationTarget.FUNCTION)
+annotation class TemplateClassNameTest
+
+const val PERSON_TYPE_SCHEMA: String = "type Person { firstname: String, lastname: String }"
+const val PERSON_INPUT_SCHEMA = "input Person { firstname: String, lastname: String }"
+const val PERSON_INTERFACE_SCHEMA = "interface Person { firstname: String, lastname: String }"
+const val ENUM_SCHEMA = "enum Color { RED, GREEN, BLUE }"
 const val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
 const val typesPackageName = "$basePackageName.types"
 const val dataFetcherPackageName = "$basePackageName.datafetchers"

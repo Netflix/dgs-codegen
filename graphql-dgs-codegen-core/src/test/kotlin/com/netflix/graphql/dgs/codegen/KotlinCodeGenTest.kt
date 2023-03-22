@@ -3763,4 +3763,21 @@ It takes a title and such.
         assertThat(typeSpec.primaryConstructor!!.parameters[0].defaultValue.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
         assertCompilesKotlin(dataTypes)
     }
+
+    @TemplateClassNameTest
+    fun `Should generate class names based on template`(
+        schema: String,
+        nameTemplate: String?,
+        expectedName: String
+    ) {
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                language = Language.KOTLIN,
+                nameTemplate = nameTemplate
+            )
+        ).generate().kotlinSources()
+
+        assertThat(dataTypes.firstOrNull()?.name).isEqualTo(expectedName)
+    }
 }
