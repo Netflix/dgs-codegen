@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.generators.java.EnumTypeGenerator
 import com.netflix.graphql.dgs.codegen.generators.java.ReservedKeywordSanitizer
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.FileSpec
@@ -41,7 +42,7 @@ class KotlinEnumTypeGenerator(private val config: CodeGenConfig) {
 
         logger.info("Generating enum type ${definition.name}")
 
-        val kotlinType = TypeSpec.classBuilder(definition.name)
+        val kotlinType = TypeSpec.classBuilder(definition.templatedClassName(config.nameTemplate))
             .addOptionalGeneratedAnnotation(config)
             .addModifiers(KModifier.ENUM)
 

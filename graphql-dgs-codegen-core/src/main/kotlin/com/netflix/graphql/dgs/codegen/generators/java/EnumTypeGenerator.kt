@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
 import com.netflix.graphql.dgs.codegen.shouldSkip
@@ -44,7 +45,7 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
 
         val javaType =
             TypeSpec
-                .enumBuilder(definition.name)
+                .enumBuilder(definition.templatedClassName(config.nameTemplate))
                 .addModifiers(Modifier.PUBLIC)
                 .addOptionalGeneratedAnnotation(config)
 

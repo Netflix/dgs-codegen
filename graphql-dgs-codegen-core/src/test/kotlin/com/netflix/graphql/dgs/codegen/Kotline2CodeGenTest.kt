@@ -28,23 +28,7 @@ import java.io.Serializable
 class Kotline2CodeGenTest {
     @Test
     fun generateSerializableDataClass() {
-        val schema = """
-            type Person {
-                firstname: String
-                lastname: String
-            }
-        """.trimIndent()
-
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                language = Language.KOTLIN,
-                generateKotlinNullableClasses = true,
-                generateKotlinClosureProjections = true,
-                implementSerializable = true
-            )
-        ).generate()
+        val codeGenResult = CodeGen(getTestCodeGenConfig()).generate()
 
         val dataTypes = codeGenResult.kotlinDataTypes
 
@@ -133,5 +117,65 @@ class Kotline2CodeGenTest {
         )
 
         assertCompilesKotlin(result.kotlinEnumTypes)
+    }
+
+    @TemplateClassNameTest
+    fun generateSerializedDataClassWithCustomName(
+        schema: String,
+        nameTemplate: String?,
+        expectedName: String
+    ) {
+        val dataTypes = CodeGen(getTestCodeGenConfig(nameTemplate = nameTemplate, schema = schema))
+            .generate()
+            .kotlinSources()
+
+        assertThat(dataTypes.firstOrNull()?.name).isEqualTo(expectedName)
+    }
+
+    @Test
+    fun generateSerializedDataClassWithCustomName_InterfaceImplementations() {
+        val dataTypes = CodeGen(
+            getTestCodeGenConfig(
+                nameTemplate = SHOW_INTERFACE_WITH_IMPLEMENTATIONS_NAME_TEMPLATE,
+                schema = SHOW_INTERFACE_WITH_IMPLEMENTATIONS_SCHEMA
+            )
+        )
+            .generate()
+            .kotlinSources()
+
+        assertThat(dataTypes.map { it.name })
+            .containsExactlyInAnyOrderElementsOf(listOf("MovieType", "SeriesType", "ShowInterface", "DgsConstants"))
+        assertThat(
+            dataTypes.find { it.name == "ShowInterface" }
+                ?.typeSpecs
+                ?.first()
+                ?.annotations
+                ?.find { it.canonicalName().endsWith("JsonSubTypes") }
+                ?.members
+                ?.first()
+                ?.toString()
+        )
+            .contains(
+                "Type(value = com.netflix.graphql.dgs.codegen.tests.generated.types.MovieType::class, name = \"Movie\")"
+            )
+            .contains(
+                "Type(value = com.netflix.graphql.dgs.codegen.tests.generated.types.SeriesType::class," +
+                    " name = \"Series\")"
+            )
+    }
+
+    companion object {
+        private fun getTestCodeGenConfig(
+            nameTemplate: String? = null,
+            schema: String = PERSON_TYPE_SCHEMA
+        ): CodeGenConfig = CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateKotlinNullableClasses = true,
+            generateKotlinClosureProjections = true,
+            implementSerializable = true,
+            nameTemplate = nameTemplate
+        )
     }
 }

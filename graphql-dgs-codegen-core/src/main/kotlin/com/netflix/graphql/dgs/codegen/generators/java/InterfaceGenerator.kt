@@ -22,12 +22,18 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.TypeSpec
-import graphql.language.*
+import graphql.language.Document
+import graphql.language.FieldDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.InterfaceTypeExtensionDefinition
+import graphql.language.ObjectTypeDefinition
+import graphql.language.TypeName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.lang.model.element.Modifier
@@ -51,7 +57,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         }
 
         logger.info("Generating type {}", definition.name)
-        val javaType = TypeSpec.interfaceBuilder(definition.name)
+        val javaType = TypeSpec.interfaceBuilder(definition.templatedClassName(config.nameTemplate))
             .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
@@ -91,11 +97,12 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
 
         val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
             .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
-            .map { node ->
-                typeUtils.findJavaInterfaceName(node.name, packageName)
+            .associate {
+                it.name to typeUtils
+                    .findJavaInterfaceName(it.templatedClassName(config.nameTemplate), packageName) as? ClassName
             }
-            .filterIsInstance<ClassName>()
-            .toList()
+            .mapNotNull { (name, className) -> className?.let { name to it } }
+            .toMap()
 
         // Add JsonSubType annotations only if there are no generated concrete types that implement the interface
         if (implementations.isNotEmpty() && config.generateDataTypes) {
