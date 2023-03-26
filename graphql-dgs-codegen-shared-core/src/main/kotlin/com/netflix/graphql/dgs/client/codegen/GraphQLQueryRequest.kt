@@ -35,6 +35,14 @@ class GraphQLQueryRequest(
     val projectionSerializer = ProjectionSerializer(inputValueSerializer)
 
     fun serialize(): String {
+        return serialize(false)
+    }
+
+    fun serializeCompact(): String {
+        return serialize( true)
+    }
+
+    private fun serialize(compact: Boolean): String {
         val operationDef = OperationDefinition.newOperationDefinition()
 
         query.name?.let { operationDef.name(it) }
@@ -66,6 +74,10 @@ class GraphQLQueryRequest(
 
         operationDef.selectionSet(SelectionSet.newSelectionSet().selection(selection.build()).build())
 
-        return AstPrinter.printAst(operationDef.build())
+        return if(compact) {
+            AstPrinter.printAstCompact(operationDef.build());
+        } else {
+            AstPrinter.printAst(operationDef.build())
+        }
     }
 }
