@@ -491,17 +491,17 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApiv2 = true,
-                maxProjectionDepth = 2
+                generateClientApiv2 = true
             )
         ).generate()
 
-        assertThat(codeGenResult.clientProjections.size).isEqualTo(5)
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(6)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("RatingProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("ReviewProjection")
         assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("ActorProjection")
         assertThat(codeGenResult.clientProjections[4].typeSpec.name).isEqualTo("AgentProjection")
+        assertThat(codeGenResult.clientProjections[5].typeSpec.name).isEqualTo("AddressProjection")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
@@ -711,8 +711,7 @@ class ClientApiGenProjectionTestv2 {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApiv2 = true,
-                maxProjectionDepth = 2
+                generateClientApiv2 = true
             )
         ).generate()
 

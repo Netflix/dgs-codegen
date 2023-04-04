@@ -502,7 +502,7 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
                 .filter { it.name == type.name }
                 .flatMap { it.fieldDefinitions }
 
-        val codeGenResult = if (queryDepth < config.maxProjectionDepth || config.maxProjectionDepth == -1) {
+        val codeGenResult =
             fieldDefinitions
                 .filterSkipped()
                 .mapNotNull {
@@ -536,7 +536,6 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
                     createSubProjection(typeDef, javaType.build(), root, "${typeDef.name.capitalized()}", updatedProcessedEdges, queryDepth + 1)
                 }
                 .fold(CodeGenResult()) { total, current -> total.merge(current) }
-        } else CodeGenResult()
 
         fieldDefinitions
             .filterSkipped()
