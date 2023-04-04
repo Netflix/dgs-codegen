@@ -225,6 +225,7 @@ class ClientApiGenQueryTest {
             type Query {
                 movies(filter: MovieQuery): [String]
             }
+           
             
             input MovieQuery {
                 booleanQuery: BooleanQuery!
