@@ -226,28 +226,38 @@ class CodeGen(private val config: CodeGenConfig) {
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
         val methodNames = mutableSetOf<String>()
-        return if (config.generateClientApi) {
+        return if (config.generateClientApi || config.generateClientApiv2) {
             definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
                 .sortedBy { it.name.length }
-                .map { ClientApiGenerator(config, document).generate(it, methodNames) }
+                .map {
+                    if (config.generateClientApiv2) {
+                        ClientApiGeneratorv2(config, document).generate(it, methodNames)
+                    } else {
+                        ClientApiGenerator(config, document).generate(it, methodNames)
+                    }
+                }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
     }
 
     private fun generateJavaClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi) {
+        return if (config.generateClientApi || config.generateClientApiv2) {
             val federatedDefinitions = definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.hasDirective("key") }
                 .toList()
-            ClientApiGenerator(config, document).generateEntities(federatedDefinitions)
+            if (config.generateClientApiv2) {
+                ClientApiGeneratorv2(config, document).generateEntities(federatedDefinitions)
+            } else {
+                ClientApiGenerator(config, document).generateEntities(federatedDefinitions)
+            }
         } else CodeGenResult()
     }
 
     private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi) {
+        return if (config.generateClientApi || config.generateClientApiv2) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             return definitions.asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
@@ -366,7 +376,7 @@ class CodeGen(private val config: CodeGenConfig) {
         } else {
             val client = generateJavaClientApi(definitions)
             val entitiesClient = generateJavaClientEntitiesApi(definitions)
-            val entitiesRepresentationsTypes = generateKotlinClientEntitiesRepresentations(definitions)
+            val entitiesRepresentationsTypes = generateJavaClientEntitiesRepresentations(definitions)
 
             client.merge(entitiesClient).merge(entitiesRepresentationsTypes)
         }
@@ -448,45 +458,46 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 }
 
-data class CodeGenConfig(
-    val schemas: Set<String> = emptySet(),
-    val schemaFiles: Set<File> = emptySet(),
-    val schemaJarFilesFromDependencies: List<java.io.File> = emptyList(),
-    val outputDir: Path = Paths.get("generated"),
-    val examplesOutputDir: Path = Paths.get("generated-examples"),
-    val writeToFiles: Boolean = false,
-    val packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
+class CodeGenConfig(
+    var schemas: Set<String> = emptySet(),
+    var schemaFiles: Set<File> = emptySet(),
+    var schemaJarFilesFromDependencies: List<java.io.File> = emptyList(),
+    var outputDir: Path = Paths.get("generated"),
+    var examplesOutputDir: Path = Paths.get("generated-examples"),
+    var writeToFiles: Boolean = false,
+    var packageName: String = "com.netflix.${Paths.get("").toAbsolutePath().fileName}.generated",
     private val subPackageNameClient: String = "client",
     private val subPackageNameDatafetchers: String = "datafetchers",
     private val subPackageNameTypes: String = "types",
-    val language: Language = Language.JAVA,
-    val generateBoxedTypes: Boolean = false,
-    val generateClientApi: Boolean = false,
-    val generateInterfaces: Boolean = false,
-    val generateKotlinNullableClasses: Boolean = false,
-    val generateKotlinClosureProjections: Boolean = false,
-    val typeMapping: Map<String, String> = emptyMap(),
-    val includeQueries: Set<String> = emptySet(),
-    val includeMutations: Set<String> = emptySet(),
-    val includeSubscriptions: Set<String> = emptySet(),
-    val skipEntityQueries: Boolean = false,
-    val shortProjectionNames: Boolean = false,
-    val generateDataTypes: Boolean = true,
-    val omitNullInputFields: Boolean = false,
-    val maxProjectionDepth: Int = 10,
-    val kotlinAllFieldsOptional: Boolean = false,
+    var language: Language = Language.JAVA,
+    var generateBoxedTypes: Boolean = false,
+    var generateClientApi: Boolean = false,
+    var generateClientApiv2: Boolean = false,
+    var generateInterfaces: Boolean = false,
+    var generateKotlinNullableClasses: Boolean = false,
+    var generateKotlinClosureProjections: Boolean = false,
+    var typeMapping: Map<String, String> = emptyMap(),
+    var includeQueries: Set<String> = emptySet(),
+    var includeMutations: Set<String> = emptySet(),
+    var includeSubscriptions: Set<String> = emptySet(),
+    var skipEntityQueries: Boolean = false,
+    var shortProjectionNames: Boolean = false,
+    var generateDataTypes: Boolean = true,
+    var omitNullInputFields: Boolean = false,
+    var maxProjectionDepth: Int = 10,
+    var kotlinAllFieldsOptional: Boolean = false,
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
-    val snakeCaseConstantNames: Boolean = false,
-    val generateInterfaceSetters: Boolean = true,
-    val generateInterfaceMethodsForInterfaceFields: Boolean = false,
-    val includeImports: Map<String, String> = emptyMap(),
-    val includeEnumImports: Map<String, Map<String, String>> = emptyMap(),
-    val includeClassImports: Map<String, Map<String, String>> = emptyMap(),
-    val generateCustomAnnotations: Boolean = false,
+    var snakeCaseConstantNames: Boolean = false,
+    var generateInterfaceSetters: Boolean = true,
+    var generateInterfaceMethodsForInterfaceFields: Boolean = false,
+    var includeImports: Map<String, String> = emptyMap(),
+    var includeEnumImports: Map<String, Map<String, String>> = emptyMap(),
+    var includeClassImports: Map<String, Map<String, String>> = emptyMap(),
+    var generateCustomAnnotations: Boolean = false,
     var javaGenerateAllConstructor: Boolean = true,
-    val implementSerializable: Boolean = false,
-    val addGeneratedAnnotation: Boolean = false,
-    val addDeprecatedAnnotation: Boolean = false
+    var implementSerializable: Boolean = false,
+    var addGeneratedAnnotation: Boolean = false,
+    var addDeprecatedAnnotation: Boolean = false
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
@@ -544,7 +555,7 @@ data class CodeGenResult(
         val javaEnumTypes = this.javaEnumTypes.plus(current.javaEnumTypes)
         val javaDataFetchers = this.javaDataFetchers.plus(current.javaDataFetchers)
         val javaQueryTypes = this.javaQueryTypes.plus(current.javaQueryTypes)
-        val clientProjections = this.clientProjections.plus(current.clientProjections)
+        val clientProjections = this.clientProjections.plus(current.clientProjections).distinct()
         val javaConstants = this.javaConstants.plus(current.javaConstants)
         val kotlinDataTypes = this.kotlinDataTypes.plus(current.kotlinDataTypes)
         val kotlinInputTypes = this.kotlinInputTypes.plus(current.kotlinInputTypes)

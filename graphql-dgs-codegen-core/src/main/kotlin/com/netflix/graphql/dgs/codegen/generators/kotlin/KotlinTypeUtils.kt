@@ -46,7 +46,8 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
         "RelayPageInfo" to PageInfo::class.asTypeName(),
         "PageInfo" to PageInfo::class.asTypeName(),
         "PresignedUrlResponse" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse".toKtTypeName(),
-        "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName()
+        "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName(),
+        "Upload" to "org.springframework.web.multipart.MultipartFile".toKtTypeName()
     )
 
     fun qualifyName(name: String): String {

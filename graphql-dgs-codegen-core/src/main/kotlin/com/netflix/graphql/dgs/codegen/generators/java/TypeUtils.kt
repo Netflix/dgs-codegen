@@ -46,7 +46,8 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
         "RelayPageInfo" to ClassName.get(PageInfo::class.java),
         "PageInfo" to ClassName.get(PageInfo::class.java),
         "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
-        "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header")
+        "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"),
+        "Upload" to ClassName.get("org.springframework.web.multipart", "MultipartFile")
     )
 
     fun qualifyName(name: String): String {

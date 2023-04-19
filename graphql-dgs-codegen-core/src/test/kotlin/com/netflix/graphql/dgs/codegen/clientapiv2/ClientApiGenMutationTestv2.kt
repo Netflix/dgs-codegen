@@ -25,7 +25,7 @@ import com.netflix.graphql.dgs.codegen.basePackageName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class ClientApiGenMutationTest {
+class ClientApiGenMutationTestv2 {
     @Test
     fun generateMutationType() {
         val schema = """
@@ -43,7 +43,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -76,7 +76,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -115,7 +115,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -152,7 +152,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -193,7 +193,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -257,7 +257,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeMutations = setOf("shows"),
                 generateDataTypes = false,
                 writeToFiles = false
@@ -271,7 +271,7 @@ class ClientApiGenMutationTest {
         assertThat(codeGenResult.javaQueryTypes)
             .extracting("typeSpec").extracting("name").containsExactly("ShowsGraphQLQuery")
         assertThat(codeGenResult.clientProjections)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot", "Shows_IsLiveProjection")
+            .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot", "BooleanProjection")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
     }
@@ -289,7 +289,7 @@ class ClientApiGenMutationTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeMutations = setOf("updateMovieTitle")
             )
         ).generate()
