@@ -33,6 +33,7 @@ generateJava {
     omitNullInputFields = true
     generateClient = true
     generateDataTypes = true
+    generateDocs = true
 }
 
 codegen.clientCoreConventionsEnabled = false

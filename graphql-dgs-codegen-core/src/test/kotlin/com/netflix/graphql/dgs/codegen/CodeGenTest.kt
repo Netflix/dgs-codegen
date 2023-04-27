@@ -4151,4 +4151,34 @@ It takes a title and such.
         // Check that the third field of the Person type is an Integer
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Integer")
     }
+    @Test
+    fun `Can generate documentation`() {
+        val schema = """
+            type Query {
+                getPersons(name: String!): [Person]
+            }
+            
+            type Person @key(fields: "id") {
+                id: ID!
+                name: String
+                age(unit: Unit): Int
+            }
+            
+            enum Unit {
+                seconds
+                years
+            }
+        """.trimIndent()
+
+        val codeGenResult : CodeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateDocs = true
+            )
+        ).generate()
+
+        // Check that a docfile is generated
+        assertThat(codeGenResult.docFiles.size).isEqualTo(2)
+    }
 }

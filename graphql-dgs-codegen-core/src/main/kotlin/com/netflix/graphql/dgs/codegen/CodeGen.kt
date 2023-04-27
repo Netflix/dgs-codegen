@@ -21,6 +21,8 @@ package com.netflix.graphql.dgs.codegen
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.*
+import com.netflix.graphql.dgs.codegen.generators.shared.DocFileSpec
+import com.netflix.graphql.dgs.codegen.generators.shared.DocGenerator
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
@@ -94,6 +96,7 @@ class CodeGen(private val config: CodeGenConfig) {
             codeGenResult.kotlinDataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
             codeGenResult.kotlinConstants.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinClientTypes.forEach { it.writeTo(config.outputDir) }
+            codeGenResult.docFiles.forEach { it.writeTo(config.generatedDocsFolder) }
         }
 
         return codeGenResult
@@ -180,6 +183,7 @@ class CodeGen(private val config: CodeGenConfig) {
         // Data Fetchers
         val dataFetchersResult = generateJavaDataFetchers(definitions)
         val generatedAnnotation = generateJavaGeneratedAnnotation(config)
+        var docFiles = generateDocFiles(definitions)
 
         return dataTypesResult
             .merge(dataFetchersResult)
@@ -192,6 +196,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .merge(entitiesRepresentationsTypes)
             .merge(constantsClass)
             .merge(generatedAnnotation)
+            .merge(docFiles)
     }
 
     private fun generateJavaEnums(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -456,6 +461,18 @@ class CodeGen(private val config: CodeGenConfig) {
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
+
+    private fun generateDocFiles(definitions: Collection<Definition<*>>): CodeGenResult {
+        if (!config.generateDocs) {
+            return CodeGenResult()
+        }
+
+        return definitions.asSequence()
+            .map {
+                DocGenerator(config, document).generate(it)
+            }
+            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+    }
 }
 
 class CodeGenConfig(
@@ -469,6 +486,7 @@ class CodeGenConfig(
     private val subPackageNameClient: String = "client",
     private val subPackageNameDatafetchers: String = "datafetchers",
     private val subPackageNameTypes: String = "types",
+    private val subPackageNameDocs: String = "docs",
     var language: Language = Language.JAVA,
     var generateBoxedTypes: Boolean = false,
     var generateClientApi: Boolean = false,
@@ -490,6 +508,8 @@ class CodeGenConfig(
     var snakeCaseConstantNames: Boolean = false,
     var generateInterfaceSetters: Boolean = true,
     var generateInterfaceMethodsForInterfaceFields: Boolean = false,
+    var generateDocs: Boolean = false,
+    var generatedDocsFolder: Path = Paths.get("generated-docs"),
     var includeImports: Map<String, String> = emptyMap(),
     var includeEnumImports: Map<String, Map<String, String>> = emptyMap(),
     var includeClassImports: Map<String, Map<String, String>> = emptyMap(),
@@ -504,6 +524,7 @@ class CodeGenConfig(
     val packageNameDatafetchers: String = "$packageName.$subPackageNameDatafetchers"
 
     val packageNameTypes: String = "$packageName.$subPackageNameTypes"
+    val packageNameDocs: String = "$packageName.$subPackageNameDocs"
 
     override fun toString(): String {
         return """
@@ -512,6 +533,7 @@ class CodeGenConfig(
             --sub-package-name-client=$subPackageNameClient
             --sub-package-name-datafetchers=$subPackageNameDatafetchers
             --sub-package-name-types=$subPackageNameTypes
+            --sub-package-name-docs=$subPackageNameDocs
             ${if (generateBoxedTypes) "--generate-boxed-types" else ""}
             ${if (writeToFiles) "--write-to-disk" else ""}
             --language=$language
@@ -547,7 +569,8 @@ data class CodeGenResult(
     val kotlinEnumTypes: List<FileSpec> = listOf(),
     val kotlinDataFetchers: List<FileSpec> = listOf(),
     val kotlinConstants: List<FileSpec> = listOf(),
-    val kotlinClientTypes: List<FileSpec> = listOf()
+    val kotlinClientTypes: List<FileSpec> = listOf(),
+    val docFiles: List<DocFileSpec> = listOf()
 ) {
     fun merge(current: CodeGenResult): CodeGenResult {
         val javaDataTypes = this.javaDataTypes.plus(current.javaDataTypes)
@@ -564,6 +587,7 @@ data class CodeGenResult(
         val kotlinDataFetchers = this.kotlinDataFetchers.plus(current.kotlinDataFetchers)
         val kotlinConstants = this.kotlinConstants.plus(current.kotlinConstants)
         val kotlinClientTypes = this.kotlinClientTypes.plus(current.kotlinClientTypes)
+        val docFiles = this.docFiles.plus(current.docFiles)
 
         return CodeGenResult(
             javaDataTypes = javaDataTypes,
@@ -579,7 +603,8 @@ data class CodeGenResult(
             kotlinEnumTypes = kotlinEnumTypes,
             kotlinDataFetchers = kotlinDataFetchers,
             kotlinConstants = kotlinConstants,
-            kotlinClientTypes = kotlinClientTypes
+            kotlinClientTypes = kotlinClientTypes,
+            docFiles = docFiles
         )
     }
 

@@ -3,7 +3,7 @@ type Query {
     find(filter: Filter!): Result!
 }
 
-type Result {
+type Result @key(fields: "result") {
     isSuccessful: Boolean
     result: String
 }
