@@ -118,7 +118,7 @@ class ClientApiGenProjectionTestv2 {
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("DetailsProjection")
         assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("ShowProjection")
 
@@ -162,8 +162,8 @@ class ClientApiGenProjectionTestv2 {
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(5)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("ShowProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MovieProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("ShowFragmentProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MovieFragmentProjection")
         assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("RelatedProjection")
         assertThat(codeGenResult.clientProjections[4].typeSpec.name).isEqualTo("VideoProjection")
 
