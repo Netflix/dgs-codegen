@@ -210,8 +210,8 @@ class ClientApiGenQueryTestv2 {
         assertThat(codeGenResult.clientProjections)
             .extracting("typeSpec").extracting("name").containsExactly(
                 "ShowsProjectionRoot",
-                "ShowProjection",
-                "MovieProjection",
+                "ShowFragmentProjection",
+                "MovieFragmentProjection",
                 "RelatedProjection",
                 "VideoProjection"
             )
@@ -442,9 +442,9 @@ class ClientApiGenQueryTestv2 {
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
         assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs[1].name).isEqualTo("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs[2].name).isEqualTo("duration")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SeriesProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SeriesFragmentProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[2].name).isEqualTo("episodes")
 
         assertCompilesJava(
