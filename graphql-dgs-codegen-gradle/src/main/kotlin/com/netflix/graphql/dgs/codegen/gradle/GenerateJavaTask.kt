@@ -22,7 +22,10 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
@@ -145,13 +148,20 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var includeClassImports = mutableMapOf<String, MutableMap<String, String>>()
 
+    // Prepare list of dependencies during configuration phase, so it can be stored and reused by the configuration cache
+    private val dgsCodegenDependencies = project.configurations.findByName("dgsCodegen")?.incoming?.dependencies
+        ?.map { it.name to "${it.group}:${it.name}" }
+
+    // Replace last `artifacts` with `resolvedArtifacts` once minimum Gradle version is 7.4
+    private val dgsCodegenResolvedArtifacts = project.configurations.findByName("dgsCodegen")?.incoming?.artifacts?.artifacts
+
     @TaskAction
     fun generate() {
         val schemaJarFilesFromDependencies = emptyList<File>().toMutableList()
-        val dgsCodegenConfig = project.configurations.findByName("dgsCodegen")
-        dgsCodegenConfig?.incoming?.dependencies?.forEach { dependency ->
-            logger.info("Found DgsCodegen Dependendency: ${dependency.name}")
-            val found = dgsCodegenConfig.incoming.artifacts.resolvedArtifacts.get().find { it.id.componentIdentifier.displayName.contains(dependency.group + ":" + dependency.name) }
+
+        dgsCodegenDependencies?.forEach { (dependencyName, dependencyIdentifier) ->
+            logger.info("Found DgsCodegen Dependendency: $dependencyName")
+            val found = dgsCodegenResolvedArtifacts?.find { it.id.componentIdentifier.displayName.contains(dependencyIdentifier) }
             if (found != null) {
                 logger.info("Found DgsCodegen Artifact: ${found.id.displayName}")
                 schemaJarFilesFromDependencies.add(found.file)
