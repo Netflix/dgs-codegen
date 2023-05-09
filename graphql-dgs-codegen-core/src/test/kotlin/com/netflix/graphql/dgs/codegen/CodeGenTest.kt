@@ -4151,6 +4151,7 @@ It takes a title and such.
         // Check that the third field of the Person type is an Integer
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Integer")
     }
+
     @Test
     fun `Can generate documentation`() {
         val schema = """
@@ -4170,7 +4171,7 @@ It takes a title and such.
             }
         """.trimIndent()
 
-        val codeGenResult : CodeGenResult = CodeGen(
+        val codeGenResult: CodeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,

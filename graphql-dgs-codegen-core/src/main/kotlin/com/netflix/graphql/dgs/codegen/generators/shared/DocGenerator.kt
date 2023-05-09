@@ -70,11 +70,12 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
             |## Arguments
             || Name | Description | Required | Type |
             || :--- | :---------- | :------: | :--: |
-            ${field.inputValueDefinitions.map { """
+            ${field.inputValueDefinitions.map {
+                """
             || ${it.name} | ${it.description?.getContent()?.replace("|", "\\|") ?: ""} | ${if (it.type is NonNullType) "✅" else "Optional"} | ${AstPrinter.printAst(it.type)} |
                 """.trimIndent()
             }.joinToString("\n")}
-            """ 
+            """
         }else ""}
             |## Example
             |```graphql

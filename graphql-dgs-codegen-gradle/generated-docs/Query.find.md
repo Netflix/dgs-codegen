@@ -8,7 +8,7 @@
 ## Example
 ```graphql
 {
-  find(filter: {mandatoryString : "randomString", optionalString : "randomString", mandatoryNumber : 6555952426589503716, optionalNumber : 2874083720481505779}) {
+  find(filter: {mandatoryString : "randomString", optionalString : "randomString", mandatoryNumber : 197539653235116614, optionalNumber : 5816126044854263270}) {
     isSuccessful
     result
   }
