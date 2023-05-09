@@ -35,7 +35,6 @@ class DocFileSpec private constructor(
     private val packageName: String = builder.packageName
     private val markdownText: String = builder.markdownText
 
-
     @Throws(IOException::class)
     public fun writeTo(out: Appendable) {
         out.append(markdownText)
@@ -79,7 +78,7 @@ class DocFileSpec private constructor(
 
     public class Builder internal constructor(
         public val packageName: String,
-        public var markdownText: String,
+        public var markdownText: String
     ) {
         public fun setMarkdownText(markdownText: String): DocFileSpec.Builder = apply {
             this.markdownText = markdownText
@@ -96,6 +95,5 @@ class DocFileSpec private constructor(
 
         @JvmStatic public fun builder(packageName: String, markdownText: String): DocFileSpec.Builder =
             DocFileSpec.Builder(packageName, markdownText)
-
     }
 }
