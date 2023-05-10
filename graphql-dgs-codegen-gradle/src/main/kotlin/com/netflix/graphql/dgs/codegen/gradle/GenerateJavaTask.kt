@@ -36,6 +36,9 @@ open class GenerateJavaTask : DefaultTask() {
     var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
 
     @Input
+    var outputDir = "$generatedSourcesDir/generated/sources/dgs-codegen"
+
+    @Input
     var packageName = "com.netflix.dgs.codegen.generated"
 
     @Input
@@ -92,7 +95,11 @@ open class GenerateJavaTask : DefaultTask() {
 
     @OutputDirectory
     fun getOutputDir(): File {
-        return Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
+        return Paths.get(outputDir).toFile()
+    }
+
+    fun setOutputDir() {
+        outputs
     }
 
     @OutputDirectory

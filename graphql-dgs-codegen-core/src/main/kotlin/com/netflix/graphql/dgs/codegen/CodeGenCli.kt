@@ -39,14 +39,14 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val subPackageNameClient by option("--sub-package-name-client", help = "Sub package name for generated client").default("client")
     private val subPackageNameDatafetchers by option("--sub-package-name-datafetchers", help = "Sub package name for generated datafetchers").default("datafetchers")
     private val subPackageNameTypes by option("--sub-package-name-types", help = "Sub package name for generated types").default("types")
-    private val generateBoxedTypes by option("--generate-boxed-types", "-b", help = "Genereate boxed types").flag(default = false)
+    private val generateBoxedTypes by option("--generate-boxed-types", "-b", help = "Generate boxed types").flag(default = false)
     private val writeFiles by option("--write-to-disk", "-w", help = "Write files to disk").flag(
         "--console-output",
         default = true
     )
     private val language by option("--language", "-l", help = "Output language").choice("java", "kotlin", ignoreCase = true)
         .default("java")
-    private val generateClient by option("--generate-client", "-c", help = "Genereate client api").flag(default = false)
+    private val generateClient by option("--generate-client", "-c", help = "Generate client api").flag(default = false)
     private val generateDataTypes by option(
         "--generate-data-types",
         help = "Generate data types. Not needed when only generating an API"
