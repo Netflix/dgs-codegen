@@ -394,7 +394,10 @@ abstract class BaseDataTypeGenerator(
     }
 
     private fun addInterface(type: String, javaType: TypeSpec.Builder) {
-        javaType.addSuperinterface(ClassName.get(packageName, type))
+        val interfaceTypeMappedName: String? = config.typeMapping[type]
+        val interfaceName: ClassName = if (interfaceTypeMappedName == null) ClassName.get(packageName, type) else ClassName.bestGuess(interfaceTypeMappedName)
+
+        javaType.addSuperinterface(interfaceName)
     }
 
     private fun addField(fieldDefinition: Field, javaType: TypeSpec.Builder) {
