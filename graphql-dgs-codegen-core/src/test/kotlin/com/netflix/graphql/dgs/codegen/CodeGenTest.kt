@@ -4176,4 +4176,34 @@ It takes a title and such.
         // Check that the third field of the Person type is an Integer
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Integer")
     }
+
+    @Test
+    fun `Supports typeMapping for union types`() {
+        val schema = """
+            type A {
+                name: String
+            }
+        
+            type B {
+                count: Int
+            }
+        
+            union C = A | B
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "C" to "java.lang.String"
+                )
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(2)
+
+        assertThat(dataTypes[0].typeSpec.superinterfaces[0].toString()).isEqualTo("java.lang.String")
+        assertThat(dataTypes[1].typeSpec.superinterfaces[0].toString()).isEqualTo("java.lang.String")
+    }
 }
