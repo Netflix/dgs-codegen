@@ -7,7 +7,7 @@ import kotlin.String
 import kotlin.collections.List
 
 public class I(
-    public val arg: String? = default<I, String?>("arg")
+  public val arg: String? = default<I, String?>("arg"),
 ) : GraphQLInput() {
-    public override fun fields(): List<Pair<String, Any?>> = listOf("arg" to arg)
+  public override fun fields(): List<Pair<String, Any?>> = listOf("arg" to arg)
 }

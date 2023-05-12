@@ -3,9 +3,9 @@ package com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.cli
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class ActorProjection : GraphQLProjection() {
-    public val name: ActorProjection
-        get() {
-            field("name")
-            return this
-        }
+  public val name: ActorProjection
+    get() {
+      field("name")
+      return this
+    }
 }

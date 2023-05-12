@@ -7,12 +7,13 @@ import kotlin.String
 import kotlin.collections.List
 
 /**
+ *
  * Example filter for Movies.
  *
  * It takes a title and such.
  */
 public class MovieFilter(
-    public val titleFilter: String? = default<MovieFilter, String?>("titleFilter")
+  public val titleFilter: String? = default<MovieFilter, String?>("titleFilter"),
 ) : GraphQLInput() {
-    public override fun fields(): List<Pair<String, Any?>> = listOf("titleFilter" to titleFilter)
+  public override fun fields(): List<Pair<String, Any?>> = listOf("titleFilter" to titleFilter)
 }

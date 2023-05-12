@@ -7,16 +7,16 @@ import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "__typename"
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "__typename",
 )
 public sealed interface StoneFruit : Fruit {
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @get:JvmName("getSeeds")
-    public override val seeds: List<Seed?>?
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getSeeds")
+  public override val seeds: List<Seed?>?
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @get:JvmName("getFuzzy")
-    public val fuzzy: Boolean?
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getFuzzy")
+  public val fuzzy: Boolean?
 }

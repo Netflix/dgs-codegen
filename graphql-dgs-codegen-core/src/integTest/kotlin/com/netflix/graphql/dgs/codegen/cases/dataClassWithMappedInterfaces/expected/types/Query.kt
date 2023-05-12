@@ -12,30 +12,32 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-    products: () -> List<Product?>? = productsDefault
+  products: () -> List<Product?>? = productsDefault,
 ) {
-    private val _products: () -> List<Product?>? = products
+  private val _products: () -> List<Product?>? = products
 
-    @get:JvmName("getProducts")
-    public val products: List<Product?>?
-        get() = _products.invoke()
+  @get:JvmName("getProducts")
+  public val products: List<Product?>?
+    get() = _products.invoke()
 
-    public companion object {
-        private val productsDefault: () -> List<Product?>? = { throw IllegalStateException("Field `products` was not requested") }
+  public companion object {
+    private val productsDefault: () -> List<Product?>? = 
+        { throw IllegalStateException("Field `products` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var products: () -> List<Product?>? = productsDefault
+
+    @JsonProperty("products")
+    public fun withProducts(products: List<Product?>?): Builder = this.apply {
+      this.products = { products }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var products: () -> List<Product?>? = productsDefault
-
-        @JsonProperty("products")
-        public fun withProducts(products: List<Product?>?): Builder = this.apply {
-            this.products = { products }
-        }
-
-        public fun build() = Query(
-            products = products
-        )
-    }
+    public fun build() = Query(
+      products = products,
+    )
+  }
 }

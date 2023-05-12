@@ -12,30 +12,32 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = RequiredTestType.Builder::class)
 public class RequiredTestType(
-    isRequired: () -> Boolean = isRequiredDefault
+  isRequired: () -> Boolean = isRequiredDefault,
 ) {
-    private val _isRequired: () -> Boolean = isRequired
+  private val _isRequired: () -> Boolean = isRequired
 
-    @get:JvmName("getIsRequired")
-    public val isRequired: Boolean
-        get() = _isRequired.invoke()
+  @get:JvmName("getIsRequired")
+  public val isRequired: Boolean
+    get() = _isRequired.invoke()
 
-    public companion object {
-        private val isRequiredDefault: () -> Boolean = { throw IllegalStateException("Field `isRequired` was not requested") }
+  public companion object {
+    private val isRequiredDefault: () -> Boolean = 
+        { throw IllegalStateException("Field `isRequired` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var isRequired: () -> Boolean = isRequiredDefault
+
+    @JsonProperty("isRequired")
+    public fun withIsRequired(isRequired: Boolean): Builder = this.apply {
+      this.isRequired = { isRequired }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var isRequired: () -> Boolean = isRequiredDefault
-
-        @JsonProperty("isRequired")
-        public fun withIsRequired(isRequired: Boolean): Builder = this.apply {
-            this.isRequired = { isRequired }
-        }
-
-        public fun build() = RequiredTestType(
-            isRequired = isRequired
-        )
-    }
+    public fun build() = RequiredTestType(
+      isRequired = isRequired,
+    )
+  }
 }

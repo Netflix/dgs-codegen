@@ -12,30 +12,32 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-    fruits: () -> List<Fruit?>? = fruitsDefault
+  fruits: () -> List<Fruit?>? = fruitsDefault,
 ) {
-    private val _fruits: () -> List<Fruit?>? = fruits
+  private val _fruits: () -> List<Fruit?>? = fruits
 
-    @get:JvmName("getFruits")
-    public val fruits: List<Fruit?>?
-        get() = _fruits.invoke()
+  @get:JvmName("getFruits")
+  public val fruits: List<Fruit?>?
+    get() = _fruits.invoke()
 
-    public companion object {
-        private val fruitsDefault: () -> List<Fruit?>? = { throw IllegalStateException("Field `fruits` was not requested") }
+  public companion object {
+    private val fruitsDefault: () -> List<Fruit?>? = 
+        { throw IllegalStateException("Field `fruits` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var fruits: () -> List<Fruit?>? = fruitsDefault
+
+    @JsonProperty("fruits")
+    public fun withFruits(fruits: List<Fruit?>?): Builder = this.apply {
+      this.fruits = { fruits }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var fruits: () -> List<Fruit?>? = fruitsDefault
-
-        @JsonProperty("fruits")
-        public fun withFruits(fruits: List<Fruit?>?): Builder = this.apply {
-            this.fruits = { fruits }
-        }
-
-        public fun build() = Query(
-            fruits = fruits
-        )
-    }
+    public fun build() = Query(
+      fruits = fruits,
+    )
+  }
 }

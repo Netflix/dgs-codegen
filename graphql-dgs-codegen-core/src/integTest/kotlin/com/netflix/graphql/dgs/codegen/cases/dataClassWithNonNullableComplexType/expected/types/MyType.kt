@@ -11,30 +11,32 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = MyType.Builder::class)
 public class MyType(
-    other: () -> OtherType = otherDefault
+  other: () -> OtherType = otherDefault,
 ) {
-    private val _other: () -> OtherType = other
+  private val _other: () -> OtherType = other
 
-    @get:JvmName("getOther")
-    public val other: OtherType
-        get() = _other.invoke()
+  @get:JvmName("getOther")
+  public val other: OtherType
+    get() = _other.invoke()
 
-    public companion object {
-        private val otherDefault: () -> OtherType = { throw IllegalStateException("Field `other` was not requested") }
+  public companion object {
+    private val otherDefault: () -> OtherType = 
+        { throw IllegalStateException("Field `other` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var other: () -> OtherType = otherDefault
+
+    @JsonProperty("other")
+    public fun withOther(other: OtherType): Builder = this.apply {
+      this.other = { other }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var other: () -> OtherType = otherDefault
-
-        @JsonProperty("other")
-        public fun withOther(other: OtherType): Builder = this.apply {
-            this.other = { other }
-        }
-
-        public fun build() = MyType(
-            other = other
-        )
-    }
+    public fun build() = MyType(
+      other = other,
+    )
+  }
 }
