@@ -918,8 +918,8 @@ class KotlinCodeGenTest {
                 |
             """.trimMargin()
 
-            // TODO add compile check
         )
+        assertCompilesKotlin(result.kotlinEnumTypes)
     }
 
     @Test

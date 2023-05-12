@@ -89,7 +89,7 @@ class Kotline2CodeGenTest {
                 |
             """.trimMargin()
 
-            // TODO add compile check
         )
+        assertCompilesKotlin(result.kotlinEnumTypes)
     }
 }

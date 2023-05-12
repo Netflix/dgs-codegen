@@ -884,7 +884,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                addDeprecatedAnnotation = true,
+                addDeprecatedAnnotation = true
             )
         ).generate()
 
