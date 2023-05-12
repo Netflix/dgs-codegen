@@ -18,7 +18,6 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
-import com.netflix.graphql.dgs.DgsScalar
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
 import graphql.language.OperationDefinition
 import graphql.language.StringValue
@@ -26,15 +25,10 @@ import graphql.language.Value
 import graphql.parser.InvalidSyntaxException
 import graphql.parser.Parser
 import graphql.schema.Coercing
-import graphql.schema.CoercingParseLiteralException
-import graphql.schema.CoercingParseValueException
-import graphql.schema.CoercingSerializeException
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.ZoneId
-import java.time.format.DateTimeParseException
-import java.time.zone.ZoneRulesException
 import java.util.*
 
 class GraphQLQueryRequestTest {

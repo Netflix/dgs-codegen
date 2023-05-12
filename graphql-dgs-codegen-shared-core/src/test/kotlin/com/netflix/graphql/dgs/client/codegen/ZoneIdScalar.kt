@@ -29,7 +29,6 @@ import java.time.ZoneId
 import java.time.format.DateTimeParseException
 import java.time.zone.ZoneRulesException
 
-
 @DgsScalar(name = "ZoneId")
 class ZoneIdScalar : Coercing<ZoneId, String> {
     @Throws(CoercingSerializeException::class)
@@ -55,14 +54,16 @@ class ZoneIdScalar : Coercing<ZoneId, String> {
                 String.format(
                     "A valid ZoneId must be provided. I.e. 'Europe/Berlin' or 'UTC'. Was: '%s'.",
                     input
-                ), e
+                ),
+                e
             )
         } catch (e: ZoneRulesException) {
             throw CoercingParseValueException(
                 String.format(
                     "A valid ZoneId must be provided. I.e. 'Europe/Berlin' or 'UTC'. Was: '%s'.",
                     input
-                ), e
+                ),
+                e
             )
         }
     }
@@ -93,8 +94,9 @@ class ZoneIdScalar : Coercing<ZoneId, String> {
             throw CoercingParseLiteralException("Expected a StringValue.")
         }
     }
+
     @Throws(CoercingParseLiteralException::class)
     override fun valueToLiteral(input: Any): Value<out Value<*>> {
-        return StringValue.of(input.toString());
+        return StringValue.of(input.toString())
     }
 }
