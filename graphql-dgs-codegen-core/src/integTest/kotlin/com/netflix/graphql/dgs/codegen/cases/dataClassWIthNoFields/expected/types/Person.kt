@@ -8,13 +8,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Person.Builder::class)
 public class Person() {
-  public companion object
+    public companion object
 
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    public fun build() = Person(
-
-    )
-  }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        public fun build() = Person()
+    }
 }

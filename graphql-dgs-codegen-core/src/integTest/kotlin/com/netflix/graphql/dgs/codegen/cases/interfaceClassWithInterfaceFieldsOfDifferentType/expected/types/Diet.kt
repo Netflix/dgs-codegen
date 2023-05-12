@@ -7,15 +7,17 @@ import kotlin.Suppress
 import kotlin.jvm.JvmName
 
 @JsonTypeInfo(
-  use = JsonTypeInfo.Id.NAME,
-  include = JsonTypeInfo.As.PROPERTY,
-  property = "__typename",
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "__typename"
 )
-@JsonSubTypes(value = [
-  JsonSubTypes.Type(value = Vegetarian::class, name = "Vegetarian")
-])
+@JsonSubTypes(
+    value = [
+        JsonSubTypes.Type(value = Vegetarian::class, name = "Vegetarian")
+    ]
+)
 public sealed interface Diet {
-  @Suppress("INAPPLICABLE_JVM_NAME")
-  @get:JvmName("getCalories")
-  public val calories: String?
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("getCalories")
+    public val calories: String?
 }

@@ -871,6 +871,31 @@ class CodeGenTest {
     }
 
     @Test
+    fun `generates annotations from directive`() {
+        val schema = """
+            enum EmployeeTypes {
+                ENGINEER @deprecated(reason: "chatGPT does the engineering now")
+                MANAGER
+                DIRECTOR
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                addDeprecatedAnnotation = true,
+            )
+        ).generate()
+
+        val enum = codeGenResult.javaEnumTypes[0].toString()
+
+        assertThat(enum).isEqualTo("")
+
+        assertCompilesJava(codeGenResult.javaEnumTypes)
+    }
+
+    @Test
     fun generateExtendedEnum() {
         val schema = """
              type Query {

@@ -12,32 +12,30 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Rating.Builder::class)
 public class Rating(
-  stars: () -> Int? = starsDefault,
+    stars: () -> Int? = starsDefault
 ) : SearchResult {
-  private val _stars: () -> Int? = stars
+    private val _stars: () -> Int? = stars
 
-  @get:JvmName("getStars")
-  public val stars: Int?
-    get() = _stars.invoke()
+    @get:JvmName("getStars")
+    public val stars: Int?
+        get() = _stars.invoke()
 
-  public companion object {
-    private val starsDefault: () -> Int? = 
-        { throw IllegalStateException("Field `stars` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var stars: () -> Int? = starsDefault
-
-    @JsonProperty("stars")
-    public fun withStars(stars: Int?): Builder = this.apply {
-      this.stars = { stars }
+    public companion object {
+        private val starsDefault: () -> Int? = { throw IllegalStateException("Field `stars` was not requested") }
     }
 
-    public fun build() = Rating(
-      stars = stars,
-    )
-  }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        private var stars: () -> Int? = starsDefault
+
+        @JsonProperty("stars")
+        public fun withStars(stars: Int?): Builder = this.apply {
+            this.stars = { stars }
+        }
+
+        public fun build() = Rating(
+            stars = stars
+        )
+    }
 }

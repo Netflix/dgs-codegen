@@ -885,6 +885,44 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `adds @Deprecated annotation from schema directives when setting enabled`() {
+        val schema = """
+            enum TownJobTypes {
+                LAMPLIGHTER @deprecated(reason: "town switched to electric lights")
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                addDeprecatedAnnotation = true
+            )
+        ).generate()
+        val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
+
+        assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.enums
+                |
+                |import kotlin.Deprecated
+                |
+                |public enum class TownJobTypes {
+                |  @Deprecated(message = "town switched to electric lights")
+                |  LAMPLIGHTER,
+                |  ;
+                |
+                |  public companion object
+                |}
+                |
+            """.trimMargin()
+
+            // TODO add compile check
+        )
+    }
+
+    @Test
     fun generateExtendedEnum() {
         val schema = """
             type Query {

@@ -20,6 +20,8 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
+import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
@@ -52,6 +54,18 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
 
         mergedEnumDefinitions.forEach {
             javaType.addEnumConstant(it.name)
+            if(it.directives.isNotEmpty()){
+                val (annotations, comments) = applyDirectivesJava(it.directives, config)
+                if (!comments.isNullOrBlank()){
+                    javaType.addJavadoc("\$L", comments)
+                }
+                for (entry in annotations) {
+                    when (SiteTarget.valueOf(entry.key)) {
+                        SiteTarget.FIELD -> javaType.addAnnotations(annotations[SiteTarget.FIELD.name])
+                        else -> javaType.addAnnotations(annotations[entry.key])
+                    }
+                }
+            }
         }
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()

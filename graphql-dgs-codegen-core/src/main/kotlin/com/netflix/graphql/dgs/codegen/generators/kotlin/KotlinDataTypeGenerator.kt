@@ -22,9 +22,8 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
-import com.netflix.graphql.dgs.codegen.generators.shared.ParserConstants
+import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
 import com.netflix.graphql.dgs.codegen.shouldSkip
-import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
@@ -139,37 +138,6 @@ abstract class AbstractKotlinDataTypeGenerator(
         document = document
     )
 
-    /**
-     * Creates an argument map of the input Arguments
-     */
-    private fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
-        return directive.arguments.fold(mutableMapOf()) { argMap, argument ->
-            argMap[argument.name] = argument.value
-            argMap
-        }
-    }
-
-    /**
-     * Applies directives like customAnnotation
-     */
-    private fun applyDirectives(directives: List<Directive>): MutableList<AnnotationSpec> {
-        return directives.fold(mutableListOf()) { annotations, directive ->
-            val argumentMap = createArgumentMap(directive)
-            if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
-                annotations.add(customAnnotation(argumentMap, config))
-            }
-            if (directive.name == ParserConstants.DEPRECATED && config.addDeprecatedAnnotation) {
-                if (argumentMap.containsKey(ParserConstants.REASON)) {
-                    annotations.add(deprecatedAnnotation((argumentMap[ParserConstants.REASON] as StringValue).value))
-                } else {
-                    throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
-                }
-            }
-
-            annotations
-        }
-    }
-
     internal fun generate(
         name: String,
         fields: List<Field>,
@@ -194,7 +162,7 @@ abstract class AbstractKotlinDataTypeGenerator(
         }
 
         if (directives.isNotEmpty()) {
-            kotlinType.addAnnotations(applyDirectives(directives))
+            kotlinType.addAnnotations(applyDirectivesKotlin(directives, config))
         }
 
         val funConstructorBuilder = FunSpec.constructorBuilder()
@@ -208,7 +176,7 @@ abstract class AbstractKotlinDataTypeGenerator(
                     .addAnnotation(jsonPropertyAnnotation(field.name))
 
             if (field.directives.isNotEmpty()) {
-                parameterSpec.addAnnotations(applyDirectives(field.directives))
+                parameterSpec.addAnnotations(applyDirectivesKotlin(field.directives, config))
             }
 
             if (field.default != null) {

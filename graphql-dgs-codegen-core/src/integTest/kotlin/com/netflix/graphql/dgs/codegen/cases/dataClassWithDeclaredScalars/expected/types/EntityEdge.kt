@@ -12,51 +12,47 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = EntityEdge.Builder::class)
 public class EntityEdge(
-  cursor: () -> String = cursorDefault,
-  node: () -> Entity? = nodeDefault,
+    cursor: () -> String = cursorDefault,
+    node: () -> Entity? = nodeDefault
 ) {
-  private val _cursor: () -> String = cursor
+    private val _cursor: () -> String = cursor
 
-  private val _node: () -> Entity? = node
+    private val _node: () -> Entity? = node
 
-  @get:JvmName("getCursor")
-  public val cursor: String
-    get() = _cursor.invoke()
+    @get:JvmName("getCursor")
+    public val cursor: String
+        get() = _cursor.invoke()
 
-  @get:JvmName("getNode")
-  public val node: Entity?
-    get() = _node.invoke()
+    @get:JvmName("getNode")
+    public val node: Entity?
+        get() = _node.invoke()
 
-  public companion object {
-    private val cursorDefault: () -> String = 
-        { throw IllegalStateException("Field `cursor` was not requested") }
+    public companion object {
+        private val cursorDefault: () -> String = { throw IllegalStateException("Field `cursor` was not requested") }
 
-
-    private val nodeDefault: () -> Entity? = 
-        { throw IllegalStateException("Field `node` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var cursor: () -> String = cursorDefault
-
-    private var node: () -> Entity? = nodeDefault
-
-    @JsonProperty("cursor")
-    public fun withCursor(cursor: String): Builder = this.apply {
-      this.cursor = { cursor }
+        private val nodeDefault: () -> Entity? = { throw IllegalStateException("Field `node` was not requested") }
     }
 
-    @JsonProperty("node")
-    public fun withNode(node: Entity?): Builder = this.apply {
-      this.node = { node }
-    }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        private var cursor: () -> String = cursorDefault
 
-    public fun build() = EntityEdge(
-      cursor = cursor,
-      node = node,
-    )
-  }
+        private var node: () -> Entity? = nodeDefault
+
+        @JsonProperty("cursor")
+        public fun withCursor(cursor: String): Builder = this.apply {
+            this.cursor = { cursor }
+        }
+
+        @JsonProperty("node")
+        public fun withNode(node: Entity?): Builder = this.apply {
+            this.node = { node }
+        }
+
+        public fun build() = EntityEdge(
+            cursor = cursor,
+            node = node
+        )
+    }
 }

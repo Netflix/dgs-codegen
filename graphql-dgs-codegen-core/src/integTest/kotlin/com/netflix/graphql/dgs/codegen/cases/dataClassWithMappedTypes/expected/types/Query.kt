@@ -12,51 +12,47 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-  entity: () -> List<Entity?>? = entityDefault,
-  entityConnection: () -> EntityConnection? = entityConnectionDefault,
+    entity: () -> List<Entity?>? = entityDefault,
+    entityConnection: () -> EntityConnection? = entityConnectionDefault
 ) {
-  private val _entity: () -> List<Entity?>? = entity
+    private val _entity: () -> List<Entity?>? = entity
 
-  private val _entityConnection: () -> EntityConnection? = entityConnection
+    private val _entityConnection: () -> EntityConnection? = entityConnection
 
-  @get:JvmName("getEntity")
-  public val entity: List<Entity?>?
-    get() = _entity.invoke()
+    @get:JvmName("getEntity")
+    public val entity: List<Entity?>?
+        get() = _entity.invoke()
 
-  @get:JvmName("getEntityConnection")
-  public val entityConnection: EntityConnection?
-    get() = _entityConnection.invoke()
+    @get:JvmName("getEntityConnection")
+    public val entityConnection: EntityConnection?
+        get() = _entityConnection.invoke()
 
-  public companion object {
-    private val entityDefault: () -> List<Entity?>? = 
-        { throw IllegalStateException("Field `entity` was not requested") }
+    public companion object {
+        private val entityDefault: () -> List<Entity?>? = { throw IllegalStateException("Field `entity` was not requested") }
 
-
-    private val entityConnectionDefault: () -> EntityConnection? = 
-        { throw IllegalStateException("Field `entityConnection` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var entity: () -> List<Entity?>? = entityDefault
-
-    private var entityConnection: () -> EntityConnection? = entityConnectionDefault
-
-    @JsonProperty("entity")
-    public fun withEntity(entity: List<Entity?>?): Builder = this.apply {
-      this.entity = { entity }
+        private val entityConnectionDefault: () -> EntityConnection? = { throw IllegalStateException("Field `entityConnection` was not requested") }
     }
 
-    @JsonProperty("entityConnection")
-    public fun withEntityConnection(entityConnection: EntityConnection?): Builder = this.apply {
-      this.entityConnection = { entityConnection }
-    }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        private var entity: () -> List<Entity?>? = entityDefault
 
-    public fun build() = Query(
-      entity = entity,
-      entityConnection = entityConnection,
-    )
-  }
+        private var entityConnection: () -> EntityConnection? = entityConnectionDefault
+
+        @JsonProperty("entity")
+        public fun withEntity(entity: List<Entity?>?): Builder = this.apply {
+            this.entity = { entity }
+        }
+
+        @JsonProperty("entityConnection")
+        public fun withEntityConnection(entityConnection: EntityConnection?): Builder = this.apply {
+            this.entityConnection = { entityConnection }
+        }
+
+        public fun build() = Query(
+            entity = entity,
+            entityConnection = entityConnection
+        )
+    }
 }

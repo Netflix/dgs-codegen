@@ -13,52 +13,48 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Employee.Builder::class)
 public class Employee(
-  firstname: () -> String? = firstnameDefault,
-  company: () -> String? = companyDefault,
+    firstname: () -> String? = firstnameDefault,
+    company: () -> String? = companyDefault
 ) : Person, U {
-  private val _firstname: () -> String? = firstname
+    private val _firstname: () -> String? = firstname
 
-  private val _company: () -> String? = company
+    private val _company: () -> String? = company
 
-  @Suppress("INAPPLICABLE_JVM_NAME")
-  @get:JvmName("getFirstname")
-  public override val firstname: String?
-    get() = _firstname.invoke()
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("getFirstname")
+    public override val firstname: String?
+        get() = _firstname.invoke()
 
-  @get:JvmName("getCompany")
-  public val company: String?
-    get() = _company.invoke()
+    @get:JvmName("getCompany")
+    public val company: String?
+        get() = _company.invoke()
 
-  public companion object {
-    private val firstnameDefault: () -> String? = 
-        { throw IllegalStateException("Field `firstname` was not requested") }
+    public companion object {
+        private val firstnameDefault: () -> String? = { throw IllegalStateException("Field `firstname` was not requested") }
 
-
-    private val companyDefault: () -> String? = 
-        { throw IllegalStateException("Field `company` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var firstname: () -> String? = firstnameDefault
-
-    private var company: () -> String? = companyDefault
-
-    @JsonProperty("firstname")
-    public fun withFirstname(firstname: String?): Builder = this.apply {
-      this.firstname = { firstname }
+        private val companyDefault: () -> String? = { throw IllegalStateException("Field `company` was not requested") }
     }
 
-    @JsonProperty("company")
-    public fun withCompany(company: String?): Builder = this.apply {
-      this.company = { company }
-    }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        private var firstname: () -> String? = firstnameDefault
 
-    public fun build() = Employee(
-      firstname = firstname,
-      company = company,
-    )
-  }
+        private var company: () -> String? = companyDefault
+
+        @JsonProperty("firstname")
+        public fun withFirstname(firstname: String?): Builder = this.apply {
+            this.firstname = { firstname }
+        }
+
+        @JsonProperty("company")
+        public fun withCompany(company: String?): Builder = this.apply {
+            this.company = { company }
+        }
+
+        public fun build() = Employee(
+            firstname = firstname,
+            company = company
+        )
+    }
 }

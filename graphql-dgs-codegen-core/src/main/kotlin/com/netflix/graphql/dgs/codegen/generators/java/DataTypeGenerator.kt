@@ -21,8 +21,8 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
-import com.netflix.graphql.dgs.codegen.generators.shared.ParserConstants
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
+import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
@@ -169,55 +169,6 @@ abstract class BaseDataTypeGenerator(
 ) {
     internal val typeUtils = TypeUtils(packageName, config, document)
 
-    /**
-     * Creates an argument map of the input Arguments
-     */
-    private fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
-        return directive.arguments.fold(mutableMapOf()) { argMap, argument ->
-            argMap[argument.name] = argument.value
-            argMap
-        }
-    }
-
-    /**
-     * Applies directives like customAnnotation, deprecated etc. The target value in the directives is used to decide where to apply the annotation.
-     * @input directives: list of directive that needs to be applied
-     * @return Pair of (map of target site and corresponding annotations) and comments
-     */
-    private fun applyDirectives(directives: List<Directive>): Pair<MutableMap<String, MutableList<AnnotationSpec>>, String?> {
-        var commentFormat: String? = null
-        return Pair(
-            directives.fold(mutableMapOf()) { annotations, directive ->
-                val argumentMap = createArgumentMap(directive)
-                val siteTarget = if (argumentMap.containsKey(ParserConstants.SITE_TARGET)) (argumentMap[ParserConstants.SITE_TARGET] as StringValue).value.uppercase() else SiteTarget.DEFAULT.name
-                if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
-                    annotations[siteTarget] = if (annotations.containsKey(siteTarget)) {
-                        var annotationList: MutableList<AnnotationSpec> = annotations[siteTarget]!!
-                        annotationList.add(customAnnotation(argumentMap, config))
-                        annotationList
-                    } else {
-                        mutableListOf(customAnnotation(argumentMap, config))
-                    }
-                }
-                if (directive.name == ParserConstants.DEPRECATED && config.addDeprecatedAnnotation) {
-                    annotations[siteTarget] = mutableListOf(deprecatedAnnotation())
-                    if (argumentMap.containsKey(ParserConstants.REASON)) {
-                        val reason: String = (argumentMap[ParserConstants.REASON] as StringValue).value
-                        val replace = reason.substringAfter(ParserConstants.REPLACE_WITH_STR, "")
-                        commentFormat = reason.substringBefore(ParserConstants.REPLACE_WITH_STR)
-                        if (replace.isNotEmpty()) {
-                            commentFormat = "@deprecated ${reason.substringBefore(ParserConstants.REPLACE_WITH_STR)}. Replaced by $replace"
-                        }
-                    } else {
-                        throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
-                    }
-                }
-                annotations
-            },
-            commentFormat
-        )
-    }
-
     internal fun generate(
         name: String,
         interfaces: List<String>,
@@ -238,7 +189,7 @@ abstract class BaseDataTypeGenerator(
         }
 
         if (directives.isNotEmpty()) {
-            val (annotations, comments) = applyDirectives(directives)
+            val (annotations, comments) = applyDirectivesJava(directives, config)
             if (annotations.containsKey(SiteTarget.DEFAULT.name)) {
                 javaType.addAnnotations(annotations[SiteTarget.DEFAULT.name])
             }
@@ -373,7 +324,7 @@ abstract class BaseDataTypeGenerator(
         fieldDefinitions.forEach {
             val parameterBuilder = ParameterSpec.builder(it.type, ReservedKeywordSanitizer.sanitize(it.name))
             if (it.directives.isNotEmpty()) {
-                val (annotations, comments) = applyDirectives(it.directives)
+                val (annotations, comments) = applyDirectivesJava(it.directives, config)
                 annotations.forEach { entry ->
                     if (SiteTarget.valueOf(entry.key) == SiteTarget.PARAM) {
                         parameterBuilder.addAnnotations(annotations[SiteTarget.PARAM.name])
@@ -436,7 +387,7 @@ abstract class BaseDataTypeGenerator(
             )
 
         if (fieldDefinition.directives.isNotEmpty()) {
-            val (annotations, comments) = applyDirectives(fieldDefinition.directives)
+            val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
             if (!comments.isNullOrBlank()) {
                 fieldBuilder.addJavadoc("\$L", comments)
             }

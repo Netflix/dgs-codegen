@@ -12,70 +12,64 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Droid.Builder::class)
 public class Droid(
-  id: () -> String = idDefault,
-  name: () -> String = nameDefault,
-  primaryFunction: () -> String? = primaryFunctionDefault,
+    id: () -> String = idDefault,
+    name: () -> String = nameDefault,
+    primaryFunction: () -> String? = primaryFunctionDefault
 ) : SearchResult {
-  private val _id: () -> String = id
+    private val _id: () -> String = id
 
-  private val _name: () -> String = name
+    private val _name: () -> String = name
 
-  private val _primaryFunction: () -> String? = primaryFunction
+    private val _primaryFunction: () -> String? = primaryFunction
 
-  @get:JvmName("getId")
-  public val id: String
-    get() = _id.invoke()
+    @get:JvmName("getId")
+    public val id: String
+        get() = _id.invoke()
 
-  @get:JvmName("getName")
-  public val name: String
-    get() = _name.invoke()
+    @get:JvmName("getName")
+    public val name: String
+        get() = _name.invoke()
 
-  @get:JvmName("getPrimaryFunction")
-  public val primaryFunction: String?
-    get() = _primaryFunction.invoke()
+    @get:JvmName("getPrimaryFunction")
+    public val primaryFunction: String?
+        get() = _primaryFunction.invoke()
 
-  public companion object {
-    private val idDefault: () -> String = 
-        { throw IllegalStateException("Field `id` was not requested") }
+    public companion object {
+        private val idDefault: () -> String = { throw IllegalStateException("Field `id` was not requested") }
 
+        private val nameDefault: () -> String = { throw IllegalStateException("Field `name` was not requested") }
 
-    private val nameDefault: () -> String = 
-        { throw IllegalStateException("Field `name` was not requested") }
-
-
-    private val primaryFunctionDefault: () -> String? = 
-        { throw IllegalStateException("Field `primaryFunction` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var id: () -> String = idDefault
-
-    private var name: () -> String = nameDefault
-
-    private var primaryFunction: () -> String? = primaryFunctionDefault
-
-    @JsonProperty("id")
-    public fun withId(id: String): Builder = this.apply {
-      this.id = { id }
+        private val primaryFunctionDefault: () -> String? = { throw IllegalStateException("Field `primaryFunction` was not requested") }
     }
 
-    @JsonProperty("name")
-    public fun withName(name: String): Builder = this.apply {
-      this.name = { name }
-    }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        private var id: () -> String = idDefault
 
-    @JsonProperty("primaryFunction")
-    public fun withPrimaryFunction(primaryFunction: String?): Builder = this.apply {
-      this.primaryFunction = { primaryFunction }
-    }
+        private var name: () -> String = nameDefault
 
-    public fun build() = Droid(
-      id = id,
-      name = name,
-      primaryFunction = primaryFunction,
-    )
-  }
+        private var primaryFunction: () -> String? = primaryFunctionDefault
+
+        @JsonProperty("id")
+        public fun withId(id: String): Builder = this.apply {
+            this.id = { id }
+        }
+
+        @JsonProperty("name")
+        public fun withName(name: String): Builder = this.apply {
+            this.name = { name }
+        }
+
+        @JsonProperty("primaryFunction")
+        public fun withPrimaryFunction(primaryFunction: String?): Builder = this.apply {
+            this.primaryFunction = { primaryFunction }
+        }
+
+        public fun build() = Droid(
+            id = id,
+            name = name,
+            primaryFunction = primaryFunction
+        )
+    }
 }
