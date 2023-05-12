@@ -884,26 +884,28 @@ class KotlinCodeGenTest {
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinEnumTypes)
     }
 
-    @Test
-    fun `adds @Deprecated annotation from schema directives when setting enabled`() {
-        val schema = """
+    @Nested
+    inner class EnumAnnotationTests {
+        @Test
+        fun `adds @Deprecated annotation from schema directives when setting enabled`() {
+            val schema = """
             enum TownJobTypes {
                 LAMPLIGHTER @deprecated(reason: "town switched to electric lights")
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val result = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                language = Language.KOTLIN,
-                addDeprecatedAnnotation = true
-            )
-        ).generate()
-        val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
+            val result = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+            val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
 
-        assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
-            """
+            assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+                """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
                 |import kotlin.Deprecated
@@ -916,10 +918,47 @@ class KotlinCodeGenTest {
                 |  public companion object
                 |}
                 |
-            """.trimMargin()
+                """.trimMargin()
 
-        )
-        assertCompilesKotlin(result.kotlinEnumTypes)
+            )
+            assertCompilesKotlin(result.kotlinEnumTypes)
+        }
+
+        @Test
+        fun `adds custom annotation when setting enabled`() {
+            val schema = """
+                enum SomeEnum {
+                    ENUM_VALUE @annotate(name: "ValidName", type: "validator")
+                }
+            """.trimIndent()
+
+            val result = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    generateCustomAnnotations = true
+                )
+            ).generate()
+            val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
+
+            assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.enums
+                |
+                |import ValidName
+                |
+                |public enum class SomeEnum {
+                |  @ValidName
+                |  ENUM_VALUE,
+                |  ;
+                |
+                |  public companion object
+                |}
+                |
+                """.trimMargin()
+            )
+        }
     }
 
     @Test
