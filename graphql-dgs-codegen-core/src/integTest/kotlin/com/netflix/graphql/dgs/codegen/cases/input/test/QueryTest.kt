@@ -31,15 +31,11 @@ class QueryTest {
             movies()
         }
 
-        Assertions.assertEquals(
-            """{
+        Assertions.assertEquals("""{
             |  __typename
             |  movies
             |}
-            |
-            """.trimMargin(),
-            query
-        )
+            |""".trimMargin(), query)
     }
 
     @Test
@@ -48,15 +44,11 @@ class QueryTest {
             movies(filter = MovieFilter())
         }
 
-        Assertions.assertEquals(
-            """{
+        Assertions.assertEquals("""{
             |  __typename
             |  movies(filter: {})
             |}
-            |
-            """.trimMargin(),
-            query
-        )
+            |""".trimMargin(), query)
     }
 
     @Test
@@ -65,15 +57,11 @@ class QueryTest {
             movies(filter = MovieFilter(genre = null))
         }
 
-        Assertions.assertEquals(
-            """{
+        Assertions.assertEquals("""{
             |  __typename
             |  movies(filter: {genre : null})
             |}
-            |
-            """.trimMargin(),
-            query
-        )
+            |""".trimMargin(), query)
     }
 
     @Test
@@ -82,15 +70,11 @@ class QueryTest {
             movies(filter = MovieFilter(genre = "horror"))
         }
 
-        Assertions.assertEquals(
-            """{
+        Assertions.assertEquals("""{
             |  __typename
             |  movies(filter: {genre : "horror"})
             |}
-            |
-            """.trimMargin(),
-            query
-        )
+            |""".trimMargin(), query)
     }
 
     @Test
@@ -99,14 +83,10 @@ class QueryTest {
             movies(filter = MovieFilter(genre = "horror\ncomedy"))
         }
 
-        Assertions.assertEquals(
-            """{
+        Assertions.assertEquals("""{
             |  __typename
             |  movies(filter: {genre : "horror\ncomedy"})
             |}
-            |
-            """.trimMargin(),
-            query
-        )
+            |""".trimMargin(), query)
     }
 }

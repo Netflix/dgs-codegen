@@ -12,7 +12,6 @@ import kotlin.jvm.JvmName
 )
 public sealed interface Titled {
   /**
-   *
    * The original, non localized title.
    */
   @Suppress("INAPPLICABLE_JVM_NAME")

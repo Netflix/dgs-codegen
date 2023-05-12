@@ -41,9 +41,7 @@ class QueryTest {
             |  __typename
             |  q1(arg2: {arg2 : ""})
             |}
-            |
-            """.trimMargin(),
-            query
+            |""".trimMargin(), query
         )
     }
 
@@ -52,8 +50,9 @@ class QueryTest {
         val query = DgsClient.buildQuery {
             q2(
                 arg1 = I1(
-                    arg1 = I1()
-                )
+                    arg1 = I1(
+                    )
+                ),
             )
         }
 
@@ -62,9 +61,7 @@ class QueryTest {
             |  __typename
             |  q2(arg1: {arg1 : {}})
             |}
-            |
-            """.trimMargin(),
-            query
+            |""".trimMargin(), query
         )
     }
 }

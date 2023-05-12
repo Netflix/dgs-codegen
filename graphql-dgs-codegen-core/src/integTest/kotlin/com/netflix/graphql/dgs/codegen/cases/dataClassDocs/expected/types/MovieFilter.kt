@@ -7,7 +7,6 @@ import kotlin.String
 import kotlin.collections.List
 
 /**
- *
  * Example filter for Movies.
  *
  * It takes a title and such.

@@ -10,7 +10,6 @@ import kotlin.String
 import kotlin.jvm.JvmName
 
 /**
- *
  * Movies are fun to watch.
  * They also work well as examples in GraphQL.
  */

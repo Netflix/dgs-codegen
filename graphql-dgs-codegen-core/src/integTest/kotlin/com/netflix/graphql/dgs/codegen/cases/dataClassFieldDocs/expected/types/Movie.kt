@@ -17,7 +17,6 @@ public class Movie(
   private val _title: () -> String? = title
 
   /**
-   *
    * The original, non localized title with some specials characters : %!({[*$,.:;.
    */
   @get:JvmName("getTitle")

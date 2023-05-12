@@ -33,8 +33,7 @@ class QueryTest {
             }
         }
 
-        assertEquals(
-            """{
+        assertEquals("""{
             |  __typename
             |  people {
             |    __typename
@@ -42,9 +41,6 @@ class QueryTest {
             |    lastname
             |  }
             |}
-            |
-            """.trimMargin(),
-            query
-        )
+            |""".trimMargin(), query)
     }
 }

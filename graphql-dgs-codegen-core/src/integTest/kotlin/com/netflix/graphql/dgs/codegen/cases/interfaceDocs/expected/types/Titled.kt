@@ -6,7 +6,6 @@ import kotlin.Suppress
 import kotlin.jvm.JvmName
 
 /**
- *
  * Anything with a title!
  */
 @JsonTypeInfo(
