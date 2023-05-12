@@ -4153,6 +4153,37 @@ It takes a title and such.
     }
 
     @Test
+    fun `Can generate documentation`() {
+        val schema = """
+            type Query {
+                getPersons(name: String!): [Person]
+            }
+            
+            type Person @key(fields: "id") {
+                id: ID!
+                name: String
+                age(unit: Unit): Int
+            }
+            
+            enum Unit {
+                seconds
+                years
+            }
+        """.trimIndent()
+
+        val codeGenResult: CodeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateDocs = true
+            )
+        ).generate()
+
+        // Check that a docfile is generated
+        assertThat(codeGenResult.docFiles.size).isEqualTo(2)
+    }
+
+    @Test
     fun `Supports typeMapping for union types`() {
         val schema = """
             type A {

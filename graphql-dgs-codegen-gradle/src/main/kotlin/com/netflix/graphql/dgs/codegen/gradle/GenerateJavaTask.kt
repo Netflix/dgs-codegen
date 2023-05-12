@@ -88,6 +88,9 @@ open class GenerateJavaTask : DefaultTask() {
     var generateInterfaceMethodsForInterfaceFields = false
 
     @Input
+    var generateDocs = false
+
+    @Input
     var implementSerializable = false
 
     @OutputDirectory
@@ -187,6 +190,7 @@ open class GenerateJavaTask : DefaultTask() {
             generateInterfaces = generateInterfaces,
             generateInterfaceSetters = generateInterfaceSetters,
             generateInterfaceMethodsForInterfaceFields = generateInterfaceMethodsForInterfaceFields,
+            generateDocs = generateDocs,
             typeMapping = typeMapping,
             includeQueries = includeQueries.toSet(),
             includeMutations = includeMutations.toSet(),

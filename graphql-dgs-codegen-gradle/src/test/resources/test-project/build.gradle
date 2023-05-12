@@ -31,6 +31,7 @@ generateJava {
     packageName = 'com.netflix.testproject.graphql'
     generatedSourcesDir = "${projectDir}/build/graphql"
     typeMapping = [Date:"java.time.LocalDateTime"]
+    generateDocs = true
 }
 
 codegen.clientCoreConventionsEnabled = false
