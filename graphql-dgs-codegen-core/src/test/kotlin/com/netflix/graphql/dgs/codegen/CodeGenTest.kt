@@ -4182,4 +4182,34 @@ It takes a title and such.
         // Check that a docfile is generated
         assertThat(codeGenResult.docFiles.size).isEqualTo(2)
     }
+
+    @Test
+    fun `Supports typeMapping for union types`() {
+        val schema = """
+            type A {
+                name: String
+            }
+        
+            type B {
+                count: Int
+            }
+        
+            union C = A | B
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "C" to "java.lang.String"
+                )
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(2)
+
+        assertThat(dataTypes[0].typeSpec.superinterfaces[0].toString()).isEqualTo("java.lang.String")
+        assertThat(dataTypes[1].typeSpec.superinterfaces[0].toString()).isEqualTo("java.lang.String")
+    }
 }

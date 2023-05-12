@@ -402,15 +402,16 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
         val rootRef = if (javaType.build().name == rootType.name) "this" else "getRoot()"
         val rootTypeName = if (javaType.build().name == rootType.name) "${rootType.name}<PARENT, ROOT>" else "ROOT"
         val parentRef = javaType.build().name
-        val projectionName = "${it.name.capitalized()}Projection"
-        val typeVariable = TypeVariableName.get("$projectionName<$parentRef<PARENT, ROOT>, $rootTypeName>")
+        val projectionName = "${it.name.capitalized()}Fragment"
+        val fullProjectionName = "${projectionName}Projection"
+        val typeVariable = TypeVariableName.get("$fullProjectionName<$parentRef<PARENT, ROOT>, $rootTypeName>")
         javaType.addMethod(
             MethodSpec.methodBuilder("on${it.name}")
                 .addModifiers(Modifier.PUBLIC)
                 .returns(typeVariable)
                 .addCode(
                     """
-                    |$projectionName<$parentRef<PARENT, ROOT>, $rootTypeName> fragment = new $projectionName<>(this, $rootRef);
+                    |$fullProjectionName<$parentRef<PARENT, ROOT>, $rootTypeName> fragment = new $fullProjectionName<>(this, $rootRef);
                     |getFragments().add(fragment);
                     |return fragment;
                     """.trimMargin()
@@ -418,7 +419,7 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
                 .build()
         )
 
-        return createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, "${it.name.capitalized()}", processedEdges, queryDepth)
+        return createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, projectionName, processedEdges, queryDepth)
     }
 
     private fun createFragment(type: ObjectTypeDefinition, parent: TypeSpec, root: TypeSpec, prefix: String, processedEdges: Set<Pair<String, String>>, queryDepth: Int): CodeGenResult {
