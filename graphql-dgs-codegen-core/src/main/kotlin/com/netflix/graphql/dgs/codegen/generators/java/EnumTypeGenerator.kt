@@ -53,19 +53,20 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
 
         mergedEnumDefinitions.forEach {
-            javaType.addEnumConstant(it.name)
+            var typeSpec = TypeSpec.anonymousClassBuilder("")
             if (it.directives.isNotEmpty()) {
                 val (annotations, comments) = applyDirectivesJava(it.directives, config)
                 if (!comments.isNullOrBlank()) {
-                    javaType.addJavadoc("\$L", comments)
+                    typeSpec.addJavadoc("\$L", comments)
                 }
                 for (entry in annotations) {
                     when (SiteTarget.valueOf(entry.key)) {
-                        SiteTarget.FIELD -> javaType.addAnnotations(annotations[SiteTarget.FIELD.name])
-                        else -> javaType.addAnnotations(annotations[entry.key])
+                        SiteTarget.FIELD -> typeSpec.addAnnotations(annotations[SiteTarget.FIELD.name])
+                        else -> typeSpec.addAnnotations(annotations[entry.key])
                     }
                 }
             }
+            javaType.addEnumConstant(it.name, typeSpec.build())
         }
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()

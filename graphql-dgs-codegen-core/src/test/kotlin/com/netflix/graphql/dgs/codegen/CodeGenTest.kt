@@ -890,7 +890,26 @@ class CodeGenTest {
 
         val enum = codeGenResult.javaEnumTypes[0].toString()
 
-        assertThat(enum).isEqualTo("")
+        assertThat(enum).isEqualTo(
+            """
+            package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            
+            import java.lang.Deprecated;
+            
+            public enum EmployeeTypes {
+              /**
+               * chatGPT does the engineering now
+               */
+              @Deprecated
+              ENGINEER,
+            
+              MANAGER,
+            
+              DIRECTOR
+            }
+            
+            """.trimIndent()
+        )
 
         assertCompilesJava(codeGenResult.javaEnumTypes)
     }
