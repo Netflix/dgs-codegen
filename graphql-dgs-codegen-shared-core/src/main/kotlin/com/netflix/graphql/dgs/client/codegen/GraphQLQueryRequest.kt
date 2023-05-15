@@ -31,7 +31,7 @@ class GraphQLQueryRequest(
 
     private var selectionSet: SelectionSet? = null
 
-    constructor(query: GraphQLQuery, scalars: Map<Class<*>, Coercing<*, *>>?, selectionSet: SelectionSet?) : this(query, null, scalars) {
+    constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, scalars = scalars) {
         this.selectionSet = selectionSet
     }
 
