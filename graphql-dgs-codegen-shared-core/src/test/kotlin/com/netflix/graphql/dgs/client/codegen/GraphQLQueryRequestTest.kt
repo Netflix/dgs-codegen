@@ -28,8 +28,8 @@ import graphql.schema.Coercing
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
-import java.util.Optional
-import java.util.UUID
+import java.time.ZoneId
+import java.util.*
 
 class GraphQLQueryRequestTest {
     @Test
@@ -160,15 +160,16 @@ class GraphQLQueryRequestTest {
         val query = TestNamedGraphQLQuery().apply {
             input["movie"] = Movie(123, "greatMovie")
             input["dateRange"] = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))
+            input["zoneId"] = ZoneId.of("Europe/Berlin")
         }
         val request =
-            GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
+            GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar(), ZoneId::class.java to ZoneIdScalar()))
 
         val result = request.serialize()
         assertValidQuery(result)
         assertThat(result).isEqualTo(
             """query TestNamedQuery {
-            |  test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021")
+            |  test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021", zoneId: "Europe/Berlin")
             |}
             """.trimMargin()
         )

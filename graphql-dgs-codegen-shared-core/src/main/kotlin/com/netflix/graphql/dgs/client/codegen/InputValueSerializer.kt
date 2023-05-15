@@ -81,8 +81,10 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
             return input
         }
 
-        if (input::class.java in scalars) {
-            return scalars.getValue(input::class.java).valueToLiteral(input)
+        for (scalar in scalars.keys) {
+            if (input::class.java == scalar || scalar.isAssignableFrom(input::class.java)) {
+                return scalars[scalar]!!.valueToLiteral(input)
+            }
         }
 
         if (input::class in toStringClasses) {
