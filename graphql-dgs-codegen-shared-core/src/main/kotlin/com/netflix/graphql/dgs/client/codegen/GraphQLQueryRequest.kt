@@ -26,11 +26,14 @@ import graphql.schema.Coercing
 class GraphQLQueryRequest(
     val query: GraphQLQuery,
     val projection: BaseProjectionNode?,
+    val selectionSet: SelectionSet?,
     scalars: Map<Class<*>, Coercing<*, *>>?
 ) {
 
-    constructor(query: GraphQLQuery) : this(query, null, null)
-    constructor(query: GraphQLQuery, projection: BaseProjectionNode?) : this(query, projection, null)
+    constructor(query: GraphQLQuery) : this(query, null, null, null)
+    constructor(query: GraphQLQuery, projection: BaseProjectionNode?) : this(query, projection, null, null)
+    constructor(query: GraphQLQuery, selectionSet: SelectionSet?) : this(query, null, selectionSet, null)
+
     val inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())
     val projectionSerializer = ProjectionSerializer(inputValueSerializer)
 
@@ -54,14 +57,18 @@ class GraphQLQueryRequest(
         }
 
         if (projection != null) {
-            val selectionSet = if (projection is BaseSubProjectionNode<*, *> && projection.root() != null) {
+            val selectionSetFromProjection = if (projection is BaseSubProjectionNode<*, *> && projection.root() != null) {
                 projectionSerializer.toSelectionSet(projection.root() as BaseProjectionNode)
             } else {
                 projectionSerializer.toSelectionSet(projection)
             }
-            if (selectionSet.selections.isNotEmpty()) {
-                selection.selectionSet(selectionSet)
+            if (selectionSetFromProjection.selections.isNotEmpty()) {
+                selection.selectionSet(selectionSetFromProjection)
             }
+        }
+
+        if (selectionSet != null) {
+            selection.selectionSet(selectionSet)
         }
 
         operationDef.selectionSet(SelectionSet.newSelectionSet().selection(selection.build()).build())
