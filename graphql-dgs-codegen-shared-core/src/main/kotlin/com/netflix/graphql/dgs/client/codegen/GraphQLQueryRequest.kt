@@ -32,6 +32,7 @@ class GraphQLQueryRequest(
 
     constructor(query: GraphQLQuery) : this(query, null, null, null)
     constructor(query: GraphQLQuery, projection: BaseProjectionNode?) : this(query, projection, null, null)
+    constructor(query: GraphQLQuery, projection: BaseProjectionNode?, scalars: Map<Class<*>, Coercing<*, *>>?) : this(query, projection, null, scalars)
     constructor(query: GraphQLQuery, selectionSet: SelectionSet?) : this(query, null, selectionSet, null)
 
     val inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())
