@@ -164,7 +164,7 @@ class GraphQLQueryRequestTest {
         val inputValueSerializer = InputValueSerializer(emptyMap())
         val projectionSerializer = ProjectionSerializer(inputValueSerializer)
         val selectionSet = projectionSerializer.toSelectionSet(MovieProjection().name().movieId())
-        val request = GraphQLQueryRequest(query, selectionSet)
+        val request = GraphQLQueryRequest(query = query, selectionSet = selectionSet)
         val result = request.serialize()
         assertValidQuery(result)
         assertThat(result).isEqualTo(
@@ -190,7 +190,7 @@ class GraphQLQueryRequestTest {
         val projectionSerializer = ProjectionSerializer(inputValueSerializer)
         val selectionSet = projectionSerializer.toSelectionSet(MovieProjection().name().movieId())
         val request =
-            GraphQLQueryRequest(query, selectionSet, scalars)
+            GraphQLQueryRequest(query = query, selectionSet = selectionSet, scalars = scalars)
 
         val result = request.serialize()
         assertValidQuery(result)

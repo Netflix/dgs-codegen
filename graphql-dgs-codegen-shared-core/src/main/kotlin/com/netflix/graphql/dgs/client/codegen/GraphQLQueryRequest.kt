@@ -25,16 +25,15 @@ import graphql.schema.Coercing
 
 class GraphQLQueryRequest(
     val query: GraphQLQuery,
-    val projection: BaseProjectionNode?,
-    val selectionSet: SelectionSet?,
-    scalars: Map<Class<*>, Coercing<*, *>>?
+    val projection: BaseProjectionNode? = null,
+    scalars: Map<Class<*>, Coercing<*, *>>? = null,
+    val selectionSet: SelectionSet? = null
 ) {
-
-    constructor(query: GraphQLQuery) : this(query, null, null, null)
-    constructor(query: GraphQLQuery, projection: BaseProjectionNode?) : this(query, projection, null, null)
-    constructor(query: GraphQLQuery, projection: BaseProjectionNode?, scalars: Map<Class<*>, Coercing<*, *>>?) : this(query, projection, null, scalars)
-    constructor(query: GraphQLQuery, selectionSet: SelectionSet?) : this(query, null, selectionSet, null)
-    constructor(query: GraphQLQuery, selectionSet: SelectionSet?, scalars: Map<Class<*>, Coercing<*, *>>?) : this(query, null, selectionSet, scalars)
+    init {
+        if (projection != null && selectionSet != null) {
+            throw IllegalArgumentException("Both projection and selectionSet cannot be set at the same time")
+        }
+    }
 
     val inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())
     val projectionSerializer = ProjectionSerializer(inputValueSerializer)
