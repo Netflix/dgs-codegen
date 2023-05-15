@@ -25,18 +25,17 @@ import graphql.schema.Coercing
 
 class GraphQLQueryRequest @JvmOverloads constructor(
     val query: GraphQLQuery,
-    val projection: BaseProjectionNode? = null,
-    scalars: Map<Class<*>, Coercing<*, *>>? = null
+    val projection: BaseProjectionNode?,
+    val inputValueSerializer: InputValueSerializer?
 ) {
 
     private var selectionSet: SelectionSet? = null
 
-    @JvmOverloads constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, scalars = scalars) {
+    @JvmOverloads constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, projection = null, inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())) {
         this.selectionSet = selectionSet
     }
 
-    val inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())
-    val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+    val projectionSerializer = ProjectionSerializer(inputValueSerializer ?: InputValueSerializer(emptyMap()))
 
     fun serialize(): String {
         val operationDef = OperationDefinition.newOperationDefinition()

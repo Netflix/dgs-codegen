@@ -60,11 +60,27 @@ class InputValueSerializerTest {
     }
 
     @Test
-    fun `Null values should be skipped`() {
-        val movieInput = MovieInput(1)
+    fun `Null values should be serialized except when properties of a POJO`() {
+        class ExamplePojo {
+            private val movieId: String? = null
+            private val movieTitle: String = "Bojack Horseman"
+        }
 
-        val serialize = InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(movieInput)
-        assertThat(serialize).isEqualTo("{movieId : 1}")
+        assertThat(InputValueSerializer(mapOf()).serialize(null)).isEqualTo("null")
+        assertThat(InputValueSerializer(mapOf()).serialize(mapOf("hello" to null))).isEqualTo("{hello : null}")
+        assertThat(InputValueSerializer(mapOf()).serialize(ExamplePojo())).isEqualTo("{movieTitle : \"Bojack Horseman\"}")
+    }
+
+    @Test
+    fun `NullableInputValueSerializer allows null values from POJO`() {
+        class ExamplePojo {
+            private val movieId: String? = null
+            private val movieTitle: String = "Bojack Horseman"
+        }
+
+        assertThat(NullableInputValueSerializer(mapOf()).serialize(null)).isEqualTo("null")
+        assertThat(NullableInputValueSerializer(mapOf()).serialize(mapOf("hello" to null))).isEqualTo("{hello : null}")
+        assertThat(NullableInputValueSerializer(mapOf()).serialize(ExamplePojo())).isEqualTo("{movieId : null, movieTitle : \"Bojack Horseman\"}")
     }
 
     @Test
