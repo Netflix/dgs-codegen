@@ -20,7 +20,6 @@ package com.netflix.graphql.dgs.client.codegen
 
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
 import graphql.language.OperationDefinition
-import graphql.language.SelectionSet
 import graphql.language.StringValue
 import graphql.language.Value
 import graphql.parser.InvalidSyntaxException
@@ -201,7 +200,7 @@ class GraphQLQueryRequestTest {
         |    movieId
         |  }
         |}
-        """.trimMargin()
+            """.trimMargin()
         )
     }
 
