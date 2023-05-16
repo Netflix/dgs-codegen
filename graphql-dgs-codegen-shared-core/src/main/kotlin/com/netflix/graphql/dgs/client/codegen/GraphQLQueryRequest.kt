@@ -23,7 +23,7 @@ import graphql.language.OperationDefinition
 import graphql.language.SelectionSet
 import graphql.schema.Coercing
 
-class GraphQLQueryRequest(
+class GraphQLQueryRequest @JvmOverloads constructor(
     val query: GraphQLQuery,
     val projection: BaseProjectionNode? = null,
     scalars: Map<Class<*>, Coercing<*, *>>? = null
@@ -31,7 +31,7 @@ class GraphQLQueryRequest(
 
     private var selectionSet: SelectionSet? = null
 
-    constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, scalars = scalars) {
+    @JvmOverloads constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, scalars = scalars) {
         this.selectionSet = selectionSet
     }
 
