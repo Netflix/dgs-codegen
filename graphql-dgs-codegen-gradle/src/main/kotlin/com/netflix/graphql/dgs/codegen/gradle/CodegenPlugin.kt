@@ -23,7 +23,9 @@ import org.gradle.api.Project
 import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JavaPluginConvention
+import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.SourceSet
+import org.gradle.util.GradleVersion
 import java.util.Optional
 
 class CodegenPlugin : Plugin<Project> {
@@ -42,7 +44,9 @@ class CodegenPlugin : Plugin<Project> {
         generateJavaTaskProvider.configure { it.group = GRADLE_GROUP }
 
         val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
-        val sourceSets = javaConvention.sourceSets
+        val javaExtension = project.extensions.getByType(JavaPluginExtension::class.java)
+
+        val sourceSets = if (GradleVersion.current() >= GradleVersion.version("7.1")) javaExtension.sourceSets else javaConvention.sourceSets
         val mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
         val outputDir = generateJavaTaskProvider.map(GenerateJavaTask::getOutputDir)
         mainSourceSet.java.srcDirs(project.files(outputDir).builtBy(generateJavaTaskProvider))
