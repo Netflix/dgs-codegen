@@ -156,6 +156,55 @@ class GraphQLQueryRequestTest {
     }
 
     @Test
+    fun serializeWithSelectionSet() {
+        val query = TestNamedGraphQLQuery().apply {
+            input["movie"] = Movie(123, "greatMovie")
+        }
+        val inputValueSerializer = InputValueSerializer(emptyMap())
+        val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+        val selectionSet = projectionSerializer.toSelectionSet(MovieProjection().name().movieId())
+        val request = GraphQLQueryRequest(query, selectionSet)
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query TestNamedQuery {
+            |  test(movie: {movieId : 123, name : "greatMovie"}) {
+            |    name
+            |    movieId
+            |  }
+            |}
+            """.trimMargin()
+        )
+    }
+
+    @Test
+    fun serializeWithSelectionSetAndScalars() {
+        val query = TestNamedGraphQLQuery().apply {
+            input["movie"] = Movie(123, "greatMovie")
+            input["dateRange"] = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))
+            input["zoneId"] = ZoneId.of("Europe/Berlin")
+        }
+        val scalars = mapOf(DateRange::class.java to DateRangeScalar(), ZoneId::class.java to ZoneIdScalar())
+        val inputValueSerializer = InputValueSerializer(scalars)
+        val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+        val selectionSet = projectionSerializer.toSelectionSet(MovieProjection().name().movieId())
+        val request =
+            GraphQLQueryRequest(query, selectionSet, scalars)
+
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query TestNamedQuery {
+        |  test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021", zoneId: "Europe/Berlin") {
+        |    name
+        |    movieId
+        |  }
+        |}
+            """.trimMargin()
+        )
+    }
+
+    @Test
     fun serializeWithScalar() {
         val query = TestNamedGraphQLQuery().apply {
             input["movie"] = Movie(123, "greatMovie")
