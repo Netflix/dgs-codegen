@@ -194,7 +194,7 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
 
         if (type is TypeName) {
             return when (type.name) {
-                "ID" -> StringValue("random12345}")
+                "ID" -> StringValue("random12345")
                 "String" -> StringValue("randomString")
                 "Boolean" -> BooleanValue(true)
                 "Int" -> IntValue(BigInteger.valueOf(123456789))
