@@ -116,13 +116,15 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
     private fun getExampleEntitiesQuery(definition: ObjectTypeDefinition): String? {
         val gql: String = """
             query(${'$'}representations: [_Any!]!) {
-                ... on ${definition.name} {
-                    ${definition.fieldDefinitions.map {
+                entities(representations: ${'$'}representations) { 
+                    ... on ${definition.name} {
+                        ${definition.fieldDefinitions.map {
             val selectionSet : List<String> = getSelectionSet(it.type.findTypeDefinition(document))
             """
                             ${it.name}${if (it.inputValueDefinitions.size > 0) "(${it.inputValueDefinitions.map{ "${it.name}: ${getMockGQLValueAsAST(it.type)}"}.joinToString(", ")})" else ""} ${if (selectionSet.size > 0) "{${selectionSet.joinToString("\n")}}" else ""}
                         """
         }.joinToString("\n")}
+                    }
                 }
             }
         """.trimIndent()

@@ -2,9 +2,11 @@
 ### Query
 ```graphql
 query ($representations: [_Any!]!) {
-  ... on Result {
-    isSuccessful
-    result
+  entities(representations: $representations) {
+    ... on Result {
+      isSuccessful
+      result
+    }
   }
 }
 
