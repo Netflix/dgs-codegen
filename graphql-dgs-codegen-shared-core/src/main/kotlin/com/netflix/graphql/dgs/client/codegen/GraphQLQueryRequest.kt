@@ -26,14 +26,26 @@ import graphql.schema.Coercing
 class GraphQLQueryRequest @JvmOverloads constructor(
     val query: GraphQLQuery,
     val projection: BaseProjectionNode?,
-    val inputValueSerializer: InputValueSerializerInterface
+    options: GraphQLQueryRequestOptions?
 ) {
 
     private var selectionSet: SelectionSet? = null
 
-    @JvmOverloads constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, projection = null, inputValueSerializer = InputValueSerializer(scalars ?: emptyMap())) {
+    @JvmOverloads constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, projection = null, options = GraphQLQueryRequestOptions(scalars = scalars ?: emptyMap())) {
         this.selectionSet = selectionSet
     }
+    class GraphQLQueryRequestOptions(val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) {
+        // When enabled, input values that are derived from properties
+        // whose values are null will be serialized in the query request
+        val allowNullablePropertyInputValues = false
+    }
+
+    val inputValueSerializer =
+        if (options?.allowNullablePropertyInputValues == true) {
+            NullableInputValueSerializer(options.scalars)
+        } else {
+            InputValueSerializer(options?.scalars ?: emptyMap())
+        }
 
     val projectionSerializer = ProjectionSerializer(inputValueSerializer ?: InputValueSerializer(emptyMap()))
 
