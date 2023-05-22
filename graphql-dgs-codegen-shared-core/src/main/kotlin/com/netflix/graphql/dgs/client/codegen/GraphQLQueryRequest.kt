@@ -25,8 +25,8 @@ import graphql.schema.Coercing
 
 class GraphQLQueryRequest @JvmOverloads constructor(
     val query: GraphQLQuery,
-    val projection: BaseProjectionNode?,
-    options: GraphQLQueryRequestOptions?
+    val projection: BaseProjectionNode? = null,
+    options: GraphQLQueryRequestOptions? = null
 ) {
 
     private var selectionSet: SelectionSet? = null
