@@ -30,8 +30,8 @@ class GraphQLQueryRequest @JvmOverloads constructor(
 ) {
 
     private var selectionSet: SelectionSet? = null
-
-    @JvmOverloads constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, projection = null, options = GraphQLQueryRequestOptions(scalars = scalars ?: emptyMap())) {
+    constructor(query: GraphQLQuery, projection: BaseProjectionNode, scalars: Map<Class<*>, Coercing<*, *>>) : this(query = query, projection = projection, options = GraphQLQueryRequestOptions(scalars = scalars))
+    constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, projection = null, options = GraphQLQueryRequestOptions(scalars = scalars ?: emptyMap())) {
         this.selectionSet = selectionSet
     }
     class GraphQLQueryRequestOptions(val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) {
