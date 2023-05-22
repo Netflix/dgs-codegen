@@ -23,7 +23,7 @@ import graphql.language.InlineFragment
 import graphql.language.SelectionSet
 import graphql.language.TypeName
 
-class ProjectionSerializer(private val inputValueSerializer: InputValueSerializer) {
+class ProjectionSerializer(private val inputValueSerializer: InputValueSerializerInterface) {
 
     fun toSelectionSet(projection: BaseProjectionNode): SelectionSet {
         val selectionSet = SelectionSet.newSelectionSet()

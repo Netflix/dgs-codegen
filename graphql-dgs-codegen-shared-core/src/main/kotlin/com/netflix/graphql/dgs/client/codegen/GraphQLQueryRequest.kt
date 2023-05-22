@@ -26,7 +26,7 @@ import graphql.schema.Coercing
 class GraphQLQueryRequest @JvmOverloads constructor(
     val query: GraphQLQuery,
     val projection: BaseProjectionNode?,
-    val inputValueSerializer: InputValueSerializer?
+    val inputValueSerializer: InputValueSerializerInterface
 ) {
 
     private var selectionSet: SelectionSet? = null
