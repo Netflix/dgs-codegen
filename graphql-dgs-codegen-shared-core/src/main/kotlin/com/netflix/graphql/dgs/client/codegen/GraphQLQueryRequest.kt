@@ -47,7 +47,7 @@ class GraphQLQueryRequest @JvmOverloads constructor(
             InputValueSerializer(options?.scalars ?: emptyMap())
         }
 
-    val projectionSerializer = ProjectionSerializer(inputValueSerializer ?: InputValueSerializer(emptyMap()))
+    val projectionSerializer = ProjectionSerializer(inputValueSerializer)
 
     fun serialize(): String {
         val operationDef = OperationDefinition.newOperationDefinition()
