@@ -27,8 +27,6 @@ import graphql.schema.idl.TypeUtil
 import kotlinx.serialization.json.*
 import java.math.BigDecimal
 import java.math.BigInteger
-import kotlin.math.abs
-import kotlin.random.Random
 
 @Suppress("FoldInitializerAndIfToElvis")
 class DocGenerator(private val config: CodeGenConfig, private val document: Document) {
@@ -116,13 +114,15 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
     private fun getExampleEntitiesQuery(definition: ObjectTypeDefinition): String? {
         val gql: String = """
             query(${'$'}representations: [_Any!]!) {
-                ... on ${definition.name} {
-                    ${definition.fieldDefinitions.map {
+                entities(representations: ${'$'}representations) { 
+                    ... on ${definition.name} {
+                        ${definition.fieldDefinitions.map {
             val selectionSet : List<String> = getSelectionSet(it.type.findTypeDefinition(document))
             """
                             ${it.name}${if (it.inputValueDefinitions.size > 0) "(${it.inputValueDefinitions.map{ "${it.name}: ${getMockGQLValueAsAST(it.type)}"}.joinToString(", ")})" else ""} ${if (selectionSet.size > 0) "{${selectionSet.joinToString("\n")}}" else ""}
                         """
         }.joinToString("\n")}
+                    }
                 }
             }
         """.trimIndent()
@@ -194,11 +194,11 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
 
         if (type is TypeName) {
             return when (type.name) {
-                "ID" -> StringValue("random${Random.nextInt()}")
+                "ID" -> StringValue("random12345")
                 "String" -> StringValue("randomString")
-                "Boolean" -> BooleanValue(Random.nextBoolean())
-                "Int" -> IntValue(BigInteger.valueOf(abs(Random.nextLong())))
-                "Float" -> FloatValue(BigDecimal.valueOf(abs(Random.nextDouble())))
+                "Boolean" -> BooleanValue(true)
+                "Int" -> IntValue(BigInteger.valueOf(123456789))
+                "Float" -> FloatValue(BigDecimal.valueOf(12345.6789))
                 else -> {
                     getSchemaTypeMockValue(type)
                 }
