@@ -127,7 +127,8 @@ class ClientApiGenFragmentTest {
             .doesNotContain("duration")
 
         val superclass = codeGenResult.clientProjections[3].typeSpec.superclass as ParameterizedTypeName
-        assertThat(superclass.typeArguments[1]).extracting("simpleName").isEqualTo("SearchProjectionRoot")
+        assertThat(superclass.typeArguments[1]).extracting("simpleName").isEqualTo("Search_ShowProjection")
+        assertThat(superclass.typeArguments[2]).extracting("simpleName").isEqualTo("SearchProjectionRoot")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
@@ -225,7 +226,8 @@ class ClientApiGenFragmentTest {
         assertThat(codeGenResult.clientProjections[3].typeSpec.initializerBlock.isEmpty).isFalse
 
         val superclass = codeGenResult.clientProjections[3].typeSpec.superclass as ParameterizedTypeName
-        assertThat(superclass.typeArguments[1]).extracting("simpleName").isEqualTo("SearchProjectionRoot")
+        assertThat(superclass.typeArguments[1]).extracting("simpleName").isEqualTo("Search_ResultProjection")
+        assertThat(superclass.typeArguments[2]).extracting("simpleName").isEqualTo("SearchProjectionRoot")
 
         val searchResult = codeGenResult.javaInterfaces[0].typeSpec
 
