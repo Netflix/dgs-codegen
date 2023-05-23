@@ -57,7 +57,7 @@ class GraphQLMultiQueryRequest(
             }
 
             if (request.projection != null) {
-                val selectionSet = if (request.projection is BaseSubProjectionNode<*, *>) {
+                val selectionSet = if (request.projection is BaseSubProjectionNode<*, *, *>) {
                     request.projectionSerializer.toSelectionSet(request.projection.root() as BaseProjectionNode)
                 } else {
                     request.projectionSerializer.toSelectionSet(request.projection)

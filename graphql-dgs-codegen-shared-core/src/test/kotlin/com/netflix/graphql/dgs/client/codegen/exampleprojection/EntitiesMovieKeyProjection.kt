@@ -23,7 +23,7 @@ class EntitiesMovieKeyProjection(
     parent: EntitiesProjectionRoot,
     root: EntitiesProjectionRoot,
     schemaType: Optional<String>
-) : BaseSubProjectionNode<EntitiesProjectionRoot, EntitiesProjectionRoot>(
+) : BaseSubProjectionNode<EntitiesMovieKeyProjection, EntitiesProjectionRoot, EntitiesProjectionRoot>(
     parent,
     root,
     schemaType = schemaType
