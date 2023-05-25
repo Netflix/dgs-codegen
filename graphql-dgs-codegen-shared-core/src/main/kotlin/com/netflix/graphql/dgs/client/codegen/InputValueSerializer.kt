@@ -35,25 +35,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.OffsetDateTime
-import java.util.Currency
-import java.util.Date
-import java.util.TimeZone
+import java.util.*
+import kotlin.reflect.KClass
 import kotlin.reflect.full.allSuperclasses
 import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
-/**
- * Marks this property invisible for input value serialization.
- */
-@Target(AnnotationTarget.PROPERTY)
-internal annotation class Transient
-
-interface InputValue {
-    fun inputValues(): List<Pair<String, Any?>>
-}
-
-class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) {
+open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) :
+    InputValueSerializerInterface {
     companion object {
         private val toStringClasses = setOf(
             String::class,
@@ -68,84 +58,115 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
         )
     }
 
-    fun serialize(input: Any?): String {
+    override fun serialize(input: Any?): String {
         return AstPrinter.printAst(toValue(input))
     }
 
-    fun toValue(input: Any?): Value<*> {
+    override fun toValue(input: Any?): Value<*> {
         if (input == null) {
             return NullValue.newNullValue().build()
         }
 
+        val optionalValue = getOptionalValue(input)
+
+        if (optionalValue.isPresent) {
+            return optionalValue.get()
+        }
+
+        val classes = (sequenceOf(input::class) + input::class.allSuperclasses.asSequence()) - Any::class
+        val propertyValues = getPropertyValues(classes, input)
+
+        val objectFields = propertyValues.asSequence()
+            .filter { (_, value) -> value != null }
+            .map { (name, value) -> ObjectField(name, toValue(value)) }
+            .toList()
+        return ObjectValue.newObjectValue()
+            .objectFields(objectFields)
+            .build()
+    }
+
+    protected fun getOptionalValue(input: Any): Optional<Value<*>> {
         if (input is Value<*>) {
-            return input
+            return Optional.of(input)
         }
 
         for (scalar in scalars.keys) {
             if (input::class.java == scalar || scalar.isAssignableFrom(input::class.java)) {
-                return scalars[scalar]!!.valueToLiteral(input)
+                return Optional.of(scalars[scalar]!!.valueToLiteral(input))
             }
         }
 
         if (input::class in toStringClasses) {
-            return StringValue.of(input.toString())
+            return Optional.of(StringValue.of(input.toString()))
         }
 
         if (input is String) {
-            return StringValue.of(input)
+            return Optional.of(StringValue.of(input))
         }
 
         if (input is Float) {
-            return FloatValue.of(input.toDouble())
+            return Optional.of(FloatValue.of(input.toDouble()))
         }
 
         if (input is Double) {
-            return FloatValue.of(input)
+            return Optional.of(FloatValue.of(input))
         }
 
         if (input is BigDecimal) {
-            return FloatValue.newFloatValue(input).build()
+            return Optional.of(FloatValue.newFloatValue(input).build())
         }
 
         if (input is BigInteger) {
-            return IntValue.newIntValue(input).build()
+            return Optional.of(IntValue.newIntValue(input).build())
         }
 
         if (input is Int) {
-            return IntValue.of(input)
+            return Optional.of(IntValue.of(input))
         }
 
         if (input is Number) {
-            return IntValue.newIntValue(BigInteger.valueOf(input.toLong())).build()
+            return Optional.of(IntValue.newIntValue(BigInteger.valueOf(input.toLong())).build())
         }
 
         if (input is Boolean) {
-            return BooleanValue.of(input)
+            return Optional.of(BooleanValue.of(input))
         }
 
         if (input is Enum<*>) {
-            return EnumValue.newEnumValue(input.name).build()
+            return Optional.of(EnumValue.newEnumValue(input.name).build())
         }
 
         if (input is Collection<*>) {
-            return ArrayValue.newArrayValue()
-                .values(input.map { toValue(it) })
-                .build()
+            return Optional.of(
+                ArrayValue.newArrayValue()
+                    .values(input.map { toValue(it) })
+                    .build()
+            )
         }
 
         if (input is Map<*, *>) {
-            return ObjectValue.newObjectValue()
-                .objectFields(input.map { (key, value) -> ObjectField(key.toString(), toValue(value)) })
-                .build()
+            return Optional.of(
+                ObjectValue.newObjectValue()
+                    .objectFields(input.map { (key, value) -> ObjectField(key.toString(), toValue(value)) })
+                    .build()
+            )
         }
 
         if (input is InputValue) {
-            return ObjectValue.newObjectValue()
-                .objectFields(input.inputValues().map { (name, value) -> ObjectField(name, toValue(value)) })
-                .build()
+            return Optional.of(
+                ObjectValue.newObjectValue()
+                    .objectFields(input.inputValues().map { (name, value) -> ObjectField(name, toValue(value)) })
+                    .build()
+            )
         }
 
-        val classes = sequenceOf(input::class) + input::class.allSuperclasses.asSequence() - Any::class
+        return Optional.empty()
+    }
+
+    protected fun getPropertyValues(
+        classes: Sequence<KClass<out Any>>,
+        input: Any?
+    ): MutableMap<String, Any?> {
         val propertyValues = mutableMapOf<String, Any?>()
 
         for (klass in classes) {
@@ -158,13 +179,6 @@ class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = 
                 propertyValues[property.name] = property.call(input)
             }
         }
-
-        val objectFields = propertyValues.asSequence()
-            .filter { (_, value) -> value != null }
-            .map { (name, value) -> ObjectField(name, toValue(value)) }
-            .toList()
-        return ObjectValue.newObjectValue()
-            .objectFields(objectFields)
-            .build()
+        return propertyValues
     }
 }
