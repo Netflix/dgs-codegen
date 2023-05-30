@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest.GraphQLQueryRequestOptions
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
 import graphql.language.OperationDefinition
 import graphql.language.StringValue
@@ -375,6 +376,28 @@ class GraphQLQueryRequestTest {
               |    }
               |  }
               |}
+            """.trimMargin()
+        )
+    }
+
+    @Test
+    fun serializeWithNullableInputValueSerializer() {
+        val query = TestGraphQLQuery().apply {
+            input["movie"] = Movie(1234, "name", null)
+        }
+        val options = GraphQLQueryRequestOptions().apply {
+            allowNullablePropertyInputValues = true
+        }
+        val request = GraphQLQueryRequest(query, MovieProjection().name().movieId(), options)
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """{
+            |  test(movie: {movieId : 1234, name : "name", window : null}) {
+            |    name
+            |    movieId
+            |  }
+            |}
             """.trimMargin()
         )
     }

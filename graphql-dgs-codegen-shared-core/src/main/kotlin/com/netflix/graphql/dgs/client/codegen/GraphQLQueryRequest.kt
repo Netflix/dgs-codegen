@@ -37,7 +37,7 @@ class GraphQLQueryRequest @JvmOverloads constructor(
     class GraphQLQueryRequestOptions(val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) {
         // When enabled, input values that are derived from properties
         // whose values are null will be serialized in the query request
-        val allowNullablePropertyInputValues = false
+        var allowNullablePropertyInputValues = false
     }
 
     val inputValueSerializer =
