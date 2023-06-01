@@ -466,7 +466,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         val javaType = TypeSpec.classBuilder(clazzName)
             .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
-            .superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), parent.name), ClassName.get(getPackageName(), root.name)))
+            .superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), clazzName), ClassName.get(getPackageName(), parent.name), ClassName.get(getPackageName(), root.name)))
             .addMethod(
                 MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
