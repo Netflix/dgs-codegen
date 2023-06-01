@@ -57,7 +57,7 @@ public class ShowsProjectionRoot extends BaseProjectionNode {
         return this;
     }
 
-    public static class Shows_ReviewsProjection extends BaseSubProjectionNode<Shows_ReviewsProjection, ShowsProjectionRoot, ShowsProjectionRoot> {
+    public static class Shows_ReviewsProjection extends BaseSubProjectionNode<ShowsProjectionRoot, ShowsProjectionRoot> {
       public Shows_ReviewsProjection(ShowsProjectionRoot parent, ShowsProjectionRoot root) {
         super(parent, root);
       }

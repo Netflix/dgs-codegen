@@ -102,37 +102,4 @@ internal class ProjectionSerializerTest {
             """.trimMargin()
         )
     }
-
-    @Test
-    fun `Projection supports aliases`() {
-        // given
-        val root = EntitiesProjectionRoot()
-            .onMovie(Optional.empty())
-            .moveId().title().releaseYear()
-            .alias("colesReviews") { it.reviews("Cole", 10).username().score() }
-            .reviews(username = "Foo", score = 10).username().score()
-            .root()
-        // when
-        val serialized = ProjectionSerializer(InputValueSerializer()).serialize(root)
-        // then
-        assertThat(serialized).isEqualTo(
-            """{
-            |  ... on EntitiesMovieKey {
-            |    __typename
-            |    moveId
-            |    title
-            |    releaseYear
-            |    reviews(username: "Foo", score: 10) {
-            |      username
-            |      score
-            |    }
-            |    colesReviews: reviews(username: "Cole", score: 10) {
-            |      username
-            |      score
-            |    }
-            |  }
-            |}
-            """.trimMargin()
-        )
-    }
 }
