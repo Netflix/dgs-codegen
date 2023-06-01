@@ -51,30 +51,6 @@ class ProjectionSerializer(private val inputValueSerializer: InputValueSerialize
             selectionSet.selection(fieldSelection.build())
         }
 
-        for ((fieldName, fieldAlias) in projection.aliases) {
-            val fieldSelection = Field.newField()
-                .name(fieldAlias.fieldName)
-                .alias(fieldName)
-                .arguments(
-                    projection.inputArguments[fieldName].orEmpty().map { (argName, values) ->
-                        Argument(argName, inputValueSerializer.toValue(values))
-                    }
-                )
-            if (fieldAlias.value is BaseProjectionNode) {
-                val fieldSelectionSet = toSelectionSet(fieldAlias.value)
-                if (fieldSelectionSet.selections.isNotEmpty()) {
-                    fieldSelection.selectionSet(fieldSelectionSet)
-                }
-            } else if (fieldAlias.value != null) {
-                fieldSelection.selectionSet(
-                    SelectionSet.newSelectionSet()
-                        .selection(Field.newField(fieldAlias.value.toString()).build())
-                        .build()
-                )
-            }
-            selectionSet.selection(fieldSelection.build())
-        }
-
         for (fragment in projection.fragments) {
             val typeCondition = fragment.schemaType.map { TypeName(it) }
                 .orElseGet {
