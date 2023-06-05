@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.gradle
 
+import nebula.plugin.dependencylock.DependencyLockExtension
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
 import java.io.FileNotFoundException
@@ -29,6 +30,7 @@ object ClientUtilsConventions {
 
     private const val CLIENT_UTILS_ARTIFACT_GROUP = "com.netflix.graphql.dgs.codegen"
     private const val CLIENT_UTILS_ARTIFACT_NAME = "graphql-dgs-codegen-shared-core"
+    private const val CLIENT_UTILS_NEBULA_LOCK_ID = "com.netflix.nebula.dependency-lock"
 
     private val logger = Logging.getLogger(ClientUtilsConventions::class.java)
 
@@ -38,10 +40,21 @@ object ClientUtilsConventions {
         optionalCodeClientDependencyScope: Optional<String> = Optional.empty()
     ) {
         clientCoreArtifact(optionalCodeUtilsVersion).ifPresent { dependencyString ->
+            val dependencyLockString = dependencyString.split(":").take(2).joinToString(":")
+
             val dependencyConfiguration = optionalCodeClientDependencyScope.orElse(GRADLE_CLASSPATH_CONFIGURATION)
             val configurationDependencies = project.configurations.getByName(dependencyConfiguration).dependencies
             configurationDependencies.add(project.dependencies.create(dependencyString))
             logger.info("DGS CodeGen added [{}] to the {} dependencies.", dependencyString, dependencyConfiguration)
+
+            project.plugins.withId(CLIENT_UTILS_NEBULA_LOCK_ID) {
+                val extension = project.extensions.getByType(DependencyLockExtension::class.java)
+                if (extension != null) {
+                    extension.skippedDependencies.add(dependencyLockString)
+                }
+
+                project.dependencyLocking.ignoredDependencies.add(dependencyLockString)
+            }
         }
     }
 
