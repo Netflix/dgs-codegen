@@ -16,15 +16,19 @@
  *
  */
 
-package com.netflix.graphql.dgs.client.codegen.exampleprojection
+package com.netflix.graphql.dgs.client.codegen.exampleprojectionnext
 
-import com.netflix.graphql.dgs.client.codegen.BaseProjectionNode
-import java.util.*
+import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNodeNext
 
-class EntitiesProjectionRoot : BaseProjectionNode() {
-    fun onMovie(schemaType: Optional<String>): EntitiesV2MovieKeyProjection {
-        val fragment = EntitiesV2MovieKeyProjection(this, this, schemaType)
-        fragments.add(fragment)
-        return fragment
+class Movies_ReviewsProjection(parent: EntitiesV2MovieKeyProjection, root: EntitiesProjectionRootNext) :
+    BaseSubProjectionNodeNext<Movies_ReviewsProjection, EntitiesV2MovieKeyProjection, EntitiesProjectionRootNext>(parent, root) {
+    fun username(): Movies_ReviewsProjection {
+        fields["username"] = null
+        return this
+    }
+
+    fun score(): Movies_ReviewsProjection {
+        fields["score"] = null
+        return this
     }
 }

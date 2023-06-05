@@ -18,6 +18,7 @@ package com.netflix.graphql.dgs.client.codegen
 
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.ShowsProjectionRoot
+import com.netflix.graphql.dgs.client.codegen.exampleprojectionnext.EntitiesProjectionRootNext
 import graphql.scalars.ExtendedScalars
 import graphql.schema.Coercing
 import org.assertj.core.api.Assertions.assertThat
@@ -106,7 +107,7 @@ internal class ProjectionSerializerTest {
     @Test
     fun `Projection supports aliases`() {
         // given
-        val root = EntitiesProjectionRoot()
+        val root = EntitiesProjectionRootNext()
             .onMovie(Optional.empty())
             .moveId().title().releaseYear()
             .alias("colesReviews") { it.reviews("Cole", 10).username().score() }
@@ -117,7 +118,7 @@ internal class ProjectionSerializerTest {
         // then
         assertThat(serialized).isEqualTo(
             """{
-            |  ... on EntitiesMovieKey {
+            |  ... on EntitiesV2MovieKey {
             |    __typename
             |    moveId
             |    title

@@ -19,27 +19,27 @@ package com.netflix.graphql.dgs.client.codegen.exampleprojection
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import java.util.*
 
-class EntitiesMovieKeyProjection(
+class EntitiesV2MovieKeyProjection(
     parent: EntitiesProjectionRoot,
     root: EntitiesProjectionRoot,
     schemaType: Optional<String>
-) : BaseSubProjectionNode<EntitiesMovieKeyProjection, EntitiesProjectionRoot, EntitiesProjectionRoot>(
+) : BaseSubProjectionNode<EntitiesProjectionRoot, EntitiesProjectionRoot>(
     parent,
     root,
     schemaType = schemaType
 ) {
 
-    fun moveId(): EntitiesMovieKeyProjection {
+    fun moveId(): EntitiesV2MovieKeyProjection {
         fields["moveId"] = null
         return this
     }
 
-    fun title(): EntitiesMovieKeyProjection {
+    fun title(): EntitiesV2MovieKeyProjection {
         fields["title"] = null
         return this
     }
 
-    fun releaseYear(): EntitiesMovieKeyProjection {
+    fun releaseYear(): EntitiesV2MovieKeyProjection {
         fields["releaseYear"] = null
         return this
     }

@@ -16,12 +16,12 @@
  *
  */
 
-package com.netflix.graphql.dgs.client.codegen.exampleprojection
+package com.netflix.graphql.dgs.client.codegen.exampleprojectionnext
 
 import com.netflix.graphql.dgs.client.codegen.BaseProjectionNode
 import java.util.*
 
-class EntitiesProjectionRoot : BaseProjectionNode() {
+class EntitiesProjectionRootNext : BaseProjectionNode() {
     fun onMovie(schemaType: Optional<String>): EntitiesV2MovieKeyProjection {
         val fragment = EntitiesV2MovieKeyProjection(this, this, schemaType)
         fragments.add(fragment)
