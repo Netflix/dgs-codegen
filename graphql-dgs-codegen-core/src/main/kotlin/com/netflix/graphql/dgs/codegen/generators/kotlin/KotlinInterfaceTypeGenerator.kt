@@ -87,7 +87,8 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
 
         val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
             .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
-            .map { node -> ClassName(packageName, node.name) }
+            .map { node -> typeUtils.findKtInterfaceName(node.name, packageName) }
+            .filterIsInstance<ClassName>()
             .toList()
 
         if (implementations.isNotEmpty()) {

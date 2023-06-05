@@ -1082,6 +1082,61 @@ class CodeGenTest {
     }
 
     @Test
+    fun `Use mapped type name when the type implements not-mapped interface`() {
+        val schema = """
+            interface Pet {
+              name: ID!
+            }
+            type Cat implements Pet {
+              name: ID!
+            }
+            type Dog implements Pet {
+              name: ID!
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.JAVA,
+                typeMapping = mapOf(
+                    "Cat" to "mypackage.Cat"
+                )
+            )
+        ).generate()
+        val interfaces = codeGenResult.javaInterfaces
+
+        assertThat(interfaces.size).isEqualTo(1)
+        assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonSubTypes;
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import java.lang.String;
+                |import mypackage.Cat;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NAME,
+                |    include = JsonTypeInfo.As.PROPERTY,
+                |    property = "__typename"
+                |)
+                |@JsonSubTypes({
+                |    @JsonSubTypes.Type(value = Cat.class, name = "Cat"),
+                |    @JsonSubTypes.Type(value = Dog.class, name = "Dog")
+                |})
+                |public interface Pet {
+                |  String getName();
+                |
+                |  void setName(String name);
+                |}
+                |
+            """.trimMargin()
+        )
+    }
+
+    @Test
     fun `Use mapped type name when the type is mapped for interface`() {
         val schema = """
             type Query {                
