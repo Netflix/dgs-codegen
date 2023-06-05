@@ -211,14 +211,14 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
     private fun createRootProjection(type: TypeDefinition<*>, prefix: String): CodeGenResult {
         val clazzName = "${prefix}ProjectionRoot"
         val className = ClassName.get(BaseSubProjectionNode::class.java)
-        val parentJavaType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
-        val rootJavaType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val parentJavaType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val rootJavaType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType = TypeSpec.classBuilder(clazzName)
             .addOptionalGeneratedAnnotation(config)
             .addTypeVariable(parentJavaType)
             .addTypeVariable(rootJavaType)
             .addModifiers(Modifier.PUBLIC)
-            .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+            .superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), clazzName), TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
             .addMethod(
                 MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
@@ -333,14 +333,14 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
         val clazzName = "EntitiesProjectionRoot"
         val className = ClassName.get(BaseSubProjectionNode::class.java)
-        val parentType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
-        val rootType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val parentType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val rootType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType = TypeSpec.classBuilder(clazzName)
             .addOptionalGeneratedAnnotation(config)
             .addTypeVariable(parentType)
             .addTypeVariable(rootType)
             .addModifiers(Modifier.PUBLIC)
-            .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+            .superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), clazzName), TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
             .addMethod(
                 MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
@@ -480,14 +480,14 @@ class ClientApiGeneratorv2(private val config: CodeGenConfig, private val docume
         val clazzName = "${prefix}Projection"
         if (generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
 
-        val parentJavaType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
-        val rootJavaType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val parentJavaType = TypeVariableName.get("PARENT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?"), TypeVariableName.get("?")))
+        val rootJavaType = TypeVariableName.get("ROOT").withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType = TypeSpec.classBuilder(clazzName)
             .addOptionalGeneratedAnnotation(config)
             .addTypeVariable(parentJavaType)
             .addTypeVariable(rootJavaType)
             .addModifiers(Modifier.PUBLIC)
-            .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+            .superclass(ParameterizedTypeName.get(className, ClassName.get(getPackageName(), clazzName), TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
             .addMethod(
                 MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
