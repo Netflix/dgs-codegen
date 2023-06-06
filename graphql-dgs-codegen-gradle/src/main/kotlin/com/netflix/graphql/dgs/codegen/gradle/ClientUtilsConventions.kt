@@ -47,15 +47,15 @@ object ClientUtilsConventions {
             configurationDependencies.add(project.dependencies.create(dependencyString))
             logger.info("DGS CodeGen added [{}] to the {} dependencies.", dependencyString, dependencyConfiguration)
 
+            project.dependencyLocking.ignoredDependencies.add(dependencyLockString)
+            logger.info("DGS CodeGen added [{}] to the ignoredDependencies.", dependencyLockString, dependencyConfiguration)
+
             project.plugins.withId(CLIENT_UTILS_NEBULA_LOCK_ID) {
                 val extension = project.extensions.getByType(DependencyLockExtension::class.java)
                 if (extension != null) {
-                    logger.info("DGS CodeGen added [{}] to the skippedDependencies.", dependencyLockString, dependencyConfiguration)
                     extension.skippedDependencies.add(dependencyLockString)
+                    logger.info("DGS CodeGen added [{}] to the skippedDependencies.", dependencyLockString, dependencyConfiguration)
                 }
-
-                logger.info("DGS CodeGen added [{}] to the ignoredDependencies.", dependencyLockString, dependencyConfiguration)
-                project.dependencyLocking.ignoredDependencies.add(dependencyLockString)
             }
         }
     }
