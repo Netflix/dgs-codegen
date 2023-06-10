@@ -25,8 +25,8 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.net.URI
 import java.nio.file.*
-import kotlin.io.path.writeText
 import kotlin.io.path.createDirectories
+import kotlin.io.path.writeText
 
 class CodegenGradlePluginConfigurationCacheTest {
 
