@@ -51,8 +51,22 @@ class CodegenPlugin : Plugin<Project> {
         val outputDir = generateJavaTaskProvider.map(GenerateJavaTask::getOutputDir)
         mainSourceSet.java.srcDirs(project.files(outputDir).builtBy(generateJavaTaskProvider))
 
-        project.configurations.create("dgsCodegen")
-        project.configurations.findByName("dgsCodegen")?.isCanBeResolved = true
+        val dgsCodegen = project.configurations.create("dgsCodegen")
+        dgsCodegen.isCanBeResolved = true
+        generateJavaTaskProvider.configure {
+            it.dependencies.addAll(
+                dgsCodegen.incoming.dependencies.map { dependency ->
+                    InternalSimpleDependency(dependency.name, dependency.group)
+                }
+            )
+            if (GradleVersion.current() >= GradleVersion.version("7.4")) {
+                it.schemaJarArtifacts.addAll(dgsCodegen.incoming.artifacts.resolvedArtifacts.map { it.map { it.id } })
+                it.schemaJarFiles.addAll(dgsCodegen.incoming.artifacts.resolvedArtifacts.map { it.map { it.file } })
+            } else {
+                it.schemaJarArtifacts.addAll(project.provider { dgsCodegen.incoming.artifacts.artifacts.map { it.id } })
+                it.schemaJarFiles.addAll(project.provider { dgsCodegen.incoming.artifacts.artifacts.map { it.file } })
+            }
+        }
 
         project.afterEvaluate { p ->
             if (extensions.clientCoreConventionsEnabled.getOrElse(true)) {

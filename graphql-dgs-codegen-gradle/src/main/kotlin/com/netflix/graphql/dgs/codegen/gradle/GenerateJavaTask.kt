@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.component.ComponentArtifactIdentifier
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
@@ -148,13 +149,23 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var includeClassImports = mutableMapOf<String, MutableMap<String, String>>()
 
+    @Input
+    val dependencies = project.objects.setProperty(InternalSimpleDependency::class.java)
+
+    @Input
+    val schemaJarArtifacts = project.objects.listProperty(ComponentArtifactIdentifier::class.java)
+
+    @InputFiles
+    val schemaJarFiles = project.objects.listProperty(File::class.java)
+
     @TaskAction
     fun generate() {
         val schemaJarFilesFromDependencies = emptyList<File>().toMutableList()
-        val dgsCodegenConfig = project.configurations.findByName("dgsCodegen")
-        dgsCodegenConfig?.incoming?.dependencies?.forEach { dependency ->
+        dependencies.get().forEach { dependency ->
             logger.info("Found DgsCodegen Dependendency: ${dependency.name}")
-            val found = dgsCodegenConfig.incoming.artifacts.resolvedArtifacts.get().find { it.id.componentIdentifier.displayName.contains(dependency.group + ":" + dependency.name) }
+            data class InternalArtifactResult(val id: ComponentArtifactIdentifier, val file: File)
+            val resolvedArtifacts = schemaJarArtifacts.get().zip(schemaJarFiles.get()) { id, file -> InternalArtifactResult(id, file) }
+            val found = resolvedArtifacts.find { it.id.componentIdentifier.displayName.contains(dependency.group + ":" + dependency.name) }
             if (found != null) {
                 logger.info("Found DgsCodegen Artifact: ${found.id.displayName}")
                 schemaJarFilesFromDependencies.add(found.file)
