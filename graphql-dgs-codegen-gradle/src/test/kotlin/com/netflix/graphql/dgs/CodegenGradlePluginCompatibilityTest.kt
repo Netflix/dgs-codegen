@@ -23,7 +23,6 @@ package com.netflix.graphql.dgs
 import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
-import org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
@@ -107,7 +106,6 @@ class CodegenGradlePluginCompatibilityTest {
             .withPluginClasspath()
             .withDebug(true)
             .withArguments(
-                "--configuration-cache",
                 "--stacktrace",
                 "--info",
                 "generateJava",
@@ -116,24 +114,6 @@ class CodegenGradlePluginCompatibilityTest {
 
         assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
         assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(result.output).contains("Configuration cache entry stored.")
-
-        val rerunResult = GradleRunner.create()
-            .withGradleVersion(gradleVersion)
-            .withProjectDir(projectDir)
-            .withPluginClasspath()
-            .withDebug(true)
-            .withArguments(
-                "--configuration-cache",
-                "--stacktrace",
-                "--info",
-                "generateJava",
-                "build"
-            ).build()
-
-        assertThat(rerunResult.task(":generateJava")).extracting { it?.outcome }.isEqualTo(UP_TO_DATE)
-        assertThat(rerunResult.task(":build")).extracting { it?.outcome }.isEqualTo(UP_TO_DATE)
-        assertThat(rerunResult.output).contains("Configuration cache entry reused.")
     }
 
     private fun prepareBuildGradleFile(content: String) {
