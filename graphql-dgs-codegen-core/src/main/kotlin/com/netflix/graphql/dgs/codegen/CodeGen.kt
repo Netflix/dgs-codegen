@@ -120,9 +120,8 @@ class CodeGen(private val config: CodeGenConfig) {
         config.schemaJarFilesFromDependencies.forEach {
             val zipFile = ZipFile(it)
             zipFile.entries().toList().forEach { entry ->
-                if (!entry.isDirectory && entry.name.startsWith("META-INF") && (entry.name.endsWith(".graphqls")) || entry.name.endsWith(
-                        ".graphql"
-                    )
+                if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
+                    (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql"))
                 ) {
                     logger.info("Generating schema from ${it.name}:  ${entry.name}")
                     readerBuilder.reader(InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8), "codegen")
