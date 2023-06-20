@@ -870,6 +870,84 @@ class CodeGenTest {
         assertCompilesJava(codeGenResult.javaEnumTypes)
     }
 
+    @Nested
+    inner class EnumAnnotationTest {
+        @Test
+        fun `generates annotations from directive`() {
+            val schema = """
+            enum EmployeeTypes {
+                ENGINEER @deprecated(reason: "chatGPT does the engineering now")
+                MANAGER
+                DIRECTOR
+            }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+
+            val enum = codeGenResult.javaEnumTypes[0].toString()
+
+            assertThat(enum).isEqualTo(
+                """
+            package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            
+            import java.lang.Deprecated;
+            
+            public enum EmployeeTypes {
+              /**
+               * chatGPT does the engineering now
+               */
+              @Deprecated
+              ENGINEER,
+            
+              MANAGER,
+            
+              DIRECTOR
+            }
+            
+                """.trimIndent()
+            )
+
+            assertCompilesJava(codeGenResult.javaEnumTypes)
+        }
+
+        @Test
+        fun `adds custom annotation when setting enabled`() {
+            val schema = """
+                enum SomeEnum {
+                    ENUM_VALUE @annotate(name: "ValidName", type: "validator")
+                }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateCustomAnnotations = true
+                )
+            ).generate()
+
+            val enum = codeGenResult.javaEnumTypes[0].toString()
+
+            assertThat(enum).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |public enum SomeEnum {
+                |  @ValidName
+                |  ENUM_VALUE
+                |}
+                |
+                """.trimMargin()
+            )
+        }
+    }
+
     @Test
     fun generateExtendedEnum() {
         val schema = """

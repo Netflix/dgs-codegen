@@ -23,6 +23,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.addEnumConstants
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.FileSpec
@@ -71,6 +72,9 @@ fun generateKotlin2EnumTypes(
                             .apply {
                                 if (field.description != null) {
                                     addKdoc("%L", field.description.sanitizeKdoc())
+                                }
+                                if (field.directives.isNotEmpty()) {
+                                    addAnnotations(applyDirectivesKotlin(field.directives, config))
                                 }
                             }
                             .build()

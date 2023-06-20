@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import org.assertj.core.api.Assertions.assertThat
@@ -54,5 +55,41 @@ class Kotline2CodeGenTest {
                 val typeSpec = member as TypeSpec
                 assertThat(typeSpec.superinterfaces).containsKey(Serializable::class.asClassName())
             })
+    }
+
+    @Test
+    fun `adds @Deprecated annotation from schema directives when setting enabled`() {
+        val schema = """
+            enum TownJobTypes {
+                LAMPLIGHTER @deprecated(reason: "town switched to electric lights")
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                addDeprecatedAnnotation = true,
+                generateKotlinNullableClasses = true
+            )
+        ).generate()
+        val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
+
+        assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.enums
+                |
+                |import kotlin.Deprecated
+                |
+                |public enum class TownJobTypes {
+                |  @Deprecated(message = "town switched to electric lights")
+                |  LAMPLIGHTER,
+                |}
+                |
+            """.trimMargin()
+
+        )
+        assertCompilesKotlin(result.kotlinEnumTypes)
     }
 }
