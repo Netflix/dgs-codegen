@@ -260,6 +260,22 @@ private fun typeClassBestGuess(name: String): TypeName {
         "HashSet" -> ClassName.get("java.util", "HashSet")
         "Queue" -> ClassName.get("java.util", "Queue")
         "TreeMap" -> ClassName.get("java.util", "TreeMap")
-        else -> ClassName.bestGuess(name)
+        else -> bestGuess(name)
+    }
+}
+
+private fun bestGuess(name: String): ClassName {
+    try {
+        return ClassName.bestGuess(name)
+    } catch (e: IllegalArgumentException) {
+        // If bestGuess throws an error because it doesn't match Java conventions
+        // try to mangle it together ourselves
+        val i: Int = name.lastIndexOf(".")
+        return ClassName.get(
+            name.substring(0, i),
+            name.substring(i + 1).replaceFirstChar {
+                it.uppercaseChar()
+            }
+        )
     }
 }

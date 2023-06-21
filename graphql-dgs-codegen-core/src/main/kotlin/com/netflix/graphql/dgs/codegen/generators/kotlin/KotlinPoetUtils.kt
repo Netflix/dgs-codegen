@@ -251,6 +251,22 @@ fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
     }
 }
 
+private fun bestGuess(name: String): ClassName {
+    try {
+        return ClassName.bestGuess(name)
+    } catch (e: IllegalArgumentException) {
+        // If bestGuess throws an error because it doesn't match Java conventions
+        // try to mangle it together ourselves
+        val i: Int = name.lastIndexOf(".")
+        return ClassName(
+            name.substring(0, i),
+            name.substring(i + 1).replaceFirstChar {
+                it.uppercaseChar()
+            }
+        )
+    }
+}
+
 private fun ktTypeClassBestGuess(name: String): ClassName {
     return when (name) {
         STRING.simpleName -> STRING
@@ -278,7 +294,7 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
         LONG_ARRAY.simpleName -> LONG_ARRAY
         FLOAT_ARRAY.simpleName -> FLOAT_ARRAY
         DOUBLE_ARRAY.simpleName -> DOUBLE_ARRAY
-        else -> ClassName.bestGuess(name)
+        else -> bestGuess(name)
     }
 }
 

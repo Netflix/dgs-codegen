@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
+import com.netflix.graphql.dgs.codegen.generators.java.toTypeName
 import com.squareup.javapoet.*
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
@@ -33,6 +34,10 @@ import java.io.Serializable
 import java.util.stream.Stream
 
 class CodeGenTest {
+    @Test
+    fun nonJavaClassNamesAreValid() {
+        assertThat("com.netflix.mediacenteradminapi.types.mkt_mcUserProfile".toTypeName().toString()).isEqualTo("com.netflix.mediacenteradminapi.types.Mkt_mcUserProfile")
+    }
 
     @Test
     fun `When the schema fails to parse, is able to print the error message along with the schema`() {

@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
@@ -34,6 +35,10 @@ import java.util.stream.Stream
 import java.util.stream.Stream.of
 
 class KotlinCodeGenTest {
+    @Test
+    fun nonJavaClassNamesAreValid() {
+        assertThat("com.netflix.mediacenteradminapi.types.mkt_mcUserProfile".toKtTypeName().toString()).isEqualTo("com.netflix.mediacenteradminapi.types.Mkt_mcUserProfile")
+    }
 
     @Test
     fun generateDataClassWithStringProperties() {
