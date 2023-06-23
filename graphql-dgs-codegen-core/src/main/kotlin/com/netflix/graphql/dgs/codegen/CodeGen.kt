@@ -63,9 +63,7 @@ class CodeGen(private val config: CodeGenConfig) {
     private val document = buildDocument()
     private val requiredTypeCollector = RequiredTypeCollector(
         document = document,
-        queries = config.includeQueries,
-        mutations = config.includeMutations,
-        subscriptions = config.includeSubscriptions
+        config = config
     )
 
     @Suppress("DuplicatedCode")
