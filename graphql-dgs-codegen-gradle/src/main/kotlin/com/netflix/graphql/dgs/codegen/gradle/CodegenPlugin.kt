@@ -74,7 +74,7 @@ class CodegenPlugin : Plugin<Project> {
             if (codegenExtension.clientCoreConventionsEnabled.getOrElse(true)) {
                 project.dependencyLocking.ignoredDependencies.add(dependencyLockString)
                 logger.info(
-                    "DGS CodeGen added [{}] to ignoredDependencies.",
+                    "DGS CodeGen added ignored dependency [{}].",
                     dependencyLockString
                 )
             }

@@ -53,13 +53,13 @@ object ClientUtilsConventions {
             val dependencyConfiguration = optionalCodeClientDependencyScope.orElse(GRADLE_CLASSPATH_CONFIGURATION)
             val configurationDependencies = project.configurations.getByName(dependencyConfiguration).dependencies
             configurationDependencies.add(project.dependencies.create(dependencyString))
-            logger.info("DGS CodeGen added [{}] to the {} dependencies.", dependencyString, dependencyConfiguration)
+            logger.info("DGS CodeGen added dependency [{}] to {}.", dependencyString, dependencyConfiguration)
 
             project.plugins.withId(CLIENT_UTILS_NEBULA_LOCK_ID) {
                 val extension = project.extensions.getByType(DependencyLockExtension::class.java)
                 if (extension != null) {
                     extension.skippedDependencies.add(dependencyLockString)
-                    logger.info("DGS CodeGen added [{}] to the skippedDependencies.", dependencyLockString)
+                    logger.info("DGS CodeGen added skipped dependency [{}].", dependencyLockString)
                 }
             }
         }
