@@ -36,7 +36,7 @@ class CodegenPlugin : Plugin<Project> {
     }
 
     override fun apply(project: Project) {
-        val extensions = project.extensions.create("codegen", CodegenPluginExtension::class.java)
+        val codegenExtension = project.extensions.create("codegen", CodegenPluginExtension::class.java)
 
         project.plugins.apply(JavaPlugin::class.java)
 
@@ -54,15 +54,37 @@ class CodegenPlugin : Plugin<Project> {
         project.configurations.create("dgsCodegen")
         project.configurations.findByName("dgsCodegen")?.isCanBeResolved = true
 
+        addDependencyLock(project, codegenExtension)
+
         project.afterEvaluate { p ->
-            if (extensions.clientCoreConventionsEnabled.getOrElse(true)) {
+            if (codegenExtension.clientCoreConventionsEnabled.getOrElse(true)) {
                 logger.info("Applying CodegenPlugin Client Utils conventions.")
                 ClientUtilsConventions.apply(
                     p,
-                    Optional.ofNullable(extensions.clientCoreVersion.orNull),
-                    Optional.ofNullable(extensions.clientCoreScope.orNull)
+                    Optional.ofNullable(codegenExtension.clientCoreVersion.orNull),
+                    Optional.ofNullable(codegenExtension.clientCoreScope.orNull)
                 )
             }
+        }
+    }
+
+    private fun addDependencyLock(project: Project, codegenExtension: CodegenPluginExtension) {
+        val dependencyLockString = ClientUtilsConventions.getDependencyString()
+        try {
+            if (codegenExtension.clientCoreConventionsEnabled.getOrElse(true)) {
+                project.dependencyLocking.ignoredDependencies.add(dependencyLockString)
+                logger.info(
+                    "DGS CodeGen added [{}] to ignoredDependencies.",
+                    dependencyLockString
+                )
+            }
+        } catch (e: Exception) {
+            // do nothing, this is supplemental and seems to work in certain contexts but not in others
+            logger.info(
+                "Failed to add DGS CodeGen to ignoredDependencies because: {}",
+                dependencyLockString,
+                e
+            )
         }
     }
 }

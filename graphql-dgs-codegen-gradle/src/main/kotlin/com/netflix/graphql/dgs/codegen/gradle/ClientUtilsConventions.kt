@@ -34,27 +34,32 @@ object ClientUtilsConventions {
 
     private val logger = Logging.getLogger(ClientUtilsConventions::class.java)
 
+    fun getDependencyString(version: String? = null): String {
+        if (version != null) {
+            return "$CLIENT_UTILS_ARTIFACT_GROUP:$CLIENT_UTILS_ARTIFACT_NAME:$version"
+        }
+
+        return "$CLIENT_UTILS_ARTIFACT_GROUP:$CLIENT_UTILS_ARTIFACT_NAME"
+    }
+
     fun apply(
         project: Project,
         optionalCodeUtilsVersion: Optional<String> = Optional.empty(),
         optionalCodeClientDependencyScope: Optional<String> = Optional.empty()
     ) {
         clientCoreArtifact(optionalCodeUtilsVersion).ifPresent { dependencyString ->
-            val dependencyLockString = dependencyString.split(":").take(2).joinToString(":")
+            val dependencyLockString = getDependencyString()
 
             val dependencyConfiguration = optionalCodeClientDependencyScope.orElse(GRADLE_CLASSPATH_CONFIGURATION)
             val configurationDependencies = project.configurations.getByName(dependencyConfiguration).dependencies
             configurationDependencies.add(project.dependencies.create(dependencyString))
             logger.info("DGS CodeGen added [{}] to the {} dependencies.", dependencyString, dependencyConfiguration)
-
-            project.dependencyLocking.ignoredDependencies.add(dependencyLockString)
-            logger.info("DGS CodeGen added [{}] to the ignoredDependencies.", dependencyLockString, dependencyConfiguration)
-
+            
             project.plugins.withId(CLIENT_UTILS_NEBULA_LOCK_ID) {
                 val extension = project.extensions.getByType(DependencyLockExtension::class.java)
                 if (extension != null) {
                     extension.skippedDependencies.add(dependencyLockString)
-                    logger.info("DGS CodeGen added [{}] to the skippedDependencies.", dependencyLockString, dependencyConfiguration)
+                    logger.info("DGS CodeGen added [{}] to the skippedDependencies.", dependencyLockString)
                 }
             }
         }
@@ -76,6 +81,6 @@ object ClientUtilsConventions {
 
     private fun clientCoreArtifact(optionalVersion: Optional<String>): Optional<String> {
         val version = if (optionalVersion.isPresent) optionalVersion else pluginMetaInfVersion
-        return version.map { "$CLIENT_UTILS_ARTIFACT_GROUP:$CLIENT_UTILS_ARTIFACT_NAME:$it" }
+        return version.map(::getDependencyString)
     }
 }
