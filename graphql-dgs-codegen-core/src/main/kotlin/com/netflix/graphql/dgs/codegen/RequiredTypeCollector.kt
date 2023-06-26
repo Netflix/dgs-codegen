@@ -53,7 +53,6 @@ class RequiredTypeCollector(
             }
         }
 
-
         val required = requiredTypes as MutableSet<String>
 
         NodeTraverser().postOrder(
