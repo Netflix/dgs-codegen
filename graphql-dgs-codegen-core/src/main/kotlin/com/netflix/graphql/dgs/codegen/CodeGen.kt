@@ -323,9 +323,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val requiredTypeCollector = RequiredTypeCollector(
             document = document,
-            queries = config.includeQueries,
-            mutations = config.includeMutations,
-            subscriptions = config.includeSubscriptions
+            config = config
         )
         val requiredTypes = requiredTypeCollector.requiredTypes
 
