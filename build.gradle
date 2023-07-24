@@ -45,7 +45,7 @@ allprojects {
     dependencies {
         testImplementation "org.jetbrains.kotlin:kotlin-compiler:${Versions.KOTLIN_VERSION}"
 
-        testImplementation platform('org.junit:junit-bom:5.8.+')
+        testImplementation platform('org.junit:junit-bom:5.10.+')
         testImplementation 'org.assertj:assertj-core:3.23.+'
         testImplementation 'org.junit.jupiter:junit-jupiter'
         testImplementation 'org.junit.jupiter:junit-jupiter-params'
