@@ -22,13 +22,18 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
 import java.util.*
+import javax.inject.Inject
 
-open class GenerateJavaTask : DefaultTask() {
+open class GenerateJavaTask @Inject constructor(
+    objectFactory: ObjectFactory
+) : DefaultTask() {
     @Input
     var generatedSourcesDir: String = project.buildDir.absolutePath
 
@@ -148,19 +153,13 @@ open class GenerateJavaTask : DefaultTask() {
     @Input
     var includeClassImports = mutableMapOf<String, MutableMap<String, String>>()
 
+    @Classpath
+    val dgsCodegenClasspath: ConfigurableFileCollection = objectFactory.fileCollection().from(
+        project.configurations.named("dgsCodegen")
+    )
     @TaskAction
     fun generate() {
-        val schemaJarFilesFromDependencies = emptyList<File>().toMutableList()
-        val dgsCodegenConfig = project.configurations.findByName("dgsCodegen")
-        dgsCodegenConfig?.incoming?.dependencies?.forEach { dependency ->
-            logger.info("Found DgsCodegen Dependendency: ${dependency.name}")
-            val found = dgsCodegenConfig.incoming.artifacts.resolvedArtifacts.get().find { it.id.componentIdentifier.displayName.contains(dependency.group + ":" + dependency.name) }
-            if (found != null) {
-                logger.info("Found DgsCodegen Artifact: ${found.id.displayName}")
-                schemaJarFilesFromDependencies.add(found.file)
-            }
-        }
-
+        val schemaJarFilesFromDependencies = dgsCodegenClasspath.toList()
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
         schemaPaths.filter { !it.exists() }.forEach {
             logger.warn("Schema location ${it.absolutePath} does not exist")
