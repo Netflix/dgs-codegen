@@ -157,6 +157,7 @@ open class GenerateJavaTask @Inject constructor(
     val dgsCodegenClasspath: ConfigurableFileCollection = objectFactory.fileCollection().from(
         project.configurations.named("dgsCodegen")
     )
+
     @TaskAction
     fun generate() {
         val schemaJarFilesFromDependencies = dgsCodegenClasspath.toList()
