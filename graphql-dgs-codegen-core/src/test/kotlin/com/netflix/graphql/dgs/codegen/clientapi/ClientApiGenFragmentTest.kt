@@ -16,7 +16,7 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.clientapiv2
+package com.netflix.graphql.dgs.codegen.clientapi
 
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
@@ -26,7 +26,7 @@ import com.squareup.javapoet.JavaFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class ClientApiGenFragmentTestv2 {
+class ClientApiGenFragmentTest {
     @Test
     fun interfaceFragment() {
         val schema = """

@@ -28,7 +28,7 @@ import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.*
 import javax.lang.model.element.Modifier
 
-class ClientApiGeneratorv2(private val config: CodeGenConfig, private val document: Document) {
+class ClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
     private val generatedClasses = mutableSetOf<String>()
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, document)
 

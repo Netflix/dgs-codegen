@@ -16,7 +16,7 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.clientapiv2
+package com.netflix.graphql.dgs.codegen.clientapi
 
 import com.netflix.graphql.dgs.codegen.*
 import org.assertj.core.api.Assertions.assertThat
@@ -24,7 +24,7 @@ import org.junit.Ignore
 import org.junit.jupiter.api.Test
 
 @Ignore
-class ClientApiGenQueryTestv2 {
+class ClientApiGenQueryTest {
     @Test
     fun generateQueryType() {
         val schema = """

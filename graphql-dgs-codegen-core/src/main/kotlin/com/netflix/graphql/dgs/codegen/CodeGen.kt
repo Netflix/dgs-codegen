@@ -234,7 +234,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
                 .sortedBy { it.name.length }
                 .map {
-                    ClientApiGeneratorv2(config, document).generate(it, methodNames)
+                    ClientApiGenerator(config, document).generate(it, methodNames)
                 }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
@@ -246,7 +246,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.hasDirective("key") }
                 .toList()
-            ClientApiGeneratorv2(config, document).generateEntities(federatedDefinitions)
+            ClientApiGenerator(config, document).generateEntities(federatedDefinitions)
         } else CodeGenResult()
     }
 

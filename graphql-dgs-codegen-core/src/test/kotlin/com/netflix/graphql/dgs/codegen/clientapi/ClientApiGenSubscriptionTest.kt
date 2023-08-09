@@ -16,7 +16,7 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.clientapiv2
+package com.netflix.graphql.dgs.codegen.clientapi
 
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
@@ -25,7 +25,7 @@ import com.netflix.graphql.dgs.codegen.basePackageName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
-class ClientApiGenSubscriptionTestv2 {
+class ClientApiGenSubscriptionTest {
     @Test
     fun generateSubscriptionType() {
         val schema = """
