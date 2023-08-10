@@ -108,6 +108,7 @@ class CodegenGradlePluginCompatibilityTest {
             .withArguments(
                 "--stacktrace",
                 "--info",
+                "--configuration-cache",
                 "generateJava",
                 "build"
             ).build()
