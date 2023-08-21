@@ -17,8 +17,8 @@
  */
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version "1.7.0" apply false
-    id 'com.netflix.nebula.netflixoss' version '11.1.1'
+    id 'org.jetbrains.kotlin.jvm' version "1.9.0" apply false
+    id 'com.netflix.nebula.netflixoss' version '11.3.2'
     id "org.jmailen.kotlinter" version "3.11.1"
 }
 
@@ -28,7 +28,7 @@ allprojects {
 
     ext {
         Versions = [
-                KOTLIN_VERSION: '1.7.0'
+                KOTLIN_VERSION: '1.9.0'
         ]
     }
 
@@ -38,7 +38,7 @@ allprojects {
 
     apply plugin: 'com.netflix.nebula.netflixoss'
     apply plugin: 'com.netflix.nebula.info'
-    apply plugin: 'org.jetbrains.kotlin.jvm'
+   apply plugin: 'org.jetbrains.kotlin.jvm'
 
     group = 'com.netflix.graphql.dgs.codegen'
 
