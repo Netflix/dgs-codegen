@@ -17,7 +17,7 @@
  */
 
 plugins {
-    id 'com.gradle.plugin-publish' version '1.2.1'
+    id 'com.gradle.plugin-publish' version '0.21.0'
 }
 
 apply plugin: 'java-gradle-plugin'
@@ -87,6 +87,10 @@ project.afterEvaluate {
                 it.name.contains("publishPluginMavenPublicationToSonatypeRepository")
     }.each {
         it.enabled = false
+    }
+    tasks.named("generateMetadataFileForPluginMavenPublication") {
+        dependsOn("publishPluginJar")
+        dependsOn("publishPluginJavaDocsJar")
     }
 }
 
