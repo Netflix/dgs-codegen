@@ -1,42 +1,47 @@
 {
     "apiDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         }
     },
     "compileClasspath": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         }
     },
     "implementationDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
+        }
+    },
+    "kotlinBuildToolsApiClasspath": {
+        "org.jetbrains.kotlin:kotlin-build-tools-impl": {
+            "locked": "1.9.0"
         }
     },
     "kotlinCompilerClasspath": {
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         }
     },
     "kotlinCompilerPluginClasspathMain": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         }
     },
     "kotlinCompilerPluginClasspathTest": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         }
     },
     "kotlinKlibCommonizerClasspath": {
         "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         }
     },
     "runtimeClasspath": {
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         }
     },
     "testCompileClasspath": {
@@ -44,10 +49,10 @@
             "locked": "3.23.1"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.8.2"
@@ -64,10 +69,10 @@
             "locked": "3.23.1"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.8.2"
@@ -84,10 +89,10 @@
             "locked": "3.23.1"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.7.0"
+            "locked": "1.9.0"
         },
         "org.junit.jupiter:junit-jupiter": {
             "locked": "5.8.2"
