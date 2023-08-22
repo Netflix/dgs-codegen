@@ -82,6 +82,11 @@ project.afterEvaluate {
         it.dependsOn("publishPluginJar")
         it.dependsOn("publishPluginJavaDocsJar")
     }
+    tasks.named("generateMetadataFileForPluginMavenPublication") {
+        it.dependsOn("publishPluginJar")
+        it.dependsOn("publishPluginJavaDocsJar")
+    }
+
     //Disable marker tasks
     project.tasks.findAll {
         (it.name.contains("Marker") && it.name.contains('Maven')) ||
@@ -92,6 +97,7 @@ project.afterEvaluate {
     }.each {
         it.enabled = false
     }
+
 }
 
 TaskProvider validatePluginsTask = project.tasks.named('validatePlugins')
