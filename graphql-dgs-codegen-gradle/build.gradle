@@ -78,9 +78,14 @@ dependencies {
 }
 
 project.afterEvaluate {
-    tasks.named("generateMetadataFileForPluginMavenPublication") {
-        dependsOn("publishPluginJar")
-        dependsOn("publishPluginJavaDocsJar")
+    tasks.named("generateMetadataFileForMavenPublication") {
+        it.dependsOn("publishPluginJar")
+        it.dependsOn("publishPluginJavaDocsJar")
+    }
+
+    tasks.named("generateMetadataFileForNebulaPublication") {
+        it.dependsOn("publishPluginJar")
+        it.dependsOn("publishPluginJavaDocsJar")
     }
     //Disable marker tasks
     project.tasks.findAll {
