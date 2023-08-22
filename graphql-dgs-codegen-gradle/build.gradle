@@ -78,11 +78,6 @@ dependencies {
 }
 
 project.afterEvaluate {
-    tasks.named("generateMetadataFileForMavenPublication") {
-        it.dependsOn("publishPluginJar")
-        it.dependsOn("publishPluginJavaDocsJar")
-    }
-
     tasks.named("generateMetadataFileForNebulaPublication") {
         it.dependsOn("publishPluginJar")
         it.dependsOn("publishPluginJavaDocsJar")
