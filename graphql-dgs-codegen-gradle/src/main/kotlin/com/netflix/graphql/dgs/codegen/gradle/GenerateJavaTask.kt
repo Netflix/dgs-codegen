@@ -155,12 +155,12 @@ open class GenerateJavaTask @Inject constructor(
 
     @Classpath
     val dgsCodegenClasspath: ConfigurableFileCollection = objectFactory.fileCollection().from(
-        project.configurations.named("dgsCodegen")
+        project.configurations.findByName("dgsCodegen")
     )
 
     @TaskAction
     fun generate() {
-        val schemaJarFilesFromDependencies = dgsCodegenClasspath.toList()
+        val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
         val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
         schemaPaths.filter { !it.exists() }.forEach {
             logger.warn("Schema location ${it.absolutePath} does not exist")
