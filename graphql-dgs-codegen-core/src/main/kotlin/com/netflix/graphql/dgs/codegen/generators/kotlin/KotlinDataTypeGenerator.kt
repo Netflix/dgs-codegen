@@ -101,7 +101,16 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
         when (value) {
             is BooleanValue -> CodeBlock.of("%L", value.isValue)
             is IntValue -> CodeBlock.of("%L", value.value)
-            is StringValue -> CodeBlock.of("%S", value.value)
+//            TODO: Test null
+            is StringValue -> {
+                val customTypeOverrides = mapOf(
+                    "java.util.Locale" to "Locale.forLanguageTag(\"${value.value}\")"
+                )
+
+                val defValueOverride = customTypeOverrides[type.className.canonicalName]
+                if (defValueOverride != null) CodeBlock.of("%L", defValueOverride)
+                else CodeBlock.of("%S", value.value)
+            }
             is FloatValue -> CodeBlock.of("%L", value.value)
             is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
             is ArrayValue ->

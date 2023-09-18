@@ -1770,7 +1770,7 @@ class KotlinCodeGenTest {
 
         assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(2)
 
-        val fileSpec0 = codeGenResult.kotlinDataTypes[0] as FileSpec
+        val fileSpec0 = codeGenResult.kotlinDataTypes[0]
         assertThat(fileSpec0.name).isEqualTo("FooInput")
         assertThat(fileSpec0.members.size).isEqualTo(1)
         val typeSpec0 = fileSpec0.members[0] as TypeSpec
@@ -2019,7 +2019,6 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN
             )
         ).generate()
-        val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
 
         assertThat(interfaces.size).isEqualTo(1)
@@ -3705,5 +3704,32 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).contains(basePackageName)
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.time.LocalDate")
+    }
+
+    @Test
+    fun `The default value for Locale should be overridden and wrapped`() {
+        val schema = """
+            scalar Locale @specifiedBy(url:"https://tools.ietf.org/html/bcp47")
+
+            input NameInput {
+                  locale: Locale = "en-US"
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    "Locale" to "java.util.Locale",
+                )
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.kotlinDataTypes
+        val typeSpec = dataTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.primaryConstructor!!.parameters[0].defaultValue.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
+        assertCompilesKotlin(dataTypes)
     }
 }
