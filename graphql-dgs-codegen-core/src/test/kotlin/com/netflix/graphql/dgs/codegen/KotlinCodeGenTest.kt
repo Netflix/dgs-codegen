@@ -3722,7 +3722,7 @@ It takes a title and such.
                 packageName = basePackageName,
                 language = Language.KOTLIN,
                 typeMapping = mapOf(
-                    "Locale" to "java.util.Locale",
+                    "Locale" to "java.util.Locale"
                 )
             )
         ).generate()

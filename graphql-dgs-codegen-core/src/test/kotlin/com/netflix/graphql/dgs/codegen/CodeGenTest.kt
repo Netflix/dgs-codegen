@@ -4361,7 +4361,7 @@ It takes a title and such.
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 typeMapping = mapOf(
-                    "Locale" to "java.util.Locale",
+                    "Locale" to "java.util.Locale"
                 )
             )
         ).generate()
