@@ -4345,4 +4345,29 @@ It takes a title and such.
         assertThat(dataTypes[0].typeSpec.superinterfaces[0].toString()).isEqualTo("java.lang.String")
         assertThat(dataTypes[1].typeSpec.superinterfaces[0].toString()).isEqualTo("java.lang.String")
     }
+
+    @Test
+    fun `The default value for Locale should be overridden and wrapped`() {
+        val schema = """
+            scalar Locale @specifiedBy(url:"https://tools.ietf.org/html/bcp47")
+
+            input NameInput {
+                  locale: Locale = "en-US"
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "Locale" to "java.util.Locale"
+                )
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
+        assertCompilesJava(dataTypes)
+    }
 }

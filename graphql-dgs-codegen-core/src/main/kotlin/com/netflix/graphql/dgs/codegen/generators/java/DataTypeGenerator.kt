@@ -18,12 +18,9 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.CodeGenResult
-import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.*
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
-import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.*
 import graphql.language.*
 import graphql.language.TypeName
@@ -129,7 +126,11 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                 when (defVal) {
                     is BooleanValue -> CodeBlock.of("\$L", defVal.isValue)
                     is IntValue -> CodeBlock.of("\$L", defVal.value)
-                    is StringValue -> CodeBlock.of("\$S", defVal.value)
+                    is StringValue -> {
+                        val localeValueOverride = checkAndGetLocaleValue(defVal, it.type)
+                        if (localeValueOverride != null) CodeBlock.of("\$L", localeValueOverride)
+                        else CodeBlock.of("\$S", defVal.value)
+                    }
                     is FloatValue -> CodeBlock.of("\$L", defVal.value)
                     is EnumValue -> CodeBlock.of("\$T.\$N", typeUtils.findReturnType(it.type), defVal.name)
                     is ArrayValue -> if (defVal.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()") else CodeBlock.of(
@@ -157,6 +158,11 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
             )
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
         return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)
+    }
+
+    private fun checkAndGetLocaleValue(value: StringValue, type: Type<*>): String? {
+        if (typeUtils.findReturnType(type).toString() == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
+        return null
     }
 }
 

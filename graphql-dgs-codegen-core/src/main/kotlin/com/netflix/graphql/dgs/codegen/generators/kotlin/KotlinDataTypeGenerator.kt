@@ -101,7 +101,11 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
         when (value) {
             is BooleanValue -> CodeBlock.of("%L", value.isValue)
             is IntValue -> CodeBlock.of("%L", value.value)
-            is StringValue -> CodeBlock.of("%S", value.value)
+            is StringValue -> {
+                val localeValueOverride = checkAndGetLocaleValue(value, type)
+                if (localeValueOverride != null) CodeBlock.of("%L", localeValueOverride)
+                else CodeBlock.of("%S", value.value)
+            }
             is FloatValue -> CodeBlock.of("%L", value.value)
             is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
             is ArrayValue ->
@@ -109,6 +113,11 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
                 else CodeBlock.of("listOf(%L)", value.values.joinToString { v -> generateCode(v, type).toString() })
             else -> CodeBlock.of("%L", value)
         }
+
+    private fun checkAndGetLocaleValue(value: StringValue, type: KtTypeName): String? {
+        if (type.className.canonicalName == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
+        return null
+    }
 
     private val KtTypeName.className: ClassName
         get() = when (this) {
