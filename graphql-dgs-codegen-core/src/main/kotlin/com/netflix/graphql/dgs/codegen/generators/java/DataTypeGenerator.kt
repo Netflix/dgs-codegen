@@ -127,13 +127,8 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                     is BooleanValue -> CodeBlock.of("\$L", defVal.isValue)
                     is IntValue -> CodeBlock.of("\$L", defVal.value)
                     is StringValue -> {
-                        val typeClassName = typeUtils.findReturnType(it.type).toString()
-                        val customTypeOverrides = mapOf(
-                            "java.util.Locale" to "Locale.forLanguageTag(\"${defVal.value}\")"
-                        )
-
-                        val defValueOverride = customTypeOverrides[typeClassName]
-                        if (defValueOverride != null) CodeBlock.of("\$L", defValueOverride)
+                        val localeValueOverride = checkAndGetLocaleValue(defVal, it.type)
+                        if (localeValueOverride != null) CodeBlock.of("\$L", localeValueOverride)
                         else CodeBlock.of("\$S", defVal.value)
                     }
                     is FloatValue -> CodeBlock.of("\$L", defVal.value)
@@ -163,6 +158,11 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
             )
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
         return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)
+    }
+
+    private fun checkAndGetLocaleValue(value: StringValue, type: Type<*>): String? {
+        if (typeUtils.findReturnType(type).toString() == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
+        return null
     }
 }
 
