@@ -114,7 +114,8 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType, true)
 
         val fieldName = fieldDefinition.name
-        val getterBuilder = MethodSpec.methodBuilder(typeUtils.transformIfDefaultClassMethodExists("get${fieldName.capitalized()}", TypeUtils.Companion.getClass))
+        val getterPrefix = if (returnType == com.squareup.javapoet.TypeName.BOOLEAN && config.generateIsGetterForPrimitiveBooleanFields) "is" else "get"
+        val getterBuilder = MethodSpec.methodBuilder(typeUtils.transformIfDefaultClassMethodExists("${getterPrefix}${fieldName.capitalized()}", TypeUtils.Companion.getClass))
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .returns(returnType)
         if (fieldDefinition.description != null) {

@@ -174,6 +174,34 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateDataClassWithBooleanPrimitiveCreatesIsGetter() {
+        val schema = """
+            type MyType {
+                truth: Boolean!
+                boxedTruth: Boolean
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateIsGetterForPrimitiveBooleanFields = true
+            )
+        ).generate()
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.fieldSpecs[0].type.toString()).isEqualTo("boolean")
+        assertThat(typeSpec.methodSpecs[0].returnType.toString()).isEqualTo("boolean")
+        assertThat(typeSpec.methodSpecs[0].name.toString()).isEqualTo("isTruth")
+        assertThat(typeSpec.methodSpecs[1].name.toString()).isEqualTo("setTruth")
+
+        assertThat(typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.lang.Boolean")
+        assertThat(typeSpec.methodSpecs[2].returnType.toString()).isEqualTo("java.lang.Boolean")
+        assertThat(typeSpec.methodSpecs[2].name.toString()).isEqualTo("getBoxedTruth")
+        assertThat(typeSpec.methodSpecs[3].name.toString()).isEqualTo("setBoxedTruth")
+    }
+
+    @Test
     fun generateBoxedDataClassWithNonNullablePrimitive() {
         val schema = """
             type MyType {
@@ -498,6 +526,73 @@ class CodeGenTest {
                |  String getLastname();
                |
                |  void setLastname(String lastname);
+               |}
+               |
+            """.trimMargin()
+        )
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateInterfaceClassWithBooleanPrimitiveCreatesIsGetter() {
+        val schema = """
+            type Query {
+                featureToggles: [FeatureToggle]
+            }
+            
+            interface FeatureToggle {
+                enabled: Boolean!
+                boxedEnabled: Boolean
+            }
+            
+            type AdminFeatureToggle implements FeatureToggle {
+                enabled: Boolean!
+                boxedEnabled: Boolean
+            }
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateIsGetterForPrimitiveBooleanFields = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val employee = dataTypes.single().typeSpec
+        // Check data class
+        assertThat(employee.name).isEqualTo("AdminFeatureToggle")
+        assertThat(employee.fieldSpecs.size).isEqualTo(2)
+        assertThat(employee.fieldSpecs).extracting("name").contains("enabled", "boxedEnabled")
+
+        val annotation = employee.annotations.single()
+        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+
+        val person = interfaces[0]
+        assertThat(person.toString()).isEqualTo(
+            """
+               |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+               |
+               |import com.fasterxml.jackson.annotation.JsonSubTypes;
+               |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import java.lang.Boolean;
+               |
+               |@JsonTypeInfo(
+               |    use = JsonTypeInfo.Id.NAME,
+               |    include = JsonTypeInfo.As.PROPERTY,
+               |    property = "__typename"
+               |)
+               |@JsonSubTypes(@JsonSubTypes.Type(value = AdminFeatureToggle.class, name = "AdminFeatureToggle"))
+               |public interface FeatureToggle {
+               |  boolean isEnabled();
+               |
+               |  void setEnabled(boolean enabled);
+               |
+               |  Boolean getBoxedEnabled();
+               |
+               |  void setBoxedEnabled(Boolean boxedEnabled);
                |}
                |
             """.trimMargin()
@@ -2547,6 +2642,7 @@ class CodeGenTest {
 
             type Apple implements Fruit {
               seeds: [Seed]
+              truth: Boolean!
             }
 
             type Seed {
@@ -2558,7 +2654,8 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateInterfaces = true
+                generateInterfaces = true,
+                generateIsGetterForPrimitiveBooleanFields = true
             )
         ).generate()
 
@@ -2568,6 +2665,42 @@ class CodeGenTest {
         val iapple = interfaces[0]
         assertThat(iapple.typeSpec.name).isEqualTo("IApple")
         assertThat(iapple.typeSpec.fieldSpecs).isEmpty()
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateObjectTypeInterfaceWithPrimitiveBooleanShouldUseIsGetter() {
+        val schema = """
+            interface Truthy {
+              truth: Boolean!
+            }
+
+            type Truth implements Truthy {
+              truth: Boolean!
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true,
+                generateIsGetterForPrimitiveBooleanFields = true
+            )
+        ).generate()
+
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
+
+        val itruth = interfaces[0]
+        assertThat(itruth.typeSpec.name).isEqualTo("ITruth")
+        assertThat(itruth.typeSpec.fieldSpecs).isEmpty()
+
+        val itruthy = interfaces[1]
+        assertThat(itruthy.typeSpec.name).isEqualTo("Truthy")
+        assertThat(itruthy.typeSpec.fieldSpecs).isEmpty()
+        assertThat(itruthy.typeSpec.methodSpecs[0].name).isEqualTo("isTruth")
 
         assertCompilesJava(dataTypes + interfaces)
     }
