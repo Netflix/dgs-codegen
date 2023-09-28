@@ -27,6 +27,7 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.f
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -120,10 +121,12 @@ fun generateKotlin2InputTypes(
                                 )
                             )
                         )
-                        .addStatement(
-                            "return listOf(${
-                            fields.joinToString(", ") { """"${it.name}" to ${it.name}""" }
-                            })"
+                        .addCode(
+                            fields.let { fs ->
+                                val builder = CodeBlock.builder().add("return listOf(")
+                                fs.forEachIndexed { i, f -> builder.add("%S to %N%L", f.name, f.name, if (i < fs.size.dec()) ", " else "") }
+                                builder.add(")").build()
+                            }
                         )
                         .build()
                 )
