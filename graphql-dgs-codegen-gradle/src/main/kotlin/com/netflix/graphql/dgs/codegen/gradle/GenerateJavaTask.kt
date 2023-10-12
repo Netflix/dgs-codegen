@@ -69,6 +69,9 @@ open class GenerateJavaTask @Inject constructor(
     var generateBoxedTypes = false
 
     @Input
+    var generateIsGetterForPrimitiveBooleanFields = false
+
+    @Input
     var generateClient = false
 
     @Input
@@ -183,6 +186,7 @@ open class GenerateJavaTask @Inject constructor(
             subPackageNameTypes = subPackageNameTypes,
             language = Language.valueOf(language.uppercase(Locale.getDefault())),
             generateBoxedTypes = generateBoxedTypes,
+            generateIsGetterForPrimitiveBooleanFields = generateIsGetterForPrimitiveBooleanFields,
             generateClientApi = generateClient,
             generateClientApiv2 = generateClientv2,
             generateKotlinNullableClasses = generateKotlinNullableClasses,
