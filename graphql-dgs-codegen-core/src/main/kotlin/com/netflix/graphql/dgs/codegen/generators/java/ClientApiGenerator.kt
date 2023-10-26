@@ -115,6 +115,20 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         it.inputValueDefinitions.forEach { inputValue ->
             val findReturnType = TypeUtils(getDatatypesPackageName(), config, document).findReturnType(inputValue.type)
+
+            val deprecatedDirective = if (config.addDeprecatedAnnotation) {
+                inputValue
+                    .getDirectives("deprecated")
+                    ?.firstOrNull() // Should we throw here, if there are multiple "@deprecated"?
+            } else {
+                null
+            }
+
+            val deprecationReason = deprecatedDirective
+                ?.getArgument("reason")
+                ?.let { it.value as? StringValue }
+                ?.value
+
             val methodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name))
                 .addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
                 .returns(ClassName.get("", "Builder"))
@@ -127,9 +141,25 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     """.trimMargin()
                 )
 
-            if (inputValue.description != null) {
-                methodBuilder.addJavadoc(inputValue.description.sanitizeJavaDoc())
+            if (deprecatedDirective != null) {
+                methodBuilder.addAnnotation(java.lang.Deprecated::class.java)
             }
+
+            // Build Javadoc, separate multiple blocks by empty line
+            val javaDocCodeBlocks = mutableListOf<String>()
+
+            if (inputValue.description != null) {
+                javaDocCodeBlocks.add(inputValue.description.sanitizeJavaDoc())
+            }
+            if (deprecationReason != null) {
+                javaDocCodeBlocks.add("@deprecated " + deprecationReason.sanitizeJavaDoc())
+            }
+
+            javaDocCodeBlocks
+                .takeIf { it.isNotEmpty() }
+                ?.joinToString("\n\n")
+                ?.also { methodBuilder.addJavadoc(it) }
+
             builderClass.addMethod(methodBuilder.build())
                 .addField(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
 
