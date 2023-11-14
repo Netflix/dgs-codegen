@@ -51,12 +51,12 @@ object DefaultTracker {
 }
 
 @QueryProjectionMarker
-abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename")) {
+abstract class GraphQLProjection(
+    defaultFields: Set<String> = setOf("__typename"),
+    val inputValueSerializer: InputValueSerializer = InputValueSerializer()
+) {
 
     companion object {
-
-        private val inputSerializer = InputValueSerializer()
-
         @JvmStatic
         protected fun <T> default0(arg: String): T? {
             DefaultTracker.add(this::class.qualifiedName!!, arg)
@@ -105,7 +105,7 @@ abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename"
             .map { (arg, value) ->
                 Argument.newArgument()
                     .name(arg)
-                    .value(inputSerializer.toValue(value))
+                    .value(inputValueSerializer.toValue(value))
                     .build()
             }
     }
