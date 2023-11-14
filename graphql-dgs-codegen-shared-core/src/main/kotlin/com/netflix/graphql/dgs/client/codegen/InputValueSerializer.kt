@@ -42,21 +42,22 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
-open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) :
+open class InputValueSerializer(
+    private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
+    private val toStringClasses: Set<KClass<*>> = setOf(
+        String::class,
+        LocalDateTime::class,
+        LocalDate::class,
+        LocalTime::class,
+        TimeZone::class,
+        Date::class,
+        OffsetDateTime::class,
+        Currency::class,
+        Instant::class,
+        UUID::class
+    )
+) :
     InputValueSerializerInterface {
-    companion object {
-        private val toStringClasses = setOf(
-            String::class,
-            LocalDateTime::class,
-            LocalDate::class,
-            LocalTime::class,
-            TimeZone::class,
-            Date::class,
-            OffsetDateTime::class,
-            Currency::class,
-            Instant::class
-        )
-    }
 
     override fun serialize(input: Any?): String {
         return AstPrinter.printAst(toValue(input))
