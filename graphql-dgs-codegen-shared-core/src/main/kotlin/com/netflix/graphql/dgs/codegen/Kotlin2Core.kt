@@ -53,7 +53,7 @@ object DefaultTracker {
 @QueryProjectionMarker
 abstract class GraphQLProjection(
     defaultFields: Set<String> = setOf("__typename"),
-    val inputValueSerializer: InputValueSerializer = InputValueSerializer()
+    private val inputValueSerializer: InputValueSerializer = InputValueSerializer()
 ) {
 
     companion object {
