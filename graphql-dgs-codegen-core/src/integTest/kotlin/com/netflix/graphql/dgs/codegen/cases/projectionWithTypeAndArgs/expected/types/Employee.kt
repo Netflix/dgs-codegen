@@ -22,7 +22,7 @@ public class Employee(
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getFirstname")
-  public override val firstname: String?
+  override val firstname: String?
     get() = _firstname.invoke()
 
   @get:JvmName("getCompany")
@@ -56,7 +56,7 @@ public class Employee(
       this.company = { company }
     }
 
-    public fun build() = Employee(
+    public fun build(): Employee = Employee(
       firstname = firstname,
       company = company,
     )

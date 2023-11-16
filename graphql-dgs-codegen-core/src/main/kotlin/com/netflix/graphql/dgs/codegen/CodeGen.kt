@@ -598,25 +598,33 @@ data class CodeGenResult(
 
     fun javaSources(): List<JavaFile> {
         return javaDataTypes
+            .asSequence()
             .plus(javaInterfaces)
             .plus(javaEnumTypes)
             .plus(javaDataFetchers)
             .plus(javaQueryTypes)
             .plus(clientProjections)
             .plus(javaConstants)
+            .toList()
     }
 
     fun kotlinSources(): List<FileSpec> {
         return kotlinDataTypes
+            .asSequence()
             .plus(kotlinInputTypes)
             .plus(kotlinInterfaces)
             .plus(kotlinEnumTypes)
             .plus(kotlinConstants)
             .plus(kotlinClientTypes)
+            .toList()
     }
 }
 
 fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
+    return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
+}
+
+fun Sequence<FieldDefinition>.filterSkipped(): Sequence<FieldDefinition> {
     return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
 }
 

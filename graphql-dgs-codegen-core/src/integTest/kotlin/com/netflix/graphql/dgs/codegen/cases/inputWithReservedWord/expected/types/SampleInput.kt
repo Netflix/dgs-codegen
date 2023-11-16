@@ -9,5 +9,5 @@ import kotlin.collections.List
 public class SampleInput(
   public val `return`: String,
 ) : GraphQLInput() {
-  public override fun fields(): List<Pair<String, Any?>> = listOf("return" to `return`)
+  override fun fields(): List<Pair<String, Any?>> = listOf("return" to `return`)
 }

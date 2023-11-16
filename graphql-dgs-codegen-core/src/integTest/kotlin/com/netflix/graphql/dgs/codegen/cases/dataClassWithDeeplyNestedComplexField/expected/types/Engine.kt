@@ -92,7 +92,7 @@ public class Engine(
       this.performance = { performance }
     }
 
-    public fun build() = Engine(
+    public fun build(): Engine = Engine(
       type = type,
       bhp = bhp,
       size = size,

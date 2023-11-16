@@ -31,6 +31,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonPropertyAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
+import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
@@ -68,7 +69,7 @@ fun generateKotlin2DataTypes(
         .filter { !it.shouldSkip(config) }
         .map { typeDefinition ->
 
-            logger.info("Generating data type ${typeDefinition.name}")
+            logger.info("Generating data type {}", typeDefinition.name)
 
             // get all interfaces this type implements
             val implementedInterfaces = typeLookup.implementedInterfaces(typeDefinition)
@@ -79,11 +80,12 @@ fun generateKotlin2DataTypes(
             val extensionTypes = findTypeExtensions(typeDefinition.name, document.definitions)
 
             // get all fields defined on the type itself or any extension types
-            val fields = listOf(typeDefinition)
+            val fields = sequenceOf(typeDefinition)
                 .plus(extensionTypes)
                 .flatMap { it.fieldDefinitions }
                 .filterSkipped()
                 .filter(ReservedKeywordFilter.filterInvalidNames)
+                .toList()
 
             fun type(field: FieldDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
 
@@ -150,6 +152,7 @@ fun generateKotlin2DataTypes(
                 // add a build method to return the constructed class
                 .addFunction(
                     FunSpec.builder("build")
+                        .returns(typeDefinition.name.toKtTypeName())
                         .addStatement("return ${typeDefinition.name}(\n${fields.joinToString("\n") { "  ${it.name} = ${it.name}," }}\n)")
                         .build()
                 )

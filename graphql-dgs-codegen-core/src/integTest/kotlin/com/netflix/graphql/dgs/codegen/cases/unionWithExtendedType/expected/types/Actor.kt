@@ -36,7 +36,7 @@ public class Actor(
       this.name = { name }
     }
 
-    public fun build() = Actor(
+    public fun build(): Actor = Actor(
       name = name,
     )
   }

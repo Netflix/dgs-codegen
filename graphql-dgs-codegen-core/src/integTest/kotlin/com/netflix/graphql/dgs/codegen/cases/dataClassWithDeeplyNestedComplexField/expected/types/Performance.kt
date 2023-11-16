@@ -54,7 +54,7 @@ public class Performance(
       this.quarterMile = { quarterMile }
     }
 
-    public fun build() = Performance(
+    public fun build(): Performance = Performance(
       zeroToSixty = zeroToSixty,
       quarterMile = quarterMile,
     )

@@ -73,7 +73,7 @@ public class Person(
       this.friends = { friends }
     }
 
-    public fun build() = Person(
+    public fun build(): Person = Person(
       firstname = firstname,
       lastname = lastname,
       friends = friends,

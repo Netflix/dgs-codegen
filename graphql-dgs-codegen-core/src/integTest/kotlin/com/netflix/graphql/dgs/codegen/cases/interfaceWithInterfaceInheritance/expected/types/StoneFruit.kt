@@ -14,7 +14,7 @@ import kotlin.jvm.JvmName
 public sealed interface StoneFruit : Fruit {
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getSeeds")
-  public override val seeds: List<Seed?>?
+  override val seeds: List<Seed?>?
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getFuzzy")

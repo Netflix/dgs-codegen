@@ -54,7 +54,7 @@ public class Person(
       this.lastname = { lastname }
     }
 
-    public fun build() = Person(
+    public fun build(): Person = Person(
       firstname = firstname,
       lastname = lastname,
     )

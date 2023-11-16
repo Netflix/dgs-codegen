@@ -72,7 +72,7 @@ public class Person(
       this.email = { email }
     }
 
-    public fun build() = Person(
+    public fun build(): Person = Person(
       firstname = firstname,
       lastname = lastname,
       email = email,

@@ -36,7 +36,7 @@ public class OtherType(
       this.name = { name }
     }
 
-    public fun build() = OtherType(
+    public fun build(): OtherType = OtherType(
       name = name,
     )
   }

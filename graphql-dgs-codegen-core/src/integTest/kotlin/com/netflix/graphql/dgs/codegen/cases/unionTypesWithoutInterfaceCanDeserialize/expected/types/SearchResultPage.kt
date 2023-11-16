@@ -36,7 +36,7 @@ public class SearchResultPage(
       this.items = { items }
     }
 
-    public fun build() = SearchResultPage(
+    public fun build(): SearchResultPage = SearchResultPage(
       items = items,
     )
   }

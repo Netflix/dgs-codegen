@@ -36,7 +36,7 @@ public class Person(
       this.name = { name }
     }
 
-    public fun build() = Person(
+    public fun build(): Person = Person(
       name = name,
     )
   }
