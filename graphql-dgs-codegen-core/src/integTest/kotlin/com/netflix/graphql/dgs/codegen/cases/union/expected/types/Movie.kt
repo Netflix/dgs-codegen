@@ -36,7 +36,7 @@ public class Movie(
       this.title = { title }
     }
 
-    public fun build() = Movie(
+    public fun build(): Movie = Movie(
       title = title,
     )
   }

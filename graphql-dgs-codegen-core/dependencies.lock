@@ -1,7 +1,7 @@
 {
     "apiDependenciesMetadata": {
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.7.0"
+        "org.jetbrains.kotlin:kotlin-stdlib": {
+            "locked": "1.9.20"
         }
     },
     "compileClasspath": {
@@ -12,7 +12,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
@@ -36,13 +36,19 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30"
@@ -56,7 +62,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
@@ -80,13 +86,19 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30"
@@ -100,7 +112,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.21.0"
@@ -127,28 +139,34 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.23.1"
+            "locked": "3.24.2"
+        },
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30"
@@ -162,7 +180,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.21.0"
@@ -189,28 +207,34 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.23.1"
+            "locked": "3.24.2"
+        },
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30"
@@ -224,7 +248,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.21.0"
@@ -251,62 +275,76 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.23.1"
+            "locked": "3.24.2"
+        },
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.35"
         }
     },
+    "kotlinBuildToolsApiClasspath": {
+        "org.jetbrains.kotlin:kotlin-build-tools-impl": {
+            "locked": "1.9.20"
+        }
+    },
     "kotlinCompilerClasspath": {
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         }
     },
     "kotlinCompilerPluginClasspathIntegTest": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         }
     },
     "kotlinCompilerPluginClasspathMain": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         }
     },
     "kotlinCompilerPluginClasspathTest": {
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         }
     },
     "kotlinKlibCommonizerClasspath": {
         "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         }
     },
     "runtimeClasspath": {
@@ -317,7 +355,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.graphql-java:graphql-java": {
             "firstLevelTransitive": [
@@ -341,19 +379,28 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
+        },
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.35"
@@ -367,7 +414,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.21.0"
@@ -394,28 +441,34 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.23.1"
+            "locked": "3.24.2"
+        },
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30"
@@ -429,7 +482,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.21.0"
@@ -456,28 +509,34 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.23.1"
+            "locked": "3.24.2"
+        },
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30"
@@ -491,7 +550,7 @@
             "locked": "2.13.4"
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "3.5.0"
+            "locked": "4.2.1"
         },
         "com.google.testing.compile:compile-testing": {
             "locked": "0.21.0"
@@ -518,34 +577,43 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.12.0"
+            "locked": "1.14.2"
         },
         "org.assertj:assertj-core": {
-            "locked": "3.23.1"
+            "locked": "3.24.2"
+        },
+        "org.jetbrains.kotlin:kotlin-bom": {
+            "firstLevelTransitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
+            ],
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ],
-            "locked": "1.7.0"
+            "locked": "1.9.20"
+        },
+        "org.jetbrains.kotlinx:kotlinx-serialization-json": {
+            "locked": "1.6.1"
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.junit:junit-bom": {
-            "locked": "5.8.2"
+            "locked": "5.10.1"
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.35"

@@ -55,7 +55,7 @@ public class Person(
       this.email = { email }
     }
 
-    public fun build() = Person(
+    public fun build(): Person = Person(
       name = name,
       email = email,
     )

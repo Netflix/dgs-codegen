@@ -36,7 +36,7 @@ public class RequiredTestType(
       this.isRequired = { isRequired }
     }
 
-    public fun build() = RequiredTestType(
+    public fun build(): RequiredTestType = RequiredTestType(
       isRequired = isRequired,
     )
   }

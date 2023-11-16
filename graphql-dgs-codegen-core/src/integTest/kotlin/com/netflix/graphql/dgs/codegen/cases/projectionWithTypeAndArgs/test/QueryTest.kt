@@ -47,7 +47,9 @@ class QueryTest {
             |    }
             |  }
             |}
-            |""".trimMargin(), query
+            |
+            """.trimMargin(),
+            query
         )
     }
 }

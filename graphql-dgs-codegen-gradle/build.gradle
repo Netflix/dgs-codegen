@@ -24,10 +24,11 @@ apply plugin: 'java-gradle-plugin'
 
 dependencies {
     api project(":graphql-dgs-codegen-core")
-    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin:${Versions.KOTLIN_VERSION}"
+    compileOnly "com.netflix.nebula:gradle-dependency-lock-plugin:latest.release"
+    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin"
 
     testApi gradleTestKit()
-    testImplementation("com.google.guava:guava:31.1-jre")
+    testImplementation("com.google.guava:guava:32.1.+")
 }
 
 description = 'Netflix GraphQL DGS Code Generation Plugin'
@@ -87,6 +88,15 @@ dependencies {
 }
 
 project.afterEvaluate {
+    tasks.named("generateMetadataFileForNebulaPublication") {
+        it.dependsOn("publishPluginJar")
+        it.dependsOn("publishPluginJavaDocsJar")
+    }
+    tasks.named("generateMetadataFileForPluginMavenPublication") {
+        it.dependsOn("publishPluginJar")
+        it.dependsOn("publishPluginJavaDocsJar")
+    }
+
     //Disable marker tasks
     project.tasks.findAll {
         (it.name.contains("Marker") && it.name.contains('Maven')) ||
@@ -97,6 +107,7 @@ project.afterEvaluate {
     }.each {
         it.enabled = false
     }
+
 }
 
 TaskProvider validatePluginsTask = project.tasks.named('validatePlugins')

@@ -25,11 +25,11 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.stream.Collectors
 import kotlin.io.path.createDirectories
 import kotlin.io.path.exists
 import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
-import kotlin.streams.toList
 
 class Kotlin2CodeGenTest {
 
@@ -118,7 +118,7 @@ class Kotlin2CodeGenTest {
             if (!path.exists()) return emptyList()
             return Files.walk(path)
                 .filter { Files.isRegularFile(it) }
-                .toList()
+                .collect(Collectors.toList())
         }
 
         private fun readResource(fileName: String): String {

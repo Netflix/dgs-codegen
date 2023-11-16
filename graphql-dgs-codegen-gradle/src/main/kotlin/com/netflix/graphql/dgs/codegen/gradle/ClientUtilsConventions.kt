@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.gradle
 
+import nebula.plugin.dependencylock.DependencyLockExtension
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
 import java.io.FileNotFoundException
@@ -29,8 +30,17 @@ object ClientUtilsConventions {
 
     private const val CLIENT_UTILS_ARTIFACT_GROUP = "com.netflix.graphql.dgs.codegen"
     private const val CLIENT_UTILS_ARTIFACT_NAME = "graphql-dgs-codegen-shared-core"
+    private const val CLIENT_UTILS_NEBULA_LOCK_ID = "com.netflix.nebula.dependency-lock"
 
     private val logger = Logging.getLogger(ClientUtilsConventions::class.java)
+
+    fun getDependencyString(version: String? = null): String {
+        if (version != null) {
+            return "$CLIENT_UTILS_ARTIFACT_GROUP:$CLIENT_UTILS_ARTIFACT_NAME:$version"
+        }
+
+        return "$CLIENT_UTILS_ARTIFACT_GROUP:$CLIENT_UTILS_ARTIFACT_NAME"
+    }
 
     fun apply(
         project: Project,
@@ -38,10 +48,20 @@ object ClientUtilsConventions {
         optionalCodeClientDependencyScope: Optional<String> = Optional.empty()
     ) {
         clientCoreArtifact(optionalCodeUtilsVersion).ifPresent { dependencyString ->
+            val dependencyLockString = getDependencyString()
+
             val dependencyConfiguration = optionalCodeClientDependencyScope.orElse(GRADLE_CLASSPATH_CONFIGURATION)
             val configurationDependencies = project.configurations.getByName(dependencyConfiguration).dependencies
             configurationDependencies.add(project.dependencies.create(dependencyString))
-            logger.info("DGS CodeGen added [{}] to the {} dependencies.", dependencyString, dependencyConfiguration)
+            logger.info("DGS CodeGen added dependency [{}] to {}.", dependencyString, dependencyConfiguration)
+
+            project.plugins.withId(CLIENT_UTILS_NEBULA_LOCK_ID) {
+                val extension = project.extensions.getByType(DependencyLockExtension::class.java)
+                if (extension != null) {
+                    extension.skippedDependencies.add(dependencyLockString)
+                    logger.info("DGS CodeGen added skipped dependency [{}].", dependencyLockString)
+                }
+            }
         }
     }
 
@@ -61,6 +81,6 @@ object ClientUtilsConventions {
 
     private fun clientCoreArtifact(optionalVersion: Optional<String>): Optional<String> {
         val version = if (optionalVersion.isPresent) optionalVersion else pluginMetaInfVersion
-        return version.map { "$CLIENT_UTILS_ARTIFACT_GROUP:$CLIENT_UTILS_ARTIFACT_NAME:$it" }
+        return version.map(::getDependencyString)
     }
 }

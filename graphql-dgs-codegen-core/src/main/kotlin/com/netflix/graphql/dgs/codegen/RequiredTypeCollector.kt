@@ -34,9 +34,7 @@ import graphql.util.TraverserContext
 
 class RequiredTypeCollector(
     private val document: Document,
-    queries: Set<String> = emptySet(),
-    mutations: Set<String> = emptySet(),
-    subscriptions: Set<String> = emptySet()
+    config: CodeGenConfig
 ) {
     val requiredTypes: Set<String> = LinkedHashSet()
 
@@ -44,9 +42,14 @@ class RequiredTypeCollector(
         val fieldDefinitions = mutableListOf<FieldDefinition>()
         for (definition in document.definitions.asSequence().filterIsInstance<ObjectTypeDefinition>()) {
             when (definition.name) {
-                "Query" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in queries }
-                "Mutation" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in mutations }
-                "Subscription" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in subscriptions }
+                "Query" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeQueries }
+                "Mutation" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeMutations }
+                "Subscription" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeSubscriptions }
+                else -> {
+                    if (config?.generateClientApiv2 == true || config?.generateClientApi == true) {
+                        fieldDefinitions.addAll(definition.fieldDefinitions)
+                    }
+                }
             }
         }
 

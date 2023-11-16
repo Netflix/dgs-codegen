@@ -29,7 +29,6 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
-import java.math.BigInteger
 import java.util.stream.Stream
 import java.util.stream.Stream.of
 
@@ -562,9 +561,9 @@ class KotlinCodeGenTest {
                 |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
                 |public data class Employee(
                 |  @JsonProperty("firstname")
-                |  public override val firstname: String? = null,
+                |  override val firstname: String? = null,
                 |  @JsonProperty("lastname")
-                |  public override val lastname: String? = null,
+                |  override val lastname: String? = null,
                 |  @JsonProperty("company")
                 |  public val company: String? = null,
                 |) : Person {
@@ -884,6 +883,83 @@ class KotlinCodeGenTest {
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinEnumTypes)
     }
 
+    @Nested
+    inner class EnumAnnotationTests {
+        @Test
+        fun `adds @Deprecated annotation from schema directives when setting enabled`() {
+            val schema = """
+            enum TownJobTypes {
+                LAMPLIGHTER @deprecated(reason: "town switched to electric lights")
+            }
+            """.trimIndent()
+
+            val result = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+            val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
+
+            assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.enums
+                |
+                |import kotlin.Deprecated
+                |
+                |public enum class TownJobTypes {
+                |  @Deprecated(message = "town switched to electric lights")
+                |  LAMPLIGHTER,
+                |  ;
+                |
+                |  public companion object
+                |}
+                |
+                """.trimMargin()
+
+            )
+            assertCompilesKotlin(result.kotlinEnumTypes)
+        }
+
+        @Test
+        fun `adds custom annotation when setting enabled`() {
+            val schema = """
+                enum SomeEnum {
+                    ENUM_VALUE @annotate(name: "ValidName", type: "validator")
+                }
+            """.trimIndent()
+
+            val result = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    generateCustomAnnotations = true
+                )
+            ).generate()
+            val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
+
+            assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.enums
+                |
+                |import ValidName
+                |
+                |public enum class SomeEnum {
+                |  @ValidName
+                |  ENUM_VALUE,
+                |  ;
+                |
+                |  public companion object
+                |}
+                |
+                """.trimMargin()
+            )
+        }
+    }
+
     @Test
     fun generateExtendedEnum() {
         val schema = """
@@ -948,6 +1024,61 @@ class KotlinCodeGenTest {
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat((dataTypes[0].members[0] as TypeSpec).propertySpecs[0].type.toString()).isEqualTo("mypackage.Person?")
+    }
+
+    @Test
+    fun `Use mapped type name when the type implements not-mapped interface`() {
+        val schema = """
+            interface Pet {
+              name: ID!
+            }
+            type Cat implements Pet {
+              name: ID!
+            }
+            type Dog implements Pet {
+              name: ID!
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    "Cat" to "mypackage.Cat"
+                )
+            )
+        ).generate()
+        val interfaces = codeGenResult.kotlinInterfaces
+
+        assertThat(interfaces.size).isEqualTo(1)
+        assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import kotlin.String
+                |import mypackage.Cat
+                |
+                |@JsonTypeInfo(
+                |  use = JsonTypeInfo.Id.NAME,
+                |  include = JsonTypeInfo.As.PROPERTY,
+                |  property = "__typename",
+                |)
+                |@JsonSubTypes(value = [
+                |  JsonSubTypes.Type(value = Cat::class, name = "Cat"),
+                |  JsonSubTypes.Type(value = Dog::class, name = "Dog")
+                |])
+                |public interface Pet {
+                |  public val name: String
+                |
+                |  public companion object
+                |}
+                |
+            """.trimMargin()
+        )
     }
 
     class MappedTypesTestCases : ArgumentsProvider {
@@ -1638,7 +1769,7 @@ class KotlinCodeGenTest {
 
         assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(2)
 
-        val fileSpec0 = codeGenResult.kotlinDataTypes[0] as FileSpec
+        val fileSpec0 = codeGenResult.kotlinDataTypes[0]
         assertThat(fileSpec0.name).isEqualTo("FooInput")
         assertThat(fileSpec0.members.size).isEqualTo(1)
         val typeSpec0 = fileSpec0.members[0] as TypeSpec
@@ -1887,7 +2018,6 @@ class KotlinCodeGenTest {
                 language = Language.KOTLIN
             )
         ).generate()
-        val dataTypes = codeGenResult.kotlinDataTypes
         val interfaces = codeGenResult.kotlinInterfaces
 
         assertThat(interfaces.size).isEqualTo(1)
@@ -1962,7 +2092,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
         assertThat(annotationSpec.members).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("This is going bye bye"))
@@ -1997,10 +2127,10 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
         assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2030,10 +2160,10 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
         assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2063,10 +2193,10 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.validator.ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
         assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2109,7 +2239,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeImports = mapOf("validator" to "com.test.validator"),
                 generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
@@ -2117,10 +2247,10 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
         assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2143,7 +2273,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeImports = mapOf("validator" to "com.test.validator"),
                 generateCustomAnnotations = true
             )
         ).generate().kotlinDataTypes
@@ -2151,10 +2281,10 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf(BigInteger("10")))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
         assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2177,8 +2307,8 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator")),
-                includeClassImports = mapOf("ValidPerson" to mapOf(Pair("BasicValidation", "com.test.validator.groups"))),
+                includeImports = mapOf("validator" to "com.test.validator"),
+                includeClassImports = mapOf("ValidPerson" to mapOf("BasicValidation" to "com.test.validator.groups")),
                 generateCustomAnnotations = true
             )
         )
@@ -2187,7 +2317,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.test.validator.groups.BasicValidation")
@@ -2212,7 +2342,7 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeImports = mapOf("validator" to "com.test.validator"),
                 generateCustomAnnotations = true
             )
         )
@@ -2221,7 +2351,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("BasicValidation.class") // treat as string when no mapping is provided
@@ -2246,11 +2376,11 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeImports = mapOf("validator" to "com.test.validator"),
                 includeClassImports = mapOf(
                     "ValidPerson" to mapOf(
-                        Pair("BasicValidation", "com.test.validator.groups"),
-                        Pair("AdvanceValidation", "com.test.validator.groups")
+                        "BasicValidation" to "com.test.validator.groups",
+                        "AdvanceValidation" to "com.test.validator.groups"
                     )
                 ),
                 generateCustomAnnotations = true
@@ -2261,7 +2391,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.test.validator.groups.BasicValidation", "com.test.validator.groups.AdvanceValidation")
@@ -2287,15 +2417,15 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("dateOfBirth", "com.test.validator.dob")),
+                includeImports = mapOf("validator" to "com.test.validator", "dateOfBirth" to "com.test.validator.dob"),
                 includeClassImports = mapOf(
                     "ValidPerson" to mapOf(
-                        Pair("BasicValidation", "com.test.validator.groups"),
-                        Pair("AdvanceValidation", "com.test.validator.groups")
+                        "BasicValidation" to "com.test.validator.groups",
+                        "AdvanceValidation" to "com.test.validator.groups"
                     ),
                     "ValidDateOfBirth" to mapOf(
-                        Pair("PreliminaryValidation", "com.test.validator.dob.levels"),
-                        Pair("SecondaryValidation", "com.test.validator.dob.levels")
+                        "PreliminaryValidation" to "com.test.validator.dob.levels",
+                        "SecondaryValidation" to "com.test.validator.dob.levels"
                     )
                 ),
                 generateCustomAnnotations = true
@@ -2306,7 +2436,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.test.validator.groups.BasicValidation", "com.test.validator.groups.AdvanceValidation")
@@ -2337,9 +2467,9 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("sexType", "com.enums")),
+                includeImports = mapOf("validator" to "com.test.validator", "sexType" to "com.enums"),
                 includeEnumImports = mapOf(
-                    "ValidPerson" to mapOf(Pair("sexType", "com.enums"))
+                    "ValidPerson" to mapOf("sexType" to "com.enums")
                 ),
                 generateCustomAnnotations = true
             )
@@ -2348,7 +2478,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.MALE")
@@ -2373,9 +2503,9 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                includeImports = mapOf("validator" to "com.test.validator", "types" to "com.enums"),
                 includeEnumImports = mapOf(
-                    "ValidPerson" to mapOf(Pair("types", "com.enums"))
+                    "ValidPerson" to mapOf("types" to "com.enums")
                 ),
                 generateCustomAnnotations = true
             )
@@ -2384,7 +2514,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
@@ -2410,10 +2540,10 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("personType", "com.personType.enums")),
+                includeImports = mapOf("validator" to "com.test.validator", "personType" to "com.personType.enums"),
                 includeEnumImports = mapOf(
-                    "ValidPerson" to mapOf(Pair("types", "com.enums")),
-                    "ValidType" to mapOf(Pair("types", "com.personType.enums"))
+                    "ValidPerson" to mapOf("types" to "com.enums"),
+                    "ValidType" to mapOf("types" to "com.personType.enums")
                 ),
                 generateCustomAnnotations = true
             )
@@ -2422,7 +2552,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
@@ -2453,9 +2583,9 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                includeImports = mapOf("validator" to "com.test.validator", "types" to "com.enums"),
                 includeEnumImports = mapOf(
-                    "ValidPerson" to mapOf(Pair("types", "com.enums"))
+                    "ValidPerson" to mapOf("types" to "com.enums")
                 ),
                 generateCustomAnnotations = true
             )
@@ -2464,7 +2594,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
@@ -2489,9 +2619,9 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                includeImports = mapOf("validator" to "com.test.validator", "types" to "com.enums"),
                 includeEnumImports = mapOf(
-                    "ValidPerson" to mapOf(Pair("types", "com.enums"))
+                    "ValidPerson" to mapOf("types" to "com.enums")
                 ),
                 generateCustomAnnotations = true
             )
@@ -2500,7 +2630,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (((dataTypes as ArrayList<*>)[0] as FileSpec).members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
@@ -2526,9 +2656,9 @@ class KotlinCodeGenTest {
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                includeImports = mapOf("validator" to "com.test.validator", "types" to "com.enums"),
                 includeEnumImports = mapOf(
-                    "ValidPerson" to mapOf(Pair("types", "com.enums"))
+                    "ValidPerson" to mapOf("types" to "com.enums")
                 ),
                 generateCustomAnnotations = true
             )
@@ -2537,7 +2667,7 @@ class KotlinCodeGenTest {
         assertThat(dataTypes).hasSize(1)
         assertThat(dataTypes[0].name).isEqualTo("Person")
 
-        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotationSpecs[0]
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
@@ -2565,9 +2695,9 @@ class KotlinCodeGenTest {
                     schemas = setOf(schema),
                     packageName = basePackageName,
                     language = Language.KOTLIN,
-                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                    includeImports = mapOf("validator" to "com.test.validator", "types" to "com.enums"),
                     includeEnumImports = mapOf(
-                        "ValidPerson" to mapOf(Pair("types", "com.enums"))
+                        "ValidPerson" to mapOf("types" to "com.enums")
                     ),
                     generateCustomAnnotations = true
                 )
@@ -2589,7 +2719,7 @@ class KotlinCodeGenTest {
                     schemas = setOf(schema),
                     packageName = basePackageName,
                     language = Language.KOTLIN,
-                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                    includeImports = mapOf("validator" to "com.test.validator", "types" to "com.enums"),
                     generateCustomAnnotations = true
                 )
             ).generate()
@@ -2610,7 +2740,7 @@ class KotlinCodeGenTest {
                     schemas = setOf(schema),
                     packageName = basePackageName,
                     language = Language.KOTLIN,
-                    includeImports = mapOf(Pair("validator", "com.test.validator"), Pair("types", "com.enums")),
+                    includeImports = mapOf("validator" to "com.test.validator", "types" to "com.enums"),
                     generateCustomAnnotations = true
                 )
             ).generate()
@@ -2907,9 +3037,9 @@ class KotlinCodeGenTest {
             |  JsonSubTypes.Type(value = Talent::class, name = "Talent")
             |])
             |public interface Employee : Person {
-            |  public override val firstname: String?
+            |  override val firstname: String?
             |
-            |  public override val lastname: String?
+            |  override val lastname: String?
             |
             |  public val company: String?
             |
@@ -2930,11 +3060,11 @@ class KotlinCodeGenTest {
             |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
             |public data class Talent(
             |  @JsonProperty("firstname")
-            |  public override val firstname: String? = null,
+            |  override val firstname: String? = null,
             |  @JsonProperty("lastname")
-            |  public override val lastname: String? = null,
+            |  override val lastname: String? = null,
             |  @JsonProperty("company")
-            |  public override val company: String? = null,
+            |  override val company: String? = null,
             |  @JsonProperty("imdbProfile")
             |  public val imdbProfile: String? = null,
             |) : Employee {
@@ -3529,7 +3659,7 @@ It takes a title and such.
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeImports = mapOf("validator" to "com.test.validator"),
                 includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
                 generateCustomAnnotations = false,
                 generateClientApi = true,
@@ -3540,8 +3670,8 @@ It takes a title and such.
         assertThat(codeGenResult.kotlinDataTypes.size).isEqualTo(1)
         val person = codeGenResult.kotlinDataTypes.single()
         assertThat(person.name).isEqualTo("Person")
-        assertThat((person.members[0] as TypeSpec).annotationSpecs).hasSize(1)
-        val deprecatedAnnotationSpec = ((person.members[0] as TypeSpec).annotationSpecs)[0]
+        assertThat((person.members[0] as TypeSpec).annotations).hasSize(1)
+        val deprecatedAnnotationSpec = ((person.members[0] as TypeSpec).annotations)[0]
         assertThat((deprecatedAnnotationSpec.typeName as ClassName).simpleNames[0]).isEqualTo("Deprecated")
         assertThat(deprecatedAnnotationSpec.canonicalName()).isEqualTo("kotlin.Deprecated")
         val fields = ((person.members[0]) as TypeSpec).propertySpecs
@@ -3573,5 +3703,32 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).contains(basePackageName)
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.time.LocalDate")
+    }
+
+    @Test
+    fun `The default value for Locale should be overridden and wrapped`() {
+        val schema = """
+            scalar Locale @specifiedBy(url:"https://tools.ietf.org/html/bcp47")
+
+            input NameInput {
+                  locale: Locale = "en-US"
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    "Locale" to "java.util.Locale"
+                )
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.kotlinDataTypes
+        val typeSpec = dataTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.primaryConstructor!!.parameters[0].defaultValue.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
+        assertCompilesKotlin(dataTypes)
     }
 }

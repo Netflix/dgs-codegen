@@ -63,9 +63,7 @@ class CodeGen(private val config: CodeGenConfig) {
     private val document = buildDocument()
     private val requiredTypeCollector = RequiredTypeCollector(
         document = document,
-        queries = config.includeQueries,
-        mutations = config.includeMutations,
-        subscriptions = config.includeSubscriptions
+        config = config
     )
 
     @Suppress("DuplicatedCode")
@@ -120,9 +118,8 @@ class CodeGen(private val config: CodeGenConfig) {
         config.schemaJarFilesFromDependencies.forEach {
             val zipFile = ZipFile(it)
             zipFile.entries().toList().forEach { entry ->
-                if (!entry.isDirectory && entry.name.startsWith("META-INF") && (entry.name.endsWith(".graphqls")) || entry.name.endsWith(
-                        ".graphql"
-                    )
+                if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
+                    (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql"))
                 ) {
                     logger.info("Generating schema from ${it.name}:  ${entry.name}")
                     readerBuilder.reader(InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8), "codegen")
@@ -237,11 +234,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
                 .sortedBy { it.name.length }
                 .map {
-                    if (config.generateClientApiv2) {
-                        ClientApiGeneratorv2(config, document).generate(it, methodNames)
-                    } else {
-                        ClientApiGenerator(config, document).generate(it, methodNames)
-                    }
+                    ClientApiGenerator(config, document).generate(it, methodNames)
                 }
                 .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
         } else CodeGenResult()
@@ -253,11 +246,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.hasDirective("key") }
                 .toList()
-            if (config.generateClientApiv2) {
-                ClientApiGeneratorv2(config, document).generateEntities(federatedDefinitions)
-            } else {
-                ClientApiGenerator(config, document).generateEntities(federatedDefinitions)
-            }
+            ClientApiGenerator(config, document).generateEntities(federatedDefinitions)
         } else CodeGenResult()
     }
 
@@ -326,9 +315,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val requiredTypeCollector = RequiredTypeCollector(
             document = document,
-            queries = config.includeQueries,
-            mutations = config.includeMutations,
-            subscriptions = config.includeSubscriptions
+            config = config
         )
         val requiredTypes = requiredTypeCollector.requiredTypes
 
@@ -489,6 +476,7 @@ class CodeGenConfig(
     private val subPackageNameDocs: String = "docs",
     var language: Language = Language.JAVA,
     var generateBoxedTypes: Boolean = false,
+    var generateIsGetterForPrimitiveBooleanFields: Boolean = false,
     var generateClientApi: Boolean = false,
     var generateClientApiv2: Boolean = false,
     var generateInterfaces: Boolean = false,
@@ -610,25 +598,33 @@ data class CodeGenResult(
 
     fun javaSources(): List<JavaFile> {
         return javaDataTypes
+            .asSequence()
             .plus(javaInterfaces)
             .plus(javaEnumTypes)
             .plus(javaDataFetchers)
             .plus(javaQueryTypes)
             .plus(clientProjections)
             .plus(javaConstants)
+            .toList()
     }
 
     fun kotlinSources(): List<FileSpec> {
         return kotlinDataTypes
+            .asSequence()
             .plus(kotlinInputTypes)
             .plus(kotlinInterfaces)
             .plus(kotlinEnumTypes)
             .plus(kotlinConstants)
             .plus(kotlinClientTypes)
+            .toList()
     }
 }
 
 fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
+    return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
+}
+
+fun Sequence<FieldDefinition>.filterSkipped(): Sequence<FieldDefinition> {
     return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
 }
 

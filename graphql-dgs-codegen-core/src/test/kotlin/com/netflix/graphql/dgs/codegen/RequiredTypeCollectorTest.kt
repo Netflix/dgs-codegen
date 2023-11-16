@@ -56,35 +56,35 @@ class RequiredTypeCollectorTest {
 
     @Test
     fun `Related input types and enums should be included`() {
-        val types = RequiredTypeCollector(document, setOf("search")).requiredTypes
+        val types = RequiredTypeCollector(document, CodeGenConfig(includeQueries = setOf("search"))).requiredTypes
 
         assertThat(types).contains("Filter", "ShowType")
     }
 
     @Test
     fun `Related nested input types and enums should be included`() {
-        val types = RequiredTypeCollector(document, setOf("searchByExample")).requiredTypes
+        val types = RequiredTypeCollector(document, CodeGenConfig(includeQueries = setOf("searchByExample"))).requiredTypes
 
         assertThat(types).contains("ExampleShow", "ExampleActor", "ShowType")
     }
 
     @Test
     fun `Unrelated input types should be omitted`() {
-        val types = RequiredTypeCollector(document, setOf("searchByExample")).requiredTypes
+        val types = RequiredTypeCollector(document, CodeGenConfig(includeQueries = setOf("searchByExample"))).requiredTypes
 
         assertThat(types).doesNotContain("Filter")
     }
 
     @Test
     fun `All related input types should be included for multiple queries`() {
-        val types = RequiredTypeCollector(document, setOf("searchByExample", "search")).requiredTypes
+        val types = RequiredTypeCollector(document, CodeGenConfig(includeQueries = setOf("searchByExample", "search"))).requiredTypes
 
         assertThat(types).contains("ExampleShow", "Filter", "ShowType", "ExampleActor")
     }
 
     @Test
     fun `Lists of required input types should be included`() {
-        val types = RequiredTypeCollector(document, setOf("searchByExamples")).requiredTypes
+        val types = RequiredTypeCollector(document, CodeGenConfig(includeQueries = setOf("searchByExamples"))).requiredTypes
         assertThat(types).contains("ExampleShow", "ExampleActor", "ShowType")
     }
 }

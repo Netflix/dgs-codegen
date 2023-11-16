@@ -16,7 +16,7 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.clientapiv2
+package com.netflix.graphql.dgs.codegen.clientapi
 
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
@@ -43,7 +43,7 @@ class ClientApiGenSubscriptionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -76,7 +76,7 @@ class ClientApiGenSubscriptionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true
+                generateClientApiv2 = true
             )
         ).generate()
 
@@ -101,7 +101,7 @@ class ClientApiGenSubscriptionTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateClientApi = true,
+                generateClientApiv2 = true,
                 includeSubscriptions = setOf("movieTitle")
             )
         ).generate()

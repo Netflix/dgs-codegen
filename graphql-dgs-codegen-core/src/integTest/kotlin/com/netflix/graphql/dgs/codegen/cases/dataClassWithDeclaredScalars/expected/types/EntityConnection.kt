@@ -54,7 +54,7 @@ public class EntityConnection(
       this.edges = { edges }
     }
 
-    public fun build() = EntityConnection(
+    public fun build(): EntityConnection = EntityConnection(
       pageInfo = pageInfo,
       edges = edges,
     )

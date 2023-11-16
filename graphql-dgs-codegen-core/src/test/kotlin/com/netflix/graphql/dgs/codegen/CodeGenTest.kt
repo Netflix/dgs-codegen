@@ -174,6 +174,34 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateDataClassWithBooleanPrimitiveCreatesIsGetter() {
+        val schema = """
+            type MyType {
+                truth: Boolean!
+                boxedTruth: Boolean
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateIsGetterForPrimitiveBooleanFields = true
+            )
+        ).generate()
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.fieldSpecs[0].type.toString()).isEqualTo("boolean")
+        assertThat(typeSpec.methodSpecs[0].returnType.toString()).isEqualTo("boolean")
+        assertThat(typeSpec.methodSpecs[0].name.toString()).isEqualTo("isTruth")
+        assertThat(typeSpec.methodSpecs[1].name.toString()).isEqualTo("setTruth")
+
+        assertThat(typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.lang.Boolean")
+        assertThat(typeSpec.methodSpecs[2].returnType.toString()).isEqualTo("java.lang.Boolean")
+        assertThat(typeSpec.methodSpecs[2].name.toString()).isEqualTo("getBoxedTruth")
+        assertThat(typeSpec.methodSpecs[3].name.toString()).isEqualTo("setBoxedTruth")
+    }
+
+    @Test
     fun generateBoxedDataClassWithNonNullablePrimitive() {
         val schema = """
             type MyType {
@@ -498,6 +526,73 @@ class CodeGenTest {
                |  String getLastname();
                |
                |  void setLastname(String lastname);
+               |}
+               |
+            """.trimMargin()
+        )
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateInterfaceClassWithBooleanPrimitiveCreatesIsGetter() {
+        val schema = """
+            type Query {
+                featureToggles: [FeatureToggle]
+            }
+            
+            interface FeatureToggle {
+                enabled: Boolean!
+                boxedEnabled: Boolean
+            }
+            
+            type AdminFeatureToggle implements FeatureToggle {
+                enabled: Boolean!
+                boxedEnabled: Boolean
+            }
+        """.trimIndent()
+
+        val (dataTypes, interfaces) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateIsGetterForPrimitiveBooleanFields = true
+            )
+        ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val employee = dataTypes.single().typeSpec
+        // Check data class
+        assertThat(employee.name).isEqualTo("AdminFeatureToggle")
+        assertThat(employee.fieldSpecs.size).isEqualTo(2)
+        assertThat(employee.fieldSpecs).extracting("name").contains("enabled", "boxedEnabled")
+
+        val annotation = employee.annotations.single()
+        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+
+        val person = interfaces[0]
+        assertThat(person.toString()).isEqualTo(
+            """
+               |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+               |
+               |import com.fasterxml.jackson.annotation.JsonSubTypes;
+               |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import java.lang.Boolean;
+               |
+               |@JsonTypeInfo(
+               |    use = JsonTypeInfo.Id.NAME,
+               |    include = JsonTypeInfo.As.PROPERTY,
+               |    property = "__typename"
+               |)
+               |@JsonSubTypes(@JsonSubTypes.Type(value = AdminFeatureToggle.class, name = "AdminFeatureToggle"))
+               |public interface FeatureToggle {
+               |  boolean isEnabled();
+               |
+               |  void setEnabled(boolean enabled);
+               |
+               |  Boolean getBoxedEnabled();
+               |
+               |  void setBoxedEnabled(Boolean boxedEnabled);
                |}
                |
             """.trimMargin()
@@ -870,6 +965,84 @@ class CodeGenTest {
         assertCompilesJava(codeGenResult.javaEnumTypes)
     }
 
+    @Nested
+    inner class EnumAnnotationTest {
+        @Test
+        fun `generates annotations from directive`() {
+            val schema = """
+            enum EmployeeTypes {
+                ENGINEER @deprecated(reason: "chatGPT does the engineering now")
+                MANAGER
+                DIRECTOR
+            }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+
+            val enum = codeGenResult.javaEnumTypes[0].toString()
+
+            assertThat(enum).isEqualTo(
+                """
+            package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            
+            import java.lang.Deprecated;
+            
+            public enum EmployeeTypes {
+              /**
+               * chatGPT does the engineering now
+               */
+              @Deprecated
+              ENGINEER,
+            
+              MANAGER,
+            
+              DIRECTOR
+            }
+            
+                """.trimIndent()
+            )
+
+            assertCompilesJava(codeGenResult.javaEnumTypes)
+        }
+
+        @Test
+        fun `adds custom annotation when setting enabled`() {
+            val schema = """
+                enum SomeEnum {
+                    ENUM_VALUE @annotate(name: "ValidName", type: "validator")
+                }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateCustomAnnotations = true
+                )
+            ).generate()
+
+            val enum = codeGenResult.javaEnumTypes[0].toString()
+
+            assertThat(enum).isEqualTo(
+                """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |public enum SomeEnum {
+                |  @ValidName
+                |  ENUM_VALUE
+                |}
+                |
+                """.trimMargin()
+            )
+        }
+    }
+
     @Test
     fun generateExtendedEnum() {
         val schema = """
@@ -1079,6 +1252,61 @@ class CodeGenTest {
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.fieldSpecs[0].type.toString()).isEqualTo("mypackage.Person")
+    }
+
+    @Test
+    fun `Use mapped type name when the type implements not-mapped interface`() {
+        val schema = """
+            interface Pet {
+              name: ID!
+            }
+            type Cat implements Pet {
+              name: ID!
+            }
+            type Dog implements Pet {
+              name: ID!
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.JAVA,
+                typeMapping = mapOf(
+                    "Cat" to "mypackage.Cat"
+                )
+            )
+        ).generate()
+        val interfaces = codeGenResult.javaInterfaces
+
+        assertThat(interfaces.size).isEqualTo(1)
+        assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonSubTypes;
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import java.lang.String;
+                |import mypackage.Cat;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NAME,
+                |    include = JsonTypeInfo.As.PROPERTY,
+                |    property = "__typename"
+                |)
+                |@JsonSubTypes({
+                |    @JsonSubTypes.Type(value = Cat.class, name = "Cat"),
+                |    @JsonSubTypes.Type(value = Dog.class, name = "Dog")
+                |})
+                |public interface Pet {
+                |  String getName();
+                |
+                |  void setName(String name);
+                |}
+                |
+            """.trimMargin()
+        )
     }
 
     @Test
@@ -2414,6 +2642,7 @@ class CodeGenTest {
 
             type Apple implements Fruit {
               seeds: [Seed]
+              truth: Boolean!
             }
 
             type Seed {
@@ -2425,7 +2654,8 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateInterfaces = true
+                generateInterfaces = true,
+                generateIsGetterForPrimitiveBooleanFields = true
             )
         ).generate()
 
@@ -2435,6 +2665,42 @@ class CodeGenTest {
         val iapple = interfaces[0]
         assertThat(iapple.typeSpec.name).isEqualTo("IApple")
         assertThat(iapple.typeSpec.fieldSpecs).isEmpty()
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateObjectTypeInterfaceWithPrimitiveBooleanShouldUseIsGetter() {
+        val schema = """
+            interface Truthy {
+              truth: Boolean!
+            }
+
+            type Truth implements Truthy {
+              truth: Boolean!
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true,
+                generateIsGetterForPrimitiveBooleanFields = true
+            )
+        ).generate()
+
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
+
+        val itruth = interfaces[0]
+        assertThat(itruth.typeSpec.name).isEqualTo("ITruth")
+        assertThat(itruth.typeSpec.fieldSpecs).isEmpty()
+
+        val itruthy = interfaces[1]
+        assertThat(itruthy.typeSpec.name).isEqualTo("Truthy")
+        assertThat(itruthy.typeSpec.fieldSpecs).isEmpty()
+        assertThat(itruthy.typeSpec.methodSpecs[0].name).isEqualTo("isTruth")
 
         assertCompilesJava(dataTypes + interfaces)
     }
@@ -3016,7 +3282,7 @@ class CodeGenTest {
         assertThat(searchResultPage.typeSpec.name).isEqualTo("SearchResultPage")
         assertThat(searchResultPage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("ISearchResultPage")
         assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
-        parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
+
         parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("SearchResult")
@@ -3223,11 +3489,6 @@ It takes a title and such.
                 )
             )
         }
-
-        @JvmStatic
-        fun generateDataClassesWithParameterizedMappedTypesWrongCases(): Stream<Arguments> = Stream.of(
-            arguments("java.util.Map<String,String,>")
-        )
     }
 
     @Test
@@ -4135,7 +4396,7 @@ It takes a title and such.
             }
         """.trimIndent()
 
-        val (dataTypes, javaInterfaces) = CodeGen(
+        val (dataTypes, _) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
@@ -4211,5 +4472,30 @@ It takes a title and such.
 
         assertThat(dataTypes[0].typeSpec.superinterfaces[0].toString()).isEqualTo("java.lang.String")
         assertThat(dataTypes[1].typeSpec.superinterfaces[0].toString()).isEqualTo("java.lang.String")
+    }
+
+    @Test
+    fun `The default value for Locale should be overridden and wrapped`() {
+        val schema = """
+            scalar Locale @specifiedBy(url:"https://tools.ietf.org/html/bcp47")
+
+            input NameInput {
+                  locale: Locale = "en-US"
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "Locale" to "java.util.Locale"
+                )
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
+        assertCompilesJava(dataTypes)
     }
 }

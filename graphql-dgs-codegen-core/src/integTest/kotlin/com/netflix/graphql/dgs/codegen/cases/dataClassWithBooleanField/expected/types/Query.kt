@@ -35,7 +35,7 @@ public class Query(
       this.test = { test }
     }
 
-    public fun build() = Query(
+    public fun build(): Query = Query(
       test = test,
     )
   }

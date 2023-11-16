@@ -73,7 +73,7 @@ public class Human(
       this.totalCredits = { totalCredits }
     }
 
-    public fun build() = Human(
+    public fun build(): Human = Human(
       id = id,
       name = name,
       totalCredits = totalCredits,

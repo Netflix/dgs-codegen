@@ -9,5 +9,5 @@ import kotlin.collections.List
 public class ColorFilter(
   public val color: Color? = default<ColorFilter, Color?>("color"),
 ) : GraphQLInput() {
-  public override fun fields(): List<Pair<String, Any?>> = listOf("color" to color)
+  override fun fields(): List<Pair<String, Any?>> = listOf("color" to color)
 }

@@ -28,17 +28,17 @@ public class Talent(
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getFirstname")
-  public override val firstname: String
+  override val firstname: String
     get() = _firstname.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getLastname")
-  public override val lastname: String?
+  override val lastname: String?
     get() = _lastname.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getCompany")
-  public override val company: String?
+  override val company: String?
     get() = _company.invoke()
 
   @get:JvmName("getImdbProfile")
@@ -94,7 +94,7 @@ public class Talent(
       this.imdbProfile = { imdbProfile }
     }
 
-    public fun build() = Talent(
+    public fun build(): Talent = Talent(
       firstname = firstname,
       lastname = lastname,
       company = company,

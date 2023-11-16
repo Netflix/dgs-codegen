@@ -36,7 +36,7 @@ public class Query(
       this.types = { types }
     }
 
-    public fun build() = Query(
+    public fun build(): Query = Query(
       types = types,
     )
   }

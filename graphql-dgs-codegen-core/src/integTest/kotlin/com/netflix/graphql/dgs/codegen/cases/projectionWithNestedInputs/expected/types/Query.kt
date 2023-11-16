@@ -54,7 +54,7 @@ public class Query(
       this.q2 = { q2 }
     }
 
-    public fun build() = Query(
+    public fun build(): Query = Query(
       q1 = q1,
       q2 = q2,
     )

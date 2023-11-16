@@ -72,7 +72,7 @@ public class Car(
       this.engine = { engine }
     }
 
-    public fun build() = Car(
+    public fun build(): Car = Car(
       make = make,
       model = model,
       engine = engine,

@@ -54,7 +54,7 @@ public class EntityEdge(
       this.node = { node }
     }
 
-    public fun build() = EntityEdge(
+    public fun build(): EntityEdge = EntityEdge(
       cursor = cursor,
       node = node,
     )

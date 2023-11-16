@@ -72,7 +72,7 @@ public class Droid(
       this.primaryFunction = { primaryFunction }
     }
 
-    public fun build() = Droid(
+    public fun build(): Droid = Droid(
       id = id,
       name = name,
       primaryFunction = primaryFunction,

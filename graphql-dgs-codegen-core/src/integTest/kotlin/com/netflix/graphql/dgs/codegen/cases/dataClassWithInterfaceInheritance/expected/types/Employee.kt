@@ -17,11 +17,11 @@ import kotlin.jvm.JvmName
 public sealed interface Employee : Person {
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getFirstname")
-  public override val firstname: String
+  override val firstname: String
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getLastname")
-  public override val lastname: String?
+  override val lastname: String?
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getCompany")
