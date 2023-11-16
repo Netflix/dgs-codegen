@@ -10,5 +10,5 @@ import kotlin.collections.List
 public class SomeType(
   public val numbers: List<Int?>? = default<SomeType, List<Int?>?>("numbers"),
 ) : GraphQLInput() {
-  public override fun fields(): List<Pair<String, Any?>> = listOf("numbers" to numbers)
+  override fun fields(): List<Pair<String, Any?>> = listOf("numbers" to numbers)
 }

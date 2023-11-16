@@ -18,5 +18,5 @@ import kotlin.jvm.JvmName
 public sealed interface Entity : Node {
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getId")
-  public override val id: String
+  override val id: String
 }

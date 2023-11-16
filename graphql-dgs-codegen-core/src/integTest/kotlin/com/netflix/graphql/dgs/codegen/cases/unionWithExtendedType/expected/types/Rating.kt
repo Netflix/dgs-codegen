@@ -36,7 +36,7 @@ public class Rating(
       this.stars = { stars }
     }
 
-    public fun build() = Rating(
+    public fun build(): Rating = Rating(
       stars = stars,
     )
   }

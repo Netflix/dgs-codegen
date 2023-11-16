@@ -23,7 +23,7 @@ public class Vegetarian(
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getCalories")
-  public override val calories: String?
+  override val calories: String?
     get() = _calories.invoke()
 
   @get:JvmName("getVegetables")
@@ -57,7 +57,7 @@ public class Vegetarian(
       this.vegetables = { vegetables }
     }
 
-    public fun build() = Vegetarian(
+    public fun build(): Vegetarian = Vegetarian(
       calories = calories,
       vegetables = vegetables,
     )

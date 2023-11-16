@@ -54,7 +54,7 @@ public class Query(
       this.entityConnection = { entityConnection }
     }
 
-    public fun build() = Query(
+    public fun build(): Query = Query(
       entity = entity,
       entityConnection = entityConnection,
     )

@@ -3282,7 +3282,7 @@ class CodeGenTest {
         assertThat(searchResultPage.typeSpec.name).isEqualTo("SearchResultPage")
         assertThat(searchResultPage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("ISearchResultPage")
         assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
-        parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
+
         parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("SearchResult")
@@ -3489,11 +3489,6 @@ It takes a title and such.
                 )
             )
         }
-
-        @JvmStatic
-        fun generateDataClassesWithParameterizedMappedTypesWrongCases(): Stream<Arguments> = Stream.of(
-            arguments("java.util.Map<String,String,>")
-        )
     }
 
     @Test
@@ -4401,7 +4396,7 @@ It takes a title and such.
             }
         """.trimIndent()
 
-        val (dataTypes, javaInterfaces) = CodeGen(
+        val (dataTypes, _) = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,

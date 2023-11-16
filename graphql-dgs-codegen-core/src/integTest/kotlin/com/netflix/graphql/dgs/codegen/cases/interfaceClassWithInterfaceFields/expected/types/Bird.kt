@@ -35,32 +35,32 @@ public class Bird(
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getId")
-  public override val id: String
+  override val id: String
     get() = _id.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getName")
-  public override val name: String?
+  override val name: String?
     get() = _name.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getAddress")
-  public override val address: List<String>
+  override val address: List<String>
     get() = _address.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getMother")
-  public override val mother: Bird
+  override val mother: Bird
     get() = _mother.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getFather")
-  public override val father: Bird?
+  override val father: Bird?
     get() = _father.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getParents")
-  public override val parents: List<Bird?>?
+  override val parents: List<Bird?>?
     get() = _parents.invoke()
 
   public companion object {
@@ -134,7 +134,7 @@ public class Bird(
       this.parents = { parents }
     }
 
-    public fun build() = Bird(
+    public fun build(): Bird = Bird(
       id = id,
       name = name,
       address = address,

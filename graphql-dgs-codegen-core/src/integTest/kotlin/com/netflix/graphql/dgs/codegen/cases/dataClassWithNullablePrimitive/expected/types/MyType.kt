@@ -74,7 +74,7 @@ public class MyType(
       this.floaty = { floaty }
     }
 
-    public fun build() = MyType(
+    public fun build(): MyType = MyType(
       count = count,
       truth = truth,
       floaty = floaty,

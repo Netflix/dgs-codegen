@@ -13,7 +13,7 @@ public class Person() {
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
-    public fun build() = Person(
+    public fun build(): Person = Person(
 
     )
   }

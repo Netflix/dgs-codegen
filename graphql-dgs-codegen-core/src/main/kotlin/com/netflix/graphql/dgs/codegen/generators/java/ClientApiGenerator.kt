@@ -264,7 +264,14 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
                 val processedEdges = mutableSetOf<Pair<String, String>>()
                 processedEdges.add(typeDef.name to type.name)
-                createSubProjection(typeDef, javaType.build(), javaType.build(), "${typeDef.name.capitalized()}", processedEdges, 1)
+                createSubProjection(
+                    typeDef,
+                    javaType.build(),
+                    javaType.build(),
+                    typeDef.name.capitalized(),
+                    processedEdges,
+                    1
+                )
             }
             .fold(CodeGenResult()) { total, current -> total.merge(current) }
 
@@ -534,7 +541,14 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
                     val updatedProcessedEdges = processedEdges.toMutableSet()
                     updatedProcessedEdges.add(typeDef.name to type.name)
-                    createSubProjection(typeDef, javaType.build(), root, "${typeDef.name.capitalized()}", updatedProcessedEdges, queryDepth + 1)
+                    createSubProjection(
+                        typeDef,
+                        javaType.build(),
+                        root,
+                        typeDef.name.capitalized(),
+                        updatedProcessedEdges,
+                        queryDepth + 1
+                    )
                 }
                 .fold(CodeGenResult()) { total, current -> total.merge(current) }
 

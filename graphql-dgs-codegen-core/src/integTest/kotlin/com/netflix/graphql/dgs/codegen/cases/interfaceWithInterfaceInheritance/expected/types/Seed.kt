@@ -36,7 +36,7 @@ public class Seed(
       this.name = { name }
     }
 
-    public fun build() = Seed(
+    public fun build(): Seed = Seed(
       name = name,
     )
   }

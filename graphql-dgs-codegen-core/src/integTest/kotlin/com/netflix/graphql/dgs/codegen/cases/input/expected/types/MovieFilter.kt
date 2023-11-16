@@ -9,5 +9,5 @@ import kotlin.collections.List
 public class MovieFilter(
   public val genre: String? = default<MovieFilter, String?>("genre"),
 ) : GraphQLInput() {
-  public override fun fields(): List<Pair<String, Any?>> = listOf("genre" to genre)
+  override fun fields(): List<Pair<String, Any?>> = listOf("genre" to genre)
 }

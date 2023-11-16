@@ -20,7 +20,7 @@ public class Product(
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getId")
-  public override val id: String
+  override val id: String
     get() = _id.invoke()
 
   public companion object {
@@ -39,7 +39,7 @@ public class Product(
       this.id = { id }
     }
 
-    public fun build() = Product(
+    public fun build(): Product = Product(
       id = id,
     )
   }

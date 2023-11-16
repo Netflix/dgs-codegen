@@ -20,7 +20,6 @@ plugins {
     id 'java-library'
     id 'application'
     id 'com.netflix.nebula.integtest'
-    id 'org.jetbrains.kotlin.plugin.serialization' version '1.8.10'
 }
 
 
@@ -29,20 +28,20 @@ dependencies {
 
     implementation(project(":graphql-dgs-codegen-shared-core"))
 
-	implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
+    implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
     implementation 'com.graphql-java:graphql-java'
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
     implementation 'com.fasterxml.jackson.core:jackson-databind'
     implementation 'org.slf4j:slf4j-api'
 
-    implementation 'com.squareup:javapoet:1.13.0'
-    implementation 'com.squareup:kotlinpoet:1.12.0'
-    implementation 'com.github.ajalt.clikt:clikt:3.5.0'
+    implementation 'com.squareup:javapoet:1.13.+'
+    implementation 'com.squareup:kotlinpoet:1.14.+'
+    implementation 'com.github.ajalt.clikt:clikt:4.2.+'
 
-    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0'
+    implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.+'
 
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
-    testImplementation "org.jetbrains.kotlin:kotlin-compiler:${Versions.KOTLIN_VERSION}"
+    testImplementation "org.jetbrains.kotlin:kotlin-compiler"
 }
 
 application {

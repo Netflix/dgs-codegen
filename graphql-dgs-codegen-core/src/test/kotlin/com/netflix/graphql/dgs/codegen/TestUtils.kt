@@ -45,13 +45,14 @@ import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
 fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
-    return assertCompilesJava(
-        codeGenResult.clientProjections
-            .plus(codeGenResult.javaQueryTypes)
-            .plus(codeGenResult.javaEnumTypes)
-            .plus(codeGenResult.javaDataTypes)
-            .plus(codeGenResult.javaInterfaces)
-    )
+    val files = buildList {
+        addAll(codeGenResult.clientProjections)
+        addAll(codeGenResult.javaQueryTypes)
+        addAll(codeGenResult.javaEnumTypes)
+        addAll(codeGenResult.javaDataTypes)
+        addAll(codeGenResult.javaInterfaces)
+    }
+    return assertCompilesJava(files)
 }
 
 fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
@@ -130,14 +131,14 @@ fun List<JavaFile>.assertJavaGeneratedAnnotation() = onEach {
 }
 
 fun KTypeSpec.assertKotlinGeneratedAnnotation(fileSpec: FileSpec) {
-    val generatedSpec = annotationSpecs
+    val generatedSpec = annotations
         .firstOrNull { it.canonicalName() == "$basePackageName.Generated" }
     assertThat(generatedSpec)
         .`as`("@Generated annotation exists in %s at %s", this, fileSpec)
         .isNotNull
 
     val javaxGeneratedSpec =
-        annotationSpecs.firstOrNull { it.canonicalName() == generatedAnnotationClassName }
+        annotations.firstOrNull { it.canonicalName() == generatedAnnotationClassName }
     assertThat(javaxGeneratedSpec)
         .`as`("$generatedAnnotationClassName annotation exists in %s at %s", this, fileSpec)
         .isNotNull

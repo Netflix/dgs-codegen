@@ -91,7 +91,7 @@ public class PageInfo(
       this.hasPreviousPage = { hasPreviousPage }
     }
 
-    public fun build() = PageInfo(
+    public fun build(): PageInfo = PageInfo(
       startCursor = startCursor,
       endCursor = endCursor,
       hasNextPage = hasNextPage,

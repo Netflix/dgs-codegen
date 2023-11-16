@@ -22,12 +22,12 @@ public class Dog(
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getName")
-  public override val name: String?
+  override val name: String?
     get() = _name.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getDiet")
-  public override val diet: Vegetarian?
+  override val diet: Vegetarian?
     get() = _diet.invoke()
 
   public companion object {
@@ -57,7 +57,7 @@ public class Dog(
       this.diet = { diet }
     }
 
-    public fun build() = Dog(
+    public fun build(): Dog = Dog(
       name = name,
       diet = diet,
     )

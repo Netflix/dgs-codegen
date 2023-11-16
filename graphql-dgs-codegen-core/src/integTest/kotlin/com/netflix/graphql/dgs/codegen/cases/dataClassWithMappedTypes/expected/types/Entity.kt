@@ -55,7 +55,7 @@ public class Entity(
       this.dateTime = { dateTime }
     }
 
-    public fun build() = Entity(
+    public fun build(): Entity = Entity(
       long = long,
       dateTime = dateTime,
     )
