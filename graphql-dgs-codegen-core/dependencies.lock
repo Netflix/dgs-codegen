@@ -36,7 +36,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "1.9.20"
@@ -86,7 +86,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "1.9.20"
@@ -139,7 +139,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.24.2"
@@ -207,7 +207,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.24.2"
@@ -275,7 +275,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.24.2"
@@ -379,7 +379,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.jetbrains.kotlin:kotlin-bom": {
             "firstLevelTransitive": [
@@ -441,7 +441,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.24.2"
@@ -509,7 +509,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.24.2"
@@ -577,7 +577,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.24.2"

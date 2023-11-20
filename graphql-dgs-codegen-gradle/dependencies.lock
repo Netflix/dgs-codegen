@@ -135,7 +135,7 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.jetbrains.kotlin:kotlin-bom": {
             "firstLevelTransitive": [
@@ -295,7 +295,7 @@
             "firstLevelTransitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ],
-            "locked": "1.14.2"
+            "locked": "1.15.1"
         },
         "org.assertj:assertj-core": {
             "locked": "3.24.2"
