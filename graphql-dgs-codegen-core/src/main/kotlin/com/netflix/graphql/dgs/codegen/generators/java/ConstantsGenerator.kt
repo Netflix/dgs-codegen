@@ -104,7 +104,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
         if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Query" }) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "QUERY_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Query"""").build())
         }
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "MUTATION" }) {
+        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Mutation" }) {
             javaType.addField(FieldSpec.builder(TypeName.get(String::class.java), "MUTATION_TYPE").addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL).initializer(""""Mutation"""").build())
         }
         if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Subscription" }) {
