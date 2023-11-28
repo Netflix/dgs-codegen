@@ -14,7 +14,6 @@ public class Person() {
   @JsonIgnoreProperties("__typename")
   public class Builder {
     public fun build(): Person = Person(
-
     )
   }
 }

@@ -37,6 +37,7 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.f
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
@@ -143,7 +144,7 @@ fun generateKotlin2DataTypes(
                             .addAnnotation(jsonPropertyAnnotation(field.name))
                             .addParameter(field.name, type(field))
                             .addControlFlow("return this.apply") {
-                                addStatement("this.${field.name} = { ${field.name} }")
+                                addStatement("this.%N = { %N }", field.name, field.name)
                             }
                             .returns(builderClassName)
                             .build()
@@ -153,7 +154,13 @@ fun generateKotlin2DataTypes(
                 .addFunction(
                     FunSpec.builder("build")
                         .returns(typeDefinition.name.toKtTypeName())
-                        .addStatement("return ${typeDefinition.name}(\n${fields.joinToString("\n") { "  ${it.name} = ${it.name}," }}\n)")
+                        .addCode(
+                            fields.let { fs ->
+                                val builder = CodeBlock.builder().add("return %T(\n", ClassName(config.packageNameTypes, typeDefinition.name))
+                                fs.forEach { f -> builder.add("  %N = %N,\n", f.name, f.name) }
+                                builder.add(")").build()
+                            }
+                        )
                         .build()
                 )
                 .build()
@@ -210,7 +217,7 @@ fun generateKotlin2DataTypes(
                             type = LambdaTypeName.get(returnType = type(field))
                         )
                             .addModifiers(KModifier.PRIVATE)
-                            .initializer(field.name)
+                            .initializer("%N", field.name)
                             .build()
                     }
                 )
