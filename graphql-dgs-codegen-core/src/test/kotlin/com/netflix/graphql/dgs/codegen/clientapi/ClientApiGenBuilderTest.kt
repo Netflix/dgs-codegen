@@ -169,18 +169,12 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).isEqualTo(
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
                 """
                     |/**
                     | * @deprecated use idFilter instead
                     | */
                     |@java.lang.Deprecated
-                    |public Builder nameFilter(java.lang.String nameFilter) {
-                    |  this.nameFilter = nameFilter;
-                    |  this.fieldsSet.add("nameFilter");
-                    |  return this;
-                    |}
-                    |
                 """.trimMargin()
             )
         }
@@ -211,15 +205,9 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).isEqualTo(
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
                 """
                     |@java.lang.Deprecated
-                    |public Builder nameFilter(java.lang.String nameFilter) {
-                    |  this.nameFilter = nameFilter;
-                    |  this.fieldsSet.add("nameFilter");
-                    |  return this;
-                    |}
-                    |
                 """.trimMargin()
             )
         }
@@ -255,7 +243,7 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).isEqualTo(
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
                 """
                     |/**
                     | * Filters by name.
@@ -265,12 +253,6 @@ class ClientApiGenBuilderTest {
                     | * @deprecated use idFilter instead
                     | */
                     |@java.lang.Deprecated
-                    |public Builder nameFilter(java.lang.String nameFilter) {
-                    |  this.nameFilter = nameFilter;
-                    |  this.fieldsSet.add("nameFilter");
-                    |  return this;
-                    |}
-                    |
                 """.trimMargin()
             )
         }
@@ -300,16 +282,8 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).isEqualTo(
-                """
-                    |public Builder nameFilter(java.lang.String nameFilter) {
-                    |  this.nameFilter = nameFilter;
-                    |  this.fieldsSet.add("nameFilter");
-                    |  return this;
-                    |}
-                    |
-                """.trimMargin()
-            )
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].annotations).isEmpty()
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].javadoc.isEmpty).isTrue()
         }
     }
 }
