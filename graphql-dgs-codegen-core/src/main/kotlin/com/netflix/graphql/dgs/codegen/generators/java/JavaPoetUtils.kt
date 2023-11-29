@@ -127,7 +127,15 @@ fun jsonSubTypeAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
  * https://github.com/square/javapoet/issues/670
  */
 fun Description.sanitizeJavaDoc(): String {
-    return this.content.lines().joinToString("\n").replace("$", "$$")
+    return this.content.lines().joinToString("\n").sanitizeJavaDoc()
+}
+
+/**
+ * Javapoet treats $ as a reference
+ * https://github.com/square/javapoet/issues/670
+ */
+fun String.sanitizeJavaDoc(): String {
+    return replace("$", "$$")
 }
 
 fun String.toTypeName(isGenericParam: Boolean = false): TypeName {

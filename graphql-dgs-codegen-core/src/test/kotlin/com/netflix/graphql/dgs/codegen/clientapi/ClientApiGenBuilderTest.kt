@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.clientapi
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 
 class ClientApiGenBuilderTest {
@@ -137,5 +138,152 @@ class ClientApiGenBuilderTest {
         val result2QueryObject: GraphQLQuery = buildMethod.invoke(builder) as GraphQLQuery
         assertThat(result2QueryObject.name).isNotNull
         assertThat(result2QueryObject.name).isEqualTo("test")
+    }
+
+    @Nested
+    inner class Deprecation {
+
+        @Test
+        fun `adds @Deprecated annotation and reason from schema directives when setting enabled`() {
+            val schema = """
+                type Query {
+                    filter(
+                        nameFilter: String @deprecated(reason: "use idFilter instead"),
+                        idFilter: ID
+                    ): [String]
+                }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApiv2 = true,
+                    maxProjectionDepth = 2,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+
+            assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
+                """
+                    |/**
+                    | * @deprecated use idFilter instead
+                    | */
+                    |@java.lang.Deprecated
+                """.trimMargin()
+            )
+        }
+
+        @Test
+        fun `adds @Deprecated annotation without a Javadoc when there is no reason`() {
+            val schema = """
+                type Query {
+                    filter(
+                        nameFilter: String @deprecated,
+                        idFilter: ID
+                    ): [String]
+                }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApiv2 = true,
+                    maxProjectionDepth = 2,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+
+            assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
+                """
+                    |@java.lang.Deprecated
+                """.trimMargin()
+            )
+        }
+
+        @Test
+        fun `Deprecation reason and field's description go both into JavaDoc separated by an empty line`() {
+            val schema = """
+                type Query {
+                    filter(
+                        ${"\"\"\""}
+                        Filters by name.
+                        
+                        If not provided, no filter in regards to name is applied.
+                        ${"\"\"\""}
+                        nameFilter: String @deprecated(reason: "use idFilter instead"),
+                        idFilter: ID
+                    ): [String]
+                }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApiv2 = true,
+                    maxProjectionDepth = 2,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+
+            assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
+                """
+                    |/**
+                    | * Filters by name.
+                    | *         
+                    | * If not provided, no filter in regards to name is applied.
+                    | *
+                    | * @deprecated use idFilter instead
+                    | */
+                    |@java.lang.Deprecated
+                """.trimMargin()
+            )
+        }
+
+        @Test
+        fun `adds nothing extra when addDeprecatedAnnotation is not enabled`() {
+            val schema = """
+                type Query {
+                    filter(
+                        nameFilter: String @deprecated(reason: "use idFilter instead"),
+                        idFilter: ID
+                    ): [String]
+                }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApiv2 = true,
+                    maxProjectionDepth = 2
+                )
+            ).generate()
+
+            assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].annotations).isEmpty()
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].javadoc.isEmpty).isTrue()
+        }
     }
 }
