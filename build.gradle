@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
  */
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version "1.9.20" apply false
+    id 'org.jetbrains.kotlin.jvm' version "1.9.21" apply false
     id 'com.netflix.nebula.netflixoss' version '11.3.2'
     id "org.jmailen.kotlinter" version "3.11.1"
 }
@@ -31,7 +31,7 @@ allprojects {
 
     ext {
         Versions = [
-                KOTLIN_VERSION: '1.9.20'
+                KOTLIN_VERSION: '1.9.21'
         ]
     }
 
