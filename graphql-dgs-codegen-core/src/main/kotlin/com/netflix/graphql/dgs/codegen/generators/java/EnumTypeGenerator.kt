@@ -66,7 +66,7 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
                     }
                 }
             }
-            javaType.addEnumConstant(it.name, typeSpec.build())
+            javaType.addEnumConstant(ReservedKeywordSanitizer.sanitize(it.name), typeSpec.build())
         }
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()

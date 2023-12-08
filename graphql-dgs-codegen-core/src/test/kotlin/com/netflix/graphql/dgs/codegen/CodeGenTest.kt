@@ -965,6 +965,36 @@ class CodeGenTest {
         assertCompilesJava(codeGenResult.javaEnumTypes)
     }
 
+    @Test
+    fun generateEnumWithReservedKeywords() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            enum EmployeeTypes {
+                default
+                root
+                new
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        // Check generated enum type
+        assertThat(codeGenResult.javaEnumTypes.size).isEqualTo(1)
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.enumConstants.size).isEqualTo(3)
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.enumConstants).containsKeys("_default", "_root", "_new")
+
+        assertCompilesJava(codeGenResult.javaEnumTypes)
+    }
+
     @Nested
     inner class EnumAnnotationTest {
         @Test

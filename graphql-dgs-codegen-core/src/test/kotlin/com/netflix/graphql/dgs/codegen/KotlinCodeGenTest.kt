@@ -883,6 +883,38 @@ class KotlinCodeGenTest {
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinEnumTypes)
     }
 
+    @Test
+    fun generateEnumWithReservedKeywords() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+
+            enum EmployeeTypes {
+                default
+                root
+                new
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
+        val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
+
+        // Check generated enum type
+        assertThat(type.name).isEqualTo("EmployeeTypes")
+        assertThat(type.enumConstants.size).isEqualTo(3)
+        assertThat(type.enumConstants).containsKeys("_default", "_root", "_new")
+        assertThat(type.typeSpecs[0].isCompanion).isTrue
+
+        assertCompilesKotlin(result.kotlinDataTypes + result.kotlinEnumTypes)
+    }
+
     @Nested
     inner class EnumAnnotationTests {
         @Test
