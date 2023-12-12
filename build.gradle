@@ -43,15 +43,6 @@ allprojects {
     apply plugin: 'com.netflix.nebula.info'
     apply plugin: 'org.jetbrains.kotlin.jvm'
 
-    // Set Kotlin api / language version to 1.7 since dgs-framework
-    // is stuck on Gradle 7.x
-    tasks.named('compileKotlin', KotlinCompilationTask.class) {
-      compilerOptions {
-         apiVersion = KotlinVersion.KOTLIN_1_7
-         languageVersion = KotlinVersion.KOTLIN_1_7
-      }
-    }
-
     group = 'com.netflix.graphql.dgs.codegen'
 
     dependencies {

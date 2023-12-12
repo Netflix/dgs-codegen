@@ -15,7 +15,7 @@
             "project": true
         },
         "com.netflix.nebula:gradle-dependency-lock-plugin": {
-            "locked": "14.1.3"
+            "locked": "15.0.0"
         },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "1.9.21"
@@ -32,7 +32,7 @@
     },
     "compileOnlyDependenciesMetadata": {
         "com.netflix.nebula:gradle-dependency-lock-plugin": {
-            "locked": "14.1.3"
+            "locked": "15.0.0"
         },
         "org.jetbrains.kotlin:kotlin-gradle-plugin": {
             "locked": "1.9.21"
