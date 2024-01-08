@@ -53,7 +53,8 @@ class Kotlin2CodeGenTest {
                     "dataClassWithMappedTypes" -> mapOf(
                         "Long" to "kotlin.Long",
                         "DateTime" to "java.time.OffsetDateTime",
-                        "PageInfo" to "graphql.relay.PageInfo"
+                        "PageInfo" to "graphql.relay.PageInfo",
+                        "EntityConnection" to "graphql.relay.SimpleListConnection<com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected.types.EntityEdge>"
                     )
                     "dataClassWithMappedInterfaces" -> mapOf(
                         "Node" to "com.netflix.graphql.dgs.codegen.fixtures.Node"

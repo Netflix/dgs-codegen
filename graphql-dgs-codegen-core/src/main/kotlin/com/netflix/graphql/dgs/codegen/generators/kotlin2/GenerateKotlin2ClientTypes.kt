@@ -31,16 +31,17 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeName
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asTypeName
 import graphql.language.Document
 import graphql.language.InputValueDefinition
 import graphql.language.InterfaceTypeDefinition
+import graphql.language.ListType
 import graphql.language.NamedNode
+import graphql.language.NonNullType
 import graphql.language.ObjectTypeDefinition
+import graphql.language.Type
 import graphql.language.UnionTypeDefinition
 
 fun generateKotlin2ClientTypes(
@@ -110,9 +111,8 @@ fun generateKotlin2ClientTypes(
                         // otherwise it's a projection with optional args
                         // !isScalar && hasArgs
                         else -> {
-                            val projectTypeName =
-                                projectionTypeName(typeLookup.findReturnType(config.packageNameClient, field.type))
-                            val (projectionType, projection) = projectionType(config.packageNameClient, projectTypeName)
+                            val projectionTypeName = projectionTypeName(field.type)
+                            val (projectionType, projection) = projectionType(config.packageNameClient, projectionTypeName)
 
                             FunSpec.builder(field.name)
                                 .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
@@ -213,11 +213,12 @@ fun generateKotlin2ClientTypes(
 }
 
 // unpack the type to get the underlying type of the projection
-private fun projectionTypeName(type: TypeName): String {
+private fun projectionTypeName(type: Type<*>): String {
     return when (type) {
-        is ClassName -> type.simpleName
-        is ParameterizedTypeName -> projectionTypeName(type.typeArguments.first())
-        else -> throw UnsupportedOperationException(type::class.simpleName)
+        is graphql.language.TypeName -> type.name
+        is ListType -> projectionTypeName(type.type)
+        is NonNullType -> projectionTypeName(type.type)
+        else -> throw UnsupportedOperationException(type::class.qualifiedName)
     }
 }
 
