@@ -1594,6 +1594,32 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInputWithDefaultValueForComplexType() {
+        val schema = """
+            enum Color {
+                red
+            }
+            
+            input ColorFilter {
+                color: Color = red
+            }
+            
+            input Car {
+                color: Color = red
+                make: String
+            }
+            
+            input MyCar {
+                car: Car = {color: red}
+            }
+        """.trimIndent()
+
+        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+
+        assertCompilesJava(enumTypes + dataTypes)
+    }
+
+    @Test
     fun generateInputWithDefaultValueForArray() {
         val schema = """
             input SomeType {

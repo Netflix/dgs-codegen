@@ -146,6 +146,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                             }
                         }.joinToString()
                     )
+                    is ObjectValue -> CodeBlock.of("new \$L()", typeUtils.findReturnType(it.type))
                     else -> CodeBlock.of("\$L", defVal)
                 }
             }
