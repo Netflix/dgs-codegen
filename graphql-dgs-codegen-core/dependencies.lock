@@ -108,10 +108,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.15.3",
+            "locked": "1.16.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -306,7 +306,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "net.java.dev.jna:jna": {
             "locked": "5.13.0",
@@ -543,10 +543,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.15.3",
+            "locked": "1.16.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -560,7 +560,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.12.21",
+            "locked": "1.14.11",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -575,7 +575,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.24.2",
+            "locked": "3.25.1",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -950,7 +950,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
@@ -961,7 +961,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.12.21",
+            "locked": "1.14.11",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -982,7 +982,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.24.2",
+            "locked": "3.25.1",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -1346,10 +1346,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.15.3",
+            "locked": "1.16.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -1369,7 +1369,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.12.21",
+            "locked": "1.14.11",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -1382,7 +1382,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.24.2",
+            "locked": "3.25.1",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -2054,10 +2054,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.15.3",
+            "locked": "1.16.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -2376,10 +2376,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.15.3",
+            "locked": "1.16.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -2393,7 +2393,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.12.21",
+            "locked": "1.14.11",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -2408,7 +2408,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.24.2",
+            "locked": "3.25.1",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -2783,7 +2783,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
@@ -2794,7 +2794,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.12.21",
+            "locked": "1.14.11",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -2815,7 +2815,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.24.2",
+            "locked": "3.25.1",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -3179,10 +3179,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.15.3"
+            "locked": "1.16.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.15.3",
+            "locked": "1.16.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -3202,7 +3202,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.12.21",
+            "locked": "1.14.11",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -3215,7 +3215,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.24.2",
+            "locked": "3.25.1",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
