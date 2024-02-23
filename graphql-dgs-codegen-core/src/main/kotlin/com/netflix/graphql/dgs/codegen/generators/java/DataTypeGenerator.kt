@@ -18,12 +18,39 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
-import com.squareup.javapoet.*
-import graphql.language.*
+import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.CodeBlock
+import com.squareup.javapoet.FieldSpec
+import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.MethodSpec
+import com.squareup.javapoet.ParameterSpec
+import com.squareup.javapoet.TypeSpec
+import graphql.language.ArrayValue
+import graphql.language.BooleanValue
+import graphql.language.Description
+import graphql.language.Directive
+import graphql.language.Document
+import graphql.language.EnumValue
+import graphql.language.FloatValue
+import graphql.language.InputObjectTypeDefinition
+import graphql.language.InputObjectTypeExtensionDefinition
+import graphql.language.IntValue
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.ListType
+import graphql.language.ObjectTypeDefinition
+import graphql.language.ObjectTypeExtensionDefinition
+import graphql.language.ObjectValue
+import graphql.language.StringValue
+import graphql.language.Type
 import graphql.language.TypeName
+import graphql.language.UnionTypeDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
@@ -39,7 +66,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
 
         logger.info("Generating data type ${definition.name}")
 
-        val name = definition.name
+        val name = definition.templatedClassName(config.nameTemplate)
         val unionTypes = document.getDefinitionsOfType(UnionTypeDefinition::class.java).filter { union ->
             union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
         }.map { it.name }
@@ -120,7 +147,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
 
         logger.info("Generating input type ${definition.name}")
 
-        val name = definition.name
+        val name = definition.templatedClassName(config.nameTemplate)
         val fieldDefinitions = definition.inputValueDefinitions.map {
             val defaultValue = it.defaultValue?.let { defVal ->
                 when (defVal) {

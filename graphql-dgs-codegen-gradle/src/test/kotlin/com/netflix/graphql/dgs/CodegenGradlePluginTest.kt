@@ -24,6 +24,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import java.io.File
 
 /**
@@ -112,6 +114,62 @@ class CodegenGradlePluginTest {
         assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
         // Verify that POJOs are generated in the configured directory
         assertThat(File(EXPECTED_DEFAULT_PATH + "Result.java").exists()).isTrue
+    }
+
+    @Test
+    fun sourcesGenerated_WithNameTemplate() {
+        // build a project
+        val result = GradleRunner.create()
+            .withProjectDir(File("src/test/resources/test-project/"))
+            .withPluginClasspath()
+            .withArguments(
+                "--stacktrace",
+                "-c",
+                "smoke_test_settings_custom_name_template.gradle",
+                "-b",
+                "build_custom_name_template.gradle",
+                "clean",
+                "build"
+            )
+            .forwardOutput()
+            .withDebug(true)
+            .build()
+
+        // Verify the result
+        assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        // Verify that POJOs are generated in the configured directory
+        assertThat(File(EXPECTED_DEFAULT_PATH + "ResultGraphQLType.java").exists()).isTrue
+        assertThat(File(EXPECTED_DEFAULT_PATH + "FilterGraphQLInput.java").exists()).isTrue
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        "smoke_test_settings_custom_name_template_kotlin.gradle,build_custom_name_template_kotlin.gradle",
+        "smoke_test_settings_custom_name_template_kotlin2.gradle,build_custom_name_template_kotlin2.gradle"
+    )
+    fun sourcesGenerated_WithNameTemplate_Kotlin(settingsFile: String, buildFile: String) {
+        // build a project
+        val result = GradleRunner.create()
+            .withProjectDir(File("src/test/resources/test-project/"))
+            .withPluginClasspath()
+            .withArguments(
+                "--stacktrace",
+                "-c",
+                settingsFile,
+                "-b",
+                buildFile,
+                "clean",
+                "build"
+            )
+            .forwardOutput()
+            .withDebug(true)
+            .build()
+
+        // Verify the result
+        assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        // Verify that POJOs are generated in the configured directory
+        assertThat(File(EXPECTED_DEFAULT_PATH + "ResultGraphQLType.kt").exists()).isTrue
+        assertThat(File(EXPECTED_DEFAULT_PATH + "FilterGraphQLInput.kt").exists()).isTrue
     }
 
     @Test
