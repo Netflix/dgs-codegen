@@ -210,7 +210,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .filterIsInstance<UnionTypeDefinition>()
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
-            .map { UnionTypeGenerator(config).generate(it, findUnionExtensions(it.name, definitions)) }
+            .map { UnionTypeGenerator(config, document).generate(it, findUnionExtensions(it.name, definitions)) }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 

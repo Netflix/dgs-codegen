@@ -4531,6 +4531,36 @@ It takes a title and such.
     }
 
     @Test
+    fun `Supports typeMapping in union type generation`() {
+        val schema = """
+            type A {
+                name: String
+            }
+        
+            type B {
+                count: Int
+            }
+        
+            union C = A | B
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf(
+                    "A" to "java.lang.String"
+                )
+            )
+        ).generate()
+
+        assertThat(result.javaDataTypes.size).isEqualTo(1)
+
+        assertThat(result.javaDataTypes[0].typeSpec.superinterfaces[0].toString()).isEqualTo("com.netflix.graphql.dgs.codegen.tests.generated.types.C")
+        assertCompilesJava(result)
+    }
+
+    @Test
     fun `The default value for Locale should be overridden and wrapped`() {
         val schema = """
             scalar Locale @specifiedBy(url:"https://tools.ietf.org/html/bcp47")
