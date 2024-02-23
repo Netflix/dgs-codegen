@@ -24,12 +24,17 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
+import graphql.language.Document
 import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
 import javax.lang.model.element.Modifier
 
-class UnionTypeGenerator(private val config: CodeGenConfig) {
+class UnionTypeGenerator(private val config: CodeGenConfig, private val document: Document) {
+
+    val packageName = config.packageNameTypes
+    private val typeUtils = TypeUtils(packageName, config, document)
+
     fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
@@ -41,7 +46,10 @@ class UnionTypeGenerator(private val config: CodeGenConfig) {
 
         val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
             .filterIsInstance<TypeName>()
-            .map { member -> ClassName.get(packageName, member.name) }
+            .map { member ->
+                typeUtils.findJavaInterfaceName(member.name, packageName)
+            }
+            .filterIsInstance<ClassName>()
             .toList()
 
         if (memberTypes.isNotEmpty()) {
@@ -52,6 +60,4 @@ class UnionTypeGenerator(private val config: CodeGenConfig) {
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
         return CodeGenResult(javaInterfaces = listOf(javaFile))
     }
-
-    val packageName = config.packageNameTypes
 }
