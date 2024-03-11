@@ -615,6 +615,23 @@ class ClientApiGenProjectionTest {
     @Test
     fun generateProjectionRootWithReservedNames_package() {
         val schema = """
+        type Query {
+            weirdType: WeirdType
+        }
+        
+        type WeirdType {
+            _: String
+            root: String
+            parent: String
+            import: String
+            short: Integer
+            package: SecurityAdvisoryPackage
+        }
+        
+        type SecurityAdvisoryPackage {
+          ecosystem: String
+          name: String!
+        }
         
     """.trimIndent()
 
@@ -626,7 +643,7 @@ class ClientApiGenProjectionTest {
             )
         ).generate()
 
-        assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(2)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
         assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name")
             .contains("__", "_root", "_parent", "_import", "_short", "_package")
