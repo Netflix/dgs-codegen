@@ -613,6 +613,28 @@ class ClientApiGenProjectionTest {
     }
 
     @Test
+    fun generateProjectionRootWithReservedNames_package() {
+        val schema = """
+        
+    """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApiv2 = true
+            )
+        ).generate()
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(1)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("WeirdTypeProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name")
+            .contains("__", "_root", "_parent", "_import", "_short", "_package")
+
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
     fun generateSubProjectionWithReservedNames() {
         val schema = """
             type Query {
