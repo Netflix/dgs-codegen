@@ -31,7 +31,7 @@ allprojects {
 
     ext {
         Versions = [
-                KOTLIN_VERSION: '1.9.22'
+                KOTLIN_VERSION: '1.9.23'
         ]
     }
 
