@@ -28,7 +28,6 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
 import javax.lang.model.element.Modifier
-import java.util.BitSet
 
 class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     private val logger: Logger = LoggerFactory.getLogger(DataTypeGenerator::class.java)
@@ -216,9 +215,6 @@ abstract class BaseDataTypeGenerator(
 
         fields.forEach {
             addField(it, javaType)
-        }
-        if(config.generateBitset) {
-            addBitSet(Field("fieldsPresent", com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java)), javaType)
         }
 
         addDefaultConstructor(javaType)
@@ -423,22 +419,6 @@ abstract class BaseDataTypeGenerator(
         javaType.addField(fieldBuilder.build())
         javaType.addMethod(getterMethodBuilder.build())
         javaType.addMethod(setterMethodBuilder.build())
-    }
-
-    private fun addBitSet(fieldDefinition: Field, javaType: TypeSpec.Builder) {
-        val fieldBuilder = if (fieldDefinition.initialValue != null) {
-            FieldSpec
-                .builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
-                .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
-                .initializer(fieldDefinition.initialValue)
-        } else {
-            FieldSpec.builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
-        }
-
-        if (fieldDefinition.description != null) {
-            fieldBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
-        }
-        javaType.addField(fieldBuilder.build())
     }
 
     private fun addAbstractGetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
