@@ -27,6 +27,7 @@ import graphql.language.TypeName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
+import java.util.BitSet
 import javax.lang.model.element.Modifier
 
 class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
@@ -119,8 +120,10 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         }
 
         logger.info("Generating input type ${definition.name}")
+        println("Generating input type ${definition.name}")
 
         val name = definition.name
+
         val fieldDefinitions = definition.inputValueDefinitions.map {
             val defaultValue = it.defaultValue?.let { defVal ->
                 when (defVal) {
@@ -217,6 +220,11 @@ abstract class BaseDataTypeGenerator(
             addField(it, javaType)
         }
 
+        // How to know if call is for Input Type? Add additional field
+        if(config.generateBitset) {
+            addBitSet(Field("fieldsPresent", com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java)), javaType)
+        }
+
         addDefaultConstructor(javaType)
 
         if (config.javaGenerateAllConstructor && fields.isNotEmpty()) {
@@ -232,6 +240,22 @@ abstract class BaseDataTypeGenerator(
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
         return CodeGenResult(javaDataTypes = listOf(javaFile))
+    }
+
+    private fun addBitSet(fieldDefinition: Field, javaType: TypeSpec.Builder) {
+        val fieldBuilder = if (fieldDefinition.initialValue != null) {
+            FieldSpec
+                .builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
+                .initializer(fieldDefinition.initialValue)
+        } else {
+            FieldSpec.builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
+        }
+
+        if (fieldDefinition.description != null) {
+            fieldBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
+        }
+        javaType.addField(fieldBuilder.build())
     }
 
     internal fun generateInterface(name: String, superInterfaces: List<Type<*>>, fields: List<Field>): CodeGenResult {

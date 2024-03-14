@@ -35,6 +35,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     fun generate(definition: ObjectTypeDefinition, methodNames: MutableSet<String>): CodeGenResult {
         return definition.fieldDefinitions.filterIncludedInConfig(definition.name, config).filterSkipped().map {
             val javaFile = createQueryClass(it, definition.name, methodNames)
+//            println("javaFile ${it}: ${javaFile}")
 
             val rootProjection =
                 it.type.findTypeDefinition(document, true)?.let { typeDefinition -> createRootProjection(typeDefinition, it.name.capitalized()) }
@@ -67,6 +68,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         if (it.description != null) {
             javaType.addJavadoc(it.description.sanitizeJavaDoc())
         }
+
         javaType.addMethod(
             MethodSpec.methodBuilder("getOperationName")
                 .addModifiers(Modifier.PUBLIC)
@@ -82,6 +84,37 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         val setType = ClassName.get(Set::class.java)
         val setOfStringType = ParameterizedTypeName.get(setType, ClassName.get(String::class.java))
+
+        // is operation Mutation only input type? Should subscription be added too?
+        if(config.generateBitset && operation == "Mutation") {
+
+            javaType.addField(
+                FieldSpec.builder(com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java), "fieldsPresent")
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT).build()
+            )
+            javaType.addMethod(
+                MethodSpec.methodBuilder("setField")
+                    .addModifiers(Modifier.PRIVATE)
+                    // Check how to get Field type as parameter
+                    .addParameter()
+                    .addCode(
+                        """
+                    | fieldsPresent.set(field.getOrdinal());             
+                    """.trimMargin()
+                    ).build()
+            )
+            javaType.addMethod(
+                MethodSpec.methodBuilder("isSet")
+                    .addModifiers(Modifier.PUBLIC)
+                        // Check how to get Field type as parameter
+//                    .addParameter(Field.)
+                    .addCode(
+                        """
+                    | return fieldsPresent.get(field.getOrdinal());        
+                    """.trimMargin()
+                    ).build()
+            )
+        }
 
         val builderClass = TypeSpec.classBuilder("Builder").addModifiers(Modifier.STATIC, Modifier.PUBLIC)
             .addOptionalGeneratedAnnotation(config)
@@ -103,6 +136,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     )
                     .build()
             ).addField(FieldSpec.builder(setOfStringType, "fieldsSet", Modifier.PRIVATE).initializer("new \$T<>()", ClassName.get(HashSet::class.java)).build())
+
 
         val constructorBuilder = MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
