@@ -240,27 +240,6 @@ abstract class BaseDataTypeGenerator(
         return CodeGenResult(javaDataTypes = listOf(javaFile))
     }
 
-//    private fun addBitSetFields(javaType: TypeSpec.Builder) {
-//
-//        val fieldsPresent = Field("fieldsPresent", com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java))
-//        val fieldBuilder = FieldSpec
-//            .builder(fieldsPresent.type, ReservedKeywordSanitizer.sanitize(fieldsPresent.name))
-//            .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
-//
-//        javaType.addField(fieldBuilder.build())
-//            .addMethod(MethodSpec.methodBuilder("setField")
-//                .addModifiers(Modifier.PRIVATE)
-//                .addParameter(ClassName.get("", "Field"), "field")
-//                .addStatement("fieldsPresent.set(field.getOrdinal())")
-//                .build())
-//            .addMethod(MethodSpec.methodBuilder("isSet")
-//                .addModifiers(Modifier.PRIVATE)
-//                .returns(ClassName.BOOLEAN)
-//                .addParameter(ClassName.get("", "Field"), "field")
-//                .addStatement("return fieldsPresent.get(field.getOrdinal())")
-//                .build())
-//    }
-
     internal fun generateInterface(name: String, superInterfaces: List<Type<*>>, fields: List<Field>): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(name)
             .addOptionalGeneratedAnnotation(config)
@@ -394,6 +373,7 @@ abstract class BaseDataTypeGenerator(
         val fieldBuilder = FieldSpec
             .builder(fieldsPresent.type, ReservedKeywordSanitizer.sanitize(fieldsPresent.name))
             .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
+            .initializer("new Bitset()")
         javaType.addField(fieldBuilder.build())
         addBitsetFieldGetterAndSetter(javaType)
     }
