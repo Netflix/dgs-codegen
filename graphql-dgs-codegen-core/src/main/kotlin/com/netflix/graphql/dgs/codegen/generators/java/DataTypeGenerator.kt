@@ -373,7 +373,7 @@ abstract class BaseDataTypeGenerator(
         val fieldBuilder = FieldSpec
             .builder(fieldsPresent.type, ReservedKeywordSanitizer.sanitize(fieldsPresent.name))
             .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
-            .initializer("new Bitset()")
+            .initializer("new BitSet()")
         javaType.addField(fieldBuilder.build())
         addBitsetFieldGetterAndSetter(javaType)
     }
@@ -531,7 +531,7 @@ $className result = new $className();
 ${javaType.build().fieldSpecs.filter{it.name!="fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
 for (Field field: Field.values()) {
     if (this.isSet(field)) {
-       result.setField(field);
+        result.setField(field);
     }
 }
 return result;
