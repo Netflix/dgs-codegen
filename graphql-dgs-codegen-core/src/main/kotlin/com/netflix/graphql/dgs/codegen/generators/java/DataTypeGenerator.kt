@@ -463,12 +463,13 @@ abstract class BaseDataTypeGenerator(
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             )
-            .addStatement(
+
+        if(config.generateBitset) {
+            setterMethodBuilder.addStatement(
                 "setField(Field.\$N)",
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name.uppercase())
             )
-
-
+        }
 
         if (fieldDefinition.directives.isNotEmpty()) {
             val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
