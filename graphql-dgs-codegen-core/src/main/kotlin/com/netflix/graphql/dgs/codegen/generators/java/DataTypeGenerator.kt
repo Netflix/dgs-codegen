@@ -225,7 +225,7 @@ abstract class BaseDataTypeGenerator(
         }
 
         if(config.generateBitset) {
-            addBitSetFields(javaType)
+            addBitsetField(javaType)
             addBitSetEnum(fields, javaType)
         }
 
@@ -235,75 +235,31 @@ abstract class BaseDataTypeGenerator(
         addHashcode(javaType)
         addBuilder(javaType)
 
-
-
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
         return CodeGenResult(javaDataTypes = listOf(javaFile))
     }
 
-    private fun addBitSetFields(javaType: TypeSpec.Builder) {
-        val fieldsPresent = Field("fieldsPresent", com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java))
-        val fieldBuilder = FieldSpec
-            .builder(fieldsPresent.type, ReservedKeywordSanitizer.sanitize(fieldsPresent.name))
-            .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
-
-        val methodBuilder = MethodSpec.methodBuilder("setField")
-            .addModifiers(Modifier.PRIVATE)
-            .addParameter(ClassName.get("", "Field"), "field")
-            .addStatement("fieldsPresent.set(field.getOrdinal())")
-
-        javaType.addField(fieldBuilder.build())
-            .addMethod(methodBuilder.build())
-    }
-
-    private fun addBitSetFields1(fields: List<Field>, javaType: TypeSpec.Builder) {
-        val fieldsPresent = Field("fieldsPresent", com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java))
-        val fieldBuilder = FieldSpec
-            .builder(fieldsPresent.type, ReservedKeywordSanitizer.sanitize(fieldsPresent.name))
-            .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
-
-        val methodBuilder = MethodSpec.methodBuilder("setField")
-            .addModifiers(Modifier.PRIVATE)
-            .addParameter(ClassName.get("", "Field"), "field")
-            .addStatement("fieldsPresent.set(field.getOrdinal())")
-
-        javaType.addField(fieldBuilder.build())
-            .addMethod(methodBuilder.build())
-    }
-
-    private fun addBitSetEnum(fields: List<Field>, javaType: TypeSpec.Builder) {
-        val enumBuilder = TypeSpec
-            .enumBuilder("Field")
-            .addModifiers(Modifier.PUBLIC)
-            .addField(FieldSpec.builder(com.squareup.javapoet.TypeName.INT, "ordinal").initializer("-1").build())
-            .addMethod(MethodSpec
-                .methodBuilder("getOrdinal")
-                .addModifiers(Modifier.PUBLIC)
-                .returns(ClassName.INT)
-                .addCode(
-                    """
-                    |return ordinal;
-                    """.trimMargin()
-                )
-                .build()
-            )
-            .addMethod(MethodSpec
-                .constructorBuilder()
-                .addCode(
-                    """
-                        |this.ordinal = ordinal;
-                    """.trimMargin()
-                )
-                .build()
-            )
-
-        fields.forEach {
-            enumBuilder.addEnumConstant(it.name.uppercase())
-        }
-
-        javaType.addType(enumBuilder.build())
-    }
+//    private fun addBitSetFields(javaType: TypeSpec.Builder) {
+//
+//        val fieldsPresent = Field("fieldsPresent", com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java))
+//        val fieldBuilder = FieldSpec
+//            .builder(fieldsPresent.type, ReservedKeywordSanitizer.sanitize(fieldsPresent.name))
+//            .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
+//
+//        javaType.addField(fieldBuilder.build())
+//            .addMethod(MethodSpec.methodBuilder("setField")
+//                .addModifiers(Modifier.PRIVATE)
+//                .addParameter(ClassName.get("", "Field"), "field")
+//                .addStatement("fieldsPresent.set(field.getOrdinal())")
+//                .build())
+//            .addMethod(MethodSpec.methodBuilder("isSet")
+//                .addModifiers(Modifier.PRIVATE)
+//                .returns(ClassName.BOOLEAN)
+//                .addParameter(ClassName.get("", "Field"), "field")
+//                .addStatement("return fieldsPresent.get(field.getOrdinal())")
+//                .build())
+//    }
 
     internal fun generateInterface(name: String, superInterfaces: List<Type<*>>, fields: List<Field>): CodeGenResult {
         val javaType = TypeSpec.interfaceBuilder(name)
@@ -433,6 +389,65 @@ abstract class BaseDataTypeGenerator(
         addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
     }
 
+    private fun addBitsetField(javaType: TypeSpec.Builder) {
+        val fieldsPresent = Field("fieldsPresent", com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java))
+        val fieldBuilder = FieldSpec
+            .builder(fieldsPresent.type, ReservedKeywordSanitizer.sanitize(fieldsPresent.name))
+            .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
+        javaType.addField(fieldBuilder.build())
+        addBitsetFieldGetterAndSetter(javaType)
+    }
+
+    private fun addBitSetEnum(fields: List<Field>, javaType: TypeSpec.Builder) {
+        val enumBuilder = TypeSpec
+            .enumBuilder("Field")
+            .addModifiers(Modifier.PUBLIC)
+            .addField(FieldSpec.builder(com.squareup.javapoet.TypeName.INT, "ordinal").initializer("-1").build())
+            .addMethod(MethodSpec
+                .methodBuilder("getOrdinal")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(ClassName.INT)
+                .addCode(
+                    """
+                    |return ordinal;
+                    """.trimMargin()
+                )
+                .build()
+            )
+            .addMethod(MethodSpec
+                .constructorBuilder()
+                .addCode(
+                    """
+                        |this.ordinal = ordinal;
+                    """.trimMargin()
+                )
+                .build()
+            )
+
+        fields.forEach {
+            enumBuilder.addEnumConstant(it.name.uppercase())
+        }
+
+        javaType.addType(enumBuilder.build())
+    }
+
+    private fun addBitsetFieldGetterAndSetter(javaType: TypeSpec.Builder) {
+        val setFieldSetter = MethodSpec.methodBuilder("setField")
+            .addModifiers(Modifier.PRIVATE)
+            .addParameter(ClassName.get("", "Field"), "field")
+            .addStatement("fieldsPresent.set(field.getOrdinal())")
+
+        val isSetGetter = MethodSpec.methodBuilder("isSet")
+            .addModifiers(Modifier.PRIVATE)
+            .returns(ClassName.BOOLEAN)
+            .addParameter(ClassName.get("", "Field"), "field")
+            .addStatement("return fieldsPresent.get(field.getOrdinal())")
+
+        javaType.addMethod(setFieldSetter.build())
+        javaType.addMethod(isSetGetter.build())
+    }
+
+
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         val fieldBuilder = if (fieldDefinition.initialValue != null) {
             FieldSpec
@@ -510,7 +525,24 @@ abstract class BaseDataTypeGenerator(
 
     private fun addBuilder(javaType: TypeSpec.Builder) {
         val className = ClassName.get(packageName, javaType.build().name)
-        val buildMethod = if (config.generateBitset) {
+        var buildMethod = MethodSpec.methodBuilder("build").returns(className).addCode(
+            """
+$className result = new $className();
+${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
+            """.trimIndent()
+        ).addModifiers(Modifier.PUBLIC).build()
+
+        val builderClassName = ClassName.get(packageName, "$className.Builder")
+        val newBuilderMethod =
+            MethodSpec
+                .methodBuilder("newBuilder")
+                .returns(builderClassName)
+                .addStatement("return new Builder()")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .build()
+
+        if (config.generateBitset) {
+        buildMethod =
             MethodSpec.methodBuilder("build").returns(className).addCode(
                 """
 $className result = new $className();
@@ -523,29 +555,7 @@ for (Field field: Field.values()) {
 return result
             """.trimIndent()
             ).addModifiers(Modifier.PUBLIC).build()
-        } else {
-            MethodSpec.methodBuilder("build").returns(className).addCode(
-                """
-$className result = new $className();
-${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
-            """.trimIndent()
-            ).addModifiers(Modifier.PUBLIC).build()
         }
-
-        if (config.generateBitset) {
-            addBitSetFields(javaType)
-        }
-
-
-
-        val builderClassName = ClassName.get(packageName, "$className.Builder")
-        val newBuilderMethod =
-            MethodSpec
-                .methodBuilder("newBuilder")
-                .returns(builderClassName)
-                .addStatement("return new Builder()")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .build()
 
         javaType.addMethod(newBuilderMethod)
 
@@ -557,6 +567,24 @@ ${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${i
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addMethod(buildMethod)
+
+        if (config.generateBitset) {
+            buildMethod =
+                MethodSpec.methodBuilder("build").returns(className).addCode(
+                    """
+$className result = new $className();
+${javaType.build().fieldSpecs.filter{it.name!="fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
+for (Field field: Field.values()) {
+    if (this.isSet(field)) {
+       result.setField(field);
+    }
+}
+return result
+            """.trimIndent()
+                ).addModifiers(Modifier.PUBLIC).build()
+
+            addBitsetFieldGetterAndSetter(builderType)
+        }
 
         javaType.build().fieldSpecs.map {
             MethodSpec.methodBuilder(it.name)
