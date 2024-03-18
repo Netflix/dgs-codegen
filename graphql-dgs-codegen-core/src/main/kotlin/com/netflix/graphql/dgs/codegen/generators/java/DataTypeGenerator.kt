@@ -510,6 +510,7 @@ abstract class BaseDataTypeGenerator(
             """
 $className result = new $className();
 ${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
+return result;
             """.trimIndent()
         ).addModifiers(Modifier.PUBLIC).build()
 
@@ -533,7 +534,7 @@ for (Field field: Field.values()) {
        result.setField(field);
     }
 }
-return result
+return result;
             """.trimIndent()
             ).addModifiers(Modifier.PUBLIC).build()
         }
@@ -560,23 +561,26 @@ for (Field field: Field.values()) {
        result.setField(field);
     }
 }
-return result
+return result;
             """.trimIndent()
                 ).addModifiers(Modifier.PUBLIC).build()
 
             addBitsetFieldGetterAndSetter(builderType)
         }
 
-        javaType.build().fieldSpecs.map {
-            MethodSpec.methodBuilder(it.name)
+        javaType.build().fieldSpecs.filter{it.name!="fieldsPresent"}.map {
+            var methodBuilder = MethodSpec.methodBuilder(it.name)
                 .addJavadoc(it.javadoc)
                 .returns(builderClassName)
                 .addStatement("this.${it.name} = ${it.name}")
-                .addStatement(
+            if (config.generateBitset) {
+                methodBuilder.addStatement(
                     "setField(Field.\$N)",
                     ReservedKeywordSanitizer.sanitize(it.name.uppercase())
                 )
-                .addStatement("return this")
+            }
+
+            methodBuilder.addStatement("return this")
                 .addParameter(ParameterSpec.builder(it.type, it.name).build())
                 .addModifiers(Modifier.PUBLIC).build()
         }.forEach { builderType.addMethod(it) }
