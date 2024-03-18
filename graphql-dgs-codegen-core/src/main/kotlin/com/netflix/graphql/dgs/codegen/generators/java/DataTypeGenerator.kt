@@ -506,27 +506,10 @@ abstract class BaseDataTypeGenerator(
 
     private fun addBuilder(javaType: TypeSpec.Builder) {
         val className = ClassName.get(packageName, javaType.build().name)
-        var buildMethod = MethodSpec.methodBuilder("build").returns(className).addCode(
-            """
-$className result = new $className();
-${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
-return result;
-            """.trimIndent()
-        ).addModifiers(Modifier.PUBLIC).build()
 
-        val builderClassName = ClassName.get(packageName, "$className.Builder")
-        val newBuilderMethod =
-            MethodSpec
-                .methodBuilder("newBuilder")
-                .returns(builderClassName)
-                .addStatement("return new Builder()")
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .build()
-
-        if(config.generateFieldIsSet) {
-        buildMethod =
-            MethodSpec.methodBuilder("build").returns(className).addCode(
-                """
+        val buildMethod = if(config.generateFieldIsSet) {
+                MethodSpec.methodBuilder("build").returns(className).addCode(
+                    """
 $className result = new $className();
 ${javaType.build().fieldSpecs.filter{it.name!="fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
 for (Field field: Field.values()) {
@@ -536,8 +519,25 @@ for (Field field: Field.values()) {
 }
 return result;
             """.trimIndent()
-            ).addModifiers(Modifier.PUBLIC).build()
-        }
+                )
+        } else {
+            MethodSpec.methodBuilder("build").returns(className).addCode(
+                """
+$className result = new $className();
+${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
+return result;
+            """.trimIndent()
+            )
+        }.addModifiers(Modifier.PUBLIC).build()
+
+        val builderClassName = ClassName.get(packageName, "$className.Builder")
+        val newBuilderMethod =
+            MethodSpec
+                .methodBuilder("newBuilder")
+                .returns(builderClassName)
+                .addStatement("return new Builder()")
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                .build()
 
         javaType.addMethod(newBuilderMethod)
 
@@ -551,20 +551,6 @@ return result;
                 .addMethod(buildMethod)
 
         if(config.generateFieldIsSet) {
-            buildMethod =
-                MethodSpec.methodBuilder("build").returns(className).addCode(
-                    """
-$className result = new $className();
-${javaType.build().fieldSpecs.filter{it.name!="fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
-for (Field field: Field.values()) {
-    if (this.isSet(field)) {
-       result.setField(field);
-    }
-}
-return result;
-            """.trimIndent()
-                ).addModifiers(Modifier.PUBLIC).build()
-
             addBitsetFieldGetterAndSetter(builderType)
         }
 
