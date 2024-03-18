@@ -224,7 +224,7 @@ abstract class BaseDataTypeGenerator(
             addParameterizedConstructor(fields, javaType)
         }
 
-        if(config.generateBitset) {
+        if(config.generateFieldIsSet) {
             addBitsetField(javaType)
             addBitSetEnum(fields, javaType)
         }
@@ -464,7 +464,7 @@ abstract class BaseDataTypeGenerator(
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             )
 
-        if(config.generateBitset) {
+        if(config.generateFieldIsSet) {
             setterMethodBuilder.addStatement(
                 "setField(Field.\$N)",
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name.uppercase())
@@ -523,7 +523,7 @@ return result;
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .build()
 
-        if(config.generateBitset) {
+        if(config.generateFieldIsSet) {
         buildMethod =
             MethodSpec.methodBuilder("build").returns(className).addCode(
                 """
@@ -550,7 +550,7 @@ return result;
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addMethod(buildMethod)
 
-        if(config.generateBitset) {
+        if(config.generateFieldIsSet) {
             buildMethod =
                 MethodSpec.methodBuilder("build").returns(className).addCode(
                     """
@@ -573,7 +573,7 @@ return result;
                 .addJavadoc(it.javadoc)
                 .returns(builderClassName)
                 .addStatement("this.${it.name} = ${it.name}")
-            if(config.generateBitset) {
+            if(config.generateFieldIsSet) {
                 methodBuilder.addStatement(
                     "setField(Field.\$N)",
                     ReservedKeywordSanitizer.sanitize(it.name.uppercase())

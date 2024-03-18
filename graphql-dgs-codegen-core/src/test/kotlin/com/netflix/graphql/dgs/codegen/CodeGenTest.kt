@@ -2626,7 +2626,7 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateBitset = true
+                generateFieldIsSet = true
             )
         ).generate()
 

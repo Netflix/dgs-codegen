@@ -475,7 +475,7 @@ class CodeGenConfig(
     private val subPackageNameTypes: String = "types",
     private val subPackageNameDocs: String = "docs",
     var language: Language = Language.JAVA,
-    var generateBitset: Boolean = false,
+    var generateFieldIsSet: Boolean = false,
     var generateBoxedTypes: Boolean = false,
     var generateIsGetterForPrimitiveBooleanFields: Boolean = false,
     var generateClientApi: Boolean = false,
