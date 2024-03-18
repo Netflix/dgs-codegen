@@ -2599,7 +2599,7 @@ class CodeGenTest {
     }
 
     @Test
-    fun generateDataClassWithBitset() {
+    fun generateDataClassWithFieldIsSet() {
         val schema = """
             type Query {
                 show(id: ID!): Show
@@ -2702,6 +2702,91 @@ class CodeGenTest {
             """
             |    this.title = title;
             |    setField(Field.TITLE);
+            |    return this;
+            """.trimMargin().trimIndent()
+        )
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateDataClassWithoutFieldIsSet() {
+        val schema = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Mutation {
+                updateShow(input: UpdateShowInput!): Show
+            }
+            
+            type Show  {
+                id: ID!
+                title: String
+                releaseYear: Int
+            }
+            
+            input UpdateShowInput {
+                id: ID!
+                title: String
+                releaseYear: Int
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(2)
+
+        // Data Types
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").doesNotContain("fieldsPresent")
+        assertThat(typeSpec.methodSpecs).extracting("name").doesNotContain("setField", "isSet")
+
+        var setTitleMethod = typeSpec.methodSpecs.find{it.name == "setTitle"}
+        assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
+            """
+            |    this.title = title;
+            """.trimMargin().trimIndent()
+        )
+
+        // Enum for accessing bitset
+        assertThat(typeSpec.typeSpecs.size).isEqualTo(1)
+
+        // Builder class
+        assertThat(typeSpec.typeSpecs[0].kind).isEqualTo(TypeSpec.Kind.CLASS)
+        assertThat(typeSpec.typeSpecs[0].name).isEqualTo("Builder")
+
+        val builderSpec = typeSpec.typeSpecs.find{it.name == "Builder"}
+
+        assertThat(builderSpec?.fieldSpecs).extracting("name").doesNotContain("fieldsPresent")
+
+        val buildMethod = builderSpec?.methodSpecs?.find{it.name == "build"}
+        assertThat(buildMethod?.code.toString())
+            .isEqualTo(
+                """
+                    |com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Show();
+                    |result.id = this.id;
+                    |result.title = this.title;
+                    |result.releaseYear = this.releaseYear;
+                    |return result;
+                """.trimMargin().trimIndent()
+            )
+
+        assertThat(builderSpec?.methodSpecs).extracting("name").doesNotContain("setField", "isSet")
+
+        setTitleMethod = builderSpec?.methodSpecs?.find{it.name == "title"}
+        assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
+            """
+            |    this.title = title;
             |    return this;
             """.trimMargin().trimIndent()
         )
