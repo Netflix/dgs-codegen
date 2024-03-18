@@ -523,7 +523,7 @@ return result;
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .build()
 
-        if (config.generateBitset) {
+        if(config.generateBitset) {
         buildMethod =
             MethodSpec.methodBuilder("build").returns(className).addCode(
                 """
@@ -550,7 +550,7 @@ return result;
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addMethod(buildMethod)
 
-        if (config.generateBitset) {
+        if(config.generateBitset) {
             buildMethod =
                 MethodSpec.methodBuilder("build").returns(className).addCode(
                     """
@@ -573,7 +573,7 @@ return result;
                 .addJavadoc(it.javadoc)
                 .returns(builderClassName)
                 .addStatement("this.${it.name} = ${it.name}")
-            if (config.generateBitset) {
+            if(config.generateBitset) {
                 methodBuilder.addStatement(
                     "setField(Field.\$N)",
                     ReservedKeywordSanitizer.sanitize(it.name.uppercase())
