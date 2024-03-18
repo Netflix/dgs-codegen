@@ -46,7 +46,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     )
     private val language by option("--language", "-l", help = "Output language").choice("java", "kotlin", ignoreCase = true)
         .default("java")
-    private val generateClient by option("--generate-client", "-c", help = "Genereate client api").flag(default = false)
+    private val generateClient by option("--generate-client", "-c", help = "Generate client api").flag(default = false)
     private val generateDataTypes by option(
         "--generate-data-types",
         help = "Generate data types. Not needed when only generating an API"
@@ -59,7 +59,8 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val shortProjectionNames by option("--short-projection-names").flag()
     private val generateInterfaceSetters by option("--generate-interface-setters").flag()
     private val generateDocs by option("--generate-docs").flag()
-    private val generateFieldIsSet by option("--generate-field-is-set", help = "Generate bitset").flag(default = false)
+    // Generate an additional bitset field and supporting getters, setters, builder functions for data classes
+    private val generateFieldIsSet by option("--generate-field-is-set", help = "Generate an additional bitset field and supporting getters, setters, and builder functions for data classes").flag(default = false)
 
     override fun run() {
         val inputSchemas = if (schemas.isEmpty()) {
