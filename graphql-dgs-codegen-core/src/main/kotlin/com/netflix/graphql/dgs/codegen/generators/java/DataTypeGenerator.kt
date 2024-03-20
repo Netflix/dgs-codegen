@@ -382,7 +382,7 @@ abstract class BaseDataTypeGenerator(
         val enumBuilder = TypeSpec
             .enumBuilder("Field")
             .addModifiers(Modifier.PUBLIC)
-            .addField(FieldSpec.builder(com.squareup.javapoet.TypeName.INT, "ordinal").initializer("-1").build())
+            .addField(FieldSpec.builder(ClassName.INT, "ordinal").initializer("-1").build())
             .addMethod(MethodSpec
                 .methodBuilder("getOrdinal")
                 .addModifiers(Modifier.PUBLIC)
@@ -396,6 +396,7 @@ abstract class BaseDataTypeGenerator(
             )
             .addMethod(MethodSpec
                 .constructorBuilder()
+                .addParameter(ClassName.INT, "ordinal")
                 .addCode(
                     """
                         |this.ordinal = ordinal;
