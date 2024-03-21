@@ -3,8 +3,8 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableComplexTyp
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class MyTypeProjection : GraphQLProjection() {
-  public fun other(_projection: OtherTypeProjection.() -> OtherTypeProjection): MyTypeProjection {
-    field("other", OtherTypeProjection(), _projection)
-    return this
-  }
+    public fun other(_projection: OtherTypeProjection.() -> OtherTypeProjection): MyTypeProjection {
+        field("other", OtherTypeProjection(), _projection)
+        return this
+    }
 }

@@ -2642,13 +2642,13 @@ class CodeGenTest {
 
         assertThat(typeSpec.methodSpecs).extracting("name").contains("setField", "isSet")
 
-        var setFieldMethod = typeSpec.methodSpecs.find{it.name == "setField"}
+        var setFieldMethod = typeSpec.methodSpecs.find { it.name == "setField" }
         assertThat(setFieldMethod?.code.toString().trim()).isEqualTo("fieldsPresent.set(field.getOrdinal());")
 
-        var isSetMethod = typeSpec.methodSpecs.find{it.name == "isSet"}
+        var isSetMethod = typeSpec.methodSpecs.find { it.name == "isSet" }
         assertThat(isSetMethod?.code.toString().trim()).isEqualTo("return fieldsPresent.get(field.getOrdinal());")
 
-        var setTitleMethod = typeSpec.methodSpecs.find{it.name == "setTitle"}
+        var setTitleMethod = typeSpec.methodSpecs.find { it.name == "setTitle" }
         assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
             """
             |    this.title = title;
@@ -2668,11 +2668,11 @@ class CodeGenTest {
         assertThat(typeSpec.typeSpecs[1].kind).isEqualTo(TypeSpec.Kind.CLASS)
         assertThat(typeSpec.typeSpecs[1].name).isEqualTo("Builder")
 
-        val builderSpec = typeSpec.typeSpecs.find{it.name == "Builder"}
+        val builderSpec = typeSpec.typeSpecs.find { it.name == "Builder" }
 
         assertThat(builderSpec?.fieldSpecs).extracting("name").contains("fieldsPresent")
 
-        val buildMethod = builderSpec?.methodSpecs?.find{it.name == "build"}
+        val buildMethod = builderSpec?.methodSpecs?.find { it.name == "build" }
         assertThat(buildMethod?.code.toString())
             .isEqualTo(
                 """
@@ -2691,13 +2691,13 @@ class CodeGenTest {
 
         assertThat(builderSpec?.methodSpecs).extracting("name").contains("setField", "isSet")
 
-        setFieldMethod = builderSpec?.methodSpecs?.find{it.name == "setField"}
+        setFieldMethod = builderSpec?.methodSpecs?.find { it.name == "setField" }
         assertThat(setFieldMethod?.code.toString().trim()).isEqualTo("fieldsPresent.set(field.getOrdinal());")
 
-        isSetMethod = builderSpec?.methodSpecs?.find{it.name == "isSet"}
+        isSetMethod = builderSpec?.methodSpecs?.find { it.name == "isSet" }
         assertThat(isSetMethod?.code.toString().trim()).isEqualTo("return fieldsPresent.get(field.getOrdinal());")
 
-        setTitleMethod = builderSpec?.methodSpecs?.find{it.name == "title"}
+        setTitleMethod = builderSpec?.methodSpecs?.find { it.name == "title" }
         assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
             """
             |    this.title = title;
@@ -2736,7 +2736,7 @@ class CodeGenTest {
         val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
@@ -2751,7 +2751,7 @@ class CodeGenTest {
         assertThat(typeSpec.fieldSpecs).extracting("name").doesNotContain("fieldsPresent")
         assertThat(typeSpec.methodSpecs).extracting("name").doesNotContain("setField", "isSet")
 
-        var setTitleMethod = typeSpec.methodSpecs.find{it.name == "setTitle"}
+        var setTitleMethod = typeSpec.methodSpecs.find { it.name == "setTitle" }
         assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
             """
             |    this.title = title;
@@ -2765,11 +2765,11 @@ class CodeGenTest {
         assertThat(typeSpec.typeSpecs[0].kind).isEqualTo(TypeSpec.Kind.CLASS)
         assertThat(typeSpec.typeSpecs[0].name).isEqualTo("Builder")
 
-        val builderSpec = typeSpec.typeSpecs.find{it.name == "Builder"}
+        val builderSpec = typeSpec.typeSpecs.find { it.name == "Builder" }
 
         assertThat(builderSpec?.fieldSpecs).extracting("name").doesNotContain("fieldsPresent")
 
-        val buildMethod = builderSpec?.methodSpecs?.find{it.name == "build"}
+        val buildMethod = builderSpec?.methodSpecs?.find { it.name == "build" }
         assertThat(buildMethod?.code.toString())
             .isEqualTo(
                 """
@@ -2783,7 +2783,7 @@ class CodeGenTest {
 
         assertThat(builderSpec?.methodSpecs).extracting("name").doesNotContain("setField", "isSet")
 
-        setTitleMethod = builderSpec?.methodSpecs?.find{it.name == "title"}
+        setTitleMethod = builderSpec?.methodSpecs?.find { it.name == "title" }
         assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
             """
             |    this.title = title;

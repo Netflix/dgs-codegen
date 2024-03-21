@@ -11,32 +11,30 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-  test: () -> RequiredTestType? = testDefault,
+    test: () -> RequiredTestType? = testDefault
 ) {
-  private val _test: () -> RequiredTestType? = test
+    private val _test: () -> RequiredTestType? = test
 
-  @get:JvmName("getTest")
-  public val test: RequiredTestType?
-    get() = _test.invoke()
+    @get:JvmName("getTest")
+    public val test: RequiredTestType?
+        get() = _test.invoke()
 
-  public companion object {
-    private val testDefault: () -> RequiredTestType? = 
-        { throw IllegalStateException("Field `test` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var test: () -> RequiredTestType? = testDefault
-
-    @JsonProperty("test")
-    public fun withTest(test: RequiredTestType?): Builder = this.apply {
-      this.test = { test }
+    public companion object {
+        private val testDefault: () -> RequiredTestType? = { throw IllegalStateException("Field `test` was not requested") }
     }
 
-    public fun build(): Query = Query(
-      test = test,
-    )
-  }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        private var test: () -> RequiredTestType? = testDefault
+
+        @JsonProperty("test")
+        public fun withTest(test: RequiredTestType?): Builder = this.apply {
+            this.test = { test }
+        }
+
+        public fun build(): Query = Query(
+            test = test
+        )
+    }
 }

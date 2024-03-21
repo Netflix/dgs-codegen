@@ -3,9 +3,9 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultEnumValueForArray.
 import kotlin.String
 
 public object DgsConstants {
-  public object SOMETYPE {
-    public const val TYPE_NAME: String = "SomeType"
+    public object SOMETYPE {
+        public const val TYPE_NAME: String = "SomeType"
 
-    public const val Colors: String = "colors"
-  }
+        public const val Colors: String = "colors"
+    }
 }
