@@ -7,7 +7,7 @@ import kotlin.String
 import kotlin.collections.List
 
 public class PersonFilter(
-    public val email: String? = default<PersonFilter, String?>("email")
+  public val email: String? = default<PersonFilter, String?>("email"),
 ) : GraphQLInput() {
-    override fun fields(): List<Pair<String, Any?>> = listOf("email" to email)
+  override fun fields(): List<Pair<String, Any?>> = listOf("email" to email)
 }

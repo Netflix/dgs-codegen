@@ -12,64 +12,70 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Car.Builder::class)
 public class Car(
-    make: () -> String? = makeDefault,
-    model: () -> String? = modelDefault,
-    engine: () -> Engine? = engineDefault
+  make: () -> String? = makeDefault,
+  model: () -> String? = modelDefault,
+  engine: () -> Engine? = engineDefault,
 ) {
-    private val _make: () -> String? = make
+  private val _make: () -> String? = make
 
-    private val _model: () -> String? = model
+  private val _model: () -> String? = model
 
-    private val _engine: () -> Engine? = engine
+  private val _engine: () -> Engine? = engine
 
-    @get:JvmName("getMake")
-    public val make: String?
-        get() = _make.invoke()
+  @get:JvmName("getMake")
+  public val make: String?
+    get() = _make.invoke()
 
-    @get:JvmName("getModel")
-    public val model: String?
-        get() = _model.invoke()
+  @get:JvmName("getModel")
+  public val model: String?
+    get() = _model.invoke()
 
-    @get:JvmName("getEngine")
-    public val engine: Engine?
-        get() = _engine.invoke()
+  @get:JvmName("getEngine")
+  public val engine: Engine?
+    get() = _engine.invoke()
 
-    public companion object {
-        private val makeDefault: () -> String? = { throw IllegalStateException("Field `make` was not requested") }
+  public companion object {
+    private val makeDefault: () -> String? = 
+        { throw IllegalStateException("Field `make` was not requested") }
 
-        private val modelDefault: () -> String? = { throw IllegalStateException("Field `model` was not requested") }
 
-        private val engineDefault: () -> Engine? = { throw IllegalStateException("Field `engine` was not requested") }
+    private val modelDefault: () -> String? = 
+        { throw IllegalStateException("Field `model` was not requested") }
+
+
+    private val engineDefault: () -> Engine? = 
+        { throw IllegalStateException("Field `engine` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var make: () -> String? = makeDefault
+
+    private var model: () -> String? = modelDefault
+
+    private var engine: () -> Engine? = engineDefault
+
+    @JsonProperty("make")
+    public fun withMake(make: String?): Builder = this.apply {
+      this.make = { make }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var make: () -> String? = makeDefault
-
-        private var model: () -> String? = modelDefault
-
-        private var engine: () -> Engine? = engineDefault
-
-        @JsonProperty("make")
-        public fun withMake(make: String?): Builder = this.apply {
-            this.make = { make }
-        }
-
-        @JsonProperty("model")
-        public fun withModel(model: String?): Builder = this.apply {
-            this.model = { model }
-        }
-
-        @JsonProperty("engine")
-        public fun withEngine(engine: Engine?): Builder = this.apply {
-            this.engine = { engine }
-        }
-
-        public fun build(): Car = Car(
-            make = make,
-            model = model,
-            engine = engine
-        )
+    @JsonProperty("model")
+    public fun withModel(model: String?): Builder = this.apply {
+      this.model = { model }
     }
+
+    @JsonProperty("engine")
+    public fun withEngine(engine: Engine?): Builder = this.apply {
+      this.engine = { engine }
+    }
+
+    public fun build(): Car = Car(
+      make = make,
+      model = model,
+      engine = engine,
+    )
+  }
 }

@@ -11,30 +11,32 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-    search: () -> Movie? = searchDefault
+  search: () -> Movie? = searchDefault,
 ) {
-    private val _search: () -> Movie? = search
+  private val _search: () -> Movie? = search
 
-    @get:JvmName("getSearch")
-    public val search: Movie?
-        get() = _search.invoke()
+  @get:JvmName("getSearch")
+  public val search: Movie?
+    get() = _search.invoke()
 
-    public companion object {
-        private val searchDefault: () -> Movie? = { throw IllegalStateException("Field `search` was not requested") }
+  public companion object {
+    private val searchDefault: () -> Movie? = 
+        { throw IllegalStateException("Field `search` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var search: () -> Movie? = searchDefault
+
+    @JsonProperty("search")
+    public fun withSearch(search: Movie?): Builder = this.apply {
+      this.search = { search }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var search: () -> Movie? = searchDefault
-
-        @JsonProperty("search")
-        public fun withSearch(search: Movie?): Builder = this.apply {
-            this.search = { search }
-        }
-
-        public fun build(): Query = Query(
-            search = search
-        )
-    }
+    public fun build(): Query = Query(
+      search = search,
+    )
+  }
 }

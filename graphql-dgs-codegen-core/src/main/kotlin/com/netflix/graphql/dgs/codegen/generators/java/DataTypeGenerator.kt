@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
 import com.squareup.javapoet.*
@@ -223,7 +224,7 @@ abstract class BaseDataTypeGenerator(
             addParameterizedConstructor(fields, javaType)
         }
 
-        if (config.generateFieldIsSet) {
+        if(config.generateFieldIsSet) {
             addBitsetField(javaType)
             addBitSetEnum(fields, javaType)
         }
@@ -382,28 +383,26 @@ abstract class BaseDataTypeGenerator(
             .enumBuilder("Field")
             .addModifiers(Modifier.PUBLIC)
             .addField(FieldSpec.builder(ClassName.INT, "ordinal").initializer("-1").build())
-            .addMethod(
-                MethodSpec
-                    .methodBuilder("getOrdinal")
-                    .addModifiers(Modifier.PUBLIC)
-                    .returns(ClassName.INT)
-                    .addCode(
-                        """
+            .addMethod(MethodSpec
+                .methodBuilder("getOrdinal")
+                .addModifiers(Modifier.PUBLIC)
+                .returns(ClassName.INT)
+                .addCode(
+                    """
                     |return ordinal;
-                        """.trimMargin()
-                    )
-                    .build()
+                    """.trimMargin()
+                )
+                .build()
             )
-            .addMethod(
-                MethodSpec
-                    .constructorBuilder()
-                    .addParameter(ClassName.INT, "ordinal")
-                    .addCode(
-                        """
+            .addMethod(MethodSpec
+                .constructorBuilder()
+                .addParameter(ClassName.INT, "ordinal")
+                .addCode(
+                    """
                         |this.ordinal = ordinal;
-                        """.trimMargin()
-                    )
-                    .build()
+                    """.trimMargin()
+                )
+                .build()
             )
 
         fields.forEach {
@@ -428,6 +427,7 @@ abstract class BaseDataTypeGenerator(
         javaType.addMethod(setFieldSetter.build())
         javaType.addMethod(isSetGetter.build())
     }
+
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         val fieldBuilder = if (fieldDefinition.initialValue != null) {
@@ -465,7 +465,7 @@ abstract class BaseDataTypeGenerator(
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             )
 
-        if (config.generateFieldIsSet) {
+        if(config.generateFieldIsSet) {
             setterMethodBuilder.addStatement(
                 "setField(Field.\$N)",
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name.uppercase())
@@ -508,26 +508,26 @@ abstract class BaseDataTypeGenerator(
     private fun addBuilder(javaType: TypeSpec.Builder) {
         val className = ClassName.get(packageName, javaType.build().name)
 
-        val buildMethod = if (config.generateFieldIsSet) {
-            MethodSpec.methodBuilder("build").returns(className).addCode(
-                """
+        val buildMethod = if(config.generateFieldIsSet) {
+                MethodSpec.methodBuilder("build").returns(className).addCode(
+                    """
 $className result = new $className();
-${javaType.build().fieldSpecs.filter{it.name != "fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
+${javaType.build().fieldSpecs.filter{it.name!="fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
 for (Field field: Field.values()) {
     if (this.isSet(field)) {
         result.setField(field);
     }
 }
 return result;
-                """.trimIndent()
-            )
+            """.trimIndent()
+                )
         } else {
             MethodSpec.methodBuilder("build").returns(className).addCode(
                 """
 $className result = new $className();
 ${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
 return result;
-                """.trimIndent()
+            """.trimIndent()
             )
         }.addModifiers(Modifier.PUBLIC).build()
 
@@ -542,6 +542,8 @@ return result;
 
         javaType.addMethod(newBuilderMethod)
 
+
+
         val builderType =
             TypeSpec
                 .classBuilder("Builder")
@@ -549,16 +551,16 @@ return result;
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addMethod(buildMethod)
 
-        if (config.generateFieldIsSet) {
+        if(config.generateFieldIsSet) {
             addBitsetFieldGetterAndSetter(builderType)
         }
 
-        javaType.build().fieldSpecs.filter { it.name != "fieldsPresent" }.map {
+        javaType.build().fieldSpecs.filter{it.name!="fieldsPresent"}.map {
             var methodBuilder = MethodSpec.methodBuilder(it.name)
                 .addJavadoc(it.javadoc)
                 .returns(builderClassName)
                 .addStatement("this.${it.name} = ${it.name}")
-            if (config.generateFieldIsSet) {
+            if(config.generateFieldIsSet) {
                 methodBuilder.addStatement(
                     "setField(Field.\$N)",
                     ReservedKeywordSanitizer.sanitize(it.name.uppercase())

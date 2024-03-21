@@ -13,49 +13,53 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Dog.Builder::class)
 public class Dog(
-    name: () -> String? = nameDefault,
-    diet: () -> Vegetarian? = dietDefault
+  name: () -> String? = nameDefault,
+  diet: () -> Vegetarian? = dietDefault,
 ) : Pet {
-    private val _name: () -> String? = name
+  private val _name: () -> String? = name
 
-    private val _diet: () -> Vegetarian? = diet
+  private val _diet: () -> Vegetarian? = diet
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @get:JvmName("getName")
-    override val name: String?
-        get() = _name.invoke()
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getName")
+  override val name: String?
+    get() = _name.invoke()
 
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @get:JvmName("getDiet")
-    override val diet: Vegetarian?
-        get() = _diet.invoke()
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getDiet")
+  override val diet: Vegetarian?
+    get() = _diet.invoke()
 
-    public companion object {
-        private val nameDefault: () -> String? = { throw IllegalStateException("Field `name` was not requested") }
+  public companion object {
+    private val nameDefault: () -> String? = 
+        { throw IllegalStateException("Field `name` was not requested") }
 
-        private val dietDefault: () -> Vegetarian? = { throw IllegalStateException("Field `diet` was not requested") }
+
+    private val dietDefault: () -> Vegetarian? = 
+        { throw IllegalStateException("Field `diet` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var name: () -> String? = nameDefault
+
+    private var diet: () -> Vegetarian? = dietDefault
+
+    @JsonProperty("name")
+    public fun withName(name: String?): Builder = this.apply {
+      this.name = { name }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var name: () -> String? = nameDefault
-
-        private var diet: () -> Vegetarian? = dietDefault
-
-        @JsonProperty("name")
-        public fun withName(name: String?): Builder = this.apply {
-            this.name = { name }
-        }
-
-        @JsonProperty("diet")
-        public fun withDiet(diet: Vegetarian?): Builder = this.apply {
-            this.diet = { diet }
-        }
-
-        public fun build(): Dog = Dog(
-            name = name,
-            diet = diet
-        )
+    @JsonProperty("diet")
+    public fun withDiet(diet: Vegetarian?): Builder = this.apply {
+      this.diet = { diet }
     }
+
+    public fun build(): Dog = Dog(
+      name = name,
+      diet = diet,
+    )
+  }
 }

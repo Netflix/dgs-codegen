@@ -9,12 +9,12 @@ import kotlin.jvm.JvmName
  * Anything with a title!
  */
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "__typename"
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "__typename",
 )
 public sealed interface Titled {
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @get:JvmName("getTitle")
-    public val title: String?
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getTitle")
+  public val title: String?
 }

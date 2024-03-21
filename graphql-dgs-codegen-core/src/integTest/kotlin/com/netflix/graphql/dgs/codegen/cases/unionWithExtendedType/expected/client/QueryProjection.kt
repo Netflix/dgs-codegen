@@ -3,9 +3,9 @@ package com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.cli
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class QueryProjection : GraphQLProjection() {
-    public fun search(_projection: SearchResultProjection.() -> SearchResultProjection):
-        QueryProjection {
-        field("search", SearchResultProjection(), _projection)
-        return this
-    }
+  public fun search(_projection: SearchResultProjection.() -> SearchResultProjection):
+      QueryProjection {
+    field("search", SearchResultProjection(), _projection)
+    return this
+  }
 }

@@ -12,30 +12,32 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-    cars: () -> List<Car?>? = carsDefault
+  cars: () -> List<Car?>? = carsDefault,
 ) {
-    private val _cars: () -> List<Car?>? = cars
+  private val _cars: () -> List<Car?>? = cars
 
-    @get:JvmName("getCars")
-    public val cars: List<Car?>?
-        get() = _cars.invoke()
+  @get:JvmName("getCars")
+  public val cars: List<Car?>?
+    get() = _cars.invoke()
 
-    public companion object {
-        private val carsDefault: () -> List<Car?>? = { throw IllegalStateException("Field `cars` was not requested") }
+  public companion object {
+    private val carsDefault: () -> List<Car?>? = 
+        { throw IllegalStateException("Field `cars` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var cars: () -> List<Car?>? = carsDefault
+
+    @JsonProperty("cars")
+    public fun withCars(cars: List<Car?>?): Builder = this.apply {
+      this.cars = { cars }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var cars: () -> List<Car?>? = carsDefault
-
-        @JsonProperty("cars")
-        public fun withCars(cars: List<Car?>?): Builder = this.apply {
-            this.cars = { cars }
-        }
-
-        public fun build(): Query = Query(
-            cars = cars
-        )
-    }
+    public fun build(): Query = Query(
+      cars = cars,
+    )
+  }
 }

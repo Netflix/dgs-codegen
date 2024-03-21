@@ -3,9 +3,9 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForEnum.expec
 import kotlin.String
 
 public object DgsConstants {
-    public object COLORFILTER {
-        public const val TYPE_NAME: String = "ColorFilter"
+  public object COLORFILTER {
+    public const val TYPE_NAME: String = "ColorFilter"
 
-        public const val Color: String = "color"
-    }
+    public const val Color: String = "color"
+  }
 }

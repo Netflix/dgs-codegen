@@ -3,8 +3,8 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWIthNoFields.expected.cli
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class QueryProjection : GraphQLProjection() {
-    public fun me(_projection: PersonProjection.() -> PersonProjection): QueryProjection {
-        field("me", PersonProjection(), _projection)
-        return this
-    }
+  public fun me(_projection: PersonProjection.() -> PersonProjection): QueryProjection {
+    field("me", PersonProjection(), _projection)
+    return this
+  }
 }

@@ -3,9 +3,9 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceWithInterfaceInheritance.
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class SeedProjection : GraphQLProjection() {
-    public val name: SeedProjection
-        get() {
-            field("name")
-            return this
-        }
+  public val name: SeedProjection
+    get() {
+      field("name")
+      return this
+    }
 }
