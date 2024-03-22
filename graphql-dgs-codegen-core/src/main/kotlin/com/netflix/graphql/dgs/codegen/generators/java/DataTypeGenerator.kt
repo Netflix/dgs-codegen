@@ -408,7 +408,6 @@ abstract class BaseDataTypeGenerator(
 
         fields.forEachIndexed() { index, it ->
             enumBuilder.addEnumConstant(it.name.uppercase(), TypeSpec.anonymousClassBuilder("$index").build())
-
         }
 
         javaType.addType(enumBuilder.build())
