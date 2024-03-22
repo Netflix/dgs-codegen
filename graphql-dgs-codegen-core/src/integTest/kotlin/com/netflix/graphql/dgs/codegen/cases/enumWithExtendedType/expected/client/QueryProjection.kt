@@ -3,9 +3,9 @@ package com.netflix.graphql.dgs.codegen.cases.enumWithExtendedType.expected.clie
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class QueryProjection : GraphQLProjection() {
-  public val types: QueryProjection
-    get() {
-      field("types")
-      return this
-    }
+    public val types: QueryProjection
+        get() {
+            field("types")
+            return this
+        }
 }

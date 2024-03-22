@@ -6,12 +6,12 @@ import kotlin.Suppress
 import kotlin.jvm.JvmName
 
 @JsonTypeInfo(
-  use = JsonTypeInfo.Id.NAME,
-  include = JsonTypeInfo.As.PROPERTY,
-  property = "__typename",
+    use = JsonTypeInfo.Id.NAME,
+    include = JsonTypeInfo.As.PROPERTY,
+    property = "__typename"
 )
 public sealed interface Person {
-  @Suppress("INAPPLICABLE_JVM_NAME")
-  @get:JvmName("getName")
-  public val name: String?
+    @Suppress("INAPPLICABLE_JVM_NAME")
+    @get:JvmName("getName")
+    public val name: String?
 }

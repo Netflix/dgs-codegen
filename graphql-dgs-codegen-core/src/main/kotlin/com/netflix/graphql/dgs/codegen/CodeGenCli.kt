@@ -59,6 +59,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val shortProjectionNames by option("--short-projection-names").flag()
     private val generateInterfaceSetters by option("--generate-interface-setters").flag()
     private val generateDocs by option("--generate-docs").flag()
+
     // Generate an additional bitset field and supporting getters, setters, builder functions for data classes
     private val generateFieldIsSet by option("--generate-field-is-set", help = "Generate an additional bitset field and supporting getters, setters, and builder functions for data classes").flag(default = false)
 
