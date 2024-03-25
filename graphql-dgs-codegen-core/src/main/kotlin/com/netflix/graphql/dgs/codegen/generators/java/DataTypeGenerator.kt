@@ -408,7 +408,6 @@ abstract class BaseDataTypeGenerator(
 
         fields.forEachIndexed() { index, it ->
             enumBuilder.addEnumConstant(it.name.uppercase(), TypeSpec.anonymousClassBuilder("$index").build())
-
         }
 
         javaType.addType(enumBuilder.build())
@@ -429,7 +428,6 @@ abstract class BaseDataTypeGenerator(
         javaType.addMethod(setFieldSetter.build())
         javaType.addMethod(isSetGetter.build())
     }
-
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
         val fieldBuilder = if (fieldDefinition.initialValue != null) {
@@ -514,7 +512,7 @@ abstract class BaseDataTypeGenerator(
             MethodSpec.methodBuilder("build").returns(className).addCode(
                 """
 $className result = new $className();
-${javaType.build().fieldSpecs.filter{it.name!="fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
+${javaType.build().fieldSpecs.filter{it.name != "fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
 for (Field field: Field.values()) {
     if (this.isSet(field)) {
         result.setField(field);
@@ -543,8 +541,6 @@ return result;
                 .build()
 
         javaType.addMethod(newBuilderMethod)
-
-
 
         val builderType =
             TypeSpec

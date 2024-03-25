@@ -2736,7 +2736,7 @@ class CodeGenTest {
         val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName,
+                packageName = basePackageName
             )
         ).generate()
 
