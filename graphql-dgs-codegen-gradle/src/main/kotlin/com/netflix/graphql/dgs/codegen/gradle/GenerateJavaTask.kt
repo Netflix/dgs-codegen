@@ -99,6 +99,9 @@ open class GenerateJavaTask @Inject constructor(
     var generateDocs = false
 
     @Input
+    var generateFieldIsSet = false
+
+    @Input
     var implementSerializable = false
 
     @OutputDirectory
@@ -195,6 +198,7 @@ open class GenerateJavaTask @Inject constructor(
             generateInterfaceSetters = generateInterfaceSetters,
             generateInterfaceMethodsForInterfaceFields = generateInterfaceMethodsForInterfaceFields,
             generateDocs = generateDocs,
+            generateFieldIsSet = generateFieldIsSet,
             typeMapping = typeMapping,
             includeQueries = includeQueries.toSet(),
             includeMutations = includeMutations.toSet(),
