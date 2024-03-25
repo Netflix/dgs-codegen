@@ -415,12 +415,12 @@ abstract class BaseDataTypeGenerator(
 
     private fun addBitsetFieldGetterAndSetter(javaType: TypeSpec.Builder) {
         val setFieldSetter = MethodSpec.methodBuilder("setField")
-            .addModifiers(Modifier.PRIVATE)
+            .addModifiers(Modifier.PUBLIC)
             .addParameter(ClassName.get("", "Field"), "field")
             .addStatement("fieldsPresent.set(field.getOrdinal())")
 
         val isSetGetter = MethodSpec.methodBuilder("isSet")
-            .addModifiers(Modifier.PRIVATE)
+            .addModifiers(Modifier.PUBLIC)
             .returns(ClassName.BOOLEAN)
             .addParameter(ClassName.get("", "Field"), "field")
             .addStatement("return fieldsPresent.get(field.getOrdinal())")

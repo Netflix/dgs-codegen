@@ -31,6 +31,7 @@ import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
 import java.io.Serializable
 import java.util.stream.Stream
+import javax.lang.model.element.Modifier
 
 class CodeGenTest {
 
@@ -2692,9 +2693,11 @@ class CodeGenTest {
         assertThat(builderSpec?.methodSpecs).extracting("name").contains("setField", "isSet")
 
         setFieldMethod = builderSpec?.methodSpecs?.find { it.name == "setField" }
+        assertThat(setFieldMethod?.modifiers).contains(Modifier.PUBLIC)
         assertThat(setFieldMethod?.code.toString().trim()).isEqualTo("fieldsPresent.set(field.getOrdinal());")
 
         isSetMethod = builderSpec?.methodSpecs?.find { it.name == "isSet" }
+        assertThat(isSetMethod?.modifiers).contains(Modifier.PUBLIC)
         assertThat(isSetMethod?.code.toString().trim()).isEqualTo("return fieldsPresent.get(field.getOrdinal());")
 
         setTitleMethod = builderSpec?.methodSpecs?.find { it.name == "title" }
