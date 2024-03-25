@@ -8,17 +8,15 @@ import kotlin.Suppress
 import kotlin.jvm.JvmName
 
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "__typename"
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "__typename",
 )
-@JsonSubTypes(
-    value = [
-        JsonSubTypes.Type(value = Product::class, name = "Product")
-    ]
-)
+@JsonSubTypes(value = [
+  JsonSubTypes.Type(value = Product::class, name = "Product")
+])
 public sealed interface Entity : Node {
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @get:JvmName("getId")
-    override val id: String
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getId")
+  override val id: String
 }

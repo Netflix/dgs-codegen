@@ -7,7 +7,7 @@ import kotlin.String
 import kotlin.collections.List
 
 public class SampleInput(
-    public val `return`: String
+  public val `return`: String,
 ) : GraphQLInput() {
-    override fun fields(): List<Pair<String, Any?>> = listOf("return" to `return`)
+  override fun fields(): List<Pair<String, Any?>> = listOf("return" to `return`)
 }

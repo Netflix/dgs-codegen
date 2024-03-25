@@ -6,12 +6,12 @@ import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @JsonTypeInfo(
-    use = JsonTypeInfo.Id.NAME,
-    include = JsonTypeInfo.As.PROPERTY,
-    property = "__typename"
+  use = JsonTypeInfo.Id.NAME,
+  include = JsonTypeInfo.As.PROPERTY,
+  property = "__typename",
 )
 public sealed interface Fruit {
-    @Suppress("INAPPLICABLE_JVM_NAME")
-    @get:JvmName("getSeeds")
-    public val seeds: List<Seed?>?
+  @Suppress("INAPPLICABLE_JVM_NAME")
+  @get:JvmName("getSeeds")
+  public val seeds: List<Seed?>?
 }

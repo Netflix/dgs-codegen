@@ -12,30 +12,32 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
-    string: () -> String? = stringDefault
+  string: () -> String? = stringDefault,
 ) {
-    private val _string: () -> String? = string
+  private val _string: () -> String? = string
 
-    @get:JvmName("getString")
-    public val string: String?
-        get() = _string.invoke()
+  @get:JvmName("getString")
+  public val string: String?
+    get() = _string.invoke()
 
-    public companion object {
-        private val stringDefault: () -> String? = { throw IllegalStateException("Field `string` was not requested") }
+  public companion object {
+    private val stringDefault: () -> String? = 
+        { throw IllegalStateException("Field `string` was not requested") }
+
+  }
+
+  @JsonPOJOBuilder
+  @JsonIgnoreProperties("__typename")
+  public class Builder {
+    private var string: () -> String? = stringDefault
+
+    @JsonProperty("string")
+    public fun withString(string: String?): Builder = this.apply {
+      this.string = { string }
     }
 
-    @JsonPOJOBuilder
-    @JsonIgnoreProperties("__typename")
-    public class Builder {
-        private var string: () -> String? = stringDefault
-
-        @JsonProperty("string")
-        public fun withString(string: String?): Builder = this.apply {
-            this.string = { string }
-        }
-
-        public fun build(): Query = Query(
-            string = string
-        )
-    }
+    public fun build(): Query = Query(
+      string = string,
+    )
+  }
 }

@@ -7,8 +7,8 @@ import kotlin.String
 import kotlin.collections.List
 
 public class I2(
-    public val arg1: String? = default<I2, String?>("arg1"),
-    public val arg2: String? = default<I2, String?>("arg2")
+  public val arg1: String? = default<I2, String?>("arg1"),
+  public val arg2: String? = default<I2, String?>("arg2"),
 ) : GraphQLInput() {
-    override fun fields(): List<Pair<String, Any?>> = listOf("arg1" to arg1, "arg2" to arg2)
+  override fun fields(): List<Pair<String, Any?>> = listOf("arg1" to arg1, "arg2" to arg2)
 }
