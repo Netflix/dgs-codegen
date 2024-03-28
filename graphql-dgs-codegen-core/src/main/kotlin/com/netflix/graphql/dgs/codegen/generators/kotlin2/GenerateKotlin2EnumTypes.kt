@@ -54,7 +54,7 @@ fun generateKotlin2EnumTypes(
                 .plus(extensionTypes)
                 .flatMap { it.enumValueDefinitions }
 
-             val companionObject = TypeSpec.companionObjectBuilder()
+            val companionObject = TypeSpec.companionObjectBuilder()
                 .addOptionalGeneratedAnnotation(config)
                 .build()
 
