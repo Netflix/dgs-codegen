@@ -92,4 +92,43 @@ class Kotline2CodeGenTest {
         )
         assertCompilesKotlin(result.kotlinEnumTypes)
     }
+
+    @Test
+    fun `Add companion object to enum class`() {
+        val schema = """
+            enum MyEnum {
+                A
+                B
+                C
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
+
+        val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
+
+        assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.enums
+                |
+                |public enum class MyEnum {
+                |  A,
+                |  B,
+                |  C,
+                |  ;
+                |
+                |  public companion object
+                |}
+                |
+            """.trimMargin()
+        )
+
+        assertCompilesKotlin(result.kotlinEnumTypes)
+    }
 }
