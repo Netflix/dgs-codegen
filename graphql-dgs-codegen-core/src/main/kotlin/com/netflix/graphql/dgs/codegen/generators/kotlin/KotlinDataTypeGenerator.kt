@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.BOOLEAN
@@ -67,7 +68,7 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
                 .filterSkipped()
                 .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description, it.directives) }
         val interfaces = definition.implements
-        return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
+        return generate(definition.templatedClassName(config.nameTemplate), fields, interfaces, document, definition.description, definition.directives)
     }
 }
 
@@ -94,7 +95,7 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
                 }
             )
         val interfaces = emptyList<Type<*>>()
-        return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
+        return generate(definition.templatedClassName(config.nameTemplate), fields, interfaces, document, definition.description, definition.directives)
     }
 
     private fun generateCode(value: Value<Value<*>>, type: KtTypeName): CodeBlock =
