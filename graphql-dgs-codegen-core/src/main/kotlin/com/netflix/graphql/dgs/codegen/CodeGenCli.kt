@@ -60,9 +60,6 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val generateInterfaceSetters by option("--generate-interface-setters").flag()
     private val generateDocs by option("--generate-docs").flag()
 
-    // Generate an additional bitset field and supporting getters, setters, builder functions for data classes
-    private val generateFieldIsSet by option("--generate-field-is-set", help = "Generate an additional bitset field and supporting getters, setters, and builder functions for data classes").flag(default = false)
-
     override fun run() {
         val inputSchemas = if (schemas.isEmpty()) {
             val defaultSchemaPath = Paths.get("src", "main", "resources", "schema")
@@ -98,7 +95,6 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                     generateInterfaces = generateInterfaces,
                     generateInterfaceSetters = generateInterfaceSetters,
                     generateDocs = generateDocs,
-                    generateFieldIsSet = generateFieldIsSet
                 )
             } else {
                 CodeGenConfig(
@@ -120,7 +116,6 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                     generateInterfaces = generateInterfaces,
                     generateInterfaceSetters = generateInterfaceSetters,
                     generateDocs = generateDocs,
-                    generateFieldIsSet = generateFieldIsSet
                 )
             }
         ).generate()

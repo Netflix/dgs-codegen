@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
 import com.squareup.javapoet.*
@@ -223,16 +224,12 @@ abstract class BaseDataTypeGenerator(
             addParameterizedConstructor(fields, javaType)
         }
 
-        if (config.generateFieldIsSet) {
-            addBitsetField(javaType)
-            addBitSetEnum(fields, javaType)
-        }
-
         addToString(fields, javaType)
 
         addEquals(javaType)
         addHashcode(javaType)
         addBuilder(javaType)
+        addBooleanFieldsWithGetters(javaType)
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
@@ -367,66 +364,31 @@ abstract class BaseDataTypeGenerator(
         addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
     }
 
-    private fun addBitsetField(javaType: TypeSpec.Builder) {
-        val fieldsPresent = Field("fieldsPresent", com.squareup.javapoet.TypeName.get(java.util.BitSet::class.java))
-        val fieldBuilder = FieldSpec
-            .builder(fieldsPresent.type, ReservedKeywordSanitizer.sanitize(fieldsPresent.name))
-            .addModifiers(Modifier.PRIVATE, Modifier.FINAL, Modifier.TRANSIENT)
-            .initializer("new BitSet()")
-        javaType.addField(fieldBuilder.build())
-        addBitsetFieldGetterAndSetter(javaType)
-    }
-
-    private fun addBitSetEnum(fields: List<Field>, javaType: TypeSpec.Builder) {
-        val enumBuilder = TypeSpec
-            .enumBuilder("Field")
-            .addModifiers(Modifier.PUBLIC)
-            .addField(FieldSpec.builder(ClassName.INT, "ordinal").initializer("-1").build())
-            .addMethod(
-                MethodSpec
-                    .methodBuilder("getOrdinal")
-                    .addModifiers(Modifier.PUBLIC)
-                    .returns(ClassName.INT)
-                    .addCode(
-                        """
-                        |return ordinal;
-                        """.trimMargin()
-                    )
-                    .build()
-            )
-            .addMethod(
-                MethodSpec
-                    .constructorBuilder()
-                    .addParameter(ClassName.INT, "ordinal")
-                    .addCode(
-                        """
-                        |this.ordinal = ordinal;
-                        """.trimMargin()
-                    )
-                    .build()
-            )
-
-        fields.forEachIndexed() { index, it ->
-            enumBuilder.addEnumConstant(it.name.uppercase(), TypeSpec.anonymousClassBuilder("$index").build())
+    private fun addBooleanFieldsWithGetters(javaType: TypeSpec.Builder) {
+        val fields = javaType.build().fieldSpecs
+        fields.forEach() {
+            val fieldName = "is${it.name.capitalized()}"
+            val field = FieldSpec
+                .builder(com.squareup.javapoet.TypeName.BOOLEAN, fieldName)
+                .addModifiers(Modifier.PRIVATE)
+                .initializer("false")
+                .build()
+            val getterName = "is${it.name.capitalized()}Defined"
+            val getter = MethodSpec
+                .methodBuilder(getterName)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(com.squareup.javapoet.TypeName.BOOLEAN)
+                .addStatement(
+                    "return \$N",
+                    ReservedKeywordSanitizer.sanitize("is${it.name.capitalized()}")
+                ).build()
+            javaType.addField(field)
+            javaType.addMethod(getter)
         }
-
-        javaType.addType(enumBuilder.build())
     }
 
-    private fun addBitsetFieldGetterAndSetter(javaType: TypeSpec.Builder) {
-        val setFieldSetter = MethodSpec.methodBuilder("setField")
-            .addModifiers(Modifier.PUBLIC)
-            .addParameter(ClassName.get("", "Field"), "field")
-            .addStatement("fieldsPresent.set(field.getOrdinal())")
-
-        val isSetGetter = MethodSpec.methodBuilder("isSet")
-            .addModifiers(Modifier.PUBLIC)
-            .returns(ClassName.BOOLEAN)
-            .addParameter(ClassName.get("", "Field"), "field")
-            .addStatement("return fieldsPresent.get(field.getOrdinal())")
-
-        javaType.addMethod(setFieldSetter.build())
-        javaType.addMethod(isSetGetter.build())
+    private fun generateBooleanFieldName(name: String): String {
+        return "is${name.capitalized()}"
     }
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
@@ -464,13 +426,10 @@ abstract class BaseDataTypeGenerator(
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             )
-
-        if (config.generateFieldIsSet) {
-            setterMethodBuilder.addStatement(
-                "setField(Field.\$N)",
-                ReservedKeywordSanitizer.sanitize(fieldDefinition.name.uppercase())
+            .addStatement(
+                "this.\$N = true",
+                ReservedKeywordSanitizer.sanitize(generateBooleanFieldName(fieldDefinition.name))
             )
-        }
 
         if (fieldDefinition.directives.isNotEmpty()) {
             val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
@@ -508,28 +467,20 @@ abstract class BaseDataTypeGenerator(
     private fun addBuilder(javaType: TypeSpec.Builder) {
         val className = ClassName.get(packageName, javaType.build().name)
 
-        val buildMethod = if (config.generateFieldIsSet) {
-            MethodSpec.methodBuilder("build").returns(className).addCode(
+        val buildMethod = MethodSpec
+            .methodBuilder("build").returns(className)
+            .addModifiers(Modifier.PUBLIC)
+
+        javaType.build().fieldSpecs.forEach() {
+            buildMethod.addCode(
                 """
-$className result = new $className();
-${javaType.build().fieldSpecs.filter{it.name != "fieldsPresent"}.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
-for (Field field: Field.values()) {
-    if (this.isSet(field)) {
-        result.setField(field);
-    }
+if(this.id${it.name.capitalized()}) {
+    result.set${it.name.capitalized()}(this.${it.name});
 }
-return result;
-                """.trimIndent()
-            )
-        } else {
-            MethodSpec.methodBuilder("build").returns(className).addCode(
                 """
-$className result = new $className();
-${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
-return result;
-                """.trimIndent()
             )
-        }.addModifiers(Modifier.PUBLIC).build()
+        }
+
 
         val builderClassName = ClassName.get(packageName, "$className.Builder")
         val newBuilderMethod =
@@ -547,30 +498,21 @@ return result;
                 .classBuilder("Builder")
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addMethod(buildMethod)
+                .addMethod(buildMethod.build())
 
-        if (config.generateFieldIsSet) {
-            addBitsetFieldGetterAndSetter(builderType)
-        }
-
-        javaType.build().fieldSpecs.filter { it.name != "fieldsPresent" }.map {
-            var methodBuilder = MethodSpec.methodBuilder(it.name)
+        javaType.build().fieldSpecs.map {
+            MethodSpec.methodBuilder(it.name)
                 .addJavadoc(it.javadoc)
                 .returns(builderClassName)
                 .addStatement("this.${it.name} = ${it.name}")
-            if (config.generateFieldIsSet) {
-                methodBuilder.addStatement(
-                    "setField(Field.\$N)",
-                    ReservedKeywordSanitizer.sanitize(it.name.uppercase())
-                )
-            }
-
-            methodBuilder.addStatement("return this")
+                .addStatement("this.is${it.name.capitalized()} = true")
+                .addStatement("return this")
                 .addParameter(ParameterSpec.builder(it.type, it.name).build())
                 .addModifiers(Modifier.PUBLIC).build()
         }.forEach { builderType.addMethod(it) }
 
         builderType.addFields(javaType.build().fieldSpecs)
+        addBooleanFieldsWithGetters(builderType)
         javaType.addType(builderType.build())
     }
 }
