@@ -99,9 +99,6 @@ open class GenerateJavaTask @Inject constructor(
     var generateDocs = false
 
     @Input
-    var generateFieldIsSet = false
-
-    @Input
     var implementSerializable = false
 
     @OutputDirectory

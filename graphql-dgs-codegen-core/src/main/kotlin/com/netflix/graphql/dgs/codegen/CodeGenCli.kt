@@ -94,7 +94,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                     generateDataTypes = generateDataTypes,
                     generateInterfaces = generateInterfaces,
                     generateInterfaceSetters = generateInterfaceSetters,
-                    generateDocs = generateDocs,
+                    generateDocs = generateDocs
                 )
             } else {
                 CodeGenConfig(
@@ -115,7 +115,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                     generateDataTypes = generateDataTypes,
                     generateInterfaces = generateInterfaces,
                     generateInterfaceSetters = generateInterfaceSetters,
-                    generateDocs = generateDocs,
+                    generateDocs = generateDocs
                 )
             }
         ).generate()
