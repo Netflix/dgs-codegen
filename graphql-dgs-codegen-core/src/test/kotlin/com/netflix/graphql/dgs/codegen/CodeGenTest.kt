@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.*
+import com.squareup.kotlinpoet.BOOLEAN
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -123,7 +124,7 @@ class CodeGenTest {
         assertThat(typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
-        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(4)
         assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname")
         assertThat(typeSpec.methodSpecs).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
         dataTypes[0].writeTo(System.out)
@@ -428,7 +429,7 @@ class CodeGenTest {
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email")
         val type = assertThat(dataTypes[0].typeSpec.fieldSpecs).filteredOn("name", "email").extracting("type")
         type.extracting("rawType.canonicalName").contains("java.util.List")
@@ -459,7 +460,7 @@ class CodeGenTest {
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email")
         val type = assertThat(dataTypes[0].typeSpec.fieldSpecs).filteredOn("name", "email").extracting("type")
         type.extracting("rawType.canonicalName").contains("java.util.List")
@@ -498,7 +499,7 @@ class CodeGenTest {
         val employee = dataTypes.single().typeSpec
         // Check data class
         assertThat(employee.name).isEqualTo("Employee")
-        assertThat(employee.fieldSpecs.size).isEqualTo(3)
+        assertThat(employee.fieldSpecs.size).isEqualTo(6)
         assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
 
         val annotation = employee.annotations.single()
@@ -565,7 +566,7 @@ class CodeGenTest {
         val employee = dataTypes.single().typeSpec
         // Check data class
         assertThat(employee.name).isEqualTo("AdminFeatureToggle")
-        assertThat(employee.fieldSpecs.size).isEqualTo(2)
+        assertThat(employee.fieldSpecs.size).isEqualTo(4)
         assertThat(employee.fieldSpecs).extracting("name").contains("enabled", "boxedEnabled")
 
         val annotation = employee.annotations.single()
@@ -766,7 +767,7 @@ class CodeGenTest {
         val employee = dataTypes.single().typeSpec
         // Check data class
         assertThat(employee.name).isEqualTo("Employee")
-        assertThat(employee.fieldSpecs.size).isEqualTo(3)
+        assertThat(employee.fieldSpecs.size).isEqualTo(6)
         assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
 
         val annotation = employee.annotations.single()
@@ -828,7 +829,7 @@ class CodeGenTest {
         // Check data class
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(3)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(6)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "friends")
 
         // Check type of friends field
@@ -1187,9 +1188,9 @@ class CodeGenTest {
                 assertThat(dataTypes.size).isEqualTo(1)
                 assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
                 assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
-                assertThat(dataTypes[0].typeSpec.fieldSpecs).hasSize(3)
+                assertThat(dataTypes[0].typeSpec.fieldSpecs).hasSize(6)
                 assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name")
-                    .contains("firstname", "data", "dataNotNullable")
+                    .contains("firstname", "data", "dataNotNullable", "isFirstname", "isData", "isDataNotNullable")
                 assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).isEqualTo(expected)
                 assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo(expected)
                 assertCompilesJava(dataTypes)
@@ -1556,7 +1557,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("MovieFilter")
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(1)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(2)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre")
 
         assertCompilesJava(dataTypes)
@@ -1584,7 +1585,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("ColorFilter")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("color")
@@ -1638,7 +1639,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("names")
@@ -1665,7 +1666,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("names")
@@ -1692,7 +1693,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("numbers")
@@ -1724,7 +1725,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("colors")
@@ -1760,7 +1761,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("MovieFilter")
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
-        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
         assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "releaseYear")
         assertCompilesJava(dataTypes)
     }
@@ -2320,7 +2321,7 @@ class CodeGenTest {
             )
         ).generate()
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isName")
     }
 
     @Test
@@ -2399,7 +2400,7 @@ class CodeGenTest {
         val talent = dataTypes.single().typeSpec
         // Check data class
         assertThat(talent.name).isEqualTo("Talent")
-        assertThat(talent.fieldSpecs.size).isEqualTo(4)
+        assertThat(talent.fieldSpecs.size).isEqualTo(8)
         assertThat(talent.fieldSpecs)
             .extracting("name")
             .contains("firstname", "lastname", "company", "imdbProfile")
@@ -2482,14 +2483,26 @@ class CodeGenTest {
                 |
                 |  private String imdbProfile;
                 |
+                |  private boolean isFirstname = false;
+                |
+                |  private boolean isLastname = false;
+                |
+                |  private boolean isCompany = false;
+                |
+                |  private boolean isImdbProfile = false;
+                |
                 |  public Talent() {
                 |  }
                 |
                 |  public Talent(String firstname, String lastname, String company, String imdbProfile) {
                 |    this.firstname = firstname;
+                |    this.isFirstname = true;
                 |    this.lastname = lastname;
+                |    this.isLastname = true;
                 |    this.company = company;
+                |    this.isCompany = true;
                 |    this.imdbProfile = imdbProfile;
+                |    this.isImdbProfile = true;
                 |  }
                 |
                 |  public String getFirstname() {
@@ -2498,6 +2511,7 @@ class CodeGenTest {
                 |
                 |  public void setFirstname(String firstname) {
                 |    this.firstname = firstname;
+                |    this.isFirstname = true;
                 |  }
                 |
                 |  public String getLastname() {
@@ -2506,6 +2520,7 @@ class CodeGenTest {
                 |
                 |  public void setLastname(String lastname) {
                 |    this.lastname = lastname;
+                |    this.isLastname = true;
                 |  }
                 |
                 |  public String getCompany() {
@@ -2514,6 +2529,7 @@ class CodeGenTest {
                 |
                 |  public void setCompany(String company) {
                 |    this.company = company;
+                |    this.isCompany = true;
                 |  }
                 |
                 |  public String getImdbProfile() {
@@ -2522,6 +2538,7 @@ class CodeGenTest {
                 |
                 |  public void setImdbProfile(String imdbProfile) {
                 |    this.imdbProfile = imdbProfile;
+                |    this.isImdbProfile = true;
                 |  }
                 |
                 |  @Override
@@ -2549,6 +2566,22 @@ class CodeGenTest {
                 |    return new Builder();
                 |  }
                 |
+                |  public boolean isFirstnameDefined() {
+                |    return isFirstname;
+                |  }
+                |
+                |  public boolean isLastnameDefined() {
+                |    return isLastname;
+                |  }
+                |
+                |  public boolean isCompanyDefined() {
+                |    return isCompany;
+                |  }
+                |
+                |  public boolean isImdbProfileDefined() {
+                |    return isImdbProfile;
+                |  }
+                |
                 |  public static class Builder {
                 |    private String firstname;
                 |
@@ -2558,37 +2591,73 @@ class CodeGenTest {
                 |
                 |    private String imdbProfile;
                 |
+                |    private boolean isFirstname = false;
+                |
+                |    private boolean isLastname = false;
+                |
+                |    private boolean isCompany = false;
+                |
+                |    private boolean isImdbProfile = false;
+                |
                 |    public Talent build() {
                 |      com.netflix.graphql.dgs.codegen.tests.generated.types.Talent result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Talent();
-                |      result.firstname = this.firstname;
-                |      result.lastname = this.lastname;
-                |      result.company = this.company;
-                |      result.imdbProfile = this.imdbProfile;
+                |      if(this.isFirstname) {
+                |        result.setFirstname(this.firstname);
+                |      }
+                |      if(this.isLastname) {
+                |        result.setLastname(this.lastname);
+                |      }
+                |      if(this.isCompany) {
+                |        result.setCompany(this.company);
+                |      }
+                |      if(this.isImdbProfile) {
+                |        result.setImdbProfile(this.imdbProfile);
+                |      }
                 |      return result;
                 |    }
                 |
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder firstname(
                 |        String firstname) {
                 |      this.firstname = firstname;
+                |      this.isFirstname = true;
                 |      return this;
                 |    }
                 |
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder lastname(
                 |        String lastname) {
                 |      this.lastname = lastname;
+                |      this.isLastname = true;
                 |      return this;
                 |    }
                 |
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder company(
                 |        String company) {
                 |      this.company = company;
+                |      this.isCompany = true;
                 |      return this;
                 |    }
                 |
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder imdbProfile(
                 |        String imdbProfile) {
                 |      this.imdbProfile = imdbProfile;
+                |      this.isImdbProfile = true;
                 |      return this;
+                |    }
+                |
+                |    public boolean isFirstnameDefined() {
+                |      return isFirstname;
+                |    }
+                |
+                |    public boolean isLastnameDefined() {
+                |      return isLastname;
+                |    }
+                |
+                |    public boolean isCompanyDefined() {
+                |      return isCompany;
+                |    }
+                |
+                |    public boolean isImdbProfileDefined() {
+                |      return isImdbProfile;
                 |    }
                 |  }
                 |}
@@ -2627,7 +2696,6 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateFieldIsSet = true
             )
         ).generate()
 
@@ -2639,130 +2707,55 @@ class CodeGenTest {
         assertThat(typeSpec.name).isEqualTo("Show")
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
-        assertThat(typeSpec.fieldSpecs).extracting("name").contains("fieldsPresent")
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains("id", "title", "releaseYear", "isId", "isTitle", "isReleaseYear")
+        assertThat(typeSpec.methodSpecs).extracting("name").contains("getId",
+            "setId",
+            "getTitle",
+            "setTitle",
+            "getReleaseYear",
+            "setReleaseYear",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder",
+            "isIdDefined",
+            "isTitleDefined",
+            "isReleaseYearDefined")
 
-        assertThat(typeSpec.methodSpecs).extracting("name").contains("setField", "isSet")
-
-        var setFieldMethod = typeSpec.methodSpecs.find { it.name == "setField" }
-        assertThat(setFieldMethod?.code.toString().trim()).isEqualTo("fieldsPresent.set(field.getOrdinal());")
-
-        var isSetMethod = typeSpec.methodSpecs.find { it.name == "isSet" }
-        assertThat(isSetMethod?.code.toString().trim()).isEqualTo("return fieldsPresent.get(field.getOrdinal());")
-
-        var setTitleMethod = typeSpec.methodSpecs.find { it.name == "setTitle" }
-        assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
+        var fieldSetter = typeSpec.methodSpecs.find { it.name == "setId" }
+        assertThat(fieldSetter?.code.toString().trim()).isEqualTo(
             """
-            |    this.title = title;
-            |    setField(Field.TITLE);
+            |    this.id = id;
+            |    this.isId = true;
             """.trimMargin().trimIndent()
         )
 
-        // Enum for accessing bitset
-        assertThat(typeSpec.typeSpecs.size).isEqualTo(2)
-        assertThat(typeSpec.typeSpecs[0].kind).isEqualTo(TypeSpec.Kind.ENUM)
-        assertThat(typeSpec.typeSpecs[0].name).isEqualTo("Field")
-        assertThat(typeSpec.typeSpecs[0].enumConstants.size).isEqualTo(3)
-        assertThat(typeSpec.typeSpecs[0].enumConstants).containsKeys("ID", "TITLE", "RELEASEYEAR")
-        assertThat(typeSpec.typeSpecs[0].fieldSpecs.size).isEqualTo(1)
-
-        // Builder class
-        assertThat(typeSpec.typeSpecs[1].kind).isEqualTo(TypeSpec.Kind.CLASS)
-        assertThat(typeSpec.typeSpecs[1].name).isEqualTo("Builder")
-
-        val builderSpec = typeSpec.typeSpecs.find { it.name == "Builder" }
-
-        assertThat(builderSpec?.fieldSpecs).extracting("name").contains("fieldsPresent")
-
-        val buildMethod = builderSpec?.methodSpecs?.find { it.name == "build" }
-        assertThat(buildMethod?.code.toString())
-            .isEqualTo(
-                """
-                    |com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Show();
-                    |result.id = this.id;
-                    |result.title = this.title;
-                    |result.releaseYear = this.releaseYear;
-                    |for (Field field: Field.values()) {
-                    |    if (this.isSet(field)) {
-                    |        result.setField(field);
-                    |    }
-                    |}
-                    |return result;
-                """.trimMargin().trimIndent()
-            )
-
-        assertThat(builderSpec?.methodSpecs).extracting("name").contains("setField", "isSet")
-
-        setFieldMethod = builderSpec?.methodSpecs?.find { it.name == "setField" }
-        assertThat(setFieldMethod?.modifiers).contains(Modifier.PUBLIC)
-        assertThat(setFieldMethod?.code.toString().trim()).isEqualTo("fieldsPresent.set(field.getOrdinal());")
-
-        isSetMethod = builderSpec?.methodSpecs?.find { it.name == "isSet" }
-        assertThat(isSetMethod?.modifiers).contains(Modifier.PUBLIC)
-        assertThat(isSetMethod?.code.toString().trim()).isEqualTo("return fieldsPresent.get(field.getOrdinal());")
-
-        setTitleMethod = builderSpec?.methodSpecs?.find { it.name == "title" }
-        assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
+        fieldSetter = typeSpec.methodSpecs.find { it.name == "setTitle" }
+        assertThat(fieldSetter?.code.toString().trim()).isEqualTo(
             """
             |    this.title = title;
-            |    setField(Field.TITLE);
-            |    return this;
+            |    this.isTitle = true;
             """.trimMargin().trimIndent()
         )
 
-        assertCompilesJava(dataTypes)
-    }
-
-    @Test
-    fun generateDataClassWithoutFieldIsSet() {
-        val schema = """
-            type Query {
-                show(id: ID!): Show
-            }
-            
-            type Mutation {
-                updateShow(input: UpdateShowInput!): Show
-            }
-            
-            type Show  {
-                id: ID!
-                title: String
-                releaseYear: Int
-            }
-            
-            input UpdateShowInput {
-                id: ID!
-                title: String
-                releaseYear: Int
-            }
-        """.trimIndent()
-
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName
-            )
-        ).generate()
-
-        val dataTypes = codeGenResult.javaDataTypes
-        assertThat(dataTypes.size).isEqualTo(2)
-
-        // Data Types
-        val typeSpec = dataTypes[0].typeSpec
-        assertThat(typeSpec.name).isEqualTo("Show")
-        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
-
-        assertThat(typeSpec.fieldSpecs).extracting("name").doesNotContain("fieldsPresent")
-        assertThat(typeSpec.methodSpecs).extracting("name").doesNotContain("setField", "isSet")
-
-        var setTitleMethod = typeSpec.methodSpecs.find { it.name == "setTitle" }
-        assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
+        fieldSetter = typeSpec.methodSpecs.find { it.name == "setReleaseYear" }
+        assertThat(fieldSetter?.code.toString().trim()).isEqualTo(
             """
-            |    this.title = title;
+            |    this.releaseYear = releaseYear;
+            |    this.isReleaseYear = true;
             """.trimMargin().trimIndent()
         )
 
-        // Enum for accessing bitset
-        assertThat(typeSpec.typeSpecs.size).isEqualTo(1)
+        var isDefinedMethod = typeSpec.methodSpecs.find { it.name == "isIdDefined" }
+        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isId;")
+
+        isDefinedMethod = typeSpec.methodSpecs.find { it.name == "isTitleDefined" }
+        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isTitle;")
+
+        isDefinedMethod = typeSpec.methodSpecs.find { it.name == "isReleaseYearDefined" }
+        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isReleaseYear;")
 
         // Builder class
         assertThat(typeSpec.typeSpecs[0].kind).isEqualTo(TypeSpec.Kind.CLASS)
@@ -2770,29 +2763,26 @@ class CodeGenTest {
 
         val builderSpec = typeSpec.typeSpecs.find { it.name == "Builder" }
 
-        assertThat(builderSpec?.fieldSpecs).extracting("name").doesNotContain("fieldsPresent")
+        assertThat(builderSpec?.fieldSpecs).extracting("name").containsExactly("id", "title", "releaseYear", "isId", "isTitle", "isReleaseYear")
 
         val buildMethod = builderSpec?.methodSpecs?.find { it.name == "build" }
-        assertThat(buildMethod?.code.toString())
+        assertThat(buildMethod?.code.toString().trim())
             .isEqualTo(
                 """
                     |com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Show();
-                    |result.id = this.id;
-                    |result.title = this.title;
-                    |result.releaseYear = this.releaseYear;
+                    |if(this.isId) {
+                    |  result.setId(this.id);
+                    |}
+                    |if(this.isTitle) {
+                    |  result.setTitle(this.title);
+                    |}
+                    |if(this.isReleaseYear) {
+                    |  result.setReleaseYear(this.releaseYear);
+                    |}
                     |return result;
+                    |
                 """.trimMargin().trimIndent()
             )
-
-        assertThat(builderSpec?.methodSpecs).extracting("name").doesNotContain("setField", "isSet")
-
-        setTitleMethod = builderSpec?.methodSpecs?.find { it.name == "title" }
-        assertThat(setTitleMethod?.code.toString().trim()).isEqualTo(
-            """
-            |    this.title = title;
-            |    return this;
-            """.trimMargin().trimIndent()
-        )
 
         assertCompilesJava(dataTypes)
     }
@@ -3312,7 +3302,7 @@ class CodeGenTest {
         val movie = dataTypes[0]
         assertThat(movie.typeSpec.name).isEqualTo("Movie")
         assertThat(movie.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMovie")
-        assertThat(movie.typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "language", "tags", "rating")
+        assertThat(movie.typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "language", "tags", "rating", "isId", "isTitle", "isGenre", "isLanguage", "isTags", "isRating")
         assertThat(movie.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
         assertThat(movie.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("String")
         assertThat(movie.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("IGenre")
@@ -3325,7 +3315,7 @@ class CodeGenTest {
         val moviePage = dataTypes[1]
         assertThat(moviePage.typeSpec.name).isEqualTo("MoviePage")
         assertThat(moviePage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMoviePage")
-        assertThat(moviePage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
+        assertThat(moviePage.typeSpec.fieldSpecs).extracting("name").containsExactly("items", "isItems")
         parameterizedTypeName = moviePage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
         val movieTypeName = parameterizedTypeName.typeArguments[0] as WildcardTypeName
@@ -3334,17 +3324,17 @@ class CodeGenTest {
         val genre = dataTypes[2]
         assertThat(genre.typeSpec.name).isEqualTo("Genre")
         assertThat(genre.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IGenre")
-        assertThat(genre.typeSpec.fieldSpecs).extracting("name").containsExactly("name")
+        assertThat(genre.typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isName")
 
         val rating = dataTypes[3]
         assertThat(rating.typeSpec.name).isEqualTo("Rating")
         assertThat(rating.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IRating")
-        assertThat(rating.typeSpec.fieldSpecs).extracting("name").containsExactly("name")
+        assertThat(rating.typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isName")
 
         val movieFilter = dataTypes[4]
         assertThat(movieFilter.typeSpec.name).isEqualTo("MovieFilter")
         assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(0)
-        assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating")
+        assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating", "isTitle", "isGenre", "isLanguage", "isTags", "isRating")
         assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
         assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("Genre")
         assertThat(movieFilter.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("Language")
@@ -3536,7 +3526,7 @@ class CodeGenTest {
         val searchResultPage = dataTypes[2]
         assertThat(searchResultPage.typeSpec.name).isEqualTo("SearchResultPage")
         assertThat(searchResultPage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("ISearchResultPage")
-        assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items")
+        assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items", "isItems")
 
         parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
@@ -3820,7 +3810,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].javadoc.toString()).isEqualTo("@deprecated This field is no longer available. Replaced by firstName")
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
@@ -3855,7 +3845,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
         assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidName")
@@ -3889,7 +3879,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
         assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidName")
@@ -3923,7 +3913,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
         assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.validator.ValidName")
@@ -3976,7 +3966,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
         assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4010,7 +4000,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
         assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4043,7 +4033,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
         assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("\$L", "com.test.validator.groups.BasicValidation.class")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4075,7 +4065,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
         assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("\$S", "BasicValidation.class"))) // treat as string when no mapping is provided
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4113,7 +4103,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
         assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4156,7 +4146,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
         assertThat((person.annotations[0] as AnnotationSpec).members["groups"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(2)
+        assertThat(fields).hasSize(4)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4194,7 +4184,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
         assertThat((person.annotations[0] as AnnotationSpec).members["sexType"]).isEqualTo(listOf(CodeBlock.of("\$L", "com.enums.MALE")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4227,7 +4217,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
         assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4260,7 +4250,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
         assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4293,7 +4283,7 @@ It takes a title and such.
         assertThat((person.annotations[0] as AnnotationSpec).members).hasSize(1)
         assertThat((person.annotations[0] as AnnotationSpec).members["types"]).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(2)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4391,7 +4381,7 @@ It takes a title and such.
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(0)
     }
 
@@ -4419,7 +4409,7 @@ It takes a title and such.
         assertThat(person.name).isEqualTo("Person")
         assertThat(person.annotations).hasSize(2)
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         val methods = person.methodSpecs
         assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")
@@ -4451,7 +4441,7 @@ It takes a title and such.
         assertThat(person.name).isEqualTo("Person")
         assertThat(person.annotations).hasSize(2)
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(2)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("ValidName")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("com.test.anotherValidator.ValidName")
@@ -4486,7 +4476,7 @@ It takes a title and such.
         assertThat(person.name).isEqualTo("Person")
         assertThat(person.annotations).hasSize(2)
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         val methods = person.methodSpecs
         assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")
@@ -4520,7 +4510,7 @@ It takes a title and such.
         assertThat(person.name).isEqualTo("Person")
         assertThat(person.annotations).hasSize(2)
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         val methods = person.methodSpecs
         assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")
@@ -4556,7 +4546,7 @@ It takes a title and such.
         assertThat(person.name).isEqualTo("Person")
         assertThat(person.annotations).hasSize(2)
         val fields = person.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
         assertThat(fields[0].annotations).hasSize(1)
         val methods = person.methodSpecs
         assertThat((methods[0] as MethodSpec).name).isEqualTo("getName")

@@ -344,6 +344,8 @@ abstract class BaseDataTypeGenerator(
                 .addParameter(parameterBuilder.build())
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(it.name), ReservedKeywordSanitizer.sanitize(it.name))
+                .addStatement("this.\$N = true",
+                    ReservedKeywordSanitizer.sanitize(generateBooleanFieldName(it.name)))
         }
 
         javaType.addMethod(constructorBuilder.build())
@@ -467,20 +469,22 @@ abstract class BaseDataTypeGenerator(
     private fun addBuilder(javaType: TypeSpec.Builder) {
         val className = ClassName.get(packageName, javaType.build().name)
 
-        val buildMethod = MethodSpec
-            .methodBuilder("build").returns(className)
-            .addModifiers(Modifier.PUBLIC)
+        val codeBlock = CodeBlock.builder()
+            .addStatement("$className result = new $className()")
 
         javaType.build().fieldSpecs.forEach() {
-            buildMethod.addCode(
-                """
-if(this.id${it.name.capitalized()}) {
-    result.set${it.name.capitalized()}(this.${it.name});
-}
-                """
-            )
+            codeBlock
+                .beginControlFlow("if(this.${generateBooleanFieldName(it.name)})")
+                .addStatement("result.set${it.name.capitalized()}(this.${it.name})")
+                .endControlFlow()
         }
+        codeBlock.addStatement("return result")
 
+        val buildMethod = MethodSpec
+            .methodBuilder("build")
+            .returns(className)
+            .addCode(codeBlock.build())
+            .addModifiers(Modifier.PUBLIC)
 
         val builderClassName = ClassName.get(packageName, "$className.Builder")
         val newBuilderMethod =
