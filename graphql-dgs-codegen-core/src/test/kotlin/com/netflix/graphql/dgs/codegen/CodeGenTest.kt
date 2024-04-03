@@ -2693,7 +2693,7 @@ class CodeGenTest {
         val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName
+                packageName = basePackageName,
             )
         ).generate()
 
@@ -2706,8 +2706,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
         assertThat(typeSpec.fieldSpecs).extracting("name").contains("id", "title", "releaseYear", "isId", "isTitle", "isReleaseYear")
-        assertThat(typeSpec.methodSpecs).extracting("name").contains(
-            "getId",
+        assertThat(typeSpec.methodSpecs).extracting("name").contains("getId",
             "setId",
             "getTitle",
             "setTitle",
@@ -2721,8 +2720,7 @@ class CodeGenTest {
             "newBuilder",
             "isIdDefined",
             "isTitleDefined",
-            "isReleaseYearDefined"
-        )
+            "isReleaseYearDefined")
 
         var fieldSetter = typeSpec.methodSpecs.find { it.name == "setId" }
         assertThat(fieldSetter?.code.toString().trim()).isEqualTo(
