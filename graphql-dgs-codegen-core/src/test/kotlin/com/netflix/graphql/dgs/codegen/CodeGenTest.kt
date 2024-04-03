@@ -123,7 +123,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
         assertThat(typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "isFirstname", "isLastname")
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "isFirstnameDefined", "isLastnameDefined")
         assertThat(typeSpec.methodSpecs).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
         dataTypes[0].writeTo(System.out)
         assertCompilesJava(dataTypes)
@@ -428,7 +428,7 @@ class CodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email", "isName", "isEmail")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email", "isNameDefined", "isEmailDefined")
         val type = assertThat(dataTypes[0].typeSpec.fieldSpecs).filteredOn("name", "email").extracting("type")
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
@@ -459,7 +459,7 @@ class CodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email", "isName", "isEmail")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email", "isNameDefined", "isEmailDefined")
         val type = assertThat(dataTypes[0].typeSpec.fieldSpecs).filteredOn("name", "email").extracting("type")
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
@@ -498,7 +498,7 @@ class CodeGenTest {
         // Check data class
         assertThat(employee.name).isEqualTo("Employee")
         assertThat(employee.fieldSpecs.size).isEqualTo(6)
-        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company", "isFirstname", "isLastname", "isCompany")
+        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company", "isFirstnameDefined", "isLastnameDefined", "isCompanyDefined")
 
         val annotation = employee.annotations.single()
         assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
@@ -565,7 +565,7 @@ class CodeGenTest {
         // Check data class
         assertThat(employee.name).isEqualTo("AdminFeatureToggle")
         assertThat(employee.fieldSpecs.size).isEqualTo(4)
-        assertThat(employee.fieldSpecs).extracting("name").contains("enabled", "boxedEnabled", "isEnabled", "isBoxedEnabled")
+        assertThat(employee.fieldSpecs).extracting("name").contains("enabled", "boxedEnabled", "isEnabledDefined", "isBoxedEnabledDefined")
 
         val annotation = employee.annotations.single()
         assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
@@ -766,7 +766,7 @@ class CodeGenTest {
         // Check data class
         assertThat(employee.name).isEqualTo("Employee")
         assertThat(employee.fieldSpecs.size).isEqualTo(6)
-        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company", "isFirstname", "isLastname", "isCompany")
+        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company", "isFirstnameDefined", "isLastnameDefined", "isCompanyDefined")
 
         val annotation = employee.annotations.single()
         assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
@@ -828,7 +828,7 @@ class CodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(6)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "friends", "isFirstname", "isLastname", "isFriends")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "friends", "isFirstnameDefined", "isLastnameDefined", "isFriendsDefined")
 
         // Check type of friends field
         val parameterizedType = ParameterizedTypeName.get(ClassName.get(List::class.java), ClassName.get(typesPackageName, "Person"))
@@ -1188,7 +1188,7 @@ class CodeGenTest {
                 assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
                 assertThat(dataTypes[0].typeSpec.fieldSpecs).hasSize(6)
                 assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name")
-                    .contains("firstname", "data", "dataNotNullable", "isFirstname", "isData", "isDataNotNullable")
+                    .contains("firstname", "data", "dataNotNullable", "isFirstnameDefined", "isDataDefined", "isDataNotNullableDefined")
                 assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).isEqualTo(expected)
                 assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo(expected)
                 assertCompilesJava(dataTypes)
@@ -1556,7 +1556,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(2)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "isGenre")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "isGenreDefined")
 
         assertCompilesJava(dataTypes)
     }
@@ -1760,7 +1760,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "releaseYear", "isGenre", "isReleaseYear")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "releaseYear", "isGenreDefined", "isReleaseYearDefined")
         assertCompilesJava(dataTypes)
     }
 
@@ -2319,7 +2319,7 @@ class CodeGenTest {
             )
         ).generate()
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isName")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isNameDefined")
     }
 
     @Test
@@ -2481,26 +2481,26 @@ class CodeGenTest {
                 |
                 |  private String imdbProfile;
                 |
-                |  private boolean isFirstname = false;
+                |  private boolean isFirstnameDefined = false;
                 |
-                |  private boolean isLastname = false;
+                |  private boolean isLastnameDefined = false;
                 |
-                |  private boolean isCompany = false;
+                |  private boolean isCompanyDefined = false;
                 |
-                |  private boolean isImdbProfile = false;
+                |  private boolean isImdbProfileDefined = false;
                 |
                 |  public Talent() {
                 |  }
                 |
                 |  public Talent(String firstname, String lastname, String company, String imdbProfile) {
                 |    this.firstname = firstname;
-                |    this.isFirstname = true;
+                |    this.isFirstnameDefined = true;
                 |    this.lastname = lastname;
-                |    this.isLastname = true;
+                |    this.isLastnameDefined = true;
                 |    this.company = company;
-                |    this.isCompany = true;
+                |    this.isCompanyDefined = true;
                 |    this.imdbProfile = imdbProfile;
-                |    this.isImdbProfile = true;
+                |    this.isImdbProfileDefined = true;
                 |  }
                 |
                 |  public String getFirstname() {
@@ -2509,7 +2509,7 @@ class CodeGenTest {
                 |
                 |  public void setFirstname(String firstname) {
                 |    this.firstname = firstname;
-                |    this.isFirstname = true;
+                |    this.isFirstnameDefined = true;
                 |  }
                 |
                 |  public String getLastname() {
@@ -2518,7 +2518,7 @@ class CodeGenTest {
                 |
                 |  public void setLastname(String lastname) {
                 |    this.lastname = lastname;
-                |    this.isLastname = true;
+                |    this.isLastnameDefined = true;
                 |  }
                 |
                 |  public String getCompany() {
@@ -2527,7 +2527,7 @@ class CodeGenTest {
                 |
                 |  public void setCompany(String company) {
                 |    this.company = company;
-                |    this.isCompany = true;
+                |    this.isCompanyDefined = true;
                 |  }
                 |
                 |  public String getImdbProfile() {
@@ -2536,7 +2536,7 @@ class CodeGenTest {
                 |
                 |  public void setImdbProfile(String imdbProfile) {
                 |    this.imdbProfile = imdbProfile;
-                |    this.isImdbProfile = true;
+                |    this.isImdbProfileDefined = true;
                 |  }
                 |
                 |  @Override
@@ -2564,20 +2564,20 @@ class CodeGenTest {
                 |    return new Builder();
                 |  }
                 |
-                |  public boolean isFirstnameDefined() {
-                |    return isFirstname;
+                |  public boolean getIsFirstnameDefined() {
+                |    return isFirstnameDefined;
                 |  }
                 |
-                |  public boolean isLastnameDefined() {
-                |    return isLastname;
+                |  public boolean getIsLastnameDefined() {
+                |    return isLastnameDefined;
                 |  }
                 |
-                |  public boolean isCompanyDefined() {
-                |    return isCompany;
+                |  public boolean getIsCompanyDefined() {
+                |    return isCompanyDefined;
                 |  }
                 |
-                |  public boolean isImdbProfileDefined() {
-                |    return isImdbProfile;
+                |  public boolean getIsImdbProfileDefined() {
+                |    return isImdbProfileDefined;
                 |  }
                 |
                 |  public static class Builder {
@@ -2589,26 +2589,26 @@ class CodeGenTest {
                 |
                 |    private String imdbProfile;
                 |
-                |    private boolean isFirstname = false;
+                |    private boolean isFirstnameDefined = false;
                 |
-                |    private boolean isLastname = false;
+                |    private boolean isLastnameDefined = false;
                 |
-                |    private boolean isCompany = false;
+                |    private boolean isCompanyDefined = false;
                 |
-                |    private boolean isImdbProfile = false;
+                |    private boolean isImdbProfileDefined = false;
                 |
                 |    public Talent build() {
                 |      com.netflix.graphql.dgs.codegen.tests.generated.types.Talent result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Talent();
-                |      if(this.isFirstname) {
+                |      if(this.isFirstnameDefined) {
                 |        result.setFirstname(this.firstname);
                 |      }
-                |      if(this.isLastname) {
+                |      if(this.isLastnameDefined) {
                 |        result.setLastname(this.lastname);
                 |      }
-                |      if(this.isCompany) {
+                |      if(this.isCompanyDefined) {
                 |        result.setCompany(this.company);
                 |      }
-                |      if(this.isImdbProfile) {
+                |      if(this.isImdbProfileDefined) {
                 |        result.setImdbProfile(this.imdbProfile);
                 |      }
                 |      return result;
@@ -2617,45 +2617,45 @@ class CodeGenTest {
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder firstname(
                 |        String firstname) {
                 |      this.firstname = firstname;
-                |      this.isFirstname = true;
+                |      this.isFirstnameDefined = true;
                 |      return this;
                 |    }
                 |
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder lastname(
                 |        String lastname) {
                 |      this.lastname = lastname;
-                |      this.isLastname = true;
+                |      this.isLastnameDefined = true;
                 |      return this;
                 |    }
                 |
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder company(
                 |        String company) {
                 |      this.company = company;
-                |      this.isCompany = true;
+                |      this.isCompanyDefined = true;
                 |      return this;
                 |    }
                 |
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder imdbProfile(
                 |        String imdbProfile) {
                 |      this.imdbProfile = imdbProfile;
-                |      this.isImdbProfile = true;
+                |      this.isImdbProfileDefined = true;
                 |      return this;
                 |    }
                 |
-                |    public boolean isFirstnameDefined() {
-                |      return isFirstname;
+                |    public boolean getIsFirstnameDefined() {
+                |      return isFirstnameDefined;
                 |    }
                 |
-                |    public boolean isLastnameDefined() {
-                |      return isLastname;
+                |    public boolean getIsLastnameDefined() {
+                |      return isLastnameDefined;
                 |    }
                 |
-                |    public boolean isCompanyDefined() {
-                |      return isCompany;
+                |    public boolean getIsCompanyDefined() {
+                |      return isCompanyDefined;
                 |    }
                 |
-                |    public boolean isImdbProfileDefined() {
-                |      return isImdbProfile;
+                |    public boolean getIsImdbProfileDefined() {
+                |      return isImdbProfileDefined;
                 |    }
                 |  }
                 |}
@@ -2705,7 +2705,7 @@ class CodeGenTest {
         assertThat(typeSpec.name).isEqualTo("Show")
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
-        assertThat(typeSpec.fieldSpecs).extracting("name").contains("id", "title", "releaseYear", "isId", "isTitle", "isReleaseYear")
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains("id", "title", "releaseYear", "isIdDefined", "isTitleDefined", "isReleaseYearDefined")
         assertThat(typeSpec.methodSpecs).extracting("name").contains(
             "getId",
             "setId",
@@ -2719,16 +2719,16 @@ class CodeGenTest {
             "equals",
             "hashCode",
             "newBuilder",
-            "isIdDefined",
-            "isTitleDefined",
-            "isReleaseYearDefined"
+            "getIsIdDefined",
+            "getIsTitleDefined",
+            "getIsReleaseYearDefined"
         )
 
         var fieldSetter = typeSpec.methodSpecs.find { it.name == "setId" }
         assertThat(fieldSetter?.code.toString().trim()).isEqualTo(
             """
             |    this.id = id;
-            |    this.isId = true;
+            |    this.isIdDefined = true;
             """.trimMargin().trimIndent()
         )
 
@@ -2736,7 +2736,7 @@ class CodeGenTest {
         assertThat(fieldSetter?.code.toString().trim()).isEqualTo(
             """
             |    this.title = title;
-            |    this.isTitle = true;
+            |    this.isTitleDefined = true;
             """.trimMargin().trimIndent()
         )
 
@@ -2744,18 +2744,18 @@ class CodeGenTest {
         assertThat(fieldSetter?.code.toString().trim()).isEqualTo(
             """
             |    this.releaseYear = releaseYear;
-            |    this.isReleaseYear = true;
+            |    this.isReleaseYearDefined = true;
             """.trimMargin().trimIndent()
         )
 
-        var isDefinedMethod = typeSpec.methodSpecs.find { it.name == "isIdDefined" }
-        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isId;")
+        var isDefinedMethod = typeSpec.methodSpecs.find { it.name == "getIsIdDefined" }
+        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isIdDefined;")
 
-        isDefinedMethod = typeSpec.methodSpecs.find { it.name == "isTitleDefined" }
-        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isTitle;")
+        isDefinedMethod = typeSpec.methodSpecs.find { it.name == "getIsTitleDefined" }
+        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isTitleDefined;")
 
-        isDefinedMethod = typeSpec.methodSpecs.find { it.name == "isReleaseYearDefined" }
-        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isReleaseYear;")
+        isDefinedMethod = typeSpec.methodSpecs.find { it.name == "getIsReleaseYearDefined" }
+        assertThat(isDefinedMethod?.code.toString().trim()).isEqualTo("return isReleaseYearDefined;")
 
         // Builder class
         assertThat(typeSpec.typeSpecs[0].kind).isEqualTo(TypeSpec.Kind.CLASS)
@@ -2763,20 +2763,20 @@ class CodeGenTest {
 
         val builderSpec = typeSpec.typeSpecs.find { it.name == "Builder" }
 
-        assertThat(builderSpec?.fieldSpecs).extracting("name").containsExactly("id", "title", "releaseYear", "isId", "isTitle", "isReleaseYear")
+        assertThat(builderSpec?.fieldSpecs).extracting("name").containsExactly("id", "title", "releaseYear", "isIdDefined", "isTitleDefined", "isReleaseYearDefined")
 
         val buildMethod = builderSpec?.methodSpecs?.find { it.name == "build" }
         assertThat(buildMethod?.code.toString().trim())
             .isEqualTo(
                 """
                     |com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Show();
-                    |if(this.isId) {
+                    |if(this.isIdDefined) {
                     |  result.setId(this.id);
                     |}
-                    |if(this.isTitle) {
+                    |if(this.isTitleDefined) {
                     |  result.setTitle(this.title);
                     |}
-                    |if(this.isReleaseYear) {
+                    |if(this.isReleaseYearDefined) {
                     |  result.setReleaseYear(this.releaseYear);
                     |}
                     |return result;
@@ -3302,7 +3302,7 @@ class CodeGenTest {
         val movie = dataTypes[0]
         assertThat(movie.typeSpec.name).isEqualTo("Movie")
         assertThat(movie.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMovie")
-        assertThat(movie.typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "language", "tags", "rating", "isId", "isTitle", "isGenre", "isLanguage", "isTags", "isRating")
+        assertThat(movie.typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "genre", "language", "tags", "rating", "isIdDefined", "isTitleDefined", "isGenreDefined", "isLanguageDefined", "isTagsDefined", "isRatingDefined")
         assertThat(movie.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
         assertThat(movie.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("String")
         assertThat(movie.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("IGenre")
@@ -3315,7 +3315,7 @@ class CodeGenTest {
         val moviePage = dataTypes[1]
         assertThat(moviePage.typeSpec.name).isEqualTo("MoviePage")
         assertThat(moviePage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IMoviePage")
-        assertThat(moviePage.typeSpec.fieldSpecs).extracting("name").containsExactly("items", "isItems")
+        assertThat(moviePage.typeSpec.fieldSpecs).extracting("name").containsExactly("items", "isItemsDefined")
         parameterizedTypeName = moviePage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
         val movieTypeName = parameterizedTypeName.typeArguments[0] as WildcardTypeName
@@ -3324,17 +3324,17 @@ class CodeGenTest {
         val genre = dataTypes[2]
         assertThat(genre.typeSpec.name).isEqualTo("Genre")
         assertThat(genre.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IGenre")
-        assertThat(genre.typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isName")
+        assertThat(genre.typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isNameDefined")
 
         val rating = dataTypes[3]
         assertThat(rating.typeSpec.name).isEqualTo("Rating")
         assertThat(rating.typeSpec.superinterfaces).extracting("simpleName").containsExactly("IRating")
-        assertThat(rating.typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isName")
+        assertThat(rating.typeSpec.fieldSpecs).extracting("name").containsExactly("name", "isNameDefined")
 
         val movieFilter = dataTypes[4]
         assertThat(movieFilter.typeSpec.name).isEqualTo("MovieFilter")
         assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(0)
-        assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating", "isTitle", "isGenre", "isLanguage", "isTags", "isRating")
+        assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating", "isTitleDefined", "isGenreDefined", "isLanguageDefined", "isTagsDefined", "isRatingDefined")
         assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
         assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("Genre")
         assertThat(movieFilter.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("Language")
@@ -3526,7 +3526,7 @@ class CodeGenTest {
         val searchResultPage = dataTypes[2]
         assertThat(searchResultPage.typeSpec.name).isEqualTo("SearchResultPage")
         assertThat(searchResultPage.typeSpec.superinterfaces).extracting("simpleName").containsExactly("ISearchResultPage")
-        assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items", "isItems")
+        assertThat(searchResultPage.typeSpec.fieldSpecs).extracting("name").containsExactly("items", "isItemsDefined")
 
         parameterizedTypeName = searchResultPage.typeSpec.fieldSpecs[0].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")

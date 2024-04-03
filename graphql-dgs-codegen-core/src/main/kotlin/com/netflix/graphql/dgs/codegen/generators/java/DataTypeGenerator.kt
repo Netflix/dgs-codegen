@@ -229,7 +229,7 @@ abstract class BaseDataTypeGenerator(
         addEquals(javaType)
         addHashcode(javaType)
         addBuilder(javaType)
-        addBooleanFieldsWithGetters(javaType)
+        addIsDefinedFieldWithGetters(javaType)
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
@@ -368,23 +368,23 @@ abstract class BaseDataTypeGenerator(
         addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
     }
 
-    private fun addBooleanFieldsWithGetters(javaType: TypeSpec.Builder) {
+    private fun addIsDefinedFieldWithGetters(javaType: TypeSpec.Builder) {
         val fields = javaType.build().fieldSpecs
         fields.forEach() {
-            val fieldName = "is${it.name.capitalized()}"
+            val fieldName = "is${it.name.capitalized()}Defined"
             val field = FieldSpec
                 .builder(com.squareup.javapoet.TypeName.BOOLEAN, fieldName)
                 .addModifiers(Modifier.PRIVATE)
                 .initializer("false")
                 .build()
-            val getterName = "is${it.name.capitalized()}Defined"
+            val getterName = "getIs${it.name.capitalized()}Defined"
             val getter = MethodSpec
                 .methodBuilder(getterName)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(com.squareup.javapoet.TypeName.BOOLEAN)
                 .addStatement(
                     "return \$N",
-                    ReservedKeywordSanitizer.sanitize("is${it.name.capitalized()}")
+                    ReservedKeywordSanitizer.sanitize("${generateBooleanFieldName(it.name)}")
                 ).build()
             javaType.addField(field)
             javaType.addMethod(getter)
@@ -392,7 +392,7 @@ abstract class BaseDataTypeGenerator(
     }
 
     private fun generateBooleanFieldName(name: String): String {
-        return "is${name.capitalized()}"
+        return "is${name.capitalized()}Defined"
     }
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
@@ -511,14 +511,14 @@ abstract class BaseDataTypeGenerator(
                 .addJavadoc(it.javadoc)
                 .returns(builderClassName)
                 .addStatement("this.${it.name} = ${it.name}")
-                .addStatement("this.is${it.name.capitalized()} = true")
+                .addStatement("this.${generateBooleanFieldName(it.name)} = true")
                 .addStatement("return this")
                 .addParameter(ParameterSpec.builder(it.type, it.name).build())
                 .addModifiers(Modifier.PUBLIC).build()
         }.forEach { builderType.addMethod(it) }
 
         builderType.addFields(javaType.build().fieldSpecs)
-        addBooleanFieldsWithGetters(builderType)
+        addIsDefinedFieldWithGetters(builderType)
         javaType.addType(builderType.build())
     }
 }
