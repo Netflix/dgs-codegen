@@ -20,7 +20,6 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
 import com.squareup.javapoet.*
-import com.squareup.kotlinpoet.BOOLEAN
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Nested
@@ -32,7 +31,6 @@ import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
 import java.io.Serializable
 import java.util.stream.Stream
-import javax.lang.model.element.Modifier
 
 class CodeGenTest {
 
