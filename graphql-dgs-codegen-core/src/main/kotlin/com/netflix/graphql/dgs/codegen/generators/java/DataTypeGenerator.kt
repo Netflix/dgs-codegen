@@ -344,8 +344,10 @@ abstract class BaseDataTypeGenerator(
                 .addParameter(parameterBuilder.build())
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(it.name), ReservedKeywordSanitizer.sanitize(it.name))
-                .addStatement("this.\$N = true",
-                    ReservedKeywordSanitizer.sanitize(generateBooleanFieldName(it.name)))
+                .addStatement(
+                    "this.\$N = true",
+                    ReservedKeywordSanitizer.sanitize(generateBooleanFieldName(it.name))
+                )
         }
 
         javaType.addMethod(constructorBuilder.build())
