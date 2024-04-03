@@ -12,32 +12,30 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = SampleType.Builder::class)
 public class SampleType(
-  `return`: () -> String = returnDefault,
+    `return`: () -> String = returnDefault
 ) {
-  private val _return: () -> String = `return`
+    private val _return: () -> String = `return`
 
-  @get:JvmName("getReturn")
-  public val `return`: String
-    get() = _return.invoke()
+    @get:JvmName("getReturn")
+    public val `return`: String
+        get() = _return.invoke()
 
-  public companion object {
-    private val returnDefault: () -> String = 
-        { throw IllegalStateException("Field `return` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var `return`: () -> String = returnDefault
-
-    @JsonProperty("return")
-    public fun withReturn(`return`: String): Builder = this.apply {
-      this.`return` = { `return` }
+    public companion object {
+        private val returnDefault: () -> String = { throw IllegalStateException("Field `return` was not requested") }
     }
 
-    public fun build(): SampleType = SampleType(
-      `return` = `return`,
-    )
-  }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        private var `return`: () -> String = returnDefault
+
+        @JsonProperty("return")
+        public fun withReturn(`return`: String): Builder = this.apply {
+            this.`return` = { `return` }
+        }
+
+        public fun build(): SampleType = SampleType(
+            `return` = `return`
+        )
+    }
 }

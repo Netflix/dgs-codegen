@@ -3,23 +3,23 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithExtendedType.expected
 import kotlin.String
 
 public object DgsConstants {
-  public const val QUERY_TYPE: String = "Query"
+    public const val QUERY_TYPE: String = "Query"
 
-  public object QUERY {
-    public const val TYPE_NAME: String = "Query"
+    public object QUERY {
+        public const val TYPE_NAME: String = "Query"
 
-    public const val Movies: String = "movies"
+        public const val Movies: String = "movies"
 
-    public object MOVIES_INPUT_ARGUMENT {
-      public const val Filter: String = "filter"
+        public object MOVIES_INPUT_ARGUMENT {
+            public const val Filter: String = "filter"
+        }
     }
-  }
 
-  public object MOVIEFILTER {
-    public const val TYPE_NAME: String = "MovieFilter"
+    public object MOVIEFILTER {
+        public const val TYPE_NAME: String = "MovieFilter"
 
-    public const val Genre: String = "genre"
+        public const val Genre: String = "genre"
 
-    public const val ReleaseYear: String = "releaseYear"
-  }
+        public const val ReleaseYear: String = "releaseYear"
+    }
 }

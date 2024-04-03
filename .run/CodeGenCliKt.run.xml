@@ -1,13 +1,9 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="CodeGenCliKt" type="JetRunConfigurationType" nameIsGenerated="true">
-    <module name="graphql-dgs-codegen.graphql-dgs-codegen-core.main" />
-    <option name="VM_PARAMETERS" value="" />
-    <option name="PROGRAM_PARAMETERS" value="--package-name=tester.generated --include-query=acct_allCompanies --include-mutation=prdcl_importCrewContacts --output-dir=$PROJECT_DIR$/../generated-api-tester/src --generate-client --language=kotlin --skip-entities --type-mapping=BigDecimal=java.math.BigDecimal --type-mapping=Currency=java.util.Currency --type-mapping=BGTAccountNumber=java.lang.String --type-mapping=Url=java.lang.String --type-mapping=CountryCode=java.lang.String --type-mapping=BGTRevisionNumber=java.lang.String composed-schema.graphqls" />
-    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
-    <option name="ALTERNATIVE_JRE_PATH" />
-    <option name="PASS_PARENT_ENVS" value="true" />
     <option name="MAIN_CLASS_NAME" value="com.netflix.graphql.dgs.codegen.CodeGenCliKt" />
-    <option name="WORKING_DIRECTORY" value="" />
+    <module name="graphql-dgs-codegen.graphql-dgs-codegen-core.main" />
+    <option name="PROGRAM_PARAMETERS" value="--package-name=tester.generated --output-dir=$PROJECT_DIR$/../sparse-update/generated-api-tester/src --generate-data-types --language=java $PROJECT_DIR$/../sparse-update/test-folder/schema.graphqls" />
+    <shortenClasspath name="NONE" />
     <method v="2">
       <option name="Make" enabled="true" />
     </method>

@@ -3,11 +3,11 @@ package com.netflix.graphql.dgs.codegen.cases.skipCodegenOnInterfaceFields.expec
 import kotlin.String
 
 public object DgsConstants {
-  public object PERSON {
-    public const val TYPE_NAME: String = "Person"
+    public object PERSON {
+        public const val TYPE_NAME: String = "Person"
 
-    public const val Name: String = "name"
+        public const val Name: String = "name"
 
-    public const val Email: String = "email"
-  }
+        public const val Email: String = "email"
+    }
 }

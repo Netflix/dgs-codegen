@@ -3,9 +3,9 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedInterfaces.expe
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
 public class ProductProjection : GraphQLProjection() {
-  public val id: ProductProjection
-    get() {
-      field("id")
-      return this
-    }
+    public val id: ProductProjection
+        get() {
+            field("id")
+            return this
+        }
 }

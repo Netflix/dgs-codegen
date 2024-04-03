@@ -13,89 +13,81 @@ import kotlin.jvm.JvmName
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = PageInfo.Builder::class)
 public class PageInfo(
-  startCursor: () -> String? = startCursorDefault,
-  endCursor: () -> String? = endCursorDefault,
-  hasNextPage: () -> Boolean = hasNextPageDefault,
-  hasPreviousPage: () -> Boolean = hasPreviousPageDefault,
+    startCursor: () -> String? = startCursorDefault,
+    endCursor: () -> String? = endCursorDefault,
+    hasNextPage: () -> Boolean = hasNextPageDefault,
+    hasPreviousPage: () -> Boolean = hasPreviousPageDefault
 ) {
-  private val _startCursor: () -> String? = startCursor
+    private val _startCursor: () -> String? = startCursor
 
-  private val _endCursor: () -> String? = endCursor
+    private val _endCursor: () -> String? = endCursor
 
-  private val _hasNextPage: () -> Boolean = hasNextPage
+    private val _hasNextPage: () -> Boolean = hasNextPage
 
-  private val _hasPreviousPage: () -> Boolean = hasPreviousPage
+    private val _hasPreviousPage: () -> Boolean = hasPreviousPage
 
-  @get:JvmName("getStartCursor")
-  public val startCursor: String?
-    get() = _startCursor.invoke()
+    @get:JvmName("getStartCursor")
+    public val startCursor: String?
+        get() = _startCursor.invoke()
 
-  @get:JvmName("getEndCursor")
-  public val endCursor: String?
-    get() = _endCursor.invoke()
+    @get:JvmName("getEndCursor")
+    public val endCursor: String?
+        get() = _endCursor.invoke()
 
-  @get:JvmName("getHasNextPage")
-  public val hasNextPage: Boolean
-    get() = _hasNextPage.invoke()
+    @get:JvmName("getHasNextPage")
+    public val hasNextPage: Boolean
+        get() = _hasNextPage.invoke()
 
-  @get:JvmName("getHasPreviousPage")
-  public val hasPreviousPage: Boolean
-    get() = _hasPreviousPage.invoke()
+    @get:JvmName("getHasPreviousPage")
+    public val hasPreviousPage: Boolean
+        get() = _hasPreviousPage.invoke()
 
-  public companion object {
-    private val startCursorDefault: () -> String? = 
-        { throw IllegalStateException("Field `startCursor` was not requested") }
+    public companion object {
+        private val startCursorDefault: () -> String? = { throw IllegalStateException("Field `startCursor` was not requested") }
 
+        private val endCursorDefault: () -> String? = { throw IllegalStateException("Field `endCursor` was not requested") }
 
-    private val endCursorDefault: () -> String? = 
-        { throw IllegalStateException("Field `endCursor` was not requested") }
+        private val hasNextPageDefault: () -> Boolean = { throw IllegalStateException("Field `hasNextPage` was not requested") }
 
-
-    private val hasNextPageDefault: () -> Boolean = 
-        { throw IllegalStateException("Field `hasNextPage` was not requested") }
-
-
-    private val hasPreviousPageDefault: () -> Boolean = 
-        { throw IllegalStateException("Field `hasPreviousPage` was not requested") }
-
-  }
-
-  @JsonPOJOBuilder
-  @JsonIgnoreProperties("__typename")
-  public class Builder {
-    private var startCursor: () -> String? = startCursorDefault
-
-    private var endCursor: () -> String? = endCursorDefault
-
-    private var hasNextPage: () -> Boolean = hasNextPageDefault
-
-    private var hasPreviousPage: () -> Boolean = hasPreviousPageDefault
-
-    @JsonProperty("startCursor")
-    public fun withStartCursor(startCursor: String?): Builder = this.apply {
-      this.startCursor = { startCursor }
+        private val hasPreviousPageDefault: () -> Boolean = { throw IllegalStateException("Field `hasPreviousPage` was not requested") }
     }
 
-    @JsonProperty("endCursor")
-    public fun withEndCursor(endCursor: String?): Builder = this.apply {
-      this.endCursor = { endCursor }
-    }
+    @JsonPOJOBuilder
+    @JsonIgnoreProperties("__typename")
+    public class Builder {
+        private var startCursor: () -> String? = startCursorDefault
 
-    @JsonProperty("hasNextPage")
-    public fun withHasNextPage(hasNextPage: Boolean): Builder = this.apply {
-      this.hasNextPage = { hasNextPage }
-    }
+        private var endCursor: () -> String? = endCursorDefault
 
-    @JsonProperty("hasPreviousPage")
-    public fun withHasPreviousPage(hasPreviousPage: Boolean): Builder = this.apply {
-      this.hasPreviousPage = { hasPreviousPage }
-    }
+        private var hasNextPage: () -> Boolean = hasNextPageDefault
 
-    public fun build(): PageInfo = PageInfo(
-      startCursor = startCursor,
-      endCursor = endCursor,
-      hasNextPage = hasNextPage,
-      hasPreviousPage = hasPreviousPage,
-    )
-  }
+        private var hasPreviousPage: () -> Boolean = hasPreviousPageDefault
+
+        @JsonProperty("startCursor")
+        public fun withStartCursor(startCursor: String?): Builder = this.apply {
+            this.startCursor = { startCursor }
+        }
+
+        @JsonProperty("endCursor")
+        public fun withEndCursor(endCursor: String?): Builder = this.apply {
+            this.endCursor = { endCursor }
+        }
+
+        @JsonProperty("hasNextPage")
+        public fun withHasNextPage(hasNextPage: Boolean): Builder = this.apply {
+            this.hasNextPage = { hasNextPage }
+        }
+
+        @JsonProperty("hasPreviousPage")
+        public fun withHasPreviousPage(hasPreviousPage: Boolean): Builder = this.apply {
+            this.hasPreviousPage = { hasPreviousPage }
+        }
+
+        public fun build(): PageInfo = PageInfo(
+            startCursor = startCursor,
+            endCursor = endCursor,
+            hasNextPage = hasNextPage,
+            hasPreviousPage = hasPreviousPage
+        )
+    }
 }
