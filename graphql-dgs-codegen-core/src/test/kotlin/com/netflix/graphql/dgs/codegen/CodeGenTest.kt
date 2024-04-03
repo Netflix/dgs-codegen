@@ -123,7 +123,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
         assertThat(typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname")
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "isFirstname", "isLastname")
         assertThat(typeSpec.methodSpecs).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
         dataTypes[0].writeTo(System.out)
         assertCompilesJava(dataTypes)
@@ -428,7 +428,7 @@ class CodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email", "isName", "isEmail")
         val type = assertThat(dataTypes[0].typeSpec.fieldSpecs).filteredOn("name", "email").extracting("type")
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
@@ -459,7 +459,7 @@ class CodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("name", "email", "isName", "isEmail")
         val type = assertThat(dataTypes[0].typeSpec.fieldSpecs).filteredOn("name", "email").extracting("type")
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
@@ -498,7 +498,7 @@ class CodeGenTest {
         // Check data class
         assertThat(employee.name).isEqualTo("Employee")
         assertThat(employee.fieldSpecs.size).isEqualTo(6)
-        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
+        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company", "isFirstname", "isLastname", "isCompany")
 
         val annotation = employee.annotations.single()
         assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
@@ -565,7 +565,7 @@ class CodeGenTest {
         // Check data class
         assertThat(employee.name).isEqualTo("AdminFeatureToggle")
         assertThat(employee.fieldSpecs.size).isEqualTo(4)
-        assertThat(employee.fieldSpecs).extracting("name").contains("enabled", "boxedEnabled")
+        assertThat(employee.fieldSpecs).extracting("name").contains("enabled", "boxedEnabled", "isEnabled", "isBoxedEnabled")
 
         val annotation = employee.annotations.single()
         assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
@@ -766,7 +766,7 @@ class CodeGenTest {
         // Check data class
         assertThat(employee.name).isEqualTo("Employee")
         assertThat(employee.fieldSpecs.size).isEqualTo(6)
-        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company")
+        assertThat(employee.fieldSpecs).extracting("name").contains("firstname", "lastname", "company", "isFirstname", "isLastname", "isCompany")
 
         val annotation = employee.annotations.single()
         assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
@@ -828,7 +828,7 @@ class CodeGenTest {
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(6)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "friends")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname", "friends", "isFirstname", "isLastname", "isFriends")
 
         // Check type of friends field
         val parameterizedType = ParameterizedTypeName.get(ClassName.get(List::class.java), ClassName.get(typesPackageName, "Person"))
@@ -1556,7 +1556,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(2)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "isGenre")
 
         assertCompilesJava(dataTypes)
     }
@@ -1760,7 +1760,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
 
         assertThat(dataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "releaseYear")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs).extracting("name").contains("genre", "releaseYear", "isGenre", "isReleaseYear")
         assertCompilesJava(dataTypes)
     }
 
