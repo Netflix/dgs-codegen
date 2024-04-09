@@ -85,6 +85,9 @@ class Kotline2CodeGenTest {
                 |public enum class TownJobTypes {
                 |  @Deprecated(message = "town switched to electric lights")
                 |  LAMPLIGHTER,
+                |  ;
+                |
+                |  public companion object
                 |}
                 |
             """.trimMargin()

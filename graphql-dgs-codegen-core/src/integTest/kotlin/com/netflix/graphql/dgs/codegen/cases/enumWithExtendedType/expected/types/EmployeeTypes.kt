@@ -5,4 +5,7 @@ public enum class EmployeeTypes {
   MANAGER,
   DIRECTOR,
   QA,
+  ;
+
+  public companion object
 }
