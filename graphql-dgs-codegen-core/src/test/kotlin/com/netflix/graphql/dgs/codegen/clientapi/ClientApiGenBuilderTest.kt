@@ -142,6 +142,36 @@ class ClientApiGenBuilderTest {
 
     @Nested
     inner class Deprecation {
+        @Test
+        fun `adds @Deprecated annotation on class and reason from schema directives when setting enabled`() {
+            val schema = """
+                type Query {
+                    filter(
+                        nameFilter: String,
+                        idFilter: ID
+                    ): [String] @deprecated(reason: "DO NOT USE")
+                }
+            """.trimIndent()
+
+            val codeGenResult = CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApiv2 = true,
+                    maxProjectionDepth = 2,
+                    addDeprecatedAnnotation = true
+                )
+            ).generate()
+
+            assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.javadoc.toString()).startsWith(
+                "@deprecated DO NOT USE".trimMargin()
+            )
+        }
 
         @Test
         fun `adds @Deprecated annotation and reason from schema directives when setting enabled`() {

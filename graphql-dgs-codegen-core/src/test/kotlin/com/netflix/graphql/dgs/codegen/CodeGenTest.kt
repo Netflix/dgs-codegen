@@ -995,6 +995,33 @@ class CodeGenTest {
         assertCompilesJava(codeGenResult.javaEnumTypes)
     }
 
+    @Test
+    fun generateDataWithReservedKeywords() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                package: Parcel
+            }
+            
+            type Parcel {
+                 name: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true
+            )
+        ).generate()
+
+        assertCompilesJava(codeGenResult)
+    }
+
     @Nested
     inner class EnumAnnotationTest {
         @Test

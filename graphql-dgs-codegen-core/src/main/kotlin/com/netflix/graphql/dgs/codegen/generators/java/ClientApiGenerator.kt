@@ -67,6 +67,16 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         if (it.description != null) {
             javaType.addJavadoc(it.description.sanitizeJavaDoc())
         }
+
+        val deprecatedClassDirective = getDeprecateDirective(it)
+        if (deprecatedClassDirective != null) {
+            javaType.addAnnotation(java.lang.Deprecated::class.java)
+            val deprecationReason = getDeprecatedReason(deprecatedClassDirective)
+            if (deprecationReason != null) {
+                javaType.addJavadoc("@deprecated " + deprecationReason.sanitizeJavaDoc())
+            }
+        }
+
         javaType.addMethod(
             MethodSpec.methodBuilder("getOperationName")
                 .addModifiers(Modifier.PUBLIC)
@@ -116,18 +126,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         it.inputValueDefinitions.forEach { inputValue ->
             val findReturnType = TypeUtils(getDatatypesPackageName(), config, document).findReturnType(inputValue.type)
 
-            val deprecatedDirective = if (config.addDeprecatedAnnotation) {
-                inputValue
-                    .getDirectives("deprecated")
-                    ?.firstOrNull() // Should we throw here, if there are multiple "@deprecated"?
-            } else {
-                null
-            }
-
-            val deprecationReason = deprecatedDirective
-                ?.getArgument("reason")
-                ?.let { it.value as? StringValue }
-                ?.value
+            val deprecatedDirective = getDeprecateDirective(inputValue)
+            val deprecationReason = deprecatedDirective?.let { it1 -> getDeprecatedReason(it1) }
 
             val methodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name))
                 .addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
@@ -636,6 +636,21 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         return javaType to codeGenResult.merge(concreteTypesResult).merge(unionTypesResult)
     }
 
+    private fun getDeprecateDirective(node: DirectivesContainer<*>): Directive? {
+        if (config.addDeprecatedAnnotation) {
+            return node
+                .getDirectives("deprecated")
+                ?.firstOrNull() // Should we throw here, if there are multiple "@deprecated"?
+        }
+        return null
+    }
+
+    private fun getDeprecatedReason(directive: Directive): String? {
+        return directive
+            ?.getArgument("reason")
+            ?.let { it.value as? StringValue }
+            ?.value
+    }
     private fun truncatePrefix(prefix: String): String {
         return if (config.shortProjectionNames) ClassnameShortener.shorten(prefix) else prefix
     }
