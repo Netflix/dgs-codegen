@@ -2,4 +2,7 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForEnum.expec
 
 public enum class Color {
   red,
+  ;
+
+  public companion object
 }
