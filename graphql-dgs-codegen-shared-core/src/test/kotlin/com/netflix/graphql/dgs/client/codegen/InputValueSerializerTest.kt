@@ -16,10 +16,12 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Test
+import graphql.language.StringValue
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.*
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
 
 class InputValueSerializerTest {
 
@@ -55,7 +57,8 @@ class InputValueSerializerTest {
             DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 1, 1))
         )
 
-        val serialize = InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(listOf(movieInput))
+        val serialize =
+            InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(listOf(movieInput))
         assertThat(serialize).isEqualTo("""[{movieId : 1, title : "Some movie", genre : ACTION, director : {name : "The Director"}, actor : [{name : "Actor 1", roleName : "Role 1"}, {name : "Actor 2", roleName : "Role 2"}], releaseWindow : "01/01/2020-01/01/2021"}]""")
     }
 
@@ -145,6 +148,13 @@ class InputValueSerializerTest {
     }
 
     @Test
+    fun `UUID value`() {
+        val expected = UUID.randomUUID()
+        val actual = InputValueSerializer().serialize(expected)
+        assertThat(actual).isEqualTo(""""$expected"""")
+    }
+
+    @Test
     fun `issue 337`() {
         val input = EvilGenre.ACTION
         val serialize = InputValueSerializer().serialize(input)
@@ -157,7 +167,9 @@ class InputValueSerializerTest {
             val baseField: Boolean = true
             open val field: String = "default"
         }
+
         class QueryInput(override val field: String) : Base()
+
         val serialized = InputValueSerializer().serialize(QueryInput("hello"))
         assertThat(serialized).isEqualTo("""{field : "hello", baseField : true}""")
     }
@@ -168,16 +180,19 @@ class InputValueSerializerTest {
             @Transient
             val notVisible = "do not serialize"
         }
+
         val serialized = InputValueSerializer().serialize(QueryInput("serialize me"))
         assertThat(serialized).isEqualTo("""{visible : "serialize me"}""")
     }
 
     enum class EvilGenre {
         ACTION;
+
         override fun toString(): String {
             return "Genre[$name]"
         }
     }
+
     data class MyDataWithCompanion(val title: String) {
         companion object
     }
