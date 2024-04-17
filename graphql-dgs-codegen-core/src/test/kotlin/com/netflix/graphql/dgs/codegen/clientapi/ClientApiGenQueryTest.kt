@@ -488,7 +488,7 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.javaInterfaces[0].typeSpec.name).isEqualTo("HasDefaultField")
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(8)
         assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].name).isEqualTo("name")
         assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[1].name).isEqualTo("_default")
         assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[2].name).isEqualTo("_public")
@@ -963,7 +963,7 @@ class ClientApiGenQueryTest {
         val typeSpec = codeGenResult.javaDataTypes[0].typeSpec
         assertThat(typeSpec.name).isEqualTo("Bar")
         assertThat(typeSpec.fieldSpecs[0].name).isEqualTo("object")
-        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(4)
         assertThat(typeSpec.fieldSpecs[1].name).isEqualTo("_class")
 
         assertThat(typeSpec.methodSpecs.size).isGreaterThan(0)
