@@ -346,7 +346,7 @@ abstract class BaseDataTypeGenerator(
                 .addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(it.name), ReservedKeywordSanitizer.sanitize(it.name))
                 .addStatement(
                     "this.\$N = true",
-                    ReservedKeywordSanitizer.sanitize(generateBooleanFieldName(it.name))
+                    generateBooleanFieldName(it.name)
                 )
         }
 
@@ -371,13 +371,14 @@ abstract class BaseDataTypeGenerator(
     private fun addIsDefinedFieldWithGetters(javaType: TypeSpec.Builder) {
         val fields = javaType.build().fieldSpecs
         fields.forEach() {
-            val fieldName = "is${it.name.capitalized()}Defined"
+            val fieldName = generateBooleanFieldName(it.name)
             val field = FieldSpec
                 .builder(com.squareup.javapoet.TypeName.BOOLEAN, fieldName)
                 .addModifiers(Modifier.PRIVATE)
                 .initializer("false")
                 .build()
-            val getterName = "getIs${it.name.capitalized()}Defined"
+            val getterName = "get${generateBooleanFieldName(it.name).capitalized()}"
+
             val getter = MethodSpec
                 .methodBuilder(getterName)
                 .addModifiers(Modifier.PUBLIC)
@@ -392,6 +393,9 @@ abstract class BaseDataTypeGenerator(
     }
 
     private fun generateBooleanFieldName(name: String): String {
+        if(name[0] == '_') {
+            return "is${name.substring(1).capitalized()}Defined"
+        }
         return "is${name.capitalized()}Defined"
     }
 
@@ -475,9 +479,14 @@ abstract class BaseDataTypeGenerator(
             .addStatement("$className result = new $className()")
 
         javaType.build().fieldSpecs.forEach() {
+            var setterName = if(it.name[0] == '_' && it.name[1] != '_') {
+                "set${it.name.substring(1).capitalized()}"
+            } else {
+                "set${it.name.capitalized()}"
+            }
             codeBlock
                 .beginControlFlow("if(this.${generateBooleanFieldName(it.name)})")
-                .addStatement("result.set${it.name.capitalized()}(this.${it.name})")
+                .addStatement("result.${setterName}(this.${it.name})")
                 .endControlFlow()
         }
         codeBlock.addStatement("return result")
