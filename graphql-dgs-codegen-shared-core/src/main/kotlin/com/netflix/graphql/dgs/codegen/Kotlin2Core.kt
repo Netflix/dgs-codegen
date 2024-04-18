@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.client.codegen.InputValue
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializer
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import graphql.language.Argument
 import graphql.language.AstPrinter
 import graphql.language.Document
@@ -50,12 +51,25 @@ object DefaultTracker {
     }
 }
 
+object InputValueSerializerProvider {
+    private val default: ThreadLocal<InputValueSerializerInterface> = ThreadLocal.withInitial { InputValueSerializer() }
+
+    var serializer
+        get(): InputValueSerializerInterface = default.get()
+        set(value) = default.set(value)
+
+    fun reset() {
+        serializer = InputValueSerializer()
+    }
+}
+
 @QueryProjectionMarker
-abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename")) {
+abstract class GraphQLProjection(
+    defaultFields: Set<String> = setOf("__typename"),
+    private val inputValueSerializer: InputValueSerializerInterface = InputValueSerializerProvider.serializer
+) {
 
     companion object {
-
-        private val inputSerializer = InputValueSerializer()
 
         @JvmStatic
         protected fun <T> default0(arg: String): T? {
@@ -105,7 +119,7 @@ abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename"
             .map { (arg, value) ->
                 Argument.newArgument()
                     .name(arg)
-                    .value(inputSerializer.toValue(value))
+                    .value(inputValueSerializer.toValue(value))
                     .build()
             }
     }
