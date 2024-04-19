@@ -51,25 +51,15 @@ object DefaultTracker {
     }
 }
 
-object InputValueSerializerProvider {
-    private val default: ThreadLocal<InputValueSerializerInterface> = ThreadLocal.withInitial { InputValueSerializer() }
-
-    var serializer
-        get(): InputValueSerializerInterface = default.get()
-        set(value) = default.set(value)
-
-    fun reset() {
-        serializer = InputValueSerializer()
-    }
-}
-
 @QueryProjectionMarker
 abstract class GraphQLProjection(
+    protected val inputValueSerializer: InputValueSerializerInterface? = null,
     defaultFields: Set<String> = setOf("__typename"),
-    private val inputValueSerializer: InputValueSerializerInterface = InputValueSerializerProvider.serializer
 ) {
 
     companion object {
+
+        val defaultInputValueSerializer = InputValueSerializer()
 
         @JvmStatic
         protected fun <T> default0(arg: String): T? {
@@ -119,7 +109,7 @@ abstract class GraphQLProjection(
             .map { (arg, value) ->
                 Argument.newArgument()
                     .name(arg)
-                    .value(inputValueSerializer.toValue(value))
+                    .value((inputValueSerializer ?: defaultInputValueSerializer).toValue(value))
                     .build()
             }
     }

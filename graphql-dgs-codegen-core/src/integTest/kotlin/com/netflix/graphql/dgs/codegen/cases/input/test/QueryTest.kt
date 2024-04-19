@@ -19,7 +19,6 @@
 package com.netflix.graphql.dgs.codegen.cases.input.test
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializer
-import com.netflix.graphql.dgs.codegen.InputValueSerializerProvider
 import com.netflix.graphql.dgs.codegen.cases.input.expected.DgsClient
 import com.netflix.graphql.dgs.codegen.cases.input.expected.types.MovieFilter
 import graphql.language.StringValue
@@ -134,50 +133,22 @@ class QueryTest {
 
     @Test
     fun testQueryWithFilterAndCustomCoercing() {
-        try {
-            InputValueSerializerProvider.serializer = InputValueSerializer(
-                mapOf(MovieFilter::class.java to movieCoercing)
-            )
-            val query = DgsClient.buildQuery {
-                movies(filter = MovieFilter(genre = "horror"))
-            }
 
-            Assertions.assertEquals(
-                """{
-            |  __typename
-            |  movies(filter: "horror")
-            |}
-            |
-            """.trimMargin(),
-                query
-            )
-        } finally {
-            InputValueSerializerProvider.reset()
+        val serializer = InputValueSerializer(
+            mapOf(MovieFilter::class.java to movieCoercing)
+        )
+        val query = DgsClient.buildQuery(serializer) {
+            movies(filter = MovieFilter(genre = "horror"))
         }
-    }
 
-    @Test
-    fun testResetInputValueSerializerProvider() {
-        try {
-            InputValueSerializerProvider.serializer = InputValueSerializer(
-                mapOf(MovieFilter::class.java to movieCoercing)
-            )
-            InputValueSerializerProvider.reset()
-
-            val query = DgsClient.buildQuery {
-                movies(filter = MovieFilter(genre = "horror"))
-            }
-            Assertions.assertEquals(
-                """{
-            |  __typename
-            |  movies(filter: {genre : "horror"})
-            |}
-            |
-            """.trimMargin(),
-                query
-            )
-        } finally {
-            InputValueSerializerProvider.reset()
-        }
+        Assertions.assertEquals(
+            """{
+        |  __typename
+        |  movies(filter: "horror")
+        |}
+        |
+        """.trimMargin(),
+            query
+        )
     }
 }
