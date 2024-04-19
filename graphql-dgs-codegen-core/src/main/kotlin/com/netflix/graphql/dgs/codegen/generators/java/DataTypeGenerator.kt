@@ -387,7 +387,6 @@ abstract class BaseDataTypeGenerator(
                 .build()
             val getterName = "get${generateBooleanFieldName(it.name).capitalized()}"
 
-
             val getter = MethodSpec
                 .methodBuilder(getterName)
                 .addModifiers(Modifier.PUBLIC)
