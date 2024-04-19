@@ -343,7 +343,15 @@ abstract class BaseDataTypeGenerator(
             constructorBuilder
                 .addParameter(parameterBuilder.build())
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("this.\$N = \$N", ReservedKeywordSanitizer.sanitize(it.name), ReservedKeywordSanitizer.sanitize(it.name))
+        }
+
+        javaType.build().fieldSpecs.forEach {
+            constructorBuilder
+                .addStatement(
+                    "this.\$N = \$N",
+                    ReservedKeywordSanitizer.sanitize(it.name),
+                    ReservedKeywordSanitizer.sanitize(it.name)
+                )
                 .addStatement(
                     "this.\$N = true",
                     generateBooleanFieldName(it.name)
@@ -379,6 +387,7 @@ abstract class BaseDataTypeGenerator(
                 .build()
             val getterName = "get${generateBooleanFieldName(it.name).capitalized()}"
 
+
             val getter = MethodSpec
                 .methodBuilder(getterName)
                 .addModifiers(Modifier.PUBLIC)
@@ -393,9 +402,6 @@ abstract class BaseDataTypeGenerator(
     }
 
     private fun generateBooleanFieldName(name: String): String {
-        if(name[0] == '_') {
-            return "is${name.substring(1).capitalized()}Defined"
-        }
         return "is${name.capitalized()}Defined"
     }
 
@@ -427,6 +433,7 @@ abstract class BaseDataTypeGenerator(
 
         val setterName = typeUtils.transformIfDefaultClassMethodExists("set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}", TypeUtils.Companion.setClass)
         val parameterBuilder = ParameterSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+
         val setterMethodBuilder = MethodSpec.methodBuilder(setterName)
             .addModifiers(Modifier.PUBLIC)
             .addStatement(
@@ -436,7 +443,7 @@ abstract class BaseDataTypeGenerator(
             )
             .addStatement(
                 "this.\$N = true",
-                ReservedKeywordSanitizer.sanitize(generateBooleanFieldName(fieldDefinition.name))
+                generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
             )
 
         if (fieldDefinition.directives.isNotEmpty()) {
@@ -474,28 +481,14 @@ abstract class BaseDataTypeGenerator(
 
     private fun addBuilder(javaType: TypeSpec.Builder) {
         val className = ClassName.get(packageName, javaType.build().name)
-
-        val codeBlock = CodeBlock.builder()
-            .addStatement("$className result = new $className()")
-
-        javaType.build().fieldSpecs.forEach() {
-            var setterName = if(it.name[0] == '_' && it.name[1] != '_') {
-                "set${it.name.substring(1).capitalized()}"
-            } else {
-                "set${it.name.capitalized()}"
-            }
-            codeBlock
-                .beginControlFlow("if(this.${generateBooleanFieldName(it.name)})")
-                .addStatement("result.${setterName}(this.${it.name})")
-                .endControlFlow()
-        }
-        codeBlock.addStatement("return result")
-
-        val buildMethod = MethodSpec
-            .methodBuilder("build")
-            .returns(className)
-            .addCode(codeBlock.build())
-            .addModifiers(Modifier.PUBLIC)
+        val buildMethod = MethodSpec.methodBuilder("build").returns(className).addStatement(
+            """
+            $className result = new $className();
+            ${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
+            ${javaType.build().fieldSpecs.joinToString("\n") { "this.${generateBooleanFieldName(it.name)} = ${generateBooleanFieldName(it.name)};" }}
+            return result
+            """.trimIndent()
+        ).addModifiers(Modifier.PUBLIC).build()
 
         val builderClassName = ClassName.get(packageName, "$className.Builder")
         val newBuilderMethod =
@@ -513,7 +506,7 @@ abstract class BaseDataTypeGenerator(
                 .classBuilder("Builder")
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addMethod(buildMethod.build())
+                .addMethod(buildMethod)
 
         javaType.build().fieldSpecs.map {
             MethodSpec.methodBuilder(it.name)
