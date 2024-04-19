@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.cases.dataClassWithRecursiveField.expected.client
 
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class PersonProjection : GraphQLProjection() {
   public val firstname: PersonProjection
@@ -15,8 +16,9 @@ public class PersonProjection : GraphQLProjection() {
       return this
     }
 
-  public fun friends(_projection: PersonProjection.() -> PersonProjection): PersonProjection {
-    field("friends", PersonProjection(), _projection)
+  public fun friends(_alias: String? = null, _projection: PersonProjection.() -> PersonProjection):
+      PersonProjection {
+    field(_alias, "friends", PersonProjection(), _projection)
     return this
   }
 }

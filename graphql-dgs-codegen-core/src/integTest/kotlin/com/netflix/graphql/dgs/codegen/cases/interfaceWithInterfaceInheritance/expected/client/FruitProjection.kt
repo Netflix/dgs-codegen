@@ -1,10 +1,12 @@
 package com.netflix.graphql.dgs.codegen.cases.interfaceWithInterfaceInheritance.expected.client
 
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class FruitProjection : GraphQLProjection() {
-  public fun seeds(_projection: SeedProjection.() -> SeedProjection): FruitProjection {
-    field("seeds", SeedProjection(), _projection)
+  public fun seeds(_alias: String? = null, _projection: SeedProjection.() -> SeedProjection):
+      FruitProjection {
+    field(_alias, "seeds", SeedProjection(), _projection)
     return this
   }
 

@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.client
 
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class EngineProjection : GraphQLProjection() {
   public val type: EngineProjection
@@ -21,9 +22,9 @@ public class EngineProjection : GraphQLProjection() {
       return this
     }
 
-  public fun performance(_projection: PerformanceProjection.() -> PerformanceProjection):
-      EngineProjection {
-    field("performance", PerformanceProjection(), _projection)
+  public fun performance(_alias: String? = null,
+      _projection: PerformanceProjection.() -> PerformanceProjection): EngineProjection {
+    field(_alias, "performance", PerformanceProjection(), _projection)
     return this
   }
 }

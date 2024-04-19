@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.expected.client
 
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class DogProjection : GraphQLProjection() {
   public val id: DogProjection
@@ -21,18 +22,21 @@ public class DogProjection : GraphQLProjection() {
       return this
     }
 
-  public fun mother(_projection: DogProjection.() -> DogProjection): DogProjection {
-    field("mother", DogProjection(), _projection)
+  public fun mother(_alias: String? = null, _projection: DogProjection.() -> DogProjection):
+      DogProjection {
+    field(_alias, "mother", DogProjection(), _projection)
     return this
   }
 
-  public fun father(_projection: DogProjection.() -> DogProjection): DogProjection {
-    field("father", DogProjection(), _projection)
+  public fun father(_alias: String? = null, _projection: DogProjection.() -> DogProjection):
+      DogProjection {
+    field(_alias, "father", DogProjection(), _projection)
     return this
   }
 
-  public fun parents(_projection: DogProjection.() -> DogProjection): DogProjection {
-    field("parents", DogProjection(), _projection)
+  public fun parents(_alias: String? = null, _projection: DogProjection.() -> DogProjection):
+      DogProjection {
+    field(_alias, "parents", DogProjection(), _projection)
     return this
   }
 }

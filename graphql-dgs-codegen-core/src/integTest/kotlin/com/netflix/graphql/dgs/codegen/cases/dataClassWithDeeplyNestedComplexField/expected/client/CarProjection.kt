@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.client
 
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class CarProjection : GraphQLProjection() {
   public val make: CarProjection
@@ -15,8 +16,9 @@ public class CarProjection : GraphQLProjection() {
       return this
     }
 
-  public fun engine(_projection: EngineProjection.() -> EngineProjection): CarProjection {
-    field("engine", EngineProjection(), _projection)
+  public fun engine(_alias: String? = null, _projection: EngineProjection.() -> EngineProjection):
+      CarProjection {
+    field(_alias, "engine", EngineProjection(), _projection)
     return this
   }
 }

@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected.client
 
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class EntityEdgeProjection : GraphQLProjection() {
   public val cursor: EntityEdgeProjection
@@ -9,8 +10,9 @@ public class EntityEdgeProjection : GraphQLProjection() {
       return this
     }
 
-  public fun node(_projection: EntityProjection.() -> EntityProjection): EntityEdgeProjection {
-    field("node", EntityProjection(), _projection)
+  public fun node(_alias: String? = null, _projection: EntityProjection.() -> EntityProjection):
+      EntityEdgeProjection {
+    field(_alias, "node", EntityProjection(), _projection)
     return this
   }
 }
