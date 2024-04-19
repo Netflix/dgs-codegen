@@ -16,17 +16,17 @@ public class Person(
   name: () -> String? = nameDefault,
   email: () -> List<String?>? = emailDefault,
 ) {
-  private val _name: () -> String? = name
+  private val __name: () -> String? = name
 
-  private val _email: () -> List<String?>? = email
+  private val __email: () -> List<String?>? = email
 
   @get:JvmName("getName")
   public val name: String?
-    get() = _name.invoke()
+    get() = __name.invoke()
 
   @get:JvmName("getEmail")
   public val email: List<String?>?
-    get() = _email.invoke()
+    get() = __email.invoke()
 
   public companion object {
     private val nameDefault: () -> String? = 

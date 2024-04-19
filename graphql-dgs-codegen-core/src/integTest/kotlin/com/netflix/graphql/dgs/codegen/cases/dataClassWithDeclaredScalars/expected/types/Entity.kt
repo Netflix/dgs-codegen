@@ -16,17 +16,17 @@ public class Entity(
   long: () -> Long? = longDefault,
   dateTime: () -> OffsetDateTime? = dateTimeDefault,
 ) {
-  private val _long: () -> Long? = long
+  private val __long: () -> Long? = long
 
-  private val _dateTime: () -> OffsetDateTime? = dateTime
+  private val __dateTime: () -> OffsetDateTime? = dateTime
 
   @get:JvmName("getLong")
   public val long: Long?
-    get() = _long.invoke()
+    get() = __long.invoke()
 
   @get:JvmName("getDateTime")
   public val dateTime: OffsetDateTime?
-    get() = _dateTime.invoke()
+    get() = __dateTime.invoke()
 
   public companion object {
     private val longDefault: () -> Long? = 

@@ -21,47 +21,47 @@ public class Dog(
   father: () -> Dog? = fatherDefault,
   parents: () -> List<Dog?>? = parentsDefault,
 ) : Pet {
-  private val _id: () -> String = id
+  private val __id: () -> String = id
 
-  private val _name: () -> String? = name
+  private val __name: () -> String? = name
 
-  private val _address: () -> List<String> = address
+  private val __address: () -> List<String> = address
 
-  private val _mother: () -> Dog = mother
+  private val __mother: () -> Dog = mother
 
-  private val _father: () -> Dog? = father
+  private val __father: () -> Dog? = father
 
-  private val _parents: () -> List<Dog?>? = parents
+  private val __parents: () -> List<Dog?>? = parents
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getId")
   override val id: String
-    get() = _id.invoke()
+    get() = __id.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getName")
   override val name: String?
-    get() = _name.invoke()
+    get() = __name.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getAddress")
   override val address: List<String>
-    get() = _address.invoke()
+    get() = __address.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getMother")
   override val mother: Dog
-    get() = _mother.invoke()
+    get() = __mother.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getFather")
   override val father: Dog?
-    get() = _father.invoke()
+    get() = __father.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getParents")
   override val parents: List<Dog?>?
-    get() = _parents.invoke()
+    get() = __parents.invoke()
 
   public companion object {
     private val idDefault: () -> String = 

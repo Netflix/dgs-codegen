@@ -16,17 +16,17 @@ public class Query(
   entity: () -> List<Entity?>? = entityDefault,
   entityConnection: () -> SimpleListConnection<EntityEdge>? = entityConnectionDefault,
 ) {
-  private val _entity: () -> List<Entity?>? = entity
+  private val __entity: () -> List<Entity?>? = entity
 
-  private val _entityConnection: () -> SimpleListConnection<EntityEdge>? = entityConnection
+  private val __entityConnection: () -> SimpleListConnection<EntityEdge>? = entityConnection
 
   @get:JvmName("getEntity")
   public val entity: List<Entity?>?
-    get() = _entity.invoke()
+    get() = __entity.invoke()
 
   @get:JvmName("getEntityConnection")
   public val entityConnection: SimpleListConnection<EntityEdge>?
-    get() = _entityConnection.invoke()
+    get() = __entityConnection.invoke()
 
   public companion object {
     private val entityDefault: () -> List<Entity?>? = 

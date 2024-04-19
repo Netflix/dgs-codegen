@@ -13,11 +13,11 @@ import kotlin.jvm.JvmName
 public class Query(
   me: () -> Person? = meDefault,
 ) {
-  private val _me: () -> Person? = me
+  private val __me: () -> Person? = me
 
   @get:JvmName("getMe")
   public val me: Person?
-    get() = _me.invoke()
+    get() = __me.invoke()
 
   public companion object {
     private val meDefault: () -> Person? = 

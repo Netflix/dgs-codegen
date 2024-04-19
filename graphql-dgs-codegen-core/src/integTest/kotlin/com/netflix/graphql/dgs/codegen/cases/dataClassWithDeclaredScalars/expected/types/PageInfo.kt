@@ -18,29 +18,29 @@ public class PageInfo(
   hasNextPage: () -> Boolean = hasNextPageDefault,
   hasPreviousPage: () -> Boolean = hasPreviousPageDefault,
 ) {
-  private val _startCursor: () -> String? = startCursor
+  private val __startCursor: () -> String? = startCursor
 
-  private val _endCursor: () -> String? = endCursor
+  private val __endCursor: () -> String? = endCursor
 
-  private val _hasNextPage: () -> Boolean = hasNextPage
+  private val __hasNextPage: () -> Boolean = hasNextPage
 
-  private val _hasPreviousPage: () -> Boolean = hasPreviousPage
+  private val __hasPreviousPage: () -> Boolean = hasPreviousPage
 
   @get:JvmName("getStartCursor")
   public val startCursor: String?
-    get() = _startCursor.invoke()
+    get() = __startCursor.invoke()
 
   @get:JvmName("getEndCursor")
   public val endCursor: String?
-    get() = _endCursor.invoke()
+    get() = __endCursor.invoke()
 
   @get:JvmName("getHasNextPage")
   public val hasNextPage: Boolean
-    get() = _hasNextPage.invoke()
+    get() = __hasNextPage.invoke()
 
   @get:JvmName("getHasPreviousPage")
   public val hasPreviousPage: Boolean
-    get() = _hasPreviousPage.invoke()
+    get() = __hasPreviousPage.invoke()
 
   public companion object {
     private val startCursorDefault: () -> String? = 

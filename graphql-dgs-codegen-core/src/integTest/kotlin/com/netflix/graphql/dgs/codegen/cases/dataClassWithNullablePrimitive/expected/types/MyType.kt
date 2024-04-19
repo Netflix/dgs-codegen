@@ -18,23 +18,23 @@ public class MyType(
   truth: () -> Boolean? = truthDefault,
   floaty: () -> Double? = floatyDefault,
 ) {
-  private val _count: () -> Int? = count
+  private val __count: () -> Int? = count
 
-  private val _truth: () -> Boolean? = truth
+  private val __truth: () -> Boolean? = truth
 
-  private val _floaty: () -> Double? = floaty
+  private val __floaty: () -> Double? = floaty
 
   @get:JvmName("getCount")
   public val count: Int?
-    get() = _count.invoke()
+    get() = __count.invoke()
 
   @get:JvmName("getTruth")
   public val truth: Boolean?
-    get() = _truth.invoke()
+    get() = __truth.invoke()
 
   @get:JvmName("getFloaty")
   public val floaty: Double?
-    get() = _floaty.invoke()
+    get() = __floaty.invoke()
 
   public companion object {
     private val countDefault: () -> Int? = 
