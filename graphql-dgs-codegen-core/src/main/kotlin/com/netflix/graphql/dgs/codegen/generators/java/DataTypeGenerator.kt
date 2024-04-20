@@ -482,10 +482,10 @@ abstract class BaseDataTypeGenerator(
         val className = ClassName.get(packageName, javaType.build().name)
         val buildMethod = MethodSpec.methodBuilder("build").returns(className).addStatement(
             """
-            $className result = new $className();
-            ${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};" }}
-            ${javaType.build().fieldSpecs.joinToString("\n") { "this.${generateBooleanFieldName(it.name)} = ${generateBooleanFieldName(it.name)};" }}
-            return result
+        $className result = new $className();
+        ${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};".trimIndent() }}
+        ${javaType.build().fieldSpecs.joinToString("\n") { "this.${generateBooleanFieldName(it.name)} = ${generateBooleanFieldName(it.name)};".trimIndent() }}
+        return result
             """.trimIndent()
         ).addModifiers(Modifier.PUBLIC).build()
 

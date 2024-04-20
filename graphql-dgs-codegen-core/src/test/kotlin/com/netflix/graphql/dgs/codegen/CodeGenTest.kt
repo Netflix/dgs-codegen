@@ -2598,20 +2598,16 @@ class CodeGenTest {
                 |    private boolean isImdbProfileDefined = false;
                 |
                 |    public Talent build() {
-                |      com.netflix.graphql.dgs.codegen.tests.generated.types.Talent result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Talent();
-                |      if(this.isFirstnameDefined) {
-                |        result.setFirstname(this.firstname);
-                |      }
-                |      if(this.isLastnameDefined) {
-                |        result.setLastname(this.lastname);
-                |      }
-                |      if(this.isCompanyDefined) {
-                |        result.setCompany(this.company);
-                |      }
-                |      if(this.isImdbProfileDefined) {
-                |        result.setImdbProfile(this.imdbProfile);
-                |      }
-                |      return result;
+                |              com.netflix.graphql.dgs.codegen.tests.generated.types.Talent result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Talent();
+                |                  result.firstname = this.firstname;
+                |          result.lastname = this.lastname;
+                |          result.company = this.company;
+                |          result.imdbProfile = this.imdbProfile;
+                |                  this.isFirstnameDefined = isFirstnameDefined;
+                |          this.isLastnameDefined = isLastnameDefined;
+                |          this.isCompanyDefined = isCompanyDefined;
+                |          this.isImdbProfileDefined = isImdbProfileDefined;
+                |                  return result;
                 |    }
                 |
                 |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder firstname(
@@ -2769,18 +2765,14 @@ class CodeGenTest {
         assertThat(buildMethod?.code.toString().trim())
             .isEqualTo(
                 """
-                    |com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Show();
-                    |if(this.isIdDefined) {
-                    |  result.setId(this.id);
-                    |}
-                    |if(this.isTitleDefined) {
-                    |  result.setTitle(this.title);
-                    |}
-                    |if(this.isReleaseYearDefined) {
-                    |  result.setReleaseYear(this.releaseYear);
-                    |}
-                    |return result;
-                    |
+com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Show();
+            result.id = this.id;
+    result.title = this.title;
+    result.releaseYear = this.releaseYear;
+            this.isIdDefined = isIdDefined;
+    this.isTitleDefined = isTitleDefined;
+    this.isReleaseYearDefined = isReleaseYearDefined;
+            return result;
                 """.trimMargin().trimIndent()
             )
 
