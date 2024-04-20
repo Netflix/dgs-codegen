@@ -1,8 +1,11 @@
 package com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected.client
 
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
-public class PageInfoProjection : GraphQLProjection() {
+public class PageInfoProjection(
+  inputValueSerializer: InputValueSerializerInterface? = null,
+) : GraphQLProjection(inputValueSerializer) {
   public val startCursor: PageInfoProjection
     get() {
       field("startCursor")

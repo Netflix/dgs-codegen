@@ -1,10 +1,13 @@
 package com.netflix.graphql.dgs.codegen.cases.projectionWithPrimitiveAndArgs.expected.client
 
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.cases.projectionWithPrimitiveAndArgs.expected.types.I
 import kotlin.String
 
-public class QueryProjection : GraphQLProjection() {
+public class QueryProjection(
+  inputValueSerializer: InputValueSerializerInterface? = null,
+) : GraphQLProjection(inputValueSerializer) {
   public fun string(
     a1: String? = default<QueryProjection, String?>("a1"),
     a2: String,

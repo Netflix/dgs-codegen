@@ -16,10 +16,12 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import graphql.scalars.id.UUIDScalar
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.util.UUID
 
 class InputValueSerializerTest {
 
@@ -149,6 +151,15 @@ class InputValueSerializerTest {
         val input = EvilGenre.ACTION
         val serialize = InputValueSerializer().serialize(input)
         assertThat(serialize).isEqualTo("ACTION")
+    }
+
+    @Test
+    fun `UUID value`() {
+        val expected = UUID.randomUUID()
+        val actual = InputValueSerializer(
+            mapOf(UUID::class.java to UUIDScalar.INSTANCE.coercing)
+        ).serialize(expected)
+        assertThat(actual).isEqualTo(""""$expected"""")
     }
 
     @Test

@@ -1,8 +1,11 @@
 package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.expected.client
 
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
-public class PetProjection : GraphQLProjection() {
+public class PetProjection(
+  inputValueSerializer: InputValueSerializerInterface? = null,
+) : GraphQLProjection(inputValueSerializer) {
   public val id: PetProjection
     get() {
       field("id")
@@ -22,17 +25,17 @@ public class PetProjection : GraphQLProjection() {
     }
 
   public fun mother(_projection: PetProjection.() -> PetProjection): PetProjection {
-    field("mother", PetProjection(), _projection)
+    field("mother", PetProjection(inputValueSerializer), _projection)
     return this
   }
 
   public fun father(_projection: PetProjection.() -> PetProjection): PetProjection {
-    field("father", PetProjection(), _projection)
+    field("father", PetProjection(inputValueSerializer), _projection)
     return this
   }
 
   public fun parents(_projection: PetProjection.() -> PetProjection): PetProjection {
-    field("parents", PetProjection(), _projection)
+    field("parents", PetProjection(inputValueSerializer), _projection)
     return this
   }
 

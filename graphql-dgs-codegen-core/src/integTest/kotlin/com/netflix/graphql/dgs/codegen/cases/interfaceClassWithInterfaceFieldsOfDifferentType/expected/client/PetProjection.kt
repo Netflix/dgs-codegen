@@ -1,8 +1,11 @@
 package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFieldsOfDifferentType.expected.client
 
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
-public class PetProjection : GraphQLProjection() {
+public class PetProjection(
+  inputValueSerializer: InputValueSerializerInterface? = null,
+) : GraphQLProjection(inputValueSerializer) {
   public val name: PetProjection
     get() {
       field("name")
@@ -10,7 +13,7 @@ public class PetProjection : GraphQLProjection() {
     }
 
   public fun diet(_projection: DietProjection.() -> DietProjection): PetProjection {
-    field("diet", DietProjection(), _projection)
+    field("diet", DietProjection(inputValueSerializer), _projection)
     return this
   }
 

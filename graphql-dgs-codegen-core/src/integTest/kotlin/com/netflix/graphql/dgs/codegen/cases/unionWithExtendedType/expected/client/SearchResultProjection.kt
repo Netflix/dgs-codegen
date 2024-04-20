@@ -1,8 +1,11 @@
 package com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.client
 
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 
-public class SearchResultProjection : GraphQLProjection() {
+public class SearchResultProjection(
+  inputValueSerializer: InputValueSerializerInterface? = null,
+) : GraphQLProjection(inputValueSerializer) {
   public fun onMovie(_projection: MovieProjection.() -> MovieProjection): SearchResultProjection {
     fragment("Movie", MovieProjection(), _projection)
     return this
