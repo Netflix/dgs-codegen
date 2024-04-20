@@ -2,6 +2,7 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexFi
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class CarProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
@@ -18,8 +19,9 @@ public class CarProjection(
       return this
     }
 
-  public fun engine(_projection: EngineProjection.() -> EngineProjection): CarProjection {
-    field("engine", EngineProjection(inputValueSerializer), _projection)
+  public fun engine(_alias: String? = null, _projection: EngineProjection.() -> EngineProjection):
+      CarProjection {
+    field(_alias, "engine", EngineProjection(inputValueSerializer), _projection)
     return this
   }
 }

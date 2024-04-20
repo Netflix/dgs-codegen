@@ -2,6 +2,7 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFieldsO
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class DogProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
@@ -12,8 +13,9 @@ public class DogProjection(
       return this
     }
 
-  public fun diet(_projection: VegetarianProjection.() -> VegetarianProjection): DogProjection {
-    field("diet", VegetarianProjection(inputValueSerializer), _projection)
+  public fun diet(_alias: String? = null,
+      _projection: VegetarianProjection.() -> VegetarianProjection): DogProjection {
+    field(_alias, "diet", VegetarianProjection(inputValueSerializer), _projection)
     return this
   }
 }

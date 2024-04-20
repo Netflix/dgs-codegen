@@ -2,6 +2,7 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expec
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class EntityEdgeProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
@@ -12,8 +13,9 @@ public class EntityEdgeProjection(
       return this
     }
 
-  public fun node(_projection: EntityProjection.() -> EntityProjection): EntityEdgeProjection {
-    field("node", EntityProjection(inputValueSerializer), _projection)
+  public fun node(_alias: String? = null, _projection: EntityProjection.() -> EntityProjection):
+      EntityEdgeProjection {
+    field(_alias, "node", EntityProjection(inputValueSerializer), _projection)
     return this
   }
 }

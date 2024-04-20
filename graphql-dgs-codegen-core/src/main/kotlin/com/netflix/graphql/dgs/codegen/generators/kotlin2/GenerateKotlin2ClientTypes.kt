@@ -121,11 +121,12 @@ fun generateKotlin2ClientTypes(
                             val (projectionType, projection) = projectionType(config.packageNameClient, projectionTypeName)
 
                             FunSpec.builder(field.name)
+                                .addParameter(ParameterSpec.builder("_alias", String::class.asTypeName().copy(nullable = true)).defaultValue("null").build())
                                 .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
                                 .addParameter(projection)
                                 .returns(typeName)
                                 .addStatement(
-                                    """field(%S, %T(inputValueSerializer), _projection%L)""",
+                                    """field(_alias, %S, %T(inputValueSerializer), _projection%L)""",
                                     field.name,
                                     projectionType,
                                     field.inputValueDefinitions.joinToString(" ") { """, "${it.name}" to ${it.name}""" }

@@ -2,6 +2,7 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexFi
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class EngineProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
@@ -24,9 +25,9 @@ public class EngineProjection(
       return this
     }
 
-  public fun performance(_projection: PerformanceProjection.() -> PerformanceProjection):
-      EngineProjection {
-    field("performance", PerformanceProjection(inputValueSerializer), _projection)
+  public fun performance(_alias: String? = null,
+      _projection: PerformanceProjection.() -> PerformanceProjection): EngineProjection {
+    field(_alias, "performance", PerformanceProjection(inputValueSerializer), _projection)
     return this
   }
 }

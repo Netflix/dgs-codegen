@@ -2,17 +2,20 @@ package com.netflix.graphql.dgs.codegen.cases.projectionWithType.expected.client
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
-  public fun person(_projection: PersonProjection.() -> PersonProjection): QueryProjection {
-    field("person", PersonProjection(inputValueSerializer), _projection)
+  public fun person(_alias: String? = null, _projection: PersonProjection.() -> PersonProjection):
+      QueryProjection {
+    field(_alias, "person", PersonProjection(inputValueSerializer), _projection)
     return this
   }
 
-  public fun people(_projection: PersonProjection.() -> PersonProjection): QueryProjection {
-    field("people", PersonProjection(inputValueSerializer), _projection)
+  public fun people(_alias: String? = null, _projection: PersonProjection.() -> PersonProjection):
+      QueryProjection {
+    field(_alias, "people", PersonProjection(inputValueSerializer), _projection)
     return this
   }
 }

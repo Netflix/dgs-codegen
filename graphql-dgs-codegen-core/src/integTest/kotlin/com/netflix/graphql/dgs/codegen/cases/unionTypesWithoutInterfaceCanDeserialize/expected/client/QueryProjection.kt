@@ -7,9 +7,13 @@ import kotlin.String
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
-  public fun search(text: String,
-      _projection: SearchResultPageProjection.() -> SearchResultPageProjection): QueryProjection {
-    field("search", SearchResultPageProjection(inputValueSerializer), _projection, "text" to text)
+  public fun search(
+    _alias: String? = null,
+    text: String,
+    _projection: SearchResultPageProjection.() -> SearchResultPageProjection,
+  ): QueryProjection {
+    field(_alias, "search", SearchResultPageProjection(inputValueSerializer), _projection, "text" to
+        text)
     return this
   }
 }

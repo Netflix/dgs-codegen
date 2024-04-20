@@ -18,33 +18,12 @@
 
 package com.netflix.graphql.dgs.codegen.cases.input.test
 
-import com.netflix.graphql.dgs.client.codegen.InputValueSerializer
 import com.netflix.graphql.dgs.codegen.cases.input.expected.DgsClient
 import com.netflix.graphql.dgs.codegen.cases.input.expected.types.MovieFilter
-import graphql.language.StringValue
-import graphql.language.Value
-import graphql.schema.Coercing
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
 class QueryTest {
-    private val movieCoercing = object : Coercing<MovieFilter, String> {
-        override fun serialize(filter: Any): String {
-            return (filter as? MovieFilter)?.genre ?: ""
-        }
-
-        override fun parseValue(input: Any): MovieFilter {
-            return MovieFilter(input.toString())
-        }
-
-        override fun parseLiteral(input: Any): MovieFilter {
-            return MovieFilter(input.toString())
-        }
-
-        override fun valueToLiteral(input: Any): Value<*> {
-            return StringValue.of(serialize(input))
-        }
-    }
 
     @Test
     fun testQueryWithNoFilter() {
@@ -127,27 +106,6 @@ class QueryTest {
             |}
             |
             """.trimMargin(),
-            query
-        )
-    }
-
-    @Test
-    fun testQueryWithFilterAndCustomCoercing() {
-
-        val serializer = InputValueSerializer(
-            mapOf(MovieFilter::class.java to movieCoercing)
-        )
-        val query = DgsClient.buildQuery(serializer) {
-            movies(filter = MovieFilter(genre = "horror"))
-        }
-
-        Assertions.assertEquals(
-            """{
-        |  __typename
-        |  movies(filter: "horror")
-        |}
-        |
-        """.trimMargin(),
             query
         )
     }

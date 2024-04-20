@@ -128,6 +128,7 @@ abstract class GraphQLProjection(
     }
 
     protected fun <T : GraphQLProjection> field(
+        alias: String? = null,
         name: String,
         projection: T,
         projectionFields: T.() -> T,
@@ -136,13 +137,14 @@ abstract class GraphQLProjection(
         val defaults = DefaultTracker.getAndClear(this::class.qualifiedName!!)
         projectionFields.invoke(projection)
 
-        builder.selection(
-            Field.newField()
-                .name(name)
-                .arguments(arguments(args.toList(), defaults))
-                .selectionSet(projection.builder.build())
-                .build()
-        )
+        val fieldBuilder = Field.newField()
+            .name(name)
+            .arguments(arguments(args.toList(), defaults))
+            .selectionSet(projection.builder.build())
+
+        alias?.also { fieldBuilder.alias(it) }
+
+        builder.selection(fieldBuilder.build())
     }
 
     protected fun <T : GraphQLProjection> fragment(

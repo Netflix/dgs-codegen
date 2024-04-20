@@ -2,6 +2,7 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
 public class PetProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
@@ -24,18 +25,21 @@ public class PetProjection(
       return this
     }
 
-  public fun mother(_projection: PetProjection.() -> PetProjection): PetProjection {
-    field("mother", PetProjection(inputValueSerializer), _projection)
+  public fun mother(_alias: String? = null, _projection: PetProjection.() -> PetProjection):
+      PetProjection {
+    field(_alias, "mother", PetProjection(inputValueSerializer), _projection)
     return this
   }
 
-  public fun father(_projection: PetProjection.() -> PetProjection): PetProjection {
-    field("father", PetProjection(inputValueSerializer), _projection)
+  public fun father(_alias: String? = null, _projection: PetProjection.() -> PetProjection):
+      PetProjection {
+    field(_alias, "father", PetProjection(inputValueSerializer), _projection)
     return this
   }
 
-  public fun parents(_projection: PetProjection.() -> PetProjection): PetProjection {
-    field("parents", PetProjection(inputValueSerializer), _projection)
+  public fun parents(_alias: String? = null, _projection: PetProjection.() -> PetProjection):
+      PetProjection {
+    field(_alias, "parents", PetProjection(inputValueSerializer), _projection)
     return this
   }
 
