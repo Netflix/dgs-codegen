@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class Query(
   string: () -> String? = stringDefault,
 ) {
-  private val _string: () -> String? = string
+  private val __string: () -> String? = string
 
   @get:JvmName("getString")
   public val string: String?
-    get() = _string.invoke()
+    get() = __string.invoke()
 
   public companion object {
     private val stringDefault: () -> String? = 

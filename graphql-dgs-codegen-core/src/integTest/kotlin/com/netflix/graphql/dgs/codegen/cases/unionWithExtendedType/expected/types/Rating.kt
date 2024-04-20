@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class Rating(
   stars: () -> Int? = starsDefault,
 ) : SearchResult {
-  private val _stars: () -> Int? = stars
+  private val __stars: () -> Int? = stars
 
   @get:JvmName("getStars")
   public val stars: Int?
-    get() = _stars.invoke()
+    get() = __stars.invoke()
 
   public companion object {
     private val starsDefault: () -> Int? = 

@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class OtherType(
   name: () -> String = nameDefault,
 ) {
-  private val _name: () -> String = name
+  private val __name: () -> String = name
 
   @get:JvmName("getName")
   public val name: String
-    get() = _name.invoke()
+    get() = __name.invoke()
 
   public companion object {
     private val nameDefault: () -> String = 

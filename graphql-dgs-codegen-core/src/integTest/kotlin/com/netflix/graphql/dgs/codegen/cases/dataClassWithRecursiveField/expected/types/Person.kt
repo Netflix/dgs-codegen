@@ -17,23 +17,23 @@ public class Person(
   lastname: () -> String? = lastnameDefault,
   friends: () -> List<Person?>? = friendsDefault,
 ) {
-  private val _firstname: () -> String? = firstname
+  private val __firstname: () -> String? = firstname
 
-  private val _lastname: () -> String? = lastname
+  private val __lastname: () -> String? = lastname
 
-  private val _friends: () -> List<Person?>? = friends
+  private val __friends: () -> List<Person?>? = friends
 
   @get:JvmName("getFirstname")
   public val firstname: String?
-    get() = _firstname.invoke()
+    get() = __firstname.invoke()
 
   @get:JvmName("getLastname")
   public val lastname: String?
-    get() = _lastname.invoke()
+    get() = __lastname.invoke()
 
   @get:JvmName("getFriends")
   public val friends: List<Person?>?
-    get() = _friends.invoke()
+    get() = __friends.invoke()
 
   public companion object {
     private val firstnameDefault: () -> String? = 

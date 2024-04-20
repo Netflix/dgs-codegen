@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class RequiredTestType(
   isRequired: () -> Boolean = isRequiredDefault,
 ) {
-  private val _isRequired: () -> Boolean = isRequired
+  private val __isRequired: () -> Boolean = isRequired
 
   @get:JvmName("getIsRequired")
   public val isRequired: Boolean
-    get() = _isRequired.invoke()
+    get() = __isRequired.invoke()
 
   public companion object {
     private val isRequiredDefault: () -> Boolean = 

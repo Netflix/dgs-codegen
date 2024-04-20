@@ -16,17 +16,17 @@ public class Query(
   string: () -> String? = stringDefault,
   strings: () -> List<String?>? = stringsDefault,
 ) {
-  private val _string: () -> String? = string
+  private val __string: () -> String? = string
 
-  private val _strings: () -> List<String?>? = strings
+  private val __strings: () -> List<String?>? = strings
 
   @get:JvmName("getString")
   public val string: String?
-    get() = _string.invoke()
+    get() = __string.invoke()
 
   @get:JvmName("getStrings")
   public val strings: List<String?>?
-    get() = _strings.invoke()
+    get() = __strings.invoke()
 
   public companion object {
     private val stringDefault: () -> String? = 

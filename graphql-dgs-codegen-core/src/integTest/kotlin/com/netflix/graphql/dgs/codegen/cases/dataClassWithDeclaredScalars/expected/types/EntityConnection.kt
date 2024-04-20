@@ -15,17 +15,17 @@ public class EntityConnection(
   pageInfo: () -> PageInfo = pageInfoDefault,
   edges: () -> List<EntityEdge?>? = edgesDefault,
 ) {
-  private val _pageInfo: () -> PageInfo = pageInfo
+  private val __pageInfo: () -> PageInfo = pageInfo
 
-  private val _edges: () -> List<EntityEdge?>? = edges
+  private val __edges: () -> List<EntityEdge?>? = edges
 
   @get:JvmName("getPageInfo")
   public val pageInfo: PageInfo
-    get() = _pageInfo.invoke()
+    get() = __pageInfo.invoke()
 
   @get:JvmName("getEdges")
   public val edges: List<EntityEdge?>?
-    get() = _edges.invoke()
+    get() = __edges.invoke()
 
   public companion object {
     private val pageInfoDefault: () -> PageInfo = 

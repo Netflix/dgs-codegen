@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.filterSkipped
@@ -53,6 +54,11 @@ fun generateKotlin2ClientTypes(
     }
 
     val typeLookup = Kotlin2TypeLookup(config, document)
+
+    val ivsParameter = ParameterSpec
+        .builder("inputValueSerializer", InputValueSerializerInterface::class.asTypeName().copy(nullable = true))
+        .defaultValue("null")
+        .build()
 
     // create a projection class for every interface & data type
     val dataProjections = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
@@ -120,7 +126,7 @@ fun generateKotlin2ClientTypes(
                                 .addParameter(projection)
                                 .returns(typeName)
                                 .addStatement(
-                                    """field(_alias, %S, %T(), _projection%L)""",
+                                    """field(_alias, %S, %T(inputValueSerializer), _projection%L)""",
                                     field.name,
                                     projectionType,
                                     field.inputValueDefinitions.joinToString(" ") { """, "${it.name}" to ${it.name}""" }
@@ -138,7 +144,9 @@ fun generateKotlin2ClientTypes(
             // create the projection class
             val typeSpec = TypeSpec.classBuilder(typeName)
                 .addOptionalGeneratedAnnotation(config)
+                .primaryConstructor(FunSpec.constructorBuilder().addParameter(ivsParameter).build())
                 .superclass(GraphQLProjection::class)
+                .addSuperclassConstructorParameter("inputValueSerializer")
                 // we can't ask for `__typename` on a `Subscription` object
                 .apply {
                     if (typeDefinition.name == "Subscription") {
@@ -171,7 +179,9 @@ fun generateKotlin2ClientTypes(
 
             val typeSpec = TypeSpec.classBuilder(typeName)
                 .addOptionalGeneratedAnnotation(config)
+                .primaryConstructor(FunSpec.constructorBuilder().addParameter(ivsParameter).build())
                 .superclass(GraphQLProjection::class)
+                .addSuperclassConstructorParameter("inputValueSerializer")
                 .addFunctions(
                     implementations.map { subclass ->
                         onSubclassProjection(config.packageNameClient, typeName, (subclass as NamedNode<*>).name)
@@ -194,10 +204,11 @@ fun generateKotlin2ClientTypes(
                 val (projectionType, projection) = projectionType(config.packageNameClient, type)
 
                 FunSpec.builder("build$type")
+                    .addParameter(ivsParameter)
                     .addParameter(projection)
                     .returns(String::class)
                     .addStatement(
-                        """return %T.asQuery(%T.%L, %T(), _projection)""",
+                        """return %T.asQuery(%T.%L, %T(inputValueSerializer), _projection)""",
                         GraphQLProjection::class.asTypeName(),
                         op::class.asTypeName(),
                         op.name,

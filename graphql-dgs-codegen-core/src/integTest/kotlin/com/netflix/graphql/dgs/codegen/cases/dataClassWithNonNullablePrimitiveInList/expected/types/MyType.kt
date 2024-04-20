@@ -19,23 +19,23 @@ public class MyType(
   truth: () -> List<Boolean>? = truthDefault,
   floaty: () -> List<Double>? = floatyDefault,
 ) {
-  private val _count: () -> List<Int>? = count
+  private val __count: () -> List<Int>? = count
 
-  private val _truth: () -> List<Boolean>? = truth
+  private val __truth: () -> List<Boolean>? = truth
 
-  private val _floaty: () -> List<Double>? = floaty
+  private val __floaty: () -> List<Double>? = floaty
 
   @get:JvmName("getCount")
   public val count: List<Int>?
-    get() = _count.invoke()
+    get() = __count.invoke()
 
   @get:JvmName("getTruth")
   public val truth: List<Boolean>?
-    get() = _truth.invoke()
+    get() = __truth.invoke()
 
   @get:JvmName("getFloaty")
   public val floaty: List<Double>?
-    get() = _floaty.invoke()
+    get() = __floaty.invoke()
 
   public companion object {
     private val countDefault: () -> List<Int>? = 

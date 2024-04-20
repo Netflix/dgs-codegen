@@ -16,18 +16,18 @@ public class Employee(
   firstname: () -> String? = firstnameDefault,
   company: () -> String? = companyDefault,
 ) : Person {
-  private val _firstname: () -> String? = firstname
+  private val __firstname: () -> String? = firstname
 
-  private val _company: () -> String? = company
+  private val __company: () -> String? = company
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getFirstname")
   override val firstname: String?
-    get() = _firstname.invoke()
+    get() = __firstname.invoke()
 
   @get:JvmName("getCompany")
   public val company: String?
-    get() = _company.invoke()
+    get() = __company.invoke()
 
   public companion object {
     private val firstnameDefault: () -> String? = 
