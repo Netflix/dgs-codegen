@@ -13,11 +13,11 @@ import kotlin.jvm.JvmName
 public class MyType(
   other: () -> OtherType = otherDefault,
 ) {
-  private val _other: () -> OtherType = other
+  private val __other: () -> OtherType = other
 
   @get:JvmName("getOther")
   public val other: OtherType
-    get() = _other.invoke()
+    get() = __other.invoke()
 
   public companion object {
     private val otherDefault: () -> OtherType = 

@@ -14,14 +14,14 @@ import kotlin.jvm.JvmName
 public class Movie(
   title: () -> String? = titleDefault,
 ) {
-  private val _title: () -> String? = title
+  private val __title: () -> String? = title
 
   /**
    * The original, non localized title with some specials characters : %!({[*$,.:;.
    */
   @get:JvmName("getTitle")
   public val title: String?
-    get() = _title.invoke()
+    get() = __title.invoke()
 
   public companion object {
     private val titleDefault: () -> String? = 

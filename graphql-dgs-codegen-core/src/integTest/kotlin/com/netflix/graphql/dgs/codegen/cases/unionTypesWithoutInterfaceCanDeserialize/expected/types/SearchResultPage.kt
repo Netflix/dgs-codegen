@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class SearchResultPage(
   items: () -> List<SearchResult?>? = itemsDefault,
 ) {
-  private val _items: () -> List<SearchResult?>? = items
+  private val __items: () -> List<SearchResult?>? = items
 
   @get:JvmName("getItems")
   public val items: List<SearchResult?>?
-    get() = _items.invoke()
+    get() = __items.invoke()
 
   public companion object {
     private val itemsDefault: () -> List<SearchResult?>? = 

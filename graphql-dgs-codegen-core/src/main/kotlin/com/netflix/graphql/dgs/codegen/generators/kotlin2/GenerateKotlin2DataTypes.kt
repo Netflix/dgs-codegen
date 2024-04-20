@@ -213,7 +213,7 @@ fun generateKotlin2DataTypes(
                 .addProperties(
                     fields.map { field ->
                         PropertySpec.builder(
-                            name = "_${field.name}",
+                            name = "__${field.name}",
                             type = LambdaTypeName.get(returnType = type(field))
                         )
                             .addModifiers(KModifier.PRIVATE)
@@ -242,7 +242,7 @@ fun generateKotlin2DataTypes(
                             .addAnnotation(jvmNameAnnotation(field.name))
                             .getter(
                                 FunSpec.getterBuilder()
-                                    .addStatement("return _${field.name}.invoke()")
+                                    .addStatement("return __${field.name}.invoke()")
                                     .build()
                             )
                             .build()

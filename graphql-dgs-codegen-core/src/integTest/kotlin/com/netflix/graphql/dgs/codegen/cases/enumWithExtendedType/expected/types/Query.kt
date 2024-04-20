@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class Query(
   types: () -> List<EmployeeTypes?>? = typesDefault,
 ) {
-  private val _types: () -> List<EmployeeTypes?>? = types
+  private val __types: () -> List<EmployeeTypes?>? = types
 
   @get:JvmName("getTypes")
   public val types: List<EmployeeTypes?>?
-    get() = _types.invoke()
+    get() = __types.invoke()
 
   public companion object {
     private val typesDefault: () -> List<EmployeeTypes?>? = 

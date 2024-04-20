@@ -13,11 +13,11 @@ import kotlin.jvm.JvmName
 public class Query(
   search: () -> Movie? = searchDefault,
 ) {
-  private val _search: () -> Movie? = search
+  private val __search: () -> Movie? = search
 
   @get:JvmName("getSearch")
   public val search: Movie?
-    get() = _search.invoke()
+    get() = __search.invoke()
 
   public companion object {
     private val searchDefault: () -> Movie? = 

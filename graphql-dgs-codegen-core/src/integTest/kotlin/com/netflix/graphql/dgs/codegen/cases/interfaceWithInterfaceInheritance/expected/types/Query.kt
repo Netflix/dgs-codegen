@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class Query(
   fruits: () -> List<Fruit?>? = fruitsDefault,
 ) {
-  private val _fruits: () -> List<Fruit?>? = fruits
+  private val __fruits: () -> List<Fruit?>? = fruits
 
   @get:JvmName("getFruits")
   public val fruits: List<Fruit?>?
-    get() = _fruits.invoke()
+    get() = __fruits.invoke()
 
   public companion object {
     private val fruitsDefault: () -> List<Fruit?>? = 

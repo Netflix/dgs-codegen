@@ -19,29 +19,29 @@ public class Engine(
   size: () -> Double? = sizeDefault,
   performance: () -> Performance? = performanceDefault,
 ) {
-  private val _type: () -> String? = type
+  private val __type: () -> String? = type
 
-  private val _bhp: () -> Int? = bhp
+  private val __bhp: () -> Int? = bhp
 
-  private val _size: () -> Double? = size
+  private val __size: () -> Double? = size
 
-  private val _performance: () -> Performance? = performance
+  private val __performance: () -> Performance? = performance
 
   @get:JvmName("getType")
   public val type: String?
-    get() = _type.invoke()
+    get() = __type.invoke()
 
   @get:JvmName("getBhp")
   public val bhp: Int?
-    get() = _bhp.invoke()
+    get() = __bhp.invoke()
 
   @get:JvmName("getSize")
   public val size: Double?
-    get() = _size.invoke()
+    get() = __size.invoke()
 
   @get:JvmName("getPerformance")
   public val performance: Performance?
-    get() = _performance.invoke()
+    get() = __performance.invoke()
 
   public companion object {
     private val typeDefault: () -> String? = 

@@ -13,11 +13,11 @@ import kotlin.jvm.JvmName
 public class Query(
   search: () -> SearchResultPage? = searchDefault,
 ) {
-  private val _search: () -> SearchResultPage? = search
+  private val __search: () -> SearchResultPage? = search
 
   @get:JvmName("getSearch")
   public val search: SearchResultPage?
-    get() = _search.invoke()
+    get() = __search.invoke()
 
   public companion object {
     private val searchDefault: () -> SearchResultPage? = 

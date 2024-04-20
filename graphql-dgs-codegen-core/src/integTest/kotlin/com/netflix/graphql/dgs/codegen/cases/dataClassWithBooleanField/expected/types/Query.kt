@@ -13,11 +13,11 @@ import kotlin.jvm.JvmName
 public class Query(
   test: () -> RequiredTestType? = testDefault,
 ) {
-  private val _test: () -> RequiredTestType? = test
+  private val __test: () -> RequiredTestType? = test
 
   @get:JvmName("getTest")
   public val test: RequiredTestType?
-    get() = _test.invoke()
+    get() = __test.invoke()
 
   public companion object {
     private val testDefault: () -> RequiredTestType? = 

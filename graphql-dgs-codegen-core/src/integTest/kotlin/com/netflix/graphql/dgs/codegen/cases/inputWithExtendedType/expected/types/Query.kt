@@ -15,11 +15,11 @@ import kotlin.jvm.JvmName
 public class Query(
   movies: () -> List<String?>? = moviesDefault,
 ) {
-  private val _movies: () -> List<String?>? = movies
+  private val __movies: () -> List<String?>? = movies
 
   @get:JvmName("getMovies")
   public val movies: List<String?>?
-    get() = _movies.invoke()
+    get() = __movies.invoke()
 
   public companion object {
     private val moviesDefault: () -> List<String?>? = 

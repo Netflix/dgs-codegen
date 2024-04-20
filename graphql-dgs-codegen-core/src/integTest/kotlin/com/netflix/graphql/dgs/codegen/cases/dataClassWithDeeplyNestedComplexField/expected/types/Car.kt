@@ -16,23 +16,23 @@ public class Car(
   model: () -> String? = modelDefault,
   engine: () -> Engine? = engineDefault,
 ) {
-  private val _make: () -> String? = make
+  private val __make: () -> String? = make
 
-  private val _model: () -> String? = model
+  private val __model: () -> String? = model
 
-  private val _engine: () -> Engine? = engine
+  private val __engine: () -> Engine? = engine
 
   @get:JvmName("getMake")
   public val make: String?
-    get() = _make.invoke()
+    get() = __make.invoke()
 
   @get:JvmName("getModel")
   public val model: String?
-    get() = _model.invoke()
+    get() = __model.invoke()
 
   @get:JvmName("getEngine")
   public val engine: Engine?
-    get() = _engine.invoke()
+    get() = __engine.invoke()
 
   public companion object {
     private val makeDefault: () -> String? = 

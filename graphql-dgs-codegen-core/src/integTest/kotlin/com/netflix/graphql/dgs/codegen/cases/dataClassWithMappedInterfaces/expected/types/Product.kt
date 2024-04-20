@@ -16,12 +16,12 @@ import kotlin.jvm.JvmName
 public class Product(
   id: () -> String = idDefault,
 ) : Entity, Node {
-  private val _id: () -> String = id
+  private val __id: () -> String = id
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getId")
   override val id: String
-    get() = _id.invoke()
+    get() = __id.invoke()
 
   public companion object {
     private val idDefault: () -> String = 

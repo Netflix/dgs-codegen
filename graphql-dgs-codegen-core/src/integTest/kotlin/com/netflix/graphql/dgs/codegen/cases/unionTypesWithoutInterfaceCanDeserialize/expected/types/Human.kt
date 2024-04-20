@@ -17,23 +17,23 @@ public class Human(
   name: () -> String = nameDefault,
   totalCredits: () -> Int? = totalCreditsDefault,
 ) : SearchResult {
-  private val _id: () -> String = id
+  private val __id: () -> String = id
 
-  private val _name: () -> String = name
+  private val __name: () -> String = name
 
-  private val _totalCredits: () -> Int? = totalCredits
+  private val __totalCredits: () -> Int? = totalCredits
 
   @get:JvmName("getId")
   public val id: String
-    get() = _id.invoke()
+    get() = __id.invoke()
 
   @get:JvmName("getName")
   public val name: String
-    get() = _name.invoke()
+    get() = __name.invoke()
 
   @get:JvmName("getTotalCredits")
   public val totalCredits: Int?
-    get() = _totalCredits.invoke()
+    get() = __totalCredits.invoke()
 
   public companion object {
     private val idDefault: () -> String = 
