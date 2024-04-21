@@ -411,12 +411,13 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateKotlinInputTypes(definitions: Collection<Definition<*>>): CodeGenResult {
-        return definitions.asSequence()
+        val inputTypeDefinitions = definitions
             .filterIsInstance<InputObjectTypeDefinition>()
+        return inputTypeDefinitions.asSequence()
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
-                KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions))
+                KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions), inputTypeDefinitions)
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }

@@ -75,7 +75,11 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
     AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
     private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
 
-    fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
+    fun generate(
+        definition: InputObjectTypeDefinition,
+        extensions: List<InputObjectTypeExtensionDefinition>,
+        inputTypeDefinitions: Collection<InputObjectTypeDefinition>
+    ): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
@@ -86,7 +90,7 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
             .filter(ReservedKeywordFilter.filterInvalidNames)
             .map {
                 val type = typeUtils.findReturnType(it.type)
-                val defaultValue = it.defaultValue?.let { value -> generateCode(value, type) }
+                val defaultValue = it.defaultValue?.let { value -> generateCode(value, type, inputTypeDefinitions) }
                 Field(name = it.name, type = type, nullable = it.type !is NonNullType, default = defaultValue, description = it.description, directives = it.directives)
             }.plus(
                 extensions.flatMap { it.inputValueDefinitions }.map {
@@ -97,7 +101,7 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
         return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
     }
 
-    private fun generateCode(value: Value<Value<*>>, type: KtTypeName): CodeBlock =
+    private fun generateCode(value: Value<Value<*>>, type: KtTypeName, inputTypeDefinitions: Collection<InputObjectTypeDefinition>): CodeBlock =
         when (value) {
             is BooleanValue -> CodeBlock.of("%L", value.isValue)
             is IntValue -> CodeBlock.of("%L", value.value)
@@ -110,7 +114,25 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
             is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
             is ArrayValue ->
                 if (value.values.isEmpty()) CodeBlock.of("emptyList()")
-                else CodeBlock.of("listOf(%L)", value.values.joinToString { v -> generateCode(v, type).toString() })
+                else CodeBlock.of(
+                    "listOf(%L)",
+                    value.values.joinToString { v -> generateCode(v, type, inputTypeDefinitions).toString() }
+                )
+
+            is ObjectValue -> {
+                val inputObjectDefinition = inputTypeDefinitions
+                    .first { it.name == type.className.simpleName }
+                CodeBlock.of(
+                    type.className.canonicalName + "(%L)",
+                    value.objectFields.joinToString { objectProperty ->
+                        val argumentType = checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
+                            "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
+                        }.type
+                        "${objectProperty.name} = ${generateCode(objectProperty.value, typeUtils.findReturnType(argumentType), inputTypeDefinitions)}"
+                    }
+                )
+            }
+
             else -> CodeBlock.of("%L", value)
         }
 
