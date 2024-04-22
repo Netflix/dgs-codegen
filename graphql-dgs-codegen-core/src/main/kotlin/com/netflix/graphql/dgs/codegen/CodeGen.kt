@@ -299,14 +299,15 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaInputType(definitions: Collection<Definition<*>>): CodeGenResult {
-        val inputTypes = definitions.asSequence()
+        val inputTypeDefinitions = definitions
             .filterIsInstance<InputObjectTypeDefinition>()
+        val inputTypes = inputTypeDefinitions.asSequence()
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
 
         return inputTypes
             .map { d ->
-                InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions))
+                InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions), inputTypeDefinitions)
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
