@@ -9,8 +9,8 @@ public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
   public fun people(
-    _alias: String? = null,
     filter: PersonFilter? = default<QueryProjection, PersonFilter?>("filter"),
+    _alias: String? = null,
     _projection: PersonProjection.() -> PersonProjection,
   ): QueryProjection {
     field(_alias, "people", PersonProjection(inputValueSerializer), _projection, "filter" to filter)

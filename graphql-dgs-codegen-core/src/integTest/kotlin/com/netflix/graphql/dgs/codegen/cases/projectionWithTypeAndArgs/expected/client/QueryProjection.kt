@@ -9,10 +9,10 @@ public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
   public fun person(
-    _alias: String? = null,
     a1: String? = default<QueryProjection, String?>("a1"),
     a2: String,
     a3: I? = default<QueryProjection, I?>("a3"),
+    _alias: String? = null,
     _projection: PersonProjection.() -> PersonProjection,
   ): QueryProjection {
     field(_alias, "person", PersonProjection(inputValueSerializer), _projection, "a1" to a1 , "a2"

@@ -8,8 +8,8 @@ public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
   public fun search(
-    _alias: String? = null,
     text: String,
+    _alias: String? = null,
     _projection: SearchResultPageProjection.() -> SearchResultPageProjection,
   ): QueryProjection {
     field(_alias, "search", SearchResultPageProjection(inputValueSerializer), _projection, "text" to

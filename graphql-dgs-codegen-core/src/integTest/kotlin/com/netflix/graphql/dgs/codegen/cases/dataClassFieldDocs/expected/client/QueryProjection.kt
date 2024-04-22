@@ -9,8 +9,8 @@ public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
   public fun search(
-    _alias: String? = null,
     movieFilter: MovieFilter,
+    _alias: String? = null,
     _projection: MovieProjection.() -> MovieProjection,
   ): QueryProjection {
     field(_alias, "search", MovieProjection(inputValueSerializer), _projection, "movieFilter" to
