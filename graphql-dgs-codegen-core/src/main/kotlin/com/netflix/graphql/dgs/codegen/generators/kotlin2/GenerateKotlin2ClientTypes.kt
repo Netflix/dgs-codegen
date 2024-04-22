@@ -121,8 +121,8 @@ fun generateKotlin2ClientTypes(
                             val (projectionType, projection) = projectionType(config.packageNameClient, projectionTypeName)
 
                             FunSpec.builder(field.name)
-                                .addParameter(ParameterSpec.builder("_alias", String::class.asTypeName().copy(nullable = true)).defaultValue("null").build())
                                 .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
+                                .addParameter(ParameterSpec.builder("_alias", String::class.asTypeName().copy(nullable = true)).defaultValue("null").build())
                                 .addParameter(projection)
                                 .returns(typeName)
                                 .addStatement(
