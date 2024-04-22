@@ -62,10 +62,28 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
         val fields = definition.fieldDefinitions
             .filterSkipped()
             .filter(ReservedKeywordFilter.filterInvalidNames)
-            .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description, it.directives) } +
+            .map {
+                Field(
+                    it.name,
+                    typeUtils.findReturnType(it.type),
+                    typeUtils.isNullable(it.type),
+                    null,
+                    it.description,
+                    it.directives
+                )
+            } +
             extensions.flatMap { it.fieldDefinitions }
                 .filterSkipped()
-                .map { Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type), null, it.description, it.directives) }
+                .map {
+                    Field(
+                        it.name,
+                        typeUtils.findReturnType(it.type),
+                        typeUtils.isNullable(it.type),
+                        null,
+                        it.description,
+                        it.directives
+                    )
+                }
         val interfaces = definition.implements
         return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
     }
@@ -89,12 +107,31 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
         val fields = definition.inputValueDefinitions
             .filter(ReservedKeywordFilter.filterInvalidNames)
             .map {
-                val type = typeUtils.findReturnType(it.type)
-                val defaultValue = it.defaultValue?.let { value -> generateCode(value, type, inputTypeDefinitions) }
-                Field(name = it.name, type = type, nullable = it.type !is NonNullType, default = defaultValue, description = it.description, directives = it.directives)
+                val defaultValue = it.defaultValue?.let { value ->
+                    generateCode(
+                        value,
+                        typeUtils.findReturnType(it.type),
+                        inputTypeDefinitions
+                    )
+                }
+                Field(
+                    name = it.name,
+                    type = typeUtils.findReturnType(it.type),
+                    nullable = it.type !is NonNullType,
+                    default = defaultValue,
+                    description = it.description,
+                    directives = it.directives
+                )
             }.plus(
                 extensions.flatMap { it.inputValueDefinitions }.map {
-                    Field(name = it.name, type = typeUtils.findReturnType(it.type), nullable = it.type !is NonNullType, default = null, description = it.description, directives = it.directives)
+                    Field(
+                        name = it.name,
+                        type = typeUtils.findReturnType(it.type),
+                        nullable = it.type !is NonNullType,
+                        default = null,
+                        description = it.description,
+                        directives = it.directives
+                    )
                 }
             )
         val interfaces = emptyList<Type<*>>()
@@ -120,15 +157,25 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
                 )
 
             is ObjectValue -> {
-                val inputObjectDefinition = inputTypeDefinitions
-                    .first { it.name == type.className.simpleName }
+                val inputObjectDefinition = inputTypeDefinitions.first {
+                    val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
+                    expectedCanonicalClassName == type.className.canonicalName
+                }
+
                 CodeBlock.of(
                     type.className.canonicalName + "(%L)",
                     value.objectFields.joinToString { objectProperty ->
-                        val argumentType = checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
-                            "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
-                        }.type
-                        "${objectProperty.name} = ${generateCode(objectProperty.value, typeUtils.findReturnType(argumentType), inputTypeDefinitions)}"
+                        val argumentType =
+                            checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
+                                "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
+                            }
+                        "${objectProperty.name} = ${
+                        generateCode(
+                            objectProperty.value,
+                            typeUtils.findReturnType(argumentType.type),
+                            inputTypeDefinitions
+                        )
+                        }"
                     }
                 )
             }

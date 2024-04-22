@@ -3903,6 +3903,49 @@ It takes a title and such.
     }
 
     @Test
+    fun `The default list value should support objects with typeMapping`() {
+        val schema = """
+            input Director {
+                movies: [Movie!]! = [{ name: "Braveheart" }, { name: "Matrix", year: 1999 }]
+            }
+            
+            input Movie {
+                name: String = "Toy Story"
+                year: Int = 1995
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf("Movie" to "mypackage.Film")
+            )
+        ).generate().kotlinDataTypes
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("Director")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("movies")
+        assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<mypackage.Film>")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf(mypackage.Film(name = "Braveheart"), mypackage.Film(name = "Matrix", year = 1_999))""")
+    }
+
+    @Test
     fun `The default object value should call constructor from typeMapping`() {
         val schema = """
             input Movie {
@@ -3920,7 +3963,7 @@ It takes a title and such.
                 schemas = setOf(schema),
                 packageName = basePackageName,
                 language = Language.KOTLIN,
-                typeMapping = mapOf("Person" to "mypackage.Person")
+                typeMapping = mapOf("Person" to "mypackage.Human")
             )
         ).generate().kotlinDataTypes
 
@@ -3941,9 +3984,9 @@ It takes a title and such.
 
         val colorParam = ctorSpec.parameters[0]
         assertThat(colorParam.name).isEqualTo("director")
-        assertThat(colorParam.type.toString()).isEqualTo("mypackage.Person?")
+        assertThat(colorParam.type.toString()).isEqualTo("mypackage.Human?")
         assertThat(colorParam.defaultValue).isNotNull
-        assertThat(colorParam.defaultValue.toString()).isEqualTo("mypackage.Person(name = \"Harrison\")")
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("mypackage.Human(name = \"Harrison\")")
     }
 
     @Test
