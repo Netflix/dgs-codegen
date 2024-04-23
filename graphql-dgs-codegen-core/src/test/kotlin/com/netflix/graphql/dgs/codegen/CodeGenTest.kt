@@ -2753,6 +2753,42 @@ class CodeGenTest {
     }
 
     @Test
+    fun generatedInterfacesShouldShouldHaveCorrectJsonTypeAnnotations() {
+        val schema = """
+            interface Fruit {
+              seeds: [Seed]
+            }
+
+            type Apple implements Fruit {
+              seeds: [Seed]
+              truth: Boolean!
+            }
+
+            type Seed {
+              shape: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateInterfaces = true,
+                generateIsGetterForPrimitiveBooleanFields = true
+            )
+        ).generate()
+
+        val interfaces = result.javaInterfaces
+        val dataTypes = result.javaDataTypes
+
+        val iFruit = interfaces[2]
+        assertThat(iFruit.typeSpec.annotations.size).isEqualTo(2)
+        assertThat(iFruit.typeSpec.annotations[0].toString()).isEqualTo("@com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME, include = com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY, property = \"__typename\")")
+        assertThat(iFruit.typeSpec.annotations[1].toString()).isEqualTo("@com.fasterxml.jackson.annotation.JsonSubTypes(@com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = com.netflix.graphql.dgs.codegen.tests.generated.types.Apple.class, name = \"Apple\"))")
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateObjectTypeInterfaceWithPrimitiveBooleanShouldUseIsGetter() {
         val schema = """
             interface Truthy {

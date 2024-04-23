@@ -89,13 +89,13 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
             .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
             .map { node ->
-                val nodeName = if (config.generateInterfaces) "I${node.name}" else node.name
-                typeUtils.findJavaInterfaceName(nodeName, packageName)
+                typeUtils.findJavaInterfaceName(node.name, packageName)
             }
             .filterIsInstance<ClassName>()
             .toList()
 
-        if (implementations.isNotEmpty()) {
+        // Add JsonSubType annotations only if there are no generated concrete types that implement the interface
+        if (implementations.isNotEmpty() && config.generateDataTypes) {
             javaType.addAnnotation(jsonTypeInfoAnnotation())
             javaType.addAnnotation(jsonSubTypeAnnotation(implementations))
         }
