@@ -78,10 +78,10 @@ class QueryTest {
     @Test
     fun testQueryWithAlias() {
         val query = DgsClient.buildQuery {
-            person(_alias= "person1", a2 = "person1") {
+            person(_alias = "person1", a2 = "person1") {
                 firstname
             }
-            person(_alias= "person2", a2 = "person2") {
+            person(_alias = "person2", a2 = "person2") {
                 firstname
             }
         }
