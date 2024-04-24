@@ -367,8 +367,8 @@ class ClientApiGenProjectionTest {
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(1)
         assertThat(projections[0].typeSpec.name).isEqualTo("PeopleProjectionRoot")
-        assertThat(projections[0].typeSpec.methodSpecs.size).isEqualTo(3)
-        assertThat(projections[0].typeSpec.methodSpecs).extracting("name").contains("name", "email")
+        assertThat(projections[0].typeSpec.methodSpecs.size).isEqualTo(4)
+        assertThat(projections[0].typeSpec.methodSpecs).extracting("name").contains("name", "email", "__typename")
 
         assertCompilesJava(codeGenResult)
     }
@@ -404,8 +404,8 @@ class ClientApiGenProjectionTest {
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(2)
         assertThat(projections[1].typeSpec.name).isEqualTo("MovieProjection")
-        assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
-        assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
+        assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(4)
+        assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>", "__typename")
 
         assertCompilesJava(codeGenResult)
     }
@@ -441,7 +441,7 @@ class ClientApiGenProjectionTest {
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(2)
         assertThat(projections[1].typeSpec.name).isEqualTo("MovieProjection")
-        assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(3)
+        assertThat(projections[1].typeSpec.methodSpecs.size).isEqualTo(4)
         assertThat(projections[1].typeSpec.methodSpecs).extracting("name").contains("title", "director", "<init>")
 
         assertCompilesJava(codeGenResult)
@@ -716,7 +716,7 @@ class ClientApiGenProjectionTest {
         ).generate()
 
         val methodSpecs = codeGenResult.clientProjections[0].typeSpec.methodSpecs
-        assertThat(methodSpecs.size).isEqualTo(3)
+        assertThat(methodSpecs.size).isEqualTo(4)
         val methodWithArgs = methodSpecs.find { it.parameters.size > 0 && it.name == "actors" }
             ?: fail("Expected method not found")
         assertThat(methodWithArgs.parameters[0].name).isEqualTo("leadCharactersOnly")
