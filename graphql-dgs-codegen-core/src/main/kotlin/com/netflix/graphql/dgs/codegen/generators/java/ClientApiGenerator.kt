@@ -256,6 +256,20 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .build()
             )
 
+        val typeVariable = TypeVariableName.get("$clazzName<PARENT, ROOT>")
+        javaType.addMethod(
+            MethodSpec.methodBuilder(TypeNameMetaFieldDef.name)
+                .returns(typeVariable)
+                .addCode(
+                    """
+                        |getFields().put("${TypeNameMetaFieldDef.name}", null);
+                        |return this;
+                    """.trimMargin()
+                )
+                .addModifiers(Modifier.PUBLIC)
+                .build()
+        )
+
         if (generatedClasses.contains(clazzName)) return CodeGenResult() else generatedClasses.add(clazzName)
 
         val fieldDefinitions = type.fieldDefinitions() + document.definitions.filterIsInstance<ObjectTypeExtensionDefinition>().filter { it.name == type.name }.flatMap { it.fieldDefinitions }
@@ -533,6 +547,21 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .addCode("""super(parent, root, java.util.Optional.of("${type.name}"));""")
                     .build()
             )
+
+        // add a method for setting the __typename
+        val typeVariable = TypeVariableName.get("$clazzName<PARENT, ROOT>")
+        javaType.addMethod(
+            MethodSpec.methodBuilder(TypeNameMetaFieldDef.name)
+                .returns(typeVariable)
+                .addCode(
+                    """
+                        |getFields().put("${TypeNameMetaFieldDef.name}", null);
+                        |return this;
+                    """.trimMargin()
+                )
+                .addModifiers(Modifier.PUBLIC)
+                .build()
+        )
 
         val fieldDefinitions = type.fieldDefinitions() +
             document.definitions

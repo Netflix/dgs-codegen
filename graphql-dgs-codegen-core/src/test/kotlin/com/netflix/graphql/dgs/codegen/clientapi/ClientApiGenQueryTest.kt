@@ -441,11 +441,11 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("SearchGraphQLQuery")
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs[1].name).isEqualTo("title")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs[2].name).isEqualTo("title")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs[2].name).isEqualTo("duration")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs[3].name).isEqualTo("duration")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SeriesFragmentProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[2].name).isEqualTo("episodes")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[3].name).isEqualTo("episodes")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
