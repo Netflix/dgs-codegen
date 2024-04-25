@@ -232,7 +232,6 @@ abstract class BaseDataTypeGenerator(
         addEquals(javaType)
         addHashcode(javaType)
         addBuilder(fields, javaType)
-//        addIsDefinedFieldWithGetters(javaType)
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
@@ -348,19 +347,6 @@ abstract class BaseDataTypeGenerator(
                 .addModifiers(Modifier.PUBLIC)
         }
 
-//        javaType.build().fieldSpecs.forEach {
-//            constructorBuilder
-//                .addStatement(
-//                    "this.\$N = \$N",
-//                    ReservedKeywordSanitizer.sanitize(it.name),
-//                    ReservedKeywordSanitizer.sanitize(it.name)
-//                )
-//                .addStatement(
-//                    "this.\$N = true",
-//                    generateBooleanFieldName(it.name)
-//                )
-//        }
-
         fieldDefinitions.forEach {
             val constructor = constructorBuilder
                 .addStatement(
@@ -393,9 +379,7 @@ abstract class BaseDataTypeGenerator(
 
     private fun addField(fieldDefinition: Field, javaType: TypeSpec.Builder) {
         addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
-        println("fieldDefinition.name: ${fieldDefinition.name} fieldDefinition.isNullable: ${fieldDefinition.isNullable}  fieldDefinition.initialValue: ${fieldDefinition.initialValue == null}")
-        // Non-nullable: !fieldDefinition.isNullable
-        // No defaults: fieldDefinition.initialValue == null
+        // Generate for all fields except non-nullable without default values
         if (!(!fieldDefinition.isNullable && fieldDefinition.initialValue == null)) {
             addIsDefinedFieldWithGetters(fieldDefinition, javaType)
         }
@@ -403,7 +387,6 @@ abstract class BaseDataTypeGenerator(
 
     private fun addIsDefinedFieldWithGetters(fieldDefinition: Field, javaType: TypeSpec.Builder) {
         val fieldName = generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
-        println("**** fieldName: $fieldName fieldDefinition.name: ${fieldDefinition.name}")
         val field = FieldSpec
             .builder(com.squareup.javapoet.TypeName.BOOLEAN, fieldName)
             .addModifiers(Modifier.PRIVATE)
@@ -422,30 +405,6 @@ abstract class BaseDataTypeGenerator(
         javaType.addField(field)
         javaType.addMethod(getter)
     }
-
-//    private fun addIsDefinedFieldWithGetters(javaType: TypeSpec.Builder) {
-//        val fields = javaType.build().fieldSpecs
-//        fields.forEach() {
-//            val fieldName = generateBooleanFieldName(it.name)
-//            val field = FieldSpec
-//                .builder(com.squareup.javapoet.TypeName.BOOLEAN, fieldName)
-//                .addModifiers(Modifier.PRIVATE)
-//                .initializer("false")
-//                .build()
-//            val getterName = "${generateBooleanFieldName(it.name)}Defined"
-//
-//            val getter = MethodSpec
-//                .methodBuilder(getterName)
-//                .addModifiers(Modifier.PUBLIC)
-//                .returns(com.squareup.javapoet.TypeName.BOOLEAN)
-//                .addStatement(
-//                    "return \$N",
-//                    ReservedKeywordSanitizer.sanitize("${generateBooleanFieldName(it.name)}")
-//                ).build()
-//            javaType.addField(field)
-//            javaType.addMethod(getter)
-//        }
-//    }
 
     private fun generateBooleanFieldName(name: String): String {
         return "is${name.capitalized()}"
@@ -528,52 +487,6 @@ abstract class BaseDataTypeGenerator(
         )
     }
 
-//    private fun addBuilder(javaType: TypeSpec.Builder) {
-//        val className = ClassName.get(packageName, javaType.build().name)
-//        val buildMethod = MethodSpec.methodBuilder("build").returns(className).addStatement(
-//            """
-//        $className result = new $className();
-//        ${javaType.build().fieldSpecs.joinToString("\n") { "result.${it.name} = this.${it.name};".trimIndent() }}
-//        ${javaType.build().fieldSpecs.joinToString("\n") { "this.${generateBooleanFieldName(it.name)} = ${generateBooleanFieldName(it.name)};".trimIndent() }}
-//        return result
-//            """.trimIndent()
-//        ).addModifiers(Modifier.PUBLIC).build()
-//
-//        val builderClassName = ClassName.get(packageName, "$className.Builder")
-//        val newBuilderMethod =
-//            MethodSpec
-//                .methodBuilder("newBuilder")
-//                .returns(builderClassName)
-//                .addStatement("return new Builder()")
-//                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-//                .build()
-//
-//        javaType.addMethod(newBuilderMethod)
-//
-//        val builderType =
-//            TypeSpec
-//                .classBuilder("Builder")
-//                .addOptionalGeneratedAnnotation(config)
-//                .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-//                .addMethod(buildMethod)
-//
-//
-//        javaType.build().fieldSpecs.map {
-//            MethodSpec.methodBuilder(it.name)
-//                .addJavadoc(it.javadoc)
-//                .returns(builderClassName)
-//                .addStatement("this.${it.name} = ${it.name}")
-//                .addStatement("this.${generateBooleanFieldName(it.name)} = true")
-//                .addStatement("return this")
-//                .addParameter(ParameterSpec.builder(it.type, it.name).build())
-//                .addModifiers(Modifier.PUBLIC).build()
-//        }.forEach { builderType.addMethod(it) }
-//
-//        builderType.addFields(javaType.build().fieldSpecs)
-// //        addIsDefinedFieldWithGetters(builderType)
-//        javaType.addType(builderType.build())
-//    }
-
     private fun addBuilder(fields: List<Field>, javaType: TypeSpec.Builder) {
         val className = ClassName.get(packageName, javaType.build().name)
         val buildMethod = MethodSpec.methodBuilder("build").returns(className).addStatement(
@@ -601,17 +514,6 @@ abstract class BaseDataTypeGenerator(
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addMethod(buildMethod)
-
-//        javaType.build().fieldSpecs.map {
-//            MethodSpec.methodBuilder(it.name)
-//                .addJavadoc(it.javadoc)
-//                .returns(builderClassName)
-//                .addStatement("this.${it.name} = ${it.name}")
-//                .addStatement("this.${generateBooleanFieldName(it.name)} = true")
-//                .addStatement("return this")
-//                .addParameter(ParameterSpec.builder(it.type, it.name).build())
-//                .addModifiers(Modifier.PUBLIC).build()
-//        }.forEach { builderType.addMethod(it) }
 
         javaType.build().fieldSpecs.map {
             val method = MethodSpec.methodBuilder(it.name)
