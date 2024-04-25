@@ -490,8 +490,8 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(8)
         assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].name).isEqualTo("name")
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[1].name).isEqualTo("_default")
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[2].name).isEqualTo("_public")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[2].name).isEqualTo("_default")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[4].name).isEqualTo("_public")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
@@ -964,13 +964,13 @@ class ClientApiGenQueryTest {
         assertThat(typeSpec.name).isEqualTo("Bar")
         assertThat(typeSpec.fieldSpecs[0].name).isEqualTo("object")
         assertThat(typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(typeSpec.fieldSpecs[1].name).isEqualTo("_class")
+        assertThat(typeSpec.fieldSpecs[2].name).isEqualTo("_class")
 
         assertThat(typeSpec.methodSpecs.size).isGreaterThan(0)
         assertThat(typeSpec.methodSpecs[0].name).isEqualTo("getObject")
         assertThat(typeSpec.methodSpecs[1].name).isEqualTo("setObject")
-        assertThat(typeSpec.methodSpecs[2].name).isEqualTo("getClassField")
-        assertThat(typeSpec.methodSpecs[3].name).isEqualTo("setClassField")
+        assertThat(typeSpec.methodSpecs[3].name).isEqualTo("getClassField")
+        assertThat(typeSpec.methodSpecs[4].name).isEqualTo("setClassField")
 
         assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaInterfaces)
     }
