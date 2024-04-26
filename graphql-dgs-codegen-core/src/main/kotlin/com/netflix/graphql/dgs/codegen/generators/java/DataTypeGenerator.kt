@@ -126,6 +126,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
 
         val name = definition.name
         val fieldDefinitions = definition.inputValueDefinitions.map {
+            val isNullable = !TypeUtil.isNonNull(it.type)
             val defaultValue = it.defaultValue?.let { defVal ->
                 when (defVal) {
                     is BooleanValue -> CodeBlock.of("\$L", defVal.isValue)
@@ -159,7 +160,8 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                 type = typeUtils.findReturnType(it.type),
                 initialValue = defaultValue,
                 description = it.description,
-                directives = it.directives
+                directives = it.directives,
+                isNullable = isNullable
             )
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
         return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)

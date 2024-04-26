@@ -2656,7 +2656,7 @@ class CodeGenTest {
     }
 
     @Test
-    fun generateDataClassWithFieldIsSet() {
+    fun generateDataClassWithBooleanFieldIsSet() {
         val schema = """
             type Query {
                 show(id: ID!): Show
