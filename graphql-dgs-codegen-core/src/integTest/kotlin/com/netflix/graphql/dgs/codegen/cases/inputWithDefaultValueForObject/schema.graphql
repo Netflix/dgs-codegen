@@ -1,6 +1,6 @@
 input Person {
-    name: String = ""
-    age: Int = 0
+    name: String = "John"
+    age: Int = 23
     car: Car = { brand: "Ford" }
 }
 

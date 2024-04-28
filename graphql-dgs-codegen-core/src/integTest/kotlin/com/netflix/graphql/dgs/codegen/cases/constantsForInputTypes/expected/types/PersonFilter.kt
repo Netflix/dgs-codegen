@@ -10,7 +10,7 @@ import kotlin.collections.List
 
 public class PersonFilter @JsonCreator constructor(
   @JsonProperty("email")
-  public val email: String? = default<PersonFilter, String?>("email"),
+  public val email: String? = default<PersonFilter, String?>("email", null),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("email" to email)
 }

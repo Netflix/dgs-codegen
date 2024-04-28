@@ -11,11 +11,13 @@ import kotlin.collections.List
 
 public class Person @JsonCreator constructor(
   @JsonProperty("name")
-  public val name: String? = default<Person, String?>("name"),
+  public val name: String? = default<Person, String?>("name", "John"),
   @JsonProperty("age")
-  public val age: Int? = default<Person, Int?>("age"),
+  public val age: Int? = default<Person, Int?>("age", 23),
   @JsonProperty("car")
-  public val car: Car? = default<Person, Car?>("car"),
+  public val car: Car? = default<Person, Car?>("car",
+      com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.types.Car(brand
+      = "Ford")),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("name" to name, "age" to age, "car" to
       car)

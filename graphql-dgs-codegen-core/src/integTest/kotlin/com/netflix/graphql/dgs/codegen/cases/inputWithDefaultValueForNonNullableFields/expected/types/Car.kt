@@ -1,4 +1,4 @@
-package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.types
+package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.types
 
 import com.fasterxml.jackson.`annotation`.JsonCreator
 import com.fasterxml.jackson.`annotation`.JsonProperty
