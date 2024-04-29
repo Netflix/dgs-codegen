@@ -1583,7 +1583,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("ColorFilter")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(2)
+        assertThat(fields).hasSize(1)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("color")
@@ -1637,7 +1637,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(2)
+        assertThat(fields).hasSize(1)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("names")
@@ -1664,7 +1664,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(2)
+        assertThat(fields).hasSize(1)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("names")
@@ -1691,7 +1691,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(2)
+        assertThat(fields).hasSize(1)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("numbers")
@@ -1723,7 +1723,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(2)
+        assertThat(fields).hasSize(1)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("colors")

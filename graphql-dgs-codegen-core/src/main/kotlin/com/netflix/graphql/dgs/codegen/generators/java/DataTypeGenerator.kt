@@ -356,7 +356,7 @@ abstract class BaseDataTypeGenerator(
                     ReservedKeywordSanitizer.sanitize(it.name),
                     ReservedKeywordSanitizer.sanitize(it.name)
                 )
-            if (!(!it.isNullable && it.initialValue == null)) {
+            if (it.isNullable && it.initialValue == null) {
                 constructorBuilder
                     .addStatement(
                         "this.\$N = true",
@@ -381,8 +381,8 @@ abstract class BaseDataTypeGenerator(
 
     private fun addField(fieldDefinition: Field, javaType: TypeSpec.Builder) {
         addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
-        // Generate for all fields except non-nullable without default values
-        if (!(!fieldDefinition.isNullable && fieldDefinition.initialValue == null)) {
+        // Generate for all nullable fields without any defaults
+        if (fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
             addIsDefinedFieldWithGetters(fieldDefinition, javaType)
         }
     }
@@ -402,7 +402,7 @@ abstract class BaseDataTypeGenerator(
             .returns(com.squareup.javapoet.TypeName.BOOLEAN)
             .addStatement(
                 "return \$N",
-                "${generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))}"
+                generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
             ).build()
         javaType.addField(field)
         javaType.addMethod(getter)
@@ -448,7 +448,7 @@ abstract class BaseDataTypeGenerator(
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             )
-        if (!(!fieldDefinition.isNullable && fieldDefinition.initialValue == null)) {
+        if (fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
             setterMethodBuilder
                 .addStatement(
                     "this.\$N = true",
@@ -528,7 +528,6 @@ abstract class BaseDataTypeGenerator(
 
             if (field?.isNullable == true && field.initialValue == null) {
                 method
-//                    .addStatement("this.${generateBooleanFieldName(it.name)} = true")
                     .addStatement(
                         "this.\$N = true",
                         generateBooleanFieldName(it.name)
