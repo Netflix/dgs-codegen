@@ -528,7 +528,11 @@ abstract class BaseDataTypeGenerator(
 
             if (field?.isNullable == true && field.initialValue == null) {
                 method
-                    .addStatement("this.${generateBooleanFieldName(it.name)} = true")
+//                    .addStatement("this.${generateBooleanFieldName(it.name)} = true")
+                    .addStatement(
+                        "this.\$N = true",
+                        generateBooleanFieldName(it.name)
+                    )
             }
 
             method
