@@ -402,7 +402,7 @@ abstract class BaseDataTypeGenerator(
             .returns(com.squareup.javapoet.TypeName.BOOLEAN)
             .addStatement(
                 "return \$N",
-                generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                fieldName
             ).build()
         javaType.addField(field)
         javaType.addMethod(getter)
