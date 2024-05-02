@@ -28,11 +28,11 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnn
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
+import com.netflix.graphql.dgs.codegen.generators.shared.generateKotlinCode
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.TypeName
 import graphql.language.*
 
 fun generateKotlin2InputTypes(
@@ -94,7 +94,7 @@ fun generateKotlin2InputTypes(
                                     .apply {
                                         if (field.defaultValue != null || type.isNullable) {
                                             val value = field.defaultValue?.let {
-                                                generateCode(
+                                                generateKotlinCode(
                                                     it,
                                                     type,
                                                     document
@@ -148,69 +148,3 @@ fun generateKotlin2InputTypes(
             FileSpec.get(config.packageNameTypes, typeSpec)
         }
 }
-
-private fun checkAndGetLocaleValue(value: StringValue, type: TypeName): String? {
-    if (type.className.canonicalName == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
-    return null
-}
-
-private fun generateCode(
-    value: Value<Value<*>>,
-    type: TypeName,
-    inputTypeDefinitions: Collection<InputObjectTypeDefinition>,
-    config: CodeGenConfig,
-    typeUtils: KotlinTypeUtils
-): CodeBlock? {
-    return when (value) {
-        is BooleanValue -> CodeBlock.of("%L", value.isValue)
-        is IntValue -> CodeBlock.of("%L", value.value)
-        is StringValue -> {
-            val localeValueOverride = checkAndGetLocaleValue(value, type)
-            if (localeValueOverride != null) CodeBlock.of("%L", localeValueOverride)
-            else CodeBlock.of("%S", value.value)
-        }
-        is FloatValue -> CodeBlock.of("%L", value.value)
-        is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
-        is ArrayValue ->
-            if (value.values.isEmpty()) CodeBlock.of("emptyList()")
-            else CodeBlock.of(
-                "listOf(%L)",
-                value.values.joinToString { v -> generateCode(v, type, inputTypeDefinitions, config, typeUtils).toString() }
-            )
-
-        is ObjectValue -> {
-            val inputObjectDefinition = inputTypeDefinitions.first {
-                val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
-                expectedCanonicalClassName == type.className.canonicalName
-            }
-
-            CodeBlock.of(
-                type.className.canonicalName + "(%L)",
-                value.objectFields.joinToString { objectProperty ->
-                    val argumentType =
-                        checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
-                            "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
-                        }
-                    "${objectProperty.name} = ${
-                    generateCode(
-                        objectProperty.value,
-                        typeUtils.findReturnType(argumentType.type),
-                        inputTypeDefinitions,
-                        config,
-                        typeUtils
-                    )
-                    }"
-                }
-            )
-        }
-
-        else -> CodeBlock.of("%L", value)
-    }
-}
-
-private val TypeName.className: ClassName
-    get() = when (this) {
-        is ClassName -> this
-        is ParameterizedTypeName -> typeArguments[0].className
-        else -> TODO()
-    }

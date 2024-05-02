@@ -23,6 +23,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
+import com.netflix.graphql.dgs.codegen.generators.shared.generateKotlinCode
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
@@ -33,9 +34,7 @@ import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.MemberName
 import com.squareup.kotlinpoet.ParameterSpec
-import com.squareup.kotlinpoet.ParameterizedTypeName
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
@@ -108,10 +107,12 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
             .filter(ReservedKeywordFilter.filterInvalidNames)
             .map {
                 val defaultValue = it.defaultValue?.let { value ->
-                    generateCode(
+                    generateKotlinCode(
                         value,
                         typeUtils.findReturnType(it.type),
-                        inputTypeDefinitions
+                        inputTypeDefinitions,
+                        config,
+                        typeUtils
                     )
                 }
                 Field(
@@ -137,63 +138,6 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
         val interfaces = emptyList<Type<*>>()
         return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
     }
-
-    private fun generateCode(value: Value<Value<*>>, type: KtTypeName, inputTypeDefinitions: Collection<InputObjectTypeDefinition>): CodeBlock =
-        when (value) {
-            is BooleanValue -> CodeBlock.of("%L", value.isValue)
-            is IntValue -> CodeBlock.of("%L", value.value)
-            is StringValue -> {
-                val localeValueOverride = checkAndGetLocaleValue(value, type)
-                if (localeValueOverride != null) CodeBlock.of("%L", localeValueOverride)
-                else CodeBlock.of("%S", value.value)
-            }
-            is FloatValue -> CodeBlock.of("%L", value.value)
-            is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
-            is ArrayValue ->
-                if (value.values.isEmpty()) CodeBlock.of("emptyList()")
-                else CodeBlock.of(
-                    "listOf(%L)",
-                    value.values.joinToString { v -> generateCode(v, type, inputTypeDefinitions).toString() }
-                )
-
-            is ObjectValue -> {
-                val inputObjectDefinition = inputTypeDefinitions.first {
-                    val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
-                    expectedCanonicalClassName == type.className.canonicalName
-                }
-
-                CodeBlock.of(
-                    type.className.canonicalName + "(%L)",
-                    value.objectFields.joinToString { objectProperty ->
-                        val argumentType =
-                            checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
-                                "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
-                            }
-                        "${objectProperty.name} = ${
-                        generateCode(
-                            objectProperty.value,
-                            typeUtils.findReturnType(argumentType.type),
-                            inputTypeDefinitions
-                        )
-                        }"
-                    }
-                )
-            }
-
-            else -> CodeBlock.of("%L", value)
-        }
-
-    private fun checkAndGetLocaleValue(value: StringValue, type: KtTypeName): String? {
-        if (type.className.canonicalName == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
-        return null
-    }
-
-    private val KtTypeName.className: ClassName
-        get() = when (this) {
-            is ClassName -> this
-            is ParameterizedTypeName -> typeArguments[0].className
-            else -> TODO()
-        }
 }
 
 internal data class Field(
