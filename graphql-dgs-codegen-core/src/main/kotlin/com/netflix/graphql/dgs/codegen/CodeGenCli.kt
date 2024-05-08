@@ -46,7 +46,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     )
     private val language by option("--language", "-l", help = "Output language").choice("java", "kotlin", ignoreCase = true)
         .default("java")
-    private val generateClient by option("--generate-client", "-c", help = "Genereate client api").flag(default = false)
+    private val generateClient by option("--generate-client", "-c", help = "Generate client api").flag(default = false)
     private val generateDataTypes by option(
         "--generate-data-types",
         help = "Generate data types. Not needed when only generating an API"
