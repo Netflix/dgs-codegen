@@ -18,6 +18,8 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLInput
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
@@ -26,6 +28,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
@@ -82,13 +85,14 @@ fun generateKotlin2InputTypes(
                 // add a constructor with a parameter for every field
                 .primaryConstructor(
                     FunSpec.constructorBuilder()
+                        .addAnnotation(JsonCreator::class)
                         .addParameters(
                             fields.map { field ->
                                 val type = type(field)
                                 ParameterSpec.builder(
                                     name = field.name,
                                     type = type
-                                )
+                                ).addAnnotation(AnnotationSpec.builder(JsonProperty::class).addMember("%S", field.name).build())
                                     .apply {
                                         if (type.isNullable) {
                                             defaultValue("default<%T, %T>(%S)", typeName, type, field.name)
