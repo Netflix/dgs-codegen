@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class Query(
   search: () -> List<SearchResult?>? = searchDefault,
 ) {
-  private val _search: () -> List<SearchResult?>? = search
+  private val __search: () -> List<SearchResult?>? = search
 
   @get:JvmName("getSearch")
   public val search: List<SearchResult?>?
-    get() = _search.invoke()
+    get() = __search.invoke()
 
   public companion object {
     private val searchDefault: () -> List<SearchResult?>? = 

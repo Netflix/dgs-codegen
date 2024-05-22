@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.client.codegen.InputValue
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializer
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import graphql.language.Argument
 import graphql.language.AstPrinter
 import graphql.language.Document
@@ -51,11 +52,14 @@ object DefaultTracker {
 }
 
 @QueryProjectionMarker
-abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename")) {
+abstract class GraphQLProjection(
+    protected val inputValueSerializer: InputValueSerializerInterface? = null,
+    defaultFields: Set<String> = setOf("__typename")
+) {
 
     companion object {
 
-        private val inputSerializer = InputValueSerializer()
+        val defaultInputValueSerializer = InputValueSerializer()
 
         @JvmStatic
         protected fun <T> default0(arg: String): T? {
@@ -105,7 +109,7 @@ abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename"
             .map { (arg, value) ->
                 Argument.newArgument()
                     .name(arg)
-                    .value(inputSerializer.toValue(value))
+                    .value((inputValueSerializer ?: defaultInputValueSerializer).toValue(value))
                     .build()
             }
     }
@@ -124,6 +128,7 @@ abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename"
     }
 
     protected fun <T : GraphQLProjection> field(
+        alias: String? = null,
         name: String,
         projection: T,
         projectionFields: T.() -> T,
@@ -132,13 +137,14 @@ abstract class GraphQLProjection(defaultFields: Set<String> = setOf("__typename"
         val defaults = DefaultTracker.getAndClear(this::class.qualifiedName!!)
         projectionFields.invoke(projection)
 
-        builder.selection(
-            Field.newField()
-                .name(name)
-                .arguments(arguments(args.toList(), defaults))
-                .selectionSet(projection.builder.build())
-                .build()
-        )
+        val fieldBuilder = Field.newField()
+            .name(name)
+            .arguments(arguments(args.toList(), defaults))
+            .selectionSet(projection.builder.build())
+
+        alias?.also { fieldBuilder.alias(it) }
+
+        builder.selection(fieldBuilder.build())
     }
 
     protected fun <T : GraphQLProjection> fragment(

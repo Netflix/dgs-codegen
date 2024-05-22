@@ -17,18 +17,18 @@ public class Vegetarian(
   calories: () -> String? = caloriesDefault,
   vegetables: () -> List<String?>? = vegetablesDefault,
 ) : Diet {
-  private val _calories: () -> String? = calories
+  private val __calories: () -> String? = calories
 
-  private val _vegetables: () -> List<String?>? = vegetables
+  private val __vegetables: () -> List<String?>? = vegetables
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getCalories")
   override val calories: String?
-    get() = _calories.invoke()
+    get() = __calories.invoke()
 
   @get:JvmName("getVegetables")
   public val vegetables: List<String?>?
-    get() = _vegetables.invoke()
+    get() = __vegetables.invoke()
 
   public companion object {
     private val caloriesDefault: () -> String? = 

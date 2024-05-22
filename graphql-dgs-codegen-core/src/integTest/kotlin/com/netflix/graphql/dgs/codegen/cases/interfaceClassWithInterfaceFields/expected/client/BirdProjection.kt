@@ -1,8 +1,12 @@
 package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.expected.client
 
+import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import kotlin.String
 
-public class BirdProjection : GraphQLProjection() {
+public class BirdProjection(
+  inputValueSerializer: InputValueSerializerInterface? = null,
+) : GraphQLProjection(inputValueSerializer) {
   public val id: BirdProjection
     get() {
       field("id")
@@ -21,18 +25,21 @@ public class BirdProjection : GraphQLProjection() {
       return this
     }
 
-  public fun mother(_projection: BirdProjection.() -> BirdProjection): BirdProjection {
-    field("mother", BirdProjection(), _projection)
+  public fun mother(_alias: String? = null, _projection: BirdProjection.() -> BirdProjection):
+      BirdProjection {
+    field(_alias, "mother", BirdProjection(inputValueSerializer), _projection)
     return this
   }
 
-  public fun father(_projection: BirdProjection.() -> BirdProjection): BirdProjection {
-    field("father", BirdProjection(), _projection)
+  public fun father(_alias: String? = null, _projection: BirdProjection.() -> BirdProjection):
+      BirdProjection {
+    field(_alias, "father", BirdProjection(inputValueSerializer), _projection)
     return this
   }
 
-  public fun parents(_projection: BirdProjection.() -> BirdProjection): BirdProjection {
-    field("parents", BirdProjection(), _projection)
+  public fun parents(_alias: String? = null, _projection: BirdProjection.() -> BirdProjection):
+      BirdProjection {
+    field(_alias, "parents", BirdProjection(inputValueSerializer), _projection)
     return this
   }
 }

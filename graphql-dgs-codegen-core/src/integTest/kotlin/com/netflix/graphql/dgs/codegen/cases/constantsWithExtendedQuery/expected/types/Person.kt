@@ -15,17 +15,17 @@ public class Person(
   firstname: () -> String? = firstnameDefault,
   lastname: () -> String? = lastnameDefault,
 ) {
-  private val _firstname: () -> String? = firstname
+  private val __firstname: () -> String? = firstname
 
-  private val _lastname: () -> String? = lastname
+  private val __lastname: () -> String? = lastname
 
   @get:JvmName("getFirstname")
   public val firstname: String?
-    get() = _firstname.invoke()
+    get() = __firstname.invoke()
 
   @get:JvmName("getLastname")
   public val lastname: String?
-    get() = _lastname.invoke()
+    get() = __lastname.invoke()
 
   public companion object {
     private val firstnameDefault: () -> String? = 

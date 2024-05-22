@@ -61,6 +61,7 @@ class ClientApiGenFragmentTest {
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
         assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("__typename")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("duration")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("title")
@@ -114,8 +115,10 @@ class ClientApiGenFragmentTest {
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("__typename")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("ShowProjection")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("__typename")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MovieFragmentProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("duration")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("title")
@@ -160,6 +163,7 @@ class ClientApiGenFragmentTest {
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("__typename")
         assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("onMovie")
         assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("onActor")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")

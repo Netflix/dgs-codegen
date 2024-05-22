@@ -15,17 +15,17 @@ public class Performance(
   zeroToSixty: () -> Double? = zeroToSixtyDefault,
   quarterMile: () -> Double? = quarterMileDefault,
 ) {
-  private val _zeroToSixty: () -> Double? = zeroToSixty
+  private val __zeroToSixty: () -> Double? = zeroToSixty
 
-  private val _quarterMile: () -> Double? = quarterMile
+  private val __quarterMile: () -> Double? = quarterMile
 
   @get:JvmName("getZeroToSixty")
   public val zeroToSixty: Double?
-    get() = _zeroToSixty.invoke()
+    get() = __zeroToSixty.invoke()
 
   @get:JvmName("getQuarterMile")
   public val quarterMile: Double?
-    get() = _quarterMile.invoke()
+    get() = __quarterMile.invoke()
 
   public companion object {
     private val zeroToSixtyDefault: () -> Double? = 

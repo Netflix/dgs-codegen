@@ -14,11 +14,11 @@ import kotlin.jvm.JvmName
 public class SampleType(
   `return`: () -> String = returnDefault,
 ) {
-  private val _return: () -> String = `return`
+  private val __return: () -> String = `return`
 
   @get:JvmName("getReturn")
   public val `return`: String
-    get() = _return.invoke()
+    get() = __return.invoke()
 
   public companion object {
     private val returnDefault: () -> String = 

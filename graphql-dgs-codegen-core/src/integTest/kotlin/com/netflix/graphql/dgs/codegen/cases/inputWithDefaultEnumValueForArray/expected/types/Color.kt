@@ -3,4 +3,7 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultEnumValueForArray.
 public enum class Color {
   red,
   blue,
+  ;
+
+  public companion object
 }

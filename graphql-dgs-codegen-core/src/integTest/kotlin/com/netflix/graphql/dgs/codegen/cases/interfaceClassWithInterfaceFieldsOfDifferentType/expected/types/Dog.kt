@@ -16,19 +16,19 @@ public class Dog(
   name: () -> String? = nameDefault,
   diet: () -> Vegetarian? = dietDefault,
 ) : Pet {
-  private val _name: () -> String? = name
+  private val __name: () -> String? = name
 
-  private val _diet: () -> Vegetarian? = diet
+  private val __diet: () -> Vegetarian? = diet
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getName")
   override val name: String?
-    get() = _name.invoke()
+    get() = __name.invoke()
 
   @Suppress("INAPPLICABLE_JVM_NAME")
   @get:JvmName("getDiet")
   override val diet: Vegetarian?
-    get() = _diet.invoke()
+    get() = __diet.invoke()
 
   public companion object {
     private val nameDefault: () -> String? = 

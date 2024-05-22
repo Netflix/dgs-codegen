@@ -7,4 +7,7 @@ public enum class Color {
   red,
   white,
   blue,
+  ;
+
+  public companion object
 }

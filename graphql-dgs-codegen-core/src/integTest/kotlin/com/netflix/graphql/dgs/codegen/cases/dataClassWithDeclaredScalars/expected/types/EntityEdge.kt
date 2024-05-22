@@ -15,17 +15,17 @@ public class EntityEdge(
   cursor: () -> String = cursorDefault,
   node: () -> Entity? = nodeDefault,
 ) {
-  private val _cursor: () -> String = cursor
+  private val __cursor: () -> String = cursor
 
-  private val _node: () -> Entity? = node
+  private val __node: () -> Entity? = node
 
   @get:JvmName("getCursor")
   public val cursor: String
-    get() = _cursor.invoke()
+    get() = __cursor.invoke()
 
   @get:JvmName("getNode")
   public val node: Entity?
-    get() = _node.invoke()
+    get() = __node.invoke()
 
   public companion object {
     private val cursorDefault: () -> String = 

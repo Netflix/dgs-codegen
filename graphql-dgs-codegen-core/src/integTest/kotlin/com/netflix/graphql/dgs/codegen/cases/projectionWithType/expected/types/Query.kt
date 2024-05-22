@@ -15,17 +15,17 @@ public class Query(
   person: () -> Person? = personDefault,
   people: () -> List<Person?>? = peopleDefault,
 ) {
-  private val _person: () -> Person? = person
+  private val __person: () -> Person? = person
 
-  private val _people: () -> List<Person?>? = people
+  private val __people: () -> List<Person?>? = people
 
   @get:JvmName("getPerson")
   public val person: Person?
-    get() = _person.invoke()
+    get() = __person.invoke()
 
   @get:JvmName("getPeople")
   public val people: List<Person?>?
-    get() = _people.invoke()
+    get() = __people.invoke()
 
   public companion object {
     private val personDefault: () -> Person? = 

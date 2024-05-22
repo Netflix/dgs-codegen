@@ -52,4 +52,55 @@ class QueryTest {
             query
         )
     }
+
+    @Test
+    fun testQueryWithUnnamedArgs() {
+        val query = DgsClient.buildQuery {
+            person("a1", "a2") {
+                firstname
+            }
+        }
+
+        assertEquals(
+            """{
+            |  __typename
+            |  person(a1: "a1", a2: "a2") {
+            |    __typename
+            |    firstname
+            |  }
+            |}
+            |
+            """.trimMargin(),
+            query
+        )
+    }
+
+    @Test
+    fun testQueryWithAlias() {
+        val query = DgsClient.buildQuery {
+            person(_alias = "person1", a2 = "person1") {
+                firstname
+            }
+            person(_alias = "person2", a2 = "person2") {
+                firstname
+            }
+        }
+
+        assertEquals(
+            """{
+            |  __typename
+            |  person1: person(a2: "person1") {
+            |    __typename
+            |    firstname
+            |  }
+            |  person2: person(a2: "person2") {
+            |    __typename
+            |    firstname
+            |  }
+            |}
+            |
+            """.trimMargin(),
+            query
+        )
+    }
 }

@@ -54,6 +54,10 @@ fun generateKotlin2EnumTypes(
                 .plus(extensionTypes)
                 .flatMap { it.enumValueDefinitions }
 
+            val companionObject = TypeSpec.companionObjectBuilder()
+                .addOptionalGeneratedAnnotation(config)
+                .build()
+
             // create the enum class
             val enumSpec = TypeSpec.classBuilder(enumDefinition.name)
                 .addOptionalGeneratedAnnotation(config)
@@ -80,6 +84,7 @@ fun generateKotlin2EnumTypes(
                             .build()
                     }
                 )
+                .addType(companionObject)
                 .build()
 
             // return a file per enum
