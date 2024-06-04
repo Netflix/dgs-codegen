@@ -288,20 +288,22 @@ abstract class BaseDataTypeGenerator(
         val fieldSpecs = javaType.build().fieldSpecs
         fieldSpecs.forEachIndexed { index, fieldSpec ->
             // Only include data fields for comparison, exclude is<field>Set Boolean fields
-            var field = fields.find{iter-> ReservedKeywordSanitizer.sanitize(iter.name) == fieldSpec.name}
-            if( field != null ) {
+            var field = fields.find { iter -> ReservedKeywordSanitizer.sanitize(iter.name) == fieldSpec.name }
+            if (field != null) {
                 if (fieldSpec.type.isPrimitive) {
                     equalsBody.append(
                         """
                             
                             ${fieldSpec.name} == that.${fieldSpec.name} 
-                    """.trimIndent())
+                        """.trimIndent()
+                    )
                 } else {
                     equalsBody.append(
                         """
                             
                             java.util.Objects.equals(${fieldSpec.name}, that.${fieldSpec.name}) 
-                    """.trimIndent())
+                        """.trimIndent()
+                    )
                 }
                 if (index != fieldSpecs.size - 1) {
                     equalsBody.append("&&")
@@ -309,9 +311,9 @@ abstract class BaseDataTypeGenerator(
             }
         }
 
-        if(equalsBody.endsWith('&')) {
+        if (equalsBody.endsWith('&')) {
             var index = equalsBody.lastIndexOf("&&")
-            equalsBody.delete(index, index+2)
+            equalsBody.delete(index, index + 2)
         }
 
         if (fieldSpecs.size == 0) {
@@ -537,7 +539,7 @@ abstract class BaseDataTypeGenerator(
 
             val fieldName = it.name
 //            val field = fields.find { it.name.contains(fieldName) }
-            val field = fields.find { iter-> ReservedKeywordSanitizer.sanitize(iter.name) == fieldName }
+            val field = fields.find { iter -> ReservedKeywordSanitizer.sanitize(iter.name) == fieldName }
 
             if (field?.isNullable == true && field.initialValue == null) {
                 method
