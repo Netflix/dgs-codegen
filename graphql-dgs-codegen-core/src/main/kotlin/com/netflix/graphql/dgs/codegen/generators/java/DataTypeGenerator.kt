@@ -231,7 +231,7 @@ abstract class BaseDataTypeGenerator(
 
         addToString(fields, javaType)
 
-        addEquals(javaType)
+        addEquals(fields, javaType)
         addHashcode(javaType)
         addBuilder(fields, javaType)
 
@@ -269,7 +269,7 @@ abstract class BaseDataTypeGenerator(
         javaType.addMethod(methodBuilder.build())
     }
 
-    private fun addEquals(javaType: TypeSpec.Builder) {
+    private fun addEquals(fields: List<Field>, javaType: TypeSpec.Builder) {
         val methodBuilder = MethodSpec.methodBuilder("equals")
             .addAnnotation(Override::class.java)
             .addModifiers(Modifier.PUBLIC)
@@ -287,19 +287,31 @@ abstract class BaseDataTypeGenerator(
 
         val fieldSpecs = javaType.build().fieldSpecs
         fieldSpecs.forEachIndexed { index, fieldSpec ->
-            if (fieldSpec.type.isPrimitive) {
-                equalsBody.append("${fieldSpec.name} == that.${fieldSpec.name}")
-            } else {
-                equalsBody.append("java.util.Objects.equals(${fieldSpec.name}, that.${fieldSpec.name})")
+            // Only include data fields for comparison, exclude is<field>Set Boolean fields
+            var field = fields.find{iter-> ReservedKeywordSanitizer.sanitize(iter.name) == fieldSpec.name}
+            if( field != null ) {
+                if (fieldSpec.type.isPrimitive) {
+                    equalsBody.append(
+                        """
+                            
+                            ${fieldSpec.name} == that.${fieldSpec.name} 
+                    """.trimIndent())
+                } else {
+                    equalsBody.append(
+                        """
+                            
+                            java.util.Objects.equals(${fieldSpec.name}, that.${fieldSpec.name}) 
+                    """.trimIndent())
+                }
+                if (index != fieldSpecs.size - 1) {
+                    equalsBody.append("&&")
+                }
             }
+        }
 
-            if (index != fieldSpecs.size - 1) {
-                equalsBody.append(
-                    """ &&
-                    
-                    """.trimMargin()
-                )
-            }
+        if(equalsBody.endsWith('&')) {
+            var index = equalsBody.lastIndexOf("&&")
+            equalsBody.delete(index, index+2)
         }
 
         if (fieldSpecs.size == 0) {
@@ -409,7 +421,7 @@ abstract class BaseDataTypeGenerator(
     }
 
     private fun generateBooleanFieldName(name: String): String {
-        return "is${name.capitalized()}"
+        return "is${name.capitalized()}Set"
     }
 
     private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
@@ -524,7 +536,8 @@ abstract class BaseDataTypeGenerator(
                 .addStatement("this.${it.name} = ${it.name}")
 
             val fieldName = it.name
-            val field = fields.find { it.name.contains(fieldName) }
+//            val field = fields.find { it.name.contains(fieldName) }
+            val field = fields.find { iter-> ReservedKeywordSanitizer.sanitize(iter.name) == fieldName }
 
             if (field?.isNullable == true && field.initialValue == null) {
                 method
