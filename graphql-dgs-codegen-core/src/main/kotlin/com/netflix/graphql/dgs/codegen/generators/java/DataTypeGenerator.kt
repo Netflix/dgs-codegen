@@ -397,7 +397,6 @@ abstract class BaseDataTypeGenerator(
         addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
         // Generate for all nullable fields without any defaults
         if (config.generateIsSetFields && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
-            println("config.generateIsSetFields: ${config.generateIsSetFields}")
             addIsDefinedFieldWithGetters(fieldDefinition, javaType)
         }
     }
@@ -539,7 +538,6 @@ abstract class BaseDataTypeGenerator(
                 .addStatement("this.${it.name} = ${it.name}")
 
             val fieldName = it.name
-//            val field = fields.find { it.name.contains(fieldName) }
             val field = fields.find { iter -> ReservedKeywordSanitizer.sanitize(iter.name) == fieldName }
 
             if (config.generateIsSetFields && field?.isNullable == true && field.initialValue == null) {
