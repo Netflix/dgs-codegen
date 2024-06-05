@@ -2792,6 +2792,127 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
     }
 
     @Test
+    fun generateDataClassWithBooleanFieldDisabled() {
+        val schema = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Mutation {
+                updateShow(input: UpdateShowInput!): Show
+            }
+            
+            type Show  {
+                id: ID!
+                title: String
+                releaseYear: Int
+            }
+            
+            input UpdateShowInput {
+                id: ID!
+                title: String
+                releaseYear: Int
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateIsSetFields = false
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(2)
+
+        // Data Types
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "releaseYear")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getId",
+            "setId",
+            "getTitle",
+            "setTitle",
+            "getReleaseYear",
+            "setReleaseYear",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun generateDataClassWithBooleanForFieldNameClash() {
+        val schema = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Mutation {
+                updateShow(input: UpdateShowInput!): Show
+            }
+            
+            type Show  {
+                id: ID!
+                title: String
+                isTitleSet: Boolean
+                releaseYear: Int
+            }
+            
+            input UpdateShowInput {
+                id: ID!
+                title: String
+                releaseYear: Int
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateIsSetFields = false
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(2)
+
+        // Data Types
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "isTitleSet", "releaseYear")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getId",
+            "setId",
+            "getTitle",
+            "setTitle",
+            "getIsTitleSet",
+            "setIsTitleSet",
+            "getReleaseYear",
+            "setReleaseYear",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
     fun generateInterfacesWithoutSetters() {
         val schema = """
             type Query {

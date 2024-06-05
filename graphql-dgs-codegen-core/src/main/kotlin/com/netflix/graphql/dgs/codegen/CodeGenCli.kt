@@ -59,7 +59,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val shortProjectionNames by option("--short-projection-names").flag()
     private val generateInterfaceSetters by option("--generate-interface-setters").flag()
     private val generateDocs by option("--generate-docs").flag()
-    private val generateIsSetFields by option("--generate-isset-fields", help = "Generate Boolean is<field>Set field for all nullable fields without any defaults").flag(default = true)
+    private val generateIsSetFields by option("--generate-isset-fields", help = "Generate Boolean is<field>Set field for all nullable fields without any defaults").flag("--skip-generate-isset-fields", default = true)
 
     override fun run() {
         val inputSchemas = if (schemas.isEmpty()) {
