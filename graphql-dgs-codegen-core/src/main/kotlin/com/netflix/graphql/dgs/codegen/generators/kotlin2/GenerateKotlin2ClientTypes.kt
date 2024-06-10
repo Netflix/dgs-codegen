@@ -28,6 +28,7 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
+import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.LambdaTypeName
@@ -105,12 +106,13 @@ fun generateKotlin2ClientTypes(
                             FunSpec.builder(field.name)
                                 .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
                                 .returns(typeName)
-                                .addStatement(
-                                    """field(%S%L)""",
-                                    field.name,
-                                    field.inputValueDefinitions.joinToString(" ") { """, "${it.name}" to ${it.name}""" }
+                                .addCode(
+                                    field.inputValueDefinitions.let { iv ->
+                                        val builder = CodeBlock.builder().add("field(%S", field.name)
+                                        iv.forEach { d -> builder.add(", %S to %N", d.name, d.name) }
+                                        builder.add(")\nreturn this").build()
+                                    }
                                 )
-                                .addStatement("return this")
                                 .build()
                         }
 
@@ -125,13 +127,17 @@ fun generateKotlin2ClientTypes(
                                 .addParameter(ParameterSpec.builder("_alias", String::class.asTypeName().copy(nullable = true)).defaultValue("null").build())
                                 .addParameter(projection)
                                 .returns(typeName)
-                                .addStatement(
-                                    """field(_alias, %S, %T(inputValueSerializer), _projection%L)""",
-                                    field.name,
-                                    projectionType,
-                                    field.inputValueDefinitions.joinToString(" ") { """, "${it.name}" to ${it.name}""" }
+                                .addCode(
+                                    field.inputValueDefinitions.let { iv ->
+                                        val builder = CodeBlock.builder().add(
+                                            "field(_alias, %S, %T(inputValueSerializer), _projection",
+                                            field.name,
+                                            projectionType
+                                        )
+                                        iv.forEach { d -> builder.add(", %S to %N", d.name, d.name) }
+                                        builder.add(")\nreturn this").build()
+                                    }
                                 )
-                                .addStatement("return this")
                                 .build()
                         }
                     }
