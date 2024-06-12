@@ -158,10 +158,7 @@ internal fun findSchemaTypeMapping(document: Document, typeName: String): String
 }
 
 internal val generatedAnnotationClassName: String? = runCatching {
-    Class.forName("javax.annotation.processing.Generated").canonicalName
-}.getOrElse {
-    runCatching {
-        Class.forName("javax.annotation.Generated").canonicalName
-    }.getOrNull()
-}
+    Class.forName("jakarta.annotation.Generated").canonicalName
+}.getOrNull()
+
 internal val generatedDate: String = Instant.now().toString()
