@@ -657,7 +657,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.1",
+            "locked": "3.25.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -758,14 +758,14 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -774,7 +774,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -782,7 +782,7 @@
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.1",
+            "locked": "1.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -790,7 +790,7 @@
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -928,7 +928,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.1",
+            "locked": "3.25.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -1020,14 +1020,14 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -1036,7 +1036,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -1044,7 +1044,7 @@
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.1",
+            "locked": "1.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -1052,7 +1052,7 @@
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -1282,7 +1282,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.1",
+            "locked": "3.25.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -1427,14 +1427,14 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -1444,7 +1444,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -1452,7 +1452,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -1460,7 +1460,7 @@
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.1",
+            "locked": "1.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -1469,7 +1469,7 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.10.1",
+            "locked": "1.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -1477,7 +1477,7 @@
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",

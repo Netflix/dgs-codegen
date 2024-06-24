@@ -15,7 +15,7 @@
             "project": true
         },
         "com.netflix.nebula:gradle-dependency-lock-plugin": {
-            "locked": "15.0.0"
+            "locked": "15.1.0"
         },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "1.9.22"
@@ -123,7 +123,7 @@
     },
     "compileOnlyDependenciesMetadata": {
         "com.netflix.nebula:gradle-dependency-lock-plugin": {
-            "locked": "15.0.0"
+            "locked": "15.1.0"
         },
         "org.jetbrains.kotlin:kotlin-gradle-plugin": {
             "locked": "1.9.22",
@@ -637,6 +637,13 @@
                 "org.jetbrains:markdown-jvm"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
         "net.java.dev.jna:jna": {
             "locked": "5.13.0",
             "transitive": [
@@ -710,35 +717,35 @@
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
@@ -831,7 +838,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.1"
+            "locked": "3.25.3"
         },
         "org.checkerframework:checker-qual": {
             "locked": "3.37.0",
@@ -922,13 +929,13 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -936,21 +943,21 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.1",
+            "locked": "1.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -1017,7 +1024,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.1"
+            "locked": "3.25.3"
         },
         "org.checkerframework:checker-qual": {
             "locked": "3.37.0",
@@ -1100,13 +1107,13 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -1114,21 +1121,21 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.1",
+            "locked": "1.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -1308,6 +1315,13 @@
                 "org.jetbrains:markdown-jvm"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.14.11",
             "transitive": [
@@ -1322,7 +1336,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.1",
+            "locked": "3.25.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -1439,35 +1453,35 @@
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm": {
-            "locked": "1.6.2",
+            "locked": "1.6.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
@@ -1492,14 +1506,14 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -1509,7 +1523,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -1517,7 +1531,7 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
@@ -1525,7 +1539,7 @@
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.1",
+            "locked": "1.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -1534,7 +1548,7 @@
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.10.1",
+            "locked": "1.10.2",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-engine",
@@ -1542,7 +1556,7 @@
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.1",
+            "locked": "5.10.2",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
