@@ -2681,7 +2681,7 @@ class CodeGenTest {
     }
 
     @Test
-    fun generateDataClassWithBooleanFieldIsSet() {
+    fun generateDataClassWithBooleanField() {
         val schema = """
             type Query {
                 show(id: ID!): Show
@@ -2851,14 +2851,55 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
     }
 
     @Test
-    fun generateDataClassWithBooleanForFieldNameClash() {
+    fun generateDataClassWithBooleanFieldWithReservedKeyword() {
+        val schema = """
+            type Node  {
+                id: ID!
+                parent: String,
+            }
+            
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+
+        // Data Types
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Node")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("id", "_parent", "is_parentSet")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getId",
+            "setId",
+            "getParent",
+            "setParent",
+            "is_parentSetDefined",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
+        assertCompilesJava(dataTypes)
+    }
+
+    // Schema already has a field named isTitleSet, generateIsSetFields config is set to false explicitly
+    // No additional boolean fields will be generated
+    @Test
+    fun generateDataClassWithBooleanForFieldNameClashConfigFalse() {
         val schema = """
             type Query {
                 show(id: ID!): Show
-            }
-            
-            type Mutation {
-                updateShow(input: UpdateShowInput!): Show
             }
             
             type Show  {
@@ -2868,13 +2909,9 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
                 releaseYear: Int
             }
             
-            input UpdateShowInput {
-                id: ID!
-                title: String
-                releaseYear: Int
-            }
         """.trimIndent()
 
+        // generateIsSetFields is set to false
         val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
@@ -2884,7 +2921,7 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
         ).generate()
 
         val dataTypes = codeGenResult.javaDataTypes
-        assertThat(dataTypes.size).isEqualTo(2)
+        assertThat(dataTypes.size).isEqualTo(1)
 
         // Data Types
         val typeSpec = dataTypes[0].typeSpec
@@ -2908,6 +2945,267 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
             "hashCode",
             "newBuilder"
         )
+
+        assertCompilesJava(dataTypes)
+    }
+
+    // Test order of <Field> and is<Field>Set in schema.
+    // Appearance of these in any order should disable boolean field generation
+    @Test
+    fun testDataTypeGeneratorSetGenerateIsSetFieldsConfigOrder() {
+        // Test order of clashing field isTitle and isTitleSet from setGenerateIsSetFields function
+        val schema1 = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Show  {
+                id: ID!
+                title: String
+                isTitleSet: Boolean
+                releaseYear: Int
+            }
+            
+        """.trimIndent()
+
+        val schema2 = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Show  {
+                id: ID!
+                isTitleSet: Boolean
+                title: String
+                releaseYear: Int
+            }
+            
+        """.trimIndent()
+
+        val schema3 = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Show  {
+                title: String
+                id: ID!
+                releaseYear: Int
+                isTitleSet: Boolean
+            }
+            
+        """.trimIndent()
+
+        val schema4 = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Show  {
+                isTitleSet: Boolean
+                id: ID!
+                releaseYear: Int
+                title: String
+            }
+            
+        """.trimIndent()
+
+        // generateIsSetFields is set to false
+        var codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema1),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        var dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+
+        // Data Types
+        var typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "isTitleSet", "releaseYear")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getId",
+            "setId",
+            "getTitle",
+            "setTitle",
+            "getIsTitleSet",
+            "setIsTitleSet",
+            "getReleaseYear",
+            "setReleaseYear",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
+        assertCompilesJava(dataTypes)
+
+        codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema2),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+
+        // Data Types
+        typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("id", "isTitleSet", "title", "releaseYear")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getId",
+            "setId",
+            "getIsTitleSet",
+            "setIsTitleSet",
+            "getTitle",
+            "setTitle",
+            "getReleaseYear",
+            "setReleaseYear",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
+        assertCompilesJava(dataTypes)
+
+
+        codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema3),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+
+        // Data Types
+        typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("title", "id", "releaseYear", "isTitleSet")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getTitle",
+            "setTitle",
+            "getId",
+            "setId",
+            "getReleaseYear",
+            "setReleaseYear",
+            "getIsTitleSet",
+            "setIsTitleSet",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
+        assertCompilesJava(dataTypes)
+
+
+        codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema4),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+
+        // Data Types
+        typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("isTitleSet", "id", "releaseYear", "title")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getIsTitleSet",
+            "setIsTitleSet",
+            "getId",
+            "setId",
+            "getReleaseYear",
+            "setReleaseYear",
+            "getTitle",
+            "setTitle",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
+        assertCompilesJava(dataTypes)
+    }
+
+    // Schema already has a field named isTitleSet, generateIsSetFields is set to true
+    // Field clash will be detected and no additional boolean fields will be generated
+    @Test
+    fun generateDataClassWithBooleanForFieldNameClashConfigTrue() {
+        val schema = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Show  {
+                id: ID!
+                title: String
+                isTitleSet: Boolean
+                releaseYear: Int
+            }
+            
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateIsSetFields = true
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+
+        // Data Types
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "isTitleSet", "releaseYear")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getId",
+            "setId",
+            "getTitle",
+            "setTitle",
+            "getIsTitleSet",
+            "setIsTitleSet",
+            "getReleaseYear",
+            "setReleaseYear",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
 
         assertCompilesJava(dataTypes)
     }

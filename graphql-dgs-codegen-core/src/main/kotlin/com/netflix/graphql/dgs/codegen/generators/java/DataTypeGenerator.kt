@@ -219,6 +219,7 @@ abstract class BaseDataTypeGenerator(
             javaType.addAnnotation(disableJsonTypeInfoAnnotation())
         }
 
+        setGenerateIsSetFieldsConfig(fields)
         fields.forEach {
             addField(it, javaType)
         }
@@ -398,6 +399,20 @@ abstract class BaseDataTypeGenerator(
         // Generate for all nullable fields without any defaults
         if (config.generateIsSetFields && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
             addIsDefinedFieldWithGetters(fieldDefinition, javaType)
+        }
+    }
+
+    private fun setGenerateIsSetFieldsConfig(fieldDefinitions: List<Field>) {
+        for( i in 0 until fieldDefinitions.size ) {
+            for (j in 0 until fieldDefinitions.size) {
+                if(i == j ) continue
+                val booleanFieldName = generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(fieldDefinitions[i].name))
+                // A field with same name exists
+                if(fieldDefinitions[j].name == booleanFieldName) {
+                    config.generateIsSetFields = false
+                    break
+                }
+            }
         }
     }
 
