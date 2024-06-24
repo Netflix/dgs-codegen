@@ -312,16 +312,11 @@ abstract class BaseDataTypeGenerator(
             }
         }
 
-        if (equalsBody.endsWith('&')) {
-            var index = equalsBody.lastIndexOf("&&")
-            equalsBody.delete(index, index + 2)
-        }
-
         if (fieldSpecs.size == 0) {
             equalsBody.append("false")
         }
 
-        methodBuilder.addStatement(equalsBody.toString())
+        methodBuilder.addStatement(equalsBody.removeSuffix("&&").toString())
         javaType.addMethod(methodBuilder.build())
     }
 

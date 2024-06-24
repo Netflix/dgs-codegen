@@ -2949,6 +2949,89 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
         assertCompilesJava(dataTypes)
     }
 
+    // Equals field should not contain any added Boolean fields
+    @Test
+    fun generateDataClassWithBooleanTestEquals() {
+        val schema = """
+            type Query {
+                show(id: ID!): Show
+            }
+            
+            type Show  {
+                id: ID!
+                title: String
+                isTitleSet: Boolean
+                releaseYear: Int
+            }
+            
+        """.trimIndent()
+
+        // generateIsSetFields is set to false
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+
+        // Data Types
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("Show")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+
+        assertThat(typeSpec.fieldSpecs).extracting("name").containsExactly("id", "title", "isTitleSet", "releaseYear")
+        assertThat(typeSpec.methodSpecs).extracting("name").containsExactly(
+            "getId",
+            "setId",
+            "getTitle",
+            "setTitle",
+            "getIsTitleSet",
+            "setIsTitleSet",
+            "getReleaseYear",
+            "setReleaseYear",
+            "<init>",
+            "<init>",
+            "toString",
+            "equals",
+            "hashCode",
+            "newBuilder"
+        )
+
+        val equalsMethod = typeSpec.methodSpecs.find { it.name == "equals" }
+        assertThat(equalsMethod?.code.toString().trim())
+            .isEqualTo(
+                """
+                    |if (this == o) return true;
+                    |    if (o == null || getClass() != o.getClass()) return false;
+                    |    Show that = (Show) o;
+                    |    return 
+                    |    java.util.Objects.equals(id, that.id) &&
+                    |    java.util.Objects.equals(title, that.title) &&
+                    |    java.util.Objects.equals(isTitleSet, that.isTitleSet) &&
+                    |    java.util.Objects.equals(releaseYear, that.releaseYear) ;
+                """.trimMargin()
+            )
+
+
+        """
+               |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+               |
+               |import java.lang.String;
+               |
+               |public interface Person {
+               |  String getFirstname();
+               |
+               |  String getLastname();
+               |}
+               |
+            """
+
+        assertCompilesJava(dataTypes)
+    }
+
     // Test order of <Field> and is<Field>Set in schema.
     // Appearance of these in any order should disable boolean field generation
     @Test
