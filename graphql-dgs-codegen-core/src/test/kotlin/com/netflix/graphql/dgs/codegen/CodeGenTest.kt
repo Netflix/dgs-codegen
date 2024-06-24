@@ -3015,7 +3015,6 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
                 """.trimMargin()
             )
 
-
         """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
