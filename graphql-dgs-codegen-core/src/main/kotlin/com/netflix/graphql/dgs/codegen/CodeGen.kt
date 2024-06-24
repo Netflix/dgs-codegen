@@ -291,7 +291,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "Subscription" && it.name != "RelayPageInfo" }
             .filter { config.generateInterfaces || config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 DataTypeGenerator(config, document).generate(it, findTypeExtensions(it.name, definitions))
@@ -374,9 +374,11 @@ class CodeGen(private val config: CodeGenConfig) {
             client.merge(entitiesClient).merge(entitiesRepresentationsTypes)
         }
 
+        val dataFetchersResult = generateJavaDataFetchers(definitions) // TODO kotlin data fetchers
         val generatedAnnotation = generateKotlinGeneratedAnnotation(config)
 
         return dataTypes.merge(clientTypes)
+            .merge(dataFetchersResult)
             .merge(generatedAnnotation)
     }
 
@@ -427,7 +429,7 @@ class CodeGen(private val config: CodeGenConfig) {
         return definitions.asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
+            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "Subscription" && it.name != "RelayPageInfo" }
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 val extensions = findTypeExtensions(it.name, definitions)
