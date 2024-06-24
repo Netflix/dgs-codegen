@@ -3081,7 +3081,6 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
 
         assertCompilesJava(dataTypes)
 
-
         codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema3),
@@ -3116,7 +3115,6 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
         )
 
         assertCompilesJava(dataTypes)
-
 
         codeGenResult = CodeGen(
             CodeGenConfig(
@@ -3205,7 +3203,6 @@ com.netflix.graphql.dgs.codegen.tests.generated.types.Show result = new com.netf
             "hashCode",
             "newBuilder"
         )
-
 
         assertCompilesJava(dataTypes)
     }
