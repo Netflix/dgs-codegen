@@ -489,6 +489,7 @@ class CodeGenConfig(
     var skipEntityQueries: Boolean = false,
     var shortProjectionNames: Boolean = false,
     var generateDataTypes: Boolean = true,
+    var generateIsSetFields: Boolean = true,
     var omitNullInputFields: Boolean = false,
     var maxProjectionDepth: Int = 10,
     var kotlinAllFieldsOptional: Boolean = false,

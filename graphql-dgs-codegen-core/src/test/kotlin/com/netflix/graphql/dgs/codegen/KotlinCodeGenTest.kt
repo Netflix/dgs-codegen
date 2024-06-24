@@ -3725,16 +3725,17 @@ It takes a title and such.
             }
         """.trimIndent()
 
-        val (dataTypes) = CodeGen(
+        val codeGenResult = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName
             )
         ).generate()
 
+        val dataTypes = codeGenResult.javaDataTypes
         assertThat(dataTypes.size).isEqualTo(1)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[1].type.toString()).contains(basePackageName)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.time.LocalDate")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).contains(basePackageName)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[4].type.toString()).isEqualTo("java.time.LocalDate")
     }
 
     @Test
