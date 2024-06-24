@@ -1754,7 +1754,7 @@ class CodeGenTest {
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("colors")
-        assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(Color.red)""")
+        assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList($typesPackageName.Color.red)""")
 
         assertCompilesJava(dataTypes + enumTypes)
     }
@@ -4646,5 +4646,190 @@ It takes a title and such.
         val dataTypes = codeGenResult.javaDataTypes
         assertThat(dataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
         assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `The default empty object value should result in constructor call`() {
+        val schema = """
+            input Movie {
+                director: Person = {}
+            }
+            
+            input Person {
+                name: String = "Damian"
+                age: Int = 33
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(2)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("director")
+        assertThat(colorField.initializer.toString()).isEqualTo("""new $typesPackageName.Person()""")
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `The default object with properties should result in constructor call with args`() {
+        val schema = """
+            input Movie {
+                director: Person = { name: "Harrison", car: { brand: "Ford" } }
+            }
+
+            input Person {
+                name: String = "Damian"
+                car: Car = { brand: "Tesla" }
+            }
+
+            input Car {
+                brand: String = "VW"
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(3)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("director")
+        assertThat(colorField.initializer.toString()).isEqualTo(
+            "new com.netflix.graphql.dgs.codegen.tests.generated.types.Person()" +
+                """{{setName("Harrison");setCar(new com.netflix.graphql.dgs.codegen.tests.generated.types.Car(){{setBrand("Ford");}})""" +
+                ";}}"
+        )
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `The default list value should support objects`() {
+        val schema = """
+            input Director {
+                movies: [Movie!]! = [{ name: "Braveheart" }, { name: "Matrix", year: 1999 }]
+            }
+
+            input Movie {
+                name: String = "Toy Story"
+                year: Int = 1995
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(2)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Director")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("movies")
+        assertThat(colorField.initializer.toString()).isEqualTo(
+            "java.util.Arrays.asList(" +
+                "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Braveheart\");}}, " +
+                "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Matrix\");setYear(1999);}}" +
+                ")"
+        )
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `The default object value should call constructor from typeMapping`() {
+        val schema = """
+            input Movie {
+                director: Person = { name: "Harrison" }
+            }
+
+            input Person {
+                name: String = "Damian"
+                age: Int = 33
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf("Person" to "mypackage.Human")
+            )
+        ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("director")
+        assertThat(colorField.initializer.toString()).isEqualTo("new mypackage.Human(){{setName(\"Harrison\");}}")
+    }
+
+    @Test
+    fun `Codegen should fail when default value specifies property does not exist in input type`() {
+        val schema = """
+            input Movie {
+                director: Person = { firstname: "Harrison" }
+            }
+            
+            input Person {
+                name: String = "Damian"
+            }
+        """.trimIndent()
+
+        val exception = assertThrows<IllegalStateException> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName
+                )
+            ).generate()
+        }
+        assertThat(exception.message).isEqualTo("Property \"firstname\" does not exist in input type \"Person\"")
     }
 }

@@ -299,14 +299,15 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaInputType(definitions: Collection<Definition<*>>): CodeGenResult {
-        val inputTypes = definitions.asSequence()
+        val inputTypeDefinitions = definitions
             .filterIsInstance<InputObjectTypeDefinition>()
+        val inputTypes = inputTypeDefinitions.asSequence()
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
 
         return inputTypes
             .map { d ->
-                InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions))
+                InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions), inputTypeDefinitions)
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }
 
@@ -411,12 +412,13 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateKotlinInputTypes(definitions: Collection<Definition<*>>): CodeGenResult {
-        return definitions.asSequence()
+        val inputTypeDefinitions = definitions
             .filterIsInstance<InputObjectTypeDefinition>()
+        return inputTypeDefinitions.asSequence()
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
-                KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions))
+                KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions), inputTypeDefinitions)
             }
             .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
     }

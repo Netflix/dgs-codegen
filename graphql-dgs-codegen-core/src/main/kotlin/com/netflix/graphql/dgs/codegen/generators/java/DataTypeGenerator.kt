@@ -28,6 +28,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
 import javax.lang.model.element.Modifier
+import com.squareup.javapoet.TypeName as JavaTypeName
 
 class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     private val logger: Logger = LoggerFactory.getLogger(DataTypeGenerator::class.java)
@@ -113,7 +114,11 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
 class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
 
-    fun generate(definition: InputObjectTypeDefinition, extensions: List<InputObjectTypeExtensionDefinition>): CodeGenResult {
+    fun generate(
+        definition: InputObjectTypeDefinition,
+        extensions: List<InputObjectTypeExtensionDefinition>,
+        inputTypeDefinitions: List<InputObjectTypeDefinition>
+    ): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult()
         }
@@ -122,37 +127,13 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
 
         val name = definition.name
         val fieldDefinitions = definition.inputValueDefinitions.map {
+            val type = typeUtils.findReturnType(it.type)
             val defaultValue = it.defaultValue?.let { defVal ->
-                when (defVal) {
-                    is BooleanValue -> CodeBlock.of("\$L", defVal.isValue)
-                    is IntValue -> CodeBlock.of("\$L", defVal.value)
-                    is StringValue -> {
-                        val localeValueOverride = checkAndGetLocaleValue(defVal, it.type)
-                        if (localeValueOverride != null) CodeBlock.of("\$L", localeValueOverride)
-                        else CodeBlock.of("\$S", defVal.value)
-                    }
-                    is FloatValue -> CodeBlock.of("\$L", defVal.value)
-                    is EnumValue -> CodeBlock.of("\$T.\$N", typeUtils.findReturnType(it.type), defVal.name)
-                    is ArrayValue -> if (defVal.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()") else CodeBlock.of(
-                        "java.util.Arrays.asList(\$L)",
-                        defVal.values.map { v ->
-                            when (v) {
-                                is BooleanValue -> CodeBlock.of("\$L", v.isValue)
-                                is IntValue -> CodeBlock.of("\$L", v.value)
-                                is StringValue -> CodeBlock.of("\$S", v.value)
-                                is FloatValue -> CodeBlock.of("\$L", v.value)
-                                is EnumValue -> CodeBlock.of("\$L.\$N", ((it.type as ListType).type as TypeName).name, v.name)
-                                else -> ""
-                            }
-                        }.joinToString()
-                    )
-                    is ObjectValue -> CodeBlock.of("new \$L()", typeUtils.findReturnType(it.type))
-                    else -> CodeBlock.of("\$L", defVal)
-                }
+                generateCode(defVal, type, inputTypeDefinitions)
             }
             Field(
                 name = it.name,
-                type = typeUtils.findReturnType(it.type),
+                type = type,
                 initialValue = defaultValue,
                 description = it.description,
                 directives = it.directives
@@ -161,13 +142,71 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)
     }
 
-    private fun checkAndGetLocaleValue(value: StringValue, type: Type<*>): String? {
-        if (typeUtils.findReturnType(type).toString() == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
+    private fun generateCode(
+        value: Value<out Value<*>>,
+        type: JavaTypeName,
+        inputTypeDefinitions: List<InputObjectTypeDefinition>
+    ): CodeBlock? {
+        return when (value) {
+            is BooleanValue -> CodeBlock.of("\$L", value.isValue)
+            is IntValue -> CodeBlock.of("\$L", value.value)
+            is StringValue -> {
+                val localeValueOverride = checkAndGetLocaleValue(value, type)
+                if (localeValueOverride != null) CodeBlock.of("\$L", localeValueOverride)
+                else CodeBlock.of("\$S", value.value)
+            }
+
+            is FloatValue -> CodeBlock.of("\$L", value.value)
+            is EnumValue -> CodeBlock.of("\$T.\$N", type, value.name)
+            is ArrayValue -> if (value.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()")
+            else CodeBlock.of(
+                "java.util.Arrays.asList(\$L)",
+                value.values.joinToString { v ->
+                    generateCode(v, type.className, inputTypeDefinitions).toString()
+                }
+            )
+            is ObjectValue -> {
+                val inputObjectDefinition = inputTypeDefinitions.first {
+                    val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
+                    expectedCanonicalClassName == type.className.canonicalName()
+                }
+                if (value.objectFields.isEmpty()) {
+                    return CodeBlock.of("new $type()")
+                } else {
+                    CodeBlock.of(
+                        "new $type(){{" + value.objectFields.joinToString("") { objectProperty ->
+                            val argumentType =
+                                checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
+                                    "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
+                                }
+                            val argumentValue = generateCode(
+                                objectProperty.value,
+                                typeUtils.findReturnType(argumentType.type),
+                                inputTypeDefinitions
+                            )
+                            "set${objectProperty.name.replaceFirstChar { it.uppercaseChar() }}($argumentValue);"
+                        } + "}}"
+                    )
+                }
+            }
+            else -> CodeBlock.of("\$L", value)
+        }
+    }
+
+    private fun checkAndGetLocaleValue(value: StringValue, type: JavaTypeName): String? {
+        if (type.toString() == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
         return null
     }
+
+    private val JavaTypeName.className: ClassName
+        get() = when (this) {
+            is com.squareup.javapoet.ClassName -> this
+            is com.squareup.javapoet.ParameterizedTypeName -> typeArguments[0].className
+            else -> TODO()
+        }
 }
 
-internal data class Field(val name: String, val type: com.squareup.javapoet.TypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<Directive> = listOf())
+internal data class Field(val name: String, val type: JavaTypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<Directive> = listOf())
 
 abstract class BaseDataTypeGenerator(
     internal val packageName: String,

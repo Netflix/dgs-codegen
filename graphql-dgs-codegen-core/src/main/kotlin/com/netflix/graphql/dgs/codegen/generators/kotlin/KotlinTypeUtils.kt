@@ -150,7 +150,7 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
             "BooleanValue" -> BOOLEAN
             "ID" -> STRING
             "IDValue" -> STRING
-            else -> "$packageName.$name".toKtTypeName()
+            else -> "${config.packageNameTypes}.$name".toKtTypeName()
         }
     }
 
