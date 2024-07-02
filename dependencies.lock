@@ -309,7 +309,7 @@
     },
     "testCompileClasspath": {
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "org.assertj:assertj-core"
             ]
@@ -323,7 +323,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3"
+            "locked": "3.26.0"
         },
         "org.jetbrains.intellij.deps:trove4j": {
             "locked": "1.0.20200330",
@@ -452,7 +452,7 @@
     },
     "testImplementationDependenciesMetadata": {
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "org.assertj:assertj-core"
             ]
@@ -466,7 +466,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3"
+            "locked": "3.26.0"
         },
         "org.jetbrains.intellij.deps:trove4j": {
             "locked": "1.0.20200330",
@@ -587,13 +587,13 @@
     },
     "testRuntimeClasspath": {
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "org.assertj:assertj-core"
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3"
+            "locked": "3.26.0"
         },
         "org.jetbrains.intellij.deps:trove4j": {
             "locked": "1.0.20200330",

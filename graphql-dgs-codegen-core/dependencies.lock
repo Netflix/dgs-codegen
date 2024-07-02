@@ -560,7 +560,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -575,7 +575,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3",
+            "locked": "3.26.0",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -961,7 +961,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -982,7 +982,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3",
+            "locked": "3.26.0",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -1369,7 +1369,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -1382,7 +1382,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3",
+            "locked": "3.26.0",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -2393,7 +2393,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -2408,7 +2408,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3",
+            "locked": "3.26.0",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -2794,7 +2794,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -2815,7 +2815,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3",
+            "locked": "3.26.0",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -3202,7 +3202,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.11",
+            "locked": "1.14.16",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -3215,7 +3215,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.25.3",
+            "locked": "3.26.0",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
