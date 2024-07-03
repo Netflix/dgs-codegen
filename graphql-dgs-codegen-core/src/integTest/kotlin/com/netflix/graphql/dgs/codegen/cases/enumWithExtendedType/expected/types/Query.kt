@@ -23,7 +23,6 @@ public class Query(
   public companion object {
     private val typesDefault: () -> List<EmployeeTypes?>? = 
         { throw IllegalStateException("Field `types` was not requested") }
-
   }
 
   @JsonPOJOBuilder

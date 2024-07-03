@@ -23,7 +23,6 @@ public class Query(
   public companion object {
     private val carsDefault: () -> List<Car?>? = 
         { throw IllegalStateException("Field `cars` was not requested") }
-
   }
 
   @JsonPOJOBuilder

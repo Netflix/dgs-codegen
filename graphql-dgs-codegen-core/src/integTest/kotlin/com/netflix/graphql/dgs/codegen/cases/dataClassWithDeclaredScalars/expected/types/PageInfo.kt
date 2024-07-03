@@ -46,18 +46,14 @@ public class PageInfo(
     private val startCursorDefault: () -> String? = 
         { throw IllegalStateException("Field `startCursor` was not requested") }
 
-
     private val endCursorDefault: () -> String? = 
         { throw IllegalStateException("Field `endCursor` was not requested") }
-
 
     private val hasNextPageDefault: () -> Boolean = 
         { throw IllegalStateException("Field `hasNextPage` was not requested") }
 
-
     private val hasPreviousPageDefault: () -> Boolean = 
         { throw IllegalStateException("Field `hasPreviousPage` was not requested") }
-
   }
 
   @JsonPOJOBuilder

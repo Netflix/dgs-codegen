@@ -26,7 +26,6 @@ public class Movie(
   public companion object {
     private val titleDefault: () -> String? = 
         { throw IllegalStateException("Field `title` was not requested") }
-
   }
 
   @JsonPOJOBuilder

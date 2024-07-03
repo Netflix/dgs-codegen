@@ -34,10 +34,8 @@ public class Vegetarian(
     private val caloriesDefault: () -> String? = 
         { throw IllegalStateException("Field `calories` was not requested") }
 
-
     private val vegetablesDefault: () -> List<String?>? = 
         { throw IllegalStateException("Field `vegetables` was not requested") }
-
   }
 
   @JsonPOJOBuilder

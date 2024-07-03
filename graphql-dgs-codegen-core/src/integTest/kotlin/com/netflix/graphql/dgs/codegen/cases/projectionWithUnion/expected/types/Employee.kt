@@ -15,7 +15,8 @@ import kotlin.jvm.JvmName
 public class Employee(
   firstname: () -> String? = firstnameDefault,
   company: () -> String? = companyDefault,
-) : Person, U {
+) : Person,
+    U {
   private val __firstname: () -> String? = firstname
 
   private val __company: () -> String? = company
@@ -33,10 +34,8 @@ public class Employee(
     private val firstnameDefault: () -> String? = 
         { throw IllegalStateException("Field `firstname` was not requested") }
 
-
     private val companyDefault: () -> String? = 
         { throw IllegalStateException("Field `company` was not requested") }
-
   }
 
   @JsonPOJOBuilder

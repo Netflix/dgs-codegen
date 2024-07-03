@@ -38,14 +38,11 @@ public class Droid(
     private val idDefault: () -> String = 
         { throw IllegalStateException("Field `id` was not requested") }
 
-
     private val nameDefault: () -> String = 
         { throw IllegalStateException("Field `name` was not requested") }
 
-
     private val primaryFunctionDefault: () -> String? = 
         { throw IllegalStateException("Field `primaryFunction` was not requested") }
-
   }
 
   @JsonPOJOBuilder

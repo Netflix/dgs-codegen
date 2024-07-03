@@ -32,10 +32,8 @@ public class Query(
     private val entityDefault: () -> List<Entity?>? = 
         { throw IllegalStateException("Field `entity` was not requested") }
 
-
     private val entityConnectionDefault: () -> SimpleListConnection<EntityEdge>? = 
         { throw IllegalStateException("Field `entityConnection` was not requested") }
-
   }
 
   @JsonPOJOBuilder

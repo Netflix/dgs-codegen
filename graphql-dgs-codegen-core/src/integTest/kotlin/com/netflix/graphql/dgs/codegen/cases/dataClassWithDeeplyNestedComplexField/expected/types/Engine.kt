@@ -47,18 +47,14 @@ public class Engine(
     private val typeDefault: () -> String? = 
         { throw IllegalStateException("Field `type` was not requested") }
 
-
     private val bhpDefault: () -> Int? = 
         { throw IllegalStateException("Field `bhp` was not requested") }
-
 
     private val sizeDefault: () -> Double? = 
         { throw IllegalStateException("Field `size` was not requested") }
 
-
     private val performanceDefault: () -> Performance? = 
         { throw IllegalStateException("Field `performance` was not requested") }
-
   }
 
   @JsonPOJOBuilder

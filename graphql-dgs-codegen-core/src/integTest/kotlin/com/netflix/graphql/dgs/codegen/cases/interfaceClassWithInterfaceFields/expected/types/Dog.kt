@@ -67,26 +67,20 @@ public class Dog(
     private val idDefault: () -> String = 
         { throw IllegalStateException("Field `id` was not requested") }
 
-
     private val nameDefault: () -> String? = 
         { throw IllegalStateException("Field `name` was not requested") }
-
 
     private val addressDefault: () -> List<String> = 
         { throw IllegalStateException("Field `address` was not requested") }
 
-
     private val motherDefault: () -> Dog = 
         { throw IllegalStateException("Field `mother` was not requested") }
-
 
     private val fatherDefault: () -> Dog? = 
         { throw IllegalStateException("Field `father` was not requested") }
 
-
     private val parentsDefault: () -> List<Dog?>? = 
         { throw IllegalStateException("Field `parents` was not requested") }
-
   }
 
   @JsonPOJOBuilder

@@ -22,7 +22,6 @@ public class Query(
   public companion object {
     private val searchDefault: () -> SearchResultPage? = 
         { throw IllegalStateException("Field `search` was not requested") }
-
   }
 
   @JsonPOJOBuilder

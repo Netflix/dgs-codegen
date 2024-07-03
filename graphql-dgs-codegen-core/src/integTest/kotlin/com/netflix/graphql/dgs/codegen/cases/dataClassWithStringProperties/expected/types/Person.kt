@@ -31,10 +31,8 @@ public class Person(
     private val firstnameDefault: () -> String? = 
         { throw IllegalStateException("Field `firstname` was not requested") }
 
-
     private val lastnameDefault: () -> String? = 
         { throw IllegalStateException("Field `lastname` was not requested") }
-
   }
 
   @JsonPOJOBuilder

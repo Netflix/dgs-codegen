@@ -31,10 +31,8 @@ public class Performance(
     private val zeroToSixtyDefault: () -> Double? = 
         { throw IllegalStateException("Field `zeroToSixty` was not requested") }
 
-
     private val quarterMileDefault: () -> Double? = 
         { throw IllegalStateException("Field `quarterMile` was not requested") }
-
   }
 
   @JsonPOJOBuilder

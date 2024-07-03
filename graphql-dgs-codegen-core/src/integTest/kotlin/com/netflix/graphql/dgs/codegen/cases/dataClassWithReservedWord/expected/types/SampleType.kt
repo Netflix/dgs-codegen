@@ -23,7 +23,6 @@ public class SampleType(
   public companion object {
     private val returnDefault: () -> String = 
         { throw IllegalStateException("Field `return` was not requested") }
-
   }
 
   @JsonPOJOBuilder

@@ -23,7 +23,6 @@ public class SearchResultPage(
   public companion object {
     private val itemsDefault: () -> List<SearchResult?>? = 
         { throw IllegalStateException("Field `items` was not requested") }
-
   }
 
   @JsonPOJOBuilder

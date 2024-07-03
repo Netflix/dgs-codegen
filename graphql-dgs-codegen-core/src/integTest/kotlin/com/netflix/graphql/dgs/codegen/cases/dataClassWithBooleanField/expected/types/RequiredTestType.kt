@@ -23,7 +23,6 @@ public class RequiredTestType(
   public companion object {
     private val isRequiredDefault: () -> Boolean = 
         { throw IllegalStateException("Field `isRequired` was not requested") }
-
   }
 
   @JsonPOJOBuilder

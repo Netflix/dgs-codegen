@@ -22,7 +22,6 @@ public class MyType(
   public companion object {
     private val otherDefault: () -> OtherType = 
         { throw IllegalStateException("Field `other` was not requested") }
-
   }
 
   @JsonPOJOBuilder

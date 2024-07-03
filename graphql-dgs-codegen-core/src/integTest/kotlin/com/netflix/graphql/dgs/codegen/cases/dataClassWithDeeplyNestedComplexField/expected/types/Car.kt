@@ -38,14 +38,11 @@ public class Car(
     private val makeDefault: () -> String? = 
         { throw IllegalStateException("Field `make` was not requested") }
 
-
     private val modelDefault: () -> String? = 
         { throw IllegalStateException("Field `model` was not requested") }
 
-
     private val engineDefault: () -> Engine? = 
         { throw IllegalStateException("Field `engine` was not requested") }
-
   }
 
   @JsonPOJOBuilder

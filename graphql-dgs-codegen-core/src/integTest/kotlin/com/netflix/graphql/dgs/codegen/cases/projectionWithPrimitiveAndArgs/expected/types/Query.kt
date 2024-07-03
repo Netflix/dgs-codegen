@@ -23,7 +23,6 @@ public class Query(
   public companion object {
     private val stringDefault: () -> String? = 
         { throw IllegalStateException("Field `string` was not requested") }
-
   }
 
   @JsonPOJOBuilder
