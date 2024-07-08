@@ -32,10 +32,8 @@ public class Entity(
     private val longDefault: () -> Long? = 
         { throw IllegalStateException("Field `long` was not requested") }
 
-
     private val dateTimeDefault: () -> OffsetDateTime? = 
         { throw IllegalStateException("Field `dateTime` was not requested") }
-
   }
 
   @JsonPOJOBuilder

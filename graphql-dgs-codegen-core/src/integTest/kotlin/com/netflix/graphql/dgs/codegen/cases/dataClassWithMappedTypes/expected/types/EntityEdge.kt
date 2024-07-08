@@ -31,10 +31,8 @@ public class EntityEdge(
     private val cursorDefault: () -> String = 
         { throw IllegalStateException("Field `cursor` was not requested") }
 
-
     private val nodeDefault: () -> Entity? = 
         { throw IllegalStateException("Field `node` was not requested") }
-
   }
 
   @JsonPOJOBuilder

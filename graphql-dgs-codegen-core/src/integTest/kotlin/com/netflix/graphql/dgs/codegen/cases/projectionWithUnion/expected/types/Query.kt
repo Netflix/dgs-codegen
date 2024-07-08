@@ -31,10 +31,8 @@ public class Query(
     private val uDefault: () -> U? = 
         { throw IllegalStateException("Field `u` was not requested") }
 
-
     private val usDefault: () -> List<U?>? = 
         { throw IllegalStateException("Field `us` was not requested") }
-
   }
 
   @JsonPOJOBuilder

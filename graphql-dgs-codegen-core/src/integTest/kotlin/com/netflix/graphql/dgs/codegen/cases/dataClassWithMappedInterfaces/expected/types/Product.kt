@@ -15,7 +15,8 @@ import kotlin.jvm.JvmName
 @JsonDeserialize(builder = Product.Builder::class)
 public class Product(
   id: () -> String = idDefault,
-) : Entity, Node {
+) : Entity,
+    Node {
   private val __id: () -> String = id
 
   @Suppress("INAPPLICABLE_JVM_NAME")
@@ -26,7 +27,6 @@ public class Product(
   public companion object {
     private val idDefault: () -> String = 
         { throw IllegalStateException("Field `id` was not requested") }
-
   }
 
   @JsonPOJOBuilder

@@ -23,7 +23,6 @@ public class Query(
   public companion object {
     private val isDefault: () -> List<I?>? = 
         { throw IllegalStateException("Field `is` was not requested") }
-
   }
 
   @JsonPOJOBuilder

@@ -23,7 +23,6 @@ public class Query(
   public companion object {
     private val productsDefault: () -> List<Product?>? = 
         { throw IllegalStateException("Field `products` was not requested") }
-
   }
 
   @JsonPOJOBuilder

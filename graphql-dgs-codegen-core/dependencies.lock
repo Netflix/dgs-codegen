@@ -108,10 +108,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -306,7 +306,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "net.java.dev.jna:jna": {
             "locked": "5.13.0",
@@ -543,10 +543,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -950,7 +950,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
@@ -1346,10 +1346,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -2054,10 +2054,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -2376,10 +2376,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -2783,7 +2783,7 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
@@ -3179,10 +3179,10 @@
             "locked": "1.13.0"
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0"
+            "locked": "1.17.0"
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]

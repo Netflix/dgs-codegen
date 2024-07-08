@@ -39,14 +39,11 @@ public class Human(
     private val idDefault: () -> String = 
         { throw IllegalStateException("Field `id` was not requested") }
 
-
     private val nameDefault: () -> String = 
         { throw IllegalStateException("Field `name` was not requested") }
 
-
     private val totalCreditsDefault: () -> Int? = 
         { throw IllegalStateException("Field `totalCredits` was not requested") }
-
   }
 
   @JsonPOJOBuilder

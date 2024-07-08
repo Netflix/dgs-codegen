@@ -31,10 +31,8 @@ public class Person(
     private val infoDefault: () -> String? = 
         { throw IllegalStateException("Field `info` was not requested") }
 
-
     private val interfaceDefault: () -> String? = 
         { throw IllegalStateException("Field `interface` was not requested") }
-
   }
 
   @JsonPOJOBuilder

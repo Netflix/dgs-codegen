@@ -23,7 +23,6 @@ public class Rating(
   public companion object {
     private val starsDefault: () -> Int? = 
         { throw IllegalStateException("Field `stars` was not requested") }
-
   }
 
   @JsonPOJOBuilder

@@ -22,7 +22,6 @@ public class Query(
   public companion object {
     private val testDefault: () -> RequiredTestType? = 
         { throw IllegalStateException("Field `test` was not requested") }
-
   }
 
   @JsonPOJOBuilder

@@ -620,13 +620,13 @@
             ]
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ]
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]
@@ -1291,13 +1291,13 @@
             ]
         },
         "com.squareup:kotlinpoet": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ]
         },
         "com.squareup:kotlinpoet-jvm": {
-            "locked": "1.16.0",
+            "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
             ]

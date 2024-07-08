@@ -23,7 +23,6 @@ public class Query(
   public companion object {
     private val fruitsDefault: () -> List<Fruit?>? = 
         { throw IllegalStateException("Field `fruits` was not requested") }
-
   }
 
   @JsonPOJOBuilder

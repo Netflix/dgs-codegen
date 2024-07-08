@@ -34,10 +34,8 @@ public class Dog(
     private val nameDefault: () -> String? = 
         { throw IllegalStateException("Field `name` was not requested") }
 
-
     private val dietDefault: () -> Vegetarian? = 
         { throw IllegalStateException("Field `diet` was not requested") }
-
   }
 
   @JsonPOJOBuilder

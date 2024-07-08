@@ -22,7 +22,6 @@ public class Query(
   public companion object {
     private val personDefault: () -> Person? = 
         { throw IllegalStateException("Field `person` was not requested") }
-
   }
 
   @JsonPOJOBuilder
