@@ -2782,7 +2782,7 @@ class KotlinCodeGenTest {
     @Test
     fun deprecateAnnotationWithNoReason() {
         val schema = """
-            input Person @deprecated(reason: "This is going bye bye") {
+            input Person @deprecated {
                 name: String @deprecated
             }
         """.trimIndent()
@@ -2802,7 +2802,7 @@ class KotlinCodeGenTest {
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
         assertThat(annotationSpec.members).hasSize(1)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("This is going bye bye"))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("Deprecated."))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")

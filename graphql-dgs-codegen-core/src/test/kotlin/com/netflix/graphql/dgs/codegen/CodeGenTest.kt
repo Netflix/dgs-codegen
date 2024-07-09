@@ -4211,7 +4211,7 @@ It takes a title and such.
     fun deprecateAnnotationWithNoReason() {
         val schema = """
             input Person @deprecated {
-                name: String
+                name: String @deprecated
             }
         """.trimIndent()
 
@@ -4236,7 +4236,10 @@ It takes a title and such.
         assertThat(person.javadoc.toString()).isEmpty()
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations).hasSize(0)
+        assertThat(fields[0].annotations).hasSize(1)
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
+        assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        assertThat(fields[0].javadoc.toString()).isEmpty()
     }
 
     @Test
