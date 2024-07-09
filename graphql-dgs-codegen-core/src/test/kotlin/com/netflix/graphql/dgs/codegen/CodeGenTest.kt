@@ -4208,25 +4208,36 @@ It takes a title and such.
     }
 
     @Test
-    fun deprecateAnnotationWithNoMesssage() {
+    fun deprecateAnnotationWithNoReason() {
         val schema = """
             input Person @deprecated {
                 name: String
             }
         """.trimIndent()
 
-        assertThrows<IllegalArgumentException> {
-            CodeGen(
-                CodeGenConfig(
-                    schemas = setOf(schema),
-                    packageName = basePackageName,
-                    includeImports = mapOf(Pair("validator", "com.test.validator")),
-                    includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
-                    generateCustomAnnotations = true,
-                    addDeprecatedAnnotation = true
-                )
-            ).generate()
-        }
+        val (dataTypes) = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                includeImports = mapOf(Pair("validator", "com.test.validator")),
+                includeEnumImports = mapOf("ValidPerson" to mapOf("types" to "com.enums")),
+                generateCustomAnnotations = true,
+                addDeprecatedAnnotation = true
+            )
+
+        ).generate()
+
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val person = dataTypes.single().typeSpec
+        assertThat(person.name).isEqualTo("Person")
+        assertThat(person.annotations).hasSize(1)
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
+        assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        assertThat(person.javadoc.toString()).isEmpty()
+        val fields = person.fieldSpecs
+        assertThat(fields).hasSize(1)
+        assertThat(fields[0].annotations).hasSize(0)
     }
 
     @Test

@@ -46,7 +46,7 @@ fun applyDirectivesKotlin(directives: List<Directive>, config: CodeGenConfig): M
             if (argumentMap.containsKey(ParserConstants.REASON)) {
                 annotations.add(deprecatedAnnotation((argumentMap[ParserConstants.REASON] as StringValue).value))
             } else {
-                throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
+                annotations.add(deprecatedAnnotation("Deprecated."))
             }
         }
 
@@ -90,7 +90,7 @@ fun applyDirectivesJava(directives: List<Directive>, config: CodeGenConfig): Pai
                         commentFormat = "@deprecated ${reason.substringBefore(ParserConstants.REPLACE_WITH_STR)}. Replaced by $replace"
                     }
                 } else {
-                    throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
+                    commentFormat = ""
                 }
             }
             annotations
