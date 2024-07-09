@@ -4233,13 +4233,13 @@ It takes a title and such.
         assertThat(person.annotations).hasSize(1)
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
         assertThat(((person.annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
-        assertThat(person.javadoc.toString()).isEmpty()
+        assertThat(person.javadoc.toString()).isEqualTo("Deprecated in the GraphQL schema.")
         val fields = person.fieldSpecs
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations).hasSize(1)
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).simpleName()).isEqualTo("Deprecated")
         assertThat(((fields[0].annotations[0] as AnnotationSpec).type as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
-        assertThat(fields[0].javadoc.toString()).isEmpty()
+        assertThat(fields[0].javadoc.toString()).isEqualTo("Deprecated in the GraphQL schema.")
     }
 
     @Test
