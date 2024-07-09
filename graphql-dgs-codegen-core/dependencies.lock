@@ -37,34 +37,34 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.clikt:clikt-jvm": {
-            "locked": "4.2.2",
+            "locked": "4.4.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "com.github.ajalt.colormath:colormath-jvm": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.colormath:colormath"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm"
             ]
         },
         "com.github.ajalt.mordant:mordant-jvm": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -123,13 +123,13 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
+                "com.github.ajalt.colormath:colormath-jvm",
+                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-common",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
@@ -137,32 +137,11 @@
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
-            ]
-        },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.9.24",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
-                "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-            ]
-        },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.9.24",
-            "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
-                "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
@@ -253,16 +232,16 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
@@ -309,7 +288,7 @@
             "locked": "1.17.0"
         },
         "net.java.dev.jna:jna": {
-            "locked": "5.13.0",
+            "locked": "5.14.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -321,26 +300,26 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
+                "com.github.ajalt.colormath:colormath",
+                "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json",
+                "org.jetbrains:markdown"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath",
-                "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json",
-                "org.jetbrains:markdown"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
@@ -353,7 +332,7 @@
             "locked": "1.6.3"
         },
         "org.jetbrains:markdown": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -406,34 +385,34 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.clikt:clikt-jvm": {
-            "locked": "4.2.2",
+            "locked": "4.4.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "com.github.ajalt.colormath:colormath-jvm": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.colormath:colormath"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm"
             ]
         },
         "com.github.ajalt.mordant:mordant-jvm": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -631,6 +610,8 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
+                "com.github.ajalt.colormath:colormath-jvm",
+                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
@@ -645,8 +626,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -667,8 +646,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
@@ -831,16 +808,16 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
@@ -968,7 +945,7 @@
             ]
         },
         "net.java.dev.jna:jna": {
-            "locked": "5.13.0",
+            "locked": "5.14.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -1038,6 +1015,8 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
+                "com.github.ajalt.colormath:colormath",
+                "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet",
@@ -1046,22 +1025,20 @@
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json",
+                "org.jetbrains:markdown"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath",
-                "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:atomicfu",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json",
-                "org.jetbrains:markdown"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
@@ -1103,7 +1080,7 @@
             "locked": "1.6.3"
         },
         "org.jetbrains:markdown": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -1209,34 +1186,34 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.clikt:clikt-jvm": {
-            "locked": "4.2.2",
+            "locked": "4.4.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "com.github.ajalt.colormath:colormath-jvm": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.colormath:colormath"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm"
             ]
         },
         "com.github.ajalt.mordant:mordant-jvm": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -1376,7 +1353,7 @@
             ]
         },
         "net.java.dev.jna:jna": {
-            "locked": "5.13.0",
+            "locked": "5.14.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
@@ -1443,6 +1420,8 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
+                "com.github.ajalt.colormath:colormath-jvm",
+                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
@@ -1452,21 +1431,19 @@
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
+                "org.jetbrains:markdown-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
-                "org.jetbrains:markdown-jvm"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
@@ -1481,14 +1458,11 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
-                "org.jetbrains:markdown-jvm"
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core": {
@@ -1546,13 +1520,13 @@
             ]
         },
         "org.jetbrains:markdown": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "org.jetbrains:markdown-jvm": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "org.jetbrains:markdown"
             ]
@@ -1983,34 +1957,34 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.clikt:clikt-jvm": {
-            "locked": "4.2.2",
+            "locked": "4.4.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "com.github.ajalt.colormath:colormath-jvm": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.colormath:colormath"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm"
             ]
         },
         "com.github.ajalt.mordant:mordant-jvm": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -2069,7 +2043,7 @@
             ]
         },
         "net.java.dev.jna:jna": {
-            "locked": "5.13.0",
+            "locked": "5.14.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
@@ -2093,49 +2067,27 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
+                "com.github.ajalt.colormath:colormath-jvm",
+                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-reflect",
                 "org.jetbrains.kotlin:kotlin-stdlib-common",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
-            ]
-        },
-        "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
-            "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
-                "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
                 "org.jetbrains:markdown-jvm"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+        "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
-            ]
-        },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.9.24",
-            "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
-                "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains:markdown-jvm"
+                "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
+                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
@@ -2179,13 +2131,13 @@
             ]
         },
         "org.jetbrains:markdown": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "org.jetbrains:markdown-jvm": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "org.jetbrains:markdown"
             ]
@@ -2239,34 +2191,34 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.clikt:clikt-jvm": {
-            "locked": "4.2.2",
+            "locked": "4.4.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "com.github.ajalt.colormath:colormath-jvm": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.colormath:colormath"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm"
             ]
         },
         "com.github.ajalt.mordant:mordant-jvm": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -2464,6 +2416,8 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
+                "com.github.ajalt.colormath:colormath-jvm",
+                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
@@ -2478,8 +2432,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -2500,8 +2452,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
@@ -2664,16 +2614,16 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
@@ -2801,7 +2751,7 @@
             ]
         },
         "net.java.dev.jna:jna": {
-            "locked": "5.13.0",
+            "locked": "5.14.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -2871,6 +2821,8 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
+                "com.github.ajalt.colormath:colormath",
+                "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet",
@@ -2879,22 +2831,20 @@
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json",
+                "org.jetbrains:markdown"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath",
-                "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:atomicfu",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json",
-                "org.jetbrains:markdown"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
@@ -2936,7 +2886,7 @@
             "locked": "1.6.3"
         },
         "org.jetbrains:markdown": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -3042,34 +2992,34 @@
             ]
         },
         "com.github.ajalt.clikt:clikt": {
-            "locked": "4.2.2"
+            "locked": "4.4.0"
         },
         "com.github.ajalt.clikt:clikt-jvm": {
-            "locked": "4.2.2",
+            "locked": "4.4.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt"
             ]
         },
         "com.github.ajalt.colormath:colormath": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "com.github.ajalt.colormath:colormath-jvm": {
-            "locked": "3.3.1",
+            "locked": "3.5.0",
             "transitive": [
                 "com.github.ajalt.colormath:colormath"
             ]
         },
         "com.github.ajalt.mordant:mordant": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm"
             ]
         },
         "com.github.ajalt.mordant:mordant-jvm": {
-            "locked": "2.2.0",
+            "locked": "2.5.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant"
             ]
@@ -3209,7 +3159,7 @@
             ]
         },
         "net.java.dev.jna:jna": {
-            "locked": "5.13.0",
+            "locked": "5.14.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
@@ -3276,6 +3226,8 @@
             "locked": "1.9.24",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
+                "com.github.ajalt.colormath:colormath-jvm",
+                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
@@ -3285,21 +3237,19 @@
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
+                "org.jetbrains:markdown-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
-                "org.jetbrains:markdown-jvm"
+                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
@@ -3314,14 +3264,11 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.24",
             "transitive": [
-                "com.github.ajalt.colormath:colormath-jvm",
-                "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
-                "org.jetbrains:markdown-jvm"
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core": {
@@ -3379,13 +3326,13 @@
             ]
         },
         "org.jetbrains:markdown": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "com.github.ajalt.mordant:mordant-jvm"
             ]
         },
         "org.jetbrains:markdown-jvm": {
-            "locked": "0.5.2",
+            "locked": "0.7.0",
             "transitive": [
                 "org.jetbrains:markdown"
             ]
