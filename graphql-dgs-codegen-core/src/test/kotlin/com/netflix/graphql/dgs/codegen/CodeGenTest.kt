@@ -4227,7 +4227,6 @@ It takes a title and such.
 
         ).generate()
 
-
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec
         assertThat(person.name).isEqualTo("Person")
