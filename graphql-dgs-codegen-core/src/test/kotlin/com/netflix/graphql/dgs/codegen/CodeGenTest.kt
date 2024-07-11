@@ -4832,4 +4832,31 @@ It takes a title and such.
         }
         assertThat(exception.message).isEqualTo("Property \"firstname\" does not exist in input type \"Person\"")
     }
+
+    @Test
+    fun `Codegen should use codeBlock templates to handle custom default value creation`() {
+        val schema = """
+            scalar Decimal
+
+            type Query {
+                api(i: myinput): String
+            }
+            
+            input myinput{
+                order: Decimal! = 1
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf("Decimal" to "java.math.BigDecimal"),
+                codeBlockTemplates = mapOf("java.math.BigDecimal" to "new java.math.BigDecimal(\$L)")
+            )
+        ).generate()
+
+        assertCompilesJava(result.javaDataTypes)
+    }
 }

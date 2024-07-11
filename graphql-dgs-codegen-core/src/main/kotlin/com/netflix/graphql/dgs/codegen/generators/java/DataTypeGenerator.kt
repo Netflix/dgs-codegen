@@ -27,6 +27,7 @@ import graphql.language.TypeName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
+import java.util.function.Function
 import javax.lang.model.element.Modifier
 import com.squareup.javapoet.TypeName as JavaTypeName
 
@@ -129,7 +130,11 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         val fieldDefinitions = definition.inputValueDefinitions.map {
             val type = typeUtils.findReturnType(it.type)
             val defaultValue = it.defaultValue?.let { defVal ->
-                generateCode(defVal, type, inputTypeDefinitions)
+                val codeBlockTemplate = config.codeBlockTemplates[type.className.canonicalName()]?.let { template ->
+                    { value: Any -> CodeBlock.of(template, value) }
+                }
+
+                generateCode(defVal, type, inputTypeDefinitions, codeBlockTemplate)
             }
             Field(
                 name = it.name,
@@ -145,18 +150,22 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
     private fun generateCode(
         value: Value<out Value<*>>,
         type: JavaTypeName,
-        inputTypeDefinitions: List<InputObjectTypeDefinition>
+        inputTypeDefinitions: List<InputObjectTypeDefinition>,
+        codeBlockTemplate: Function<Any, CodeBlock>? = null
     ): CodeBlock? {
         return when (value) {
-            is BooleanValue -> CodeBlock.of("\$L", value.isValue)
-            is IntValue -> CodeBlock.of("\$L", value.value)
+            is BooleanValue -> codeBlockTemplate?.apply(value.isValue) ?: CodeBlock.of("\$L", value.isValue)
+            is IntValue -> codeBlockTemplate?.apply(value.value) ?: CodeBlock.of("\$L", value.value)
             is StringValue -> {
+                if (codeBlockTemplate != null) {
+                    return codeBlockTemplate.apply(value.value)
+                }
                 val localeValueOverride = checkAndGetLocaleValue(value, type)
                 if (localeValueOverride != null) CodeBlock.of("\$L", localeValueOverride)
                 else CodeBlock.of("\$S", value.value)
             }
 
-            is FloatValue -> CodeBlock.of("\$L", value.value)
+            is FloatValue -> codeBlockTemplate?.apply(value.value) ?: CodeBlock.of("\$L", value.value)
             is EnumValue -> CodeBlock.of("\$T.\$N", type, value.name)
             is ArrayValue -> if (value.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()")
             else CodeBlock.of(

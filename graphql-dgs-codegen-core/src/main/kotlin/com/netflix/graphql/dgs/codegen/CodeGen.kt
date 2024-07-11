@@ -507,7 +507,8 @@ class CodeGenConfig(
     var javaGenerateAllConstructor: Boolean = true,
     var implementSerializable: Boolean = false,
     var addGeneratedAnnotation: Boolean = false,
-    var addDeprecatedAnnotation: Boolean = false
+    var addDeprecatedAnnotation: Boolean = false,
+    var codeBlockTemplates: Map<String, String> = emptyMap()
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
