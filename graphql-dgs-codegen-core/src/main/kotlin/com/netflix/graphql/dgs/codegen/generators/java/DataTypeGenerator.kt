@@ -76,7 +76,8 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
             union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
         }.map { it.name }.toList()
 
-        var implements = definition.implements.asSequence().filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }.toList()
+        var implements = (definition.implements + extensions.flatMap { it.implements })
+            .asSequence().filterIsInstance<TypeName>().map { typeUtils.findReturnType(it).toString() }.toList()
 
         var useInterfaceType = false
         var overrideGetter = false
@@ -110,7 +111,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
 
             val interfaceName = "I$name"
             implements = listOf(interfaceName) + implements
-            val superInterfaces = definition.implements
+            val superInterfaces = definition.implements + extensions.flatMap { it.implements }
             interfaceCodeGenResult = generateInterface(interfaceName, superInterfaces, fieldDefinitions)
         }
 

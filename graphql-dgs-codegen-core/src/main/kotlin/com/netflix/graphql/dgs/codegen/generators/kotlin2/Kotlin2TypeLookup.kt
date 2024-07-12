@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.JAVA_TYPE_DIRECTIVE_NAME
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
@@ -30,23 +31,7 @@ import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import graphql.Scalars
-import graphql.language.Document
-import graphql.language.EnumTypeDefinition
-import graphql.language.ImplementingTypeDefinition
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.ListType
-import graphql.language.NamedNode
-import graphql.language.Node
-import graphql.language.NodeTraverser
-import graphql.language.NodeVisitorStub
-import graphql.language.NonNullType
-import graphql.language.ObjectTypeDefinition
-import graphql.language.OperationDefinition
-import graphql.language.ScalarTypeDefinition
-import graphql.language.StringValue
-import graphql.language.Type
-import graphql.language.TypeName
-import graphql.language.UnionTypeDefinition
+import graphql.language.*
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 import com.squareup.kotlinpoet.TypeName as KtTypeName
@@ -171,9 +156,12 @@ class Kotlin2TypeLookup(
     /**
      * Returns the list of interfaces that this type implements
      */
-    fun implementedInterfaces(typeDefinition: ImplementingTypeDefinition<*>): List<String> {
-        return typeDefinition.implements
-            .filterIsInstance<NamedNode<*>>()
+    fun implementedInterfaces(typeDefinition: ImplementingTypeDefinition<*>, definitions: Collection<Definition<*>>): List<String> {
+        return (
+            typeDefinition.implements +
+                findInterfaceExtensions(typeDefinition.name, definitions)
+            )
+            .filterIsInstance<ObjectTypeExtensionDefinition>()
             .map { it.name }
     }
 
