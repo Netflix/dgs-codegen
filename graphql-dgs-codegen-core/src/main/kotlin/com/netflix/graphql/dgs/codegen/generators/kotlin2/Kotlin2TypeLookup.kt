@@ -21,7 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.JAVA_TYPE_DIRECTIVE_NAME
-import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
@@ -159,9 +159,10 @@ class Kotlin2TypeLookup(
     fun implementedInterfaces(typeDefinition: ImplementingTypeDefinition<*>, definitions: Collection<Definition<*>>): List<String> {
         return (
             typeDefinition.implements +
-                findInterfaceExtensions(typeDefinition.name, definitions)
+                findTypeExtensions(typeDefinition.name, definitions).flatMap { it.implements }
             )
-            .filterIsInstance<ObjectTypeExtensionDefinition>()
+            .filterIsInstance<NamedNode<*>>()
+            .filter { it.name != typeDefinition.name }
             .map { it.name }
     }
 
