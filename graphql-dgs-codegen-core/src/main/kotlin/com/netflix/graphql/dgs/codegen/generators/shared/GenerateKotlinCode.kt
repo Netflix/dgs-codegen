@@ -31,56 +31,80 @@ fun generateKotlinCode(
     config: CodeGenConfig,
     typeUtils: KotlinTypeUtils
 ): CodeBlock {
-    return when (value) {
-        is BooleanValue -> CodeBlock.of("%L", value.isValue)
-        is IntValue -> CodeBlock.of("%L", value.value)
-        is StringValue -> {
-            val localeValueOverride = checkAndGetLocaleValue(value, type)
-            if (localeValueOverride != null) CodeBlock.of("%L", localeValueOverride)
-            else CodeBlock.of("%S", value.value)
-        }
-        is FloatValue -> CodeBlock.of("%L", value.value)
-        is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
-        is ArrayValue ->
-            if (value.values.isEmpty()) CodeBlock.of("emptyList()")
-            else CodeBlock.of(
-                "listOf(%L)",
-                value.values.joinToString { v -> generateKotlinCode(v, type, inputTypeDefinitions, config, typeUtils).toString() }
-            )
-
-        is ObjectValue -> {
-            val inputObjectDefinition = inputTypeDefinitions.first {
-                val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
-                expectedCanonicalClassName == type.className.canonicalName
+    return checkAndGetLocaleCodeBlock(value, type)
+        ?: checkAndGetBigDecimalCodeBlock(value, type)
+        ?: when (value) {
+            is BooleanValue -> CodeBlock.of("%L", value.isValue)
+            is IntValue -> CodeBlock.of("%L", value.value)
+            is StringValue -> {
+                val localeValueOverride = checkAndGetLocaleCodeBlock(value, type)
+                if (localeValueOverride != null) CodeBlock.of("%L", localeValueOverride)
+                else CodeBlock.of("%S", value.value)
             }
 
-            CodeBlock.of(
-                type.className.canonicalName + "(%L)",
-                value.objectFields.joinToString { objectProperty ->
-                    val argumentType =
-                        checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
-                            "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
-                        }
-                    "${objectProperty.name} = ${
-                    generateKotlinCode(
-                        objectProperty.value,
-                        typeUtils.findReturnType(argumentType.type),
-                        inputTypeDefinitions,
-                        config,
-                        typeUtils
-                    )
-                    }"
-                }
-            )
-        }
+            is FloatValue -> CodeBlock.of("%L", value.value)
+            is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
+            is ArrayValue ->
+                if (value.values.isEmpty()) CodeBlock.of("emptyList()")
+                else CodeBlock.of(
+                    "listOf(%L)",
+                    value.values.joinToString { v ->
+                        generateKotlinCode(
+                            v,
+                            type,
+                            inputTypeDefinitions,
+                            config,
+                            typeUtils
+                        ).toString()
+                    }
+                )
 
-        else -> CodeBlock.of("%L", value)
-    }
+            is ObjectValue -> {
+                val inputObjectDefinition = inputTypeDefinitions.first {
+                    val expectedCanonicalClassName =
+                        config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
+                    expectedCanonicalClassName == type.className.canonicalName
+                }
+
+                CodeBlock.of(
+                    type.className.canonicalName + "(%L)",
+                    value.objectFields.joinToString { objectProperty ->
+                        val argumentType =
+                            checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
+                                "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
+                            }
+                        "${objectProperty.name} = ${
+                        generateKotlinCode(
+                            objectProperty.value,
+                            typeUtils.findReturnType(argumentType.type),
+                            inputTypeDefinitions,
+                            config,
+                            typeUtils
+                        )
+                        }"
+                    }
+                )
+            }
+
+            else -> CodeBlock.of("%L", value)
+        }
 }
 
-private fun checkAndGetLocaleValue(value: StringValue, type: TypeName): String? {
-    if (type.className.canonicalName == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
-    return null
+private fun checkAndGetLocaleCodeBlock(value: Value<Value<*>>, type: TypeName): CodeBlock? {
+    return if (value is StringValue && type.className.canonicalName == "java.util.Locale") {
+        CodeBlock.of("%L", "Locale.forLanguageTag(\"${value.value}\")")
+    } else null
+}
+
+private fun checkAndGetBigDecimalCodeBlock(value: Value<Value<*>>, type: TypeName): CodeBlock? {
+    return if (type.className.canonicalName == "java.math.BigDecimal") {
+        when (value) {
+            is StringValue -> CodeBlock.of("%L", "java.math.BigDecimal(\"${value.value}\")")
+            is IntValue -> CodeBlock.of("%L", "java.math.BigDecimal(${value.value})")
+            is FloatValue -> CodeBlock.of("%L", "java.math.BigDecimal(${value.value})")
+            else -> null
+        }
+    } else null
 }
 
 private val TypeName.className: ClassName

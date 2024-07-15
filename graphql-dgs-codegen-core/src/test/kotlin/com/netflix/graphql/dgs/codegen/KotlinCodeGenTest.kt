@@ -4012,4 +4012,37 @@ It takes a title and such.
         }
         assertThat(exception.message).isEqualTo("Property \"firstname\" does not exist in input type \"Person\"")
     }
+
+    @Test
+    fun `The default value for BigDecimal should be overridden`() {
+        val schema = """
+            scalar Decimal
+
+            type Query {
+                orders(filter: OrderFilter): String
+            }
+            
+            input OrderFilter{
+                minOrderValue: Decimal! = "1.1"
+                avgOrderValue: Decimal! = 1.12
+                maxOrderValue: Decimal! = 3.14e19
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf("Decimal" to "java.math.BigDecimal")
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.kotlinDataTypes
+        val typeSpec = dataTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.primaryConstructor!!.parameters[0].defaultValue.toString()).isEqualTo("java.math.BigDecimal(\"1.1\")")
+        assertThat(typeSpec.primaryConstructor!!.parameters[1].defaultValue.toString()).isEqualTo("java.math.BigDecimal(1.12)")
+        assertThat(typeSpec.primaryConstructor!!.parameters[2].defaultValue.toString()).isEqualTo("java.math.BigDecimal(3.14E+19)")
+        assertCompilesKotlin(dataTypes)
+    }
 }
