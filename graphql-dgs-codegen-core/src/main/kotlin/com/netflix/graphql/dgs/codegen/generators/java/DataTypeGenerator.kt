@@ -165,7 +165,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                 isNullable = isNullable
             )
         }.plus(extensions.flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
-        return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)
+        return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives, true)
     }
 
     private fun checkAndGetLocaleValue(value: StringValue, type: Type<*>): String? {
@@ -188,7 +188,8 @@ abstract class BaseDataTypeGenerator(
         interfaces: List<String>,
         fields: List<Field>,
         description: Description? = null,
-        directives: List<Directive> = emptyList()
+        directives: List<Directive> = emptyList(),
+        isInputType: Boolean = false
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addOptionalGeneratedAnnotation(config)
@@ -221,20 +222,20 @@ abstract class BaseDataTypeGenerator(
         }
 
         fields.forEach {
-            addField(it, javaType)
+            addField(it, javaType, isInputType)
         }
 
         addDefaultConstructor(javaType)
 
         if (config.javaGenerateAllConstructor && fields.isNotEmpty()) {
-            addParameterizedConstructor(fields, javaType)
+            addParameterizedConstructor(fields, javaType, isInputType)
         }
 
         addToString(fields, javaType)
 
         addEquals(fields, javaType)
         addHashcode(javaType)
-        addBuilder(fields, javaType)
+        addBuilder(fields, javaType, isInputType)
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
@@ -342,7 +343,7 @@ abstract class BaseDataTypeGenerator(
         javaType.addMethod(methodBuilder.build())
     }
 
-    private fun addParameterizedConstructor(fieldDefinitions: List<Field>, javaType: TypeSpec.Builder) {
+    private fun addParameterizedConstructor(fieldDefinitions: List<Field>, javaType: TypeSpec.Builder, isInputType: Boolean = false) {
         val constructorBuilder = MethodSpec.constructorBuilder()
         fieldDefinitions.forEach {
             val parameterBuilder = ParameterSpec.builder(it.type, ReservedKeywordSanitizer.sanitize(it.name))
@@ -366,7 +367,7 @@ abstract class BaseDataTypeGenerator(
                     ReservedKeywordSanitizer.sanitize(it.name),
                     ReservedKeywordSanitizer.sanitize(it.name)
                 )
-            if (config.generateIsSetFields && it.isNullable && it.initialValue == null) {
+            if (config.generateIsSetFields && isInputType && it.isNullable && it.initialValue == null) {
                 constructorBuilder
                     .addStatement(
                         "this.\$N = true",
@@ -389,10 +390,10 @@ abstract class BaseDataTypeGenerator(
         javaType.addSuperinterface(interfaceName)
     }
 
-    private fun addField(fieldDefinition: Field, javaType: TypeSpec.Builder) {
-        addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
+    private fun addField(fieldDefinition: Field, javaType: TypeSpec.Builder, isInputType: Boolean = false) {
+        addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType, isInputType)
         // Generate for all nullable fields without any defaults
-        if (config.generateIsSetFields && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
+        if (config.generateIsSetFields && isInputType && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
             addIsDefinedFieldWithGetters(fieldDefinition, javaType)
         }
     }
@@ -423,7 +424,7 @@ abstract class BaseDataTypeGenerator(
         return "is${name.capitalized()}Set"
     }
 
-    private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder) {
+    private fun addFieldWithGetterAndSetter(returnType: com.squareup.javapoet.TypeName?, fieldDefinition: Field, javaType: TypeSpec.Builder, isInputType: Boolean) {
         val fieldBuilder = if (fieldDefinition.initialValue != null) {
             FieldSpec
                 .builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
@@ -459,7 +460,7 @@ abstract class BaseDataTypeGenerator(
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             )
-        if (config.generateIsSetFields && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
+        if (config.generateIsSetFields && isInputType && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
             setterMethodBuilder
                 .addStatement(
                     "this.\$N = true",
@@ -500,7 +501,7 @@ abstract class BaseDataTypeGenerator(
         )
     }
 
-    private fun addBuilder(fields: List<Field>, javaType: TypeSpec.Builder) {
+    private fun addBuilder(fields: List<Field>, javaType: TypeSpec.Builder, isInputType: Boolean = false) {
         val className = ClassName.get(packageName, javaType.build().name)
         val buildMethod = MethodSpec.methodBuilder("build").returns(className).addStatement(
             """
@@ -537,7 +538,7 @@ abstract class BaseDataTypeGenerator(
             val fieldName = it.name
             val field = fields.find { iter -> ReservedKeywordSanitizer.sanitize(iter.name) == fieldName }
 
-            if (config.generateIsSetFields && field?.isNullable == true && field.initialValue == null) {
+            if (config.generateIsSetFields && isInputType && field?.isNullable == true && field.initialValue == null) {
                 method
                     .addStatement(
                         "this.\$N = true",
