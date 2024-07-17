@@ -191,7 +191,10 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
     }
 
     private fun checkAndGetLocaleCodeBlock(value: Value<out Value<*>>, type: JavaTypeName): CodeBlock? {
-        return if (value is StringValue && type.toString() == "java.util.Locale") {
+        return if (type.toString() == "java.util.Locale") {
+            check(value is StringValue) {
+                "$type cannot be created from $value, expected String value"
+            }
             CodeBlock.of("\$L", "Locale.forLanguageTag(\"${value.value}\")")
         } else null
     }
@@ -202,7 +205,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                 is StringValue -> CodeBlock.of("new java.math.BigDecimal(\$S)", value.value)
                 is IntValue -> CodeBlock.of("new java.math.BigDecimal(\$L)", value.value)
                 is FloatValue -> CodeBlock.of("new java.math.BigDecimal(\$L)", value.value)
-                else -> null
+                else -> error("$type cannot be created from $value, expected String, Int or Float value")
             }
         } else null
     }

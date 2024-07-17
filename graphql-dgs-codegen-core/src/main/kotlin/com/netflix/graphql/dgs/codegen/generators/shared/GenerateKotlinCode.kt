@@ -36,12 +36,7 @@ fun generateKotlinCode(
         ?: when (value) {
             is BooleanValue -> CodeBlock.of("%L", value.isValue)
             is IntValue -> CodeBlock.of("%L", value.value)
-            is StringValue -> {
-                val localeValueOverride = checkAndGetLocaleCodeBlock(value, type)
-                if (localeValueOverride != null) CodeBlock.of("%L", localeValueOverride)
-                else CodeBlock.of("%S", value.value)
-            }
-
+            is StringValue -> CodeBlock.of("%S", value.value)
             is FloatValue -> CodeBlock.of("%L", value.value)
             is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
             is ArrayValue ->
@@ -91,7 +86,10 @@ fun generateKotlinCode(
 }
 
 private fun checkAndGetLocaleCodeBlock(value: Value<Value<*>>, type: TypeName): CodeBlock? {
-    return if (value is StringValue && type.className.canonicalName == "java.util.Locale") {
+    return if (type.className.canonicalName == "java.util.Locale") {
+        check(value is StringValue) {
+            "$type cannot be created from $value, expected String value"
+        }
         CodeBlock.of("%L", "Locale.forLanguageTag(\"${value.value}\")")
     } else null
 }
@@ -102,7 +100,7 @@ private fun checkAndGetBigDecimalCodeBlock(value: Value<Value<*>>, type: TypeNam
             is StringValue -> CodeBlock.of("%L", "java.math.BigDecimal(\"${value.value}\")")
             is IntValue -> CodeBlock.of("%L", "java.math.BigDecimal(${value.value})")
             is FloatValue -> CodeBlock.of("%L", "java.math.BigDecimal(${value.value})")
-            else -> null
+            else -> error("$type cannot be created from $value, expected String, Int or Float value")
         }
     } else null
 }

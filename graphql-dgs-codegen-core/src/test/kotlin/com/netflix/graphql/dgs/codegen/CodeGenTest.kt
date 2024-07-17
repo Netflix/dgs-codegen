@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnota
 import com.squareup.javapoet.*
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
@@ -4649,6 +4650,29 @@ It takes a title and such.
     }
 
     @Test
+    fun `Codegen should fail with nice message given unsupported default value provided for Locale`() {
+        val schema = """
+            scalar Locale @specifiedBy(url:"https://tools.ietf.org/html/bcp47")
+
+            input NameInput {
+                  locale: Locale = 123
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    typeMapping = mapOf(
+                        "Locale" to "java.util.Locale"
+                    )
+                )
+            ).generate()
+        }.hasMessage("java.util.Locale cannot be created from IntValue{value=123}, expected String value")
+    }
+
+    @Test
     fun `The default empty object value should result in constructor call`() {
         val schema = """
             input Movie {
@@ -4834,7 +4858,7 @@ It takes a title and such.
     }
 
     @Test
-    fun `The default value for BigDecimal should be overridden`() {
+    fun `The default value for BigDecimal should be overridden and wrapped`() {
         val schema = """
             scalar Decimal
 
@@ -4863,5 +4887,31 @@ It takes a title and such.
         assertThat(dataTypes[0].typeSpec.fieldSpecs[1].initializer.toString()).isEqualTo("new java.math.BigDecimal(1.12)")
         assertThat(dataTypes[0].typeSpec.fieldSpecs[2].initializer.toString()).isEqualTo("new java.math.BigDecimal(3.14E+19)")
         assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `Codegen should fail with nice message given unsupported default value provided for BigDecimal`() {
+        val schema = """
+            scalar Decimal
+
+            type Query {
+                orders(filter: OrderFilter): String
+            }
+            
+            input OrderFilter{
+                orderValueBetween: Decimal! = true
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApi = true,
+                    typeMapping = mapOf("Decimal" to "java.math.BigDecimal")
+                )
+            ).generate()
+        }.hasMessage("java.math.BigDecimal cannot be created from BooleanValue{value=true}, expected String, Int or Float value")
     }
 }
