@@ -147,55 +147,67 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         type: JavaTypeName,
         inputTypeDefinitions: List<InputObjectTypeDefinition>
     ): CodeBlock? {
-        return when (value) {
-            is BooleanValue -> CodeBlock.of("\$L", value.isValue)
-            is IntValue -> CodeBlock.of("\$L", value.value)
-            is StringValue -> {
-                val localeValueOverride = checkAndGetLocaleValue(value, type)
-                if (localeValueOverride != null) CodeBlock.of("\$L", localeValueOverride)
-                else CodeBlock.of("\$S", value.value)
+        return checkAndGetLocaleCodeBlock(value, type)
+            ?: checkAndGetBigDecimalCodeBlock(value, type)
+            ?: when (value) {
+                is BooleanValue -> CodeBlock.of("\$L", value.isValue)
+                is IntValue -> CodeBlock.of("\$L", value.value)
+                is StringValue -> CodeBlock.of("\$S", value.value)
+                is FloatValue -> CodeBlock.of("\$L", value.value)
+                is EnumValue -> CodeBlock.of("\$T.\$N", type, value.name)
+                is ArrayValue -> if (value.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()")
+                else CodeBlock.of(
+                    "java.util.Arrays.asList(\$L)",
+                    value.values.joinToString { v ->
+                        generateCode(v, type.className, inputTypeDefinitions).toString()
+                    }
+                )
+                is ObjectValue -> {
+                    val inputObjectDefinition = inputTypeDefinitions.first {
+                        val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
+                        expectedCanonicalClassName == type.className.canonicalName()
+                    }
+                    if (value.objectFields.isEmpty()) {
+                        return CodeBlock.of("new $type()")
+                    } else {
+                        CodeBlock.of(
+                            "new $type(){{" + value.objectFields.joinToString("") { objectProperty ->
+                                val argumentType =
+                                    checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
+                                        "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
+                                    }
+                                val argumentValue = generateCode(
+                                    objectProperty.value,
+                                    typeUtils.findReturnType(argumentType.type),
+                                    inputTypeDefinitions
+                                )
+                                "set${objectProperty.name.replaceFirstChar { it.uppercaseChar() }}($argumentValue);"
+                            } + "}}"
+                        )
+                    }
+                }
+                else -> CodeBlock.of("\$L", value)
             }
-
-            is FloatValue -> CodeBlock.of("\$L", value.value)
-            is EnumValue -> CodeBlock.of("\$T.\$N", type, value.name)
-            is ArrayValue -> if (value.values.isEmpty()) CodeBlock.of("java.util.Collections.emptyList()")
-            else CodeBlock.of(
-                "java.util.Arrays.asList(\$L)",
-                value.values.joinToString { v ->
-                    generateCode(v, type.className, inputTypeDefinitions).toString()
-                }
-            )
-            is ObjectValue -> {
-                val inputObjectDefinition = inputTypeDefinitions.first {
-                    val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
-                    expectedCanonicalClassName == type.className.canonicalName()
-                }
-                if (value.objectFields.isEmpty()) {
-                    return CodeBlock.of("new $type()")
-                } else {
-                    CodeBlock.of(
-                        "new $type(){{" + value.objectFields.joinToString("") { objectProperty ->
-                            val argumentType =
-                                checkNotNull(inputObjectDefinition.inputValueDefinitions.find { it.name == objectProperty.name }) {
-                                    "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
-                                }
-                            val argumentValue = generateCode(
-                                objectProperty.value,
-                                typeUtils.findReturnType(argumentType.type),
-                                inputTypeDefinitions
-                            )
-                            "set${objectProperty.name.replaceFirstChar { it.uppercaseChar() }}($argumentValue);"
-                        } + "}}"
-                    )
-                }
-            }
-            else -> CodeBlock.of("\$L", value)
-        }
     }
 
-    private fun checkAndGetLocaleValue(value: StringValue, type: JavaTypeName): String? {
-        if (type.toString() == "java.util.Locale") return "Locale.forLanguageTag(\"${value.value}\")"
-        return null
+    private fun checkAndGetLocaleCodeBlock(value: Value<out Value<*>>, type: JavaTypeName): CodeBlock? {
+        return if (type.toString() == "java.util.Locale") {
+            check(value is StringValue) {
+                "$type cannot be created from $value, expected String value"
+            }
+            CodeBlock.of("\$L", "Locale.forLanguageTag(\"${value.value}\")")
+        } else null
+    }
+
+    private fun checkAndGetBigDecimalCodeBlock(value: Value<out Value<*>>, type: JavaTypeName): CodeBlock? {
+        return if (type.toString() == "java.math.BigDecimal") {
+            when (value) {
+                is StringValue -> CodeBlock.of("new java.math.BigDecimal(\$S)", value.value)
+                is IntValue -> CodeBlock.of("new java.math.BigDecimal(\$L)", value.value)
+                is FloatValue -> CodeBlock.of("new java.math.BigDecimal(\$L)", value.value)
+                else -> error("$type cannot be created from $value, expected String, Int or Float value")
+            }
+        } else null
     }
 
     private val JavaTypeName.className: ClassName

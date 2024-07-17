@@ -59,6 +59,9 @@ class Kotlin2CodeGenTest {
                     "dataClassWithMappedInterfaces" -> mapOf(
                         "Node" to "com.netflix.graphql.dgs.codegen.fixtures.Node"
                     )
+                    "inputWithDefaultBigDecimal" -> mapOf(
+                        "Decimal" to "java.math.BigDecimal"
+                    )
                     else -> emptyMap()
                 }
             )
