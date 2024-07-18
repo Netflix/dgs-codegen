@@ -34,7 +34,7 @@ class ReservedKeywordSanitizer {
         private const val prefix = "_"
 
         fun sanitize(originalName: String): String {
-            return if (reservedKeywords.contains(originalName) || SourceVersion.isKeyword(originalName)) {
+            return if (originalName in reservedKeywords || SourceVersion.isKeyword(originalName)) {
                 "$prefix$originalName"
             } else {
                 originalName
