@@ -72,7 +72,7 @@ fun generateKotlin2DataTypes(
 
             logger.info("Generating data type {}", typeDefinition.name)
             // get all interfaces this type implements
-            val implementedInterfaces = typeLookup.implementedInterfaces(typeDefinition, document.definitions)
+            val implementedInterfaces = typeLookup.implementedInterfaces(typeDefinition)
             val implementedUnionTypes = typeLookup.implementedUnionTypes(typeDefinition.name)
             val superInterfaces = implementedInterfaces + implementedUnionTypes
 

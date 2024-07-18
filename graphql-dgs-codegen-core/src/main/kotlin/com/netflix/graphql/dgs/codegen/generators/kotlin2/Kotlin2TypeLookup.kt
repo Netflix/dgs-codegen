@@ -31,7 +31,23 @@ import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.STRING
 import graphql.Scalars
-import graphql.language.*
+import graphql.language.Document
+import graphql.language.EnumTypeDefinition
+import graphql.language.ImplementingTypeDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.ListType
+import graphql.language.NamedNode
+import graphql.language.Node
+import graphql.language.NodeTraverser
+import graphql.language.NodeVisitorStub
+import graphql.language.NonNullType
+import graphql.language.ObjectTypeDefinition
+import graphql.language.OperationDefinition
+import graphql.language.ScalarTypeDefinition
+import graphql.language.StringValue
+import graphql.language.Type
+import graphql.language.TypeName
+import graphql.language.UnionTypeDefinition
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 import com.squareup.kotlinpoet.TypeName as KtTypeName
@@ -41,7 +57,7 @@ import com.squareup.kotlinpoet.TypeName as KtTypeName
  */
 class Kotlin2TypeLookup(
     config: CodeGenConfig,
-    document: Document
+    private val document: Document
 ) {
 
     /**
@@ -156,10 +172,10 @@ class Kotlin2TypeLookup(
     /**
      * Returns the list of interfaces that this type implements
      */
-    fun implementedInterfaces(typeDefinition: ImplementingTypeDefinition<*>, definitions: Collection<Definition<*>>): List<String> {
+    fun implementedInterfaces(typeDefinition: ImplementingTypeDefinition<*>): List<String> {
         return (
             typeDefinition.implements +
-                findTypeExtensions(typeDefinition.name, definitions).flatMap { it.implements }
+                findTypeExtensions(typeDefinition.name, document.definitions).flatMap { it.implements }
             )
             .filterIsInstance<NamedNode<*>>()
             .filter { it.name != typeDefinition.name }

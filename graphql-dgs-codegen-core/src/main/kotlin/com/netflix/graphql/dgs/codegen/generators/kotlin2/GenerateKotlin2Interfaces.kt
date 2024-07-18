@@ -67,7 +67,7 @@ fun generateKotlin2Interfaces(
                 .map { node -> ClassName(config.packageNameTypes, node.name) }
 
             // get all interfaces that this interface implements
-            val implementedInterfaces = typeLookup.implementedInterfaces(interfaceDefinition, document.definitions)
+            val implementedInterfaces = typeLookup.implementedInterfaces(interfaceDefinition)
 
             // get any fields defined via schema extensions
             val extensionTypes = findInterfaceExtensions(interfaceDefinition.name, document.definitions)
