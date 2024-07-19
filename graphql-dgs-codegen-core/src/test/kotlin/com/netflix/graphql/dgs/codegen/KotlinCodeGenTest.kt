@@ -3671,7 +3671,7 @@ It takes a title and such.
             .partition { it.name == "Generated" }
 
         allKotlinSources.assertKotlinGeneratedAnnotation()
-        codeGenResult.javaSources().assertJavaGeneratedAnnotation()
+        codeGenResult.javaSources().assertJavaGeneratedAnnotation(true)
 
         assertThat(generatedAnnotationFile.single().toString())
             .contains("@Retention(value = AnnotationRetention.BINARY)")

@@ -637,6 +637,13 @@
                 "org.jetbrains:markdown-jvm"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
         "net.java.dev.jna:jna": {
             "locked": "5.14.0",
             "transitive": [
@@ -1284,6 +1291,13 @@
             "locked": "8.5.12",
             "transitive": [
                 "org.jetbrains:markdown-jvm"
+            ]
+        },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "net.bytebuddy:byte-buddy": {
