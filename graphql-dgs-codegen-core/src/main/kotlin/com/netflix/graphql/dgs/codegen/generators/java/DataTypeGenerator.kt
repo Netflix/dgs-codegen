@@ -288,7 +288,7 @@ abstract class BaseDataTypeGenerator(
         }
 
         if (description != null) {
-            javaType.addJavadoc(description.sanitizeJavaDoc())
+            javaType.addJavadoc("\$L", description.content)
         }
 
         if (directives.isNotEmpty()) {
@@ -468,7 +468,7 @@ abstract class BaseDataTypeGenerator(
         }
 
         if (fieldDefinition.description != null) {
-            fieldBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
+            fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
 
         val getterPrefix = if (returnType == com.squareup.javapoet.TypeName.BOOLEAN && config.generateIsGetterForPrimitiveBooleanFields) "is" else "get"
@@ -480,7 +480,7 @@ abstract class BaseDataTypeGenerator(
         }
 
         if (fieldDefinition.description != null) {
-            getterMethodBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
+            getterMethodBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
 
         val setterName = typeUtils.transformIfDefaultClassMethodExists("set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}", TypeUtils.setClass)

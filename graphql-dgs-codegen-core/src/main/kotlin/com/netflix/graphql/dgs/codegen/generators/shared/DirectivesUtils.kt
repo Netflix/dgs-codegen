@@ -25,6 +25,7 @@ import com.squareup.kotlinpoet.AnnotationSpec
 import graphql.language.Directive
 import graphql.language.StringValue
 import graphql.language.Value
+import com.squareup.javapoet.AnnotationSpec as JavaAnnotationSpec
 
 fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
     return directive.arguments.fold(mutableMapOf()) { argMap, argument ->
@@ -60,7 +61,7 @@ fun applyDirectivesKotlin(directives: List<Directive>, config: CodeGenConfig): M
  * @input config: code generator config
  * @return Pair of (map of target site and corresponding annotations) and comments
  */
-fun applyDirectivesJava(directives: List<Directive>, config: CodeGenConfig): Pair<MutableMap<String, MutableList<com.squareup.javapoet.AnnotationSpec>>, String?> {
+fun applyDirectivesJava(directives: List<Directive>, config: CodeGenConfig): Pair<MutableMap<String, MutableList<JavaAnnotationSpec>>, String?> {
     var commentFormat: String? = null
     return Pair(
         directives.fold(mutableMapOf()) { annotations, directive ->
@@ -68,7 +69,7 @@ fun applyDirectivesJava(directives: List<Directive>, config: CodeGenConfig): Pai
             val siteTarget = if (argumentMap.containsKey(ParserConstants.SITE_TARGET)) (argumentMap[ParserConstants.SITE_TARGET] as StringValue).value.uppercase() else SiteTarget.DEFAULT.name
             if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
                 annotations[siteTarget] = if (annotations.containsKey(siteTarget)) {
-                    var annotationList: MutableList<com.squareup.javapoet.AnnotationSpec> = annotations[siteTarget]!!
+                    var annotationList: MutableList<JavaAnnotationSpec> = annotations[siteTarget]!!
                     annotationList.add(
                         com.netflix.graphql.dgs.codegen.generators.java.customAnnotation(
                             argumentMap,
@@ -81,7 +82,7 @@ fun applyDirectivesJava(directives: List<Directive>, config: CodeGenConfig): Pai
                 }
             }
             if (directive.name == ParserConstants.DEPRECATED && config.addDeprecatedAnnotation) {
-                annotations[siteTarget] = mutableListOf(com.netflix.graphql.dgs.codegen.generators.java.deprecatedAnnotation())
+                annotations[siteTarget] = mutableListOf(JavaAnnotationSpec.builder(java.lang.Deprecated::class.java).build())
                 if (argumentMap.containsKey(ParserConstants.REASON)) {
                     val reason: String = (argumentMap[ParserConstants.REASON] as StringValue).value
                     val replace = reason.substringAfter(ParserConstants.REPLACE_WITH_STR, "")
