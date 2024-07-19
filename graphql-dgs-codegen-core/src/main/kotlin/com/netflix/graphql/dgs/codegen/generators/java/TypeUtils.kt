@@ -242,7 +242,7 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
 
     fun transformIfDefaultClassMethodExists(originName: String, defaultMethodName: String): String {
         return if (defaultMethodName == originName) {
-            return originName.plus("Field")
+            return originName + "Field"
         } else {
             originName
         }
