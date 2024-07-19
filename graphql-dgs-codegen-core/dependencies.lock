@@ -1,7 +1,7 @@
 {
     "apiDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         }
     },
     "compileClasspath": {
@@ -117,10 +117,10 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
@@ -135,7 +135,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -294,10 +294,10 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
                 "com.github.ajalt.colormath:colormath",
@@ -313,7 +313,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -539,7 +539,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.16",
+            "locked": "1.14.18",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -554,7 +554,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.0",
+            "locked": "3.26.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -581,17 +581,17 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -599,7 +599,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -607,7 +607,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
@@ -624,7 +624,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -635,7 +635,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -644,7 +644,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -938,7 +938,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.16",
+            "locked": "1.14.18",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -959,7 +959,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.0",
+            "locked": "3.26.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -986,17 +986,17 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1004,7 +1004,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1012,7 +1012,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
                 "com.github.ajalt.colormath:colormath",
@@ -1030,7 +1030,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1042,7 +1042,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1050,7 +1050,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1346,7 +1346,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.16",
+            "locked": "1.14.18",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -1359,7 +1359,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.0",
+            "locked": "3.26.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -1386,20 +1386,20 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
@@ -1409,7 +1409,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1417,7 +1417,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
@@ -1436,7 +1436,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1447,7 +1447,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1456,7 +1456,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -1629,41 +1629,41 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-build-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-runner"
             ]
         },
         "org.jetbrains.kotlin:kotlin-build-tools-api": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl"
             ]
         },
         "org.jetbrains.kotlin:kotlin-build-tools-impl": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl",
                 "org.jetbrains.kotlin:kotlin-compiler-runner"
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler-runner": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl"
             ]
         },
         "org.jetbrains.kotlin:kotlin-daemon-client": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-runner"
             ]
         },
         "org.jetbrains.kotlin:kotlin-daemon-embeddable": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
@@ -1675,13 +1675,13 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl",
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
@@ -1708,10 +1708,10 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-daemon-embeddable": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
@@ -1723,13 +1723,13 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
@@ -1743,35 +1743,35 @@
     },
     "kotlinCompilerPluginClasspathIntegTest": {
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable",
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-jvm": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-common",
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable",
@@ -1788,35 +1788,35 @@
     },
     "kotlinCompilerPluginClasspathMain": {
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable",
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-jvm": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-common",
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable",
@@ -1833,35 +1833,35 @@
     },
     "kotlinCompilerPluginClasspathTest": {
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable",
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-jvm": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-common",
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable",
@@ -1884,19 +1884,19 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-daemon-embeddable": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "locked": "1.6.10",
@@ -1905,13 +1905,13 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable",
                 "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable"
@@ -2049,13 +2049,13 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
@@ -2064,7 +2064,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
@@ -2081,7 +2081,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2345,7 +2345,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.16",
+            "locked": "1.14.18",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -2360,7 +2360,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.0",
+            "locked": "3.26.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -2387,17 +2387,17 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2405,7 +2405,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2413,7 +2413,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
@@ -2430,7 +2430,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2441,7 +2441,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2450,7 +2450,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2744,7 +2744,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.16",
+            "locked": "1.14.18",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -2765,7 +2765,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.0",
+            "locked": "3.26.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -2792,17 +2792,17 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24"
+            "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2810,7 +2810,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2818,7 +2818,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
                 "com.github.ajalt.colormath:colormath",
@@ -2836,7 +2836,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2848,7 +2848,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -2856,7 +2856,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -3152,7 +3152,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.16",
+            "locked": "1.14.18",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
@@ -3165,7 +3165,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.0",
+            "locked": "3.26.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
@@ -3192,20 +3192,20 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
@@ -3215,7 +3215,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -3223,7 +3223,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
@@ -3242,7 +3242,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -3253,7 +3253,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
@@ -3262,7 +3262,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "1.9.24",
+            "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
