@@ -83,7 +83,7 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
                         it.directives
                     )
                 }
-        val interfaces = definition.implements
+        val interfaces = definition.implements + extensions.flatMap { it.implements }
         return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
     }
 }

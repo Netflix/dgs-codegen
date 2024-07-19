@@ -4096,4 +4096,34 @@ It takes a title and such.
             ).generate()
         }.hasMessage("java.math.BigDecimal cannot be created from BooleanValue{value=true}, expected String, Int or Float value")
     }
+
+    @Test
+    fun `Codegen should generate class implementing interface provided in extended type`() {
+        val schema = """
+            interface A { name : String }
+
+            type Example implements A {
+                name: String
+            }
+
+            interface B { age :Int }
+
+            extend type Example implements B{
+                age :Int
+            }
+
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
+        val superinterfaces = result.kotlinDataTypes[0].typeSpecs[0].superinterfaces.keys.map { it.toString() }
+        assertThat(superinterfaces.size).isEqualTo(2)
+        assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.A")
+        assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.B")
+    }
 }
