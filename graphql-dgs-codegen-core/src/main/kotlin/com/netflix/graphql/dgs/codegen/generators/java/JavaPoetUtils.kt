@@ -156,7 +156,7 @@ fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
     }
 }
 
-private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
+private fun generatedAnnotation(packageName: String, generateDate: Boolean): List<AnnotationSpec> {
     val graphqlGenerated = AnnotationSpec
         .builder(ClassName.get(packageName, "Generated"))
         .build()
@@ -166,19 +166,21 @@ private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
     } else {
         val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
 
-        val javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
+        var jakartaGeneratedBuilder = AnnotationSpec.builder(generatedAnnotation)
             .addMember("value", "${'$'}S", CodeGen::class.qualifiedName!!)
-            .addMember("date", "${'$'}S", generatedDate)
-            .build()
 
-        listOf(javaxGenerated, graphqlGenerated)
+        if (generateDate) {
+            jakartaGeneratedBuilder = jakartaGeneratedBuilder.addMember("date", "${'$'}S", generatedDate)
+        }
+
+        listOf(jakartaGeneratedBuilder.build(), graphqlGenerated)
     }
 }
 
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
-            generatedAnnotation(config.packageName).forEach { addAnnotation(it) }
+            generatedAnnotation(config.packageName, !config.disableDatesInGeneratedAnnotation).forEach { addAnnotation(it) }
         }
     }
 

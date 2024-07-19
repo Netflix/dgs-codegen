@@ -116,6 +116,12 @@
                 "com.squareup:kotlinpoet"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "1.9.25"
         },
@@ -286,6 +292,12 @@
         },
         "com.squareup:kotlinpoet": {
             "locked": "1.17.0"
+        },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
         },
         "net.java.dev.jna:jna": {
             "locked": "5.14.0",
@@ -528,6 +540,12 @@
             "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
+            ]
+        },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "junit:junit": {
@@ -928,6 +946,12 @@
         },
         "com.squareup:kotlinpoet": {
             "locked": "1.17.0"
+        },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
         },
         "junit:junit": {
             "locked": "4.13.2",
@@ -1335,6 +1359,12 @@
             "locked": "8.5.12",
             "transitive": [
                 "org.jetbrains:markdown-jvm"
+            ]
+        },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "junit:junit": {
@@ -2042,6 +2072,12 @@
                 "org.jetbrains:markdown-jvm"
             ]
         },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
         "net.java.dev.jna:jna": {
             "locked": "5.14.0",
             "transitive": [
@@ -2334,6 +2370,12 @@
             "locked": "1.17.0",
             "transitive": [
                 "com.squareup:kotlinpoet"
+            ]
+        },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "junit:junit": {
@@ -2734,6 +2776,12 @@
         },
         "com.squareup:kotlinpoet": {
             "locked": "1.17.0"
+        },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
         },
         "junit:junit": {
             "locked": "4.13.2",
@@ -3141,6 +3189,12 @@
             "locked": "8.5.12",
             "transitive": [
                 "org.jetbrains:markdown-jvm"
+            ]
+        },
+        "jakarta.annotation:jakarta.annotation-api": {
+            "locked": "2.1.1",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "junit:junit": {
