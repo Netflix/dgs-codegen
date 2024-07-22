@@ -35,7 +35,7 @@ dependencies {
     implementation 'org.slf4j:slf4j-api'
 
     implementation 'com.squareup:javapoet:1.13.+'
-    implementation 'com.squareup:kotlinpoet:1.17.+'
+    implementation 'com.squareup:kotlinpoet:1.18.+'
     implementation 'com.github.ajalt.clikt:clikt:4.4.+'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.+'
