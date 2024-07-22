@@ -66,7 +66,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
 
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         logger.info("Generating data type {}", definition.name)
@@ -80,7 +80,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
 
         var useInterfaceType = false
         var overrideGetter = false
-        var interfaceCodeGenResult = CodeGenResult()
+        var interfaceCodeGenResult = CodeGenResult.EMPTY
 
         if (config.generateInterfaces) {
             useInterfaceType = true
@@ -162,7 +162,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         inputTypeDefinitions: List<InputObjectTypeDefinition>
     ): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         logger.info("Generating input type {}", definition.name)

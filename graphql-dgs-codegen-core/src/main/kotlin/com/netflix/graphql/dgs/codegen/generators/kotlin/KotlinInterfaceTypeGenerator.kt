@@ -41,7 +41,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
         extensions: List<InterfaceTypeExtensionDefinition>
     ): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         logger.info("Generating type {}", definition.name)

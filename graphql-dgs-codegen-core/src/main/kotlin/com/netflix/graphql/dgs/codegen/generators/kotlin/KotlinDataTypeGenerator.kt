@@ -53,7 +53,7 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
 
     fun generate(definition: ObjectTypeDefinition, extensions: List<ObjectTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         logger.info("Generating data type {}", definition.name)
@@ -90,7 +90,10 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
 
 class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
     AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
-    private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
+
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
+    }
 
     fun generate(
         definition: InputObjectTypeDefinition,
@@ -98,10 +101,10 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
         inputTypeDefinitions: Collection<InputObjectTypeDefinition>
     ): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
-        logger.info("Generating input type ${definition.name}")
+        logger.info("Generating input type {}", definition.name)
 
         val fields = definition.inputValueDefinitions
             .filter(ReservedKeywordFilter.filterInvalidNames)

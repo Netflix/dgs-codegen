@@ -44,7 +44,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         extensions: List<InterfaceTypeExtensionDefinition>
     ): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         logger.info("Generating type ${definition.name}")

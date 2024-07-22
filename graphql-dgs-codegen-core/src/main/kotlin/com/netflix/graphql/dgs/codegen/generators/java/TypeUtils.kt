@@ -34,21 +34,26 @@ import java.util.*
 import com.squareup.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
-    private val commonScalars = mapOf<String, JavaTypeName>(
-        "LocalTime" to ClassName.get(LocalTime::class.java),
-        "LocalDate" to ClassName.get(LocalDate::class.java),
-        "LocalDateTime" to ClassName.get(LocalDateTime::class.java),
-        "TimeZone" to ClassName.get(String::class.java),
-        "Date" to ClassName.get(LocalDate::class.java),
-        "DateTime" to ClassName.get(OffsetDateTime::class.java),
-        "Currency" to ClassName.get(Currency::class.java),
-        "Instant" to ClassName.get(Instant::class.java),
-        "RelayPageInfo" to ClassName.get(PageInfo::class.java),
-        "PageInfo" to ClassName.get(PageInfo::class.java),
-        "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
-        "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"),
-        "Upload" to ClassName.get("org.springframework.web.multipart", "MultipartFile")
-    )
+
+    companion object {
+        private val commonScalars = mapOf<String, JavaTypeName>(
+            "LocalTime" to ClassName.get(LocalTime::class.java),
+            "LocalDate" to ClassName.get(LocalDate::class.java),
+            "LocalDateTime" to ClassName.get(LocalDateTime::class.java),
+            "TimeZone" to ClassName.get(String::class.java),
+            "Date" to ClassName.get(LocalDate::class.java),
+            "DateTime" to ClassName.get(OffsetDateTime::class.java),
+            "Currency" to ClassName.get(Currency::class.java),
+            "Instant" to ClassName.get(Instant::class.java),
+            "RelayPageInfo" to ClassName.get(PageInfo::class.java),
+            "PageInfo" to ClassName.get(PageInfo::class.java),
+            "PresignedUrlResponse" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse"),
+            "Header" to ClassName.get("com.netflix.graphql.types.core.resolvers", "PresignedUrlResponse", "Header"),
+            "Upload" to ClassName.get("org.springframework.web.multipart", "MultipartFile")
+        )
+        const val getClass = "getClass"
+        const val setClass = "setClass"
+    }
 
     fun qualifyName(name: String): String {
         return "$packageName.$name"
@@ -251,9 +256,4 @@ class TypeUtils(private val packageName: String, private val config: CodeGenConf
     private fun isFieldTypeDefinedInDocument(name: String): Boolean =
         document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||
             document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name }
-
-    companion object {
-        const val getClass = "getClass"
-        const val setClass = "setClass"
-    }
 }

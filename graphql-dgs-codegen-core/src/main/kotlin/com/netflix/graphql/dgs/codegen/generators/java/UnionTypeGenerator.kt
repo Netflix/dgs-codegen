@@ -37,14 +37,14 @@ class UnionTypeGenerator(private val config: CodeGenConfig, private val document
 
     fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         val javaType = TypeSpec.interfaceBuilder(definition.name)
             .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
-        val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
+        val memberTypes = definition.memberTypes.asSequence().plus(extensions.asSequence().flatMap { it.memberTypes })
             .filterIsInstance<TypeName>()
             .map { member ->
                 typeUtils.findJavaInterfaceName(member.name, packageName)
