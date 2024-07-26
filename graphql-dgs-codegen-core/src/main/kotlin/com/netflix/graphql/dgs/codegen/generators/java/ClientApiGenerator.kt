@@ -21,7 +21,6 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.*
-import com.netflix.graphql.dgs.codegen.generators.shared.ClassnameShortener
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.squareup.javapoet.*
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
@@ -65,7 +64,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.PUBLIC).superclass(ClassName.get(GraphQLQuery::class.java))
 
         if (it.description != null) {
-            javaType.addJavadoc(it.description.sanitizeJavaDoc())
+            javaType.addJavadoc("\$L", it.description.content)
         }
 
         val deprecatedClassDirective = getDeprecateDirective(it)
@@ -73,7 +72,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             javaType.addAnnotation(java.lang.Deprecated::class.java)
             val deprecationReason = getDeprecatedReason(deprecatedClassDirective)
             if (deprecationReason != null) {
-                javaType.addJavadoc("@deprecated " + deprecationReason.sanitizeJavaDoc())
+                javaType.addJavadoc("@deprecated \$L", deprecationReason)
             }
         }
 
@@ -82,12 +81,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .addModifiers(Modifier.PUBLIC)
                 .returns(String::class.java)
                 .addAnnotation(Override::class.java)
-                .addCode(
-                    """
-                    | return "${it.name}";
-                    |                
-                    """.trimMargin()
-                ).build()
+                .addStatement("return \$S", it.name)
+                .build()
         )
 
         val setType = ClassName.get(Set::class.java)
@@ -116,12 +111,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         val constructorBuilder = MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
-        constructorBuilder.addCode(
-            """
-            |super("${operation.lowercase()}", queryName);
-            |
-            """.trimMargin()
-        )
+        constructorBuilder.addStatement("super(\$S, queryName)", operation.lowercase())
 
         it.inputValueDefinitions.forEach { inputValue ->
             val findReturnType = TypeUtils(getDatatypesPackageName(), config, document).findReturnType(inputValue.type)
@@ -146,19 +136,21 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             }
 
             // Build Javadoc, separate multiple blocks by empty line
-            val javaDocCodeBlocks = mutableListOf<String>()
+            val javaDoc = CodeBlock.builder()
 
             if (inputValue.description != null) {
-                javaDocCodeBlocks.add(inputValue.description.sanitizeJavaDoc())
+                javaDoc.add("\$L", inputValue.description.content)
             }
             if (deprecationReason != null) {
-                javaDocCodeBlocks.add("@deprecated " + deprecationReason.sanitizeJavaDoc())
+                if (!javaDoc.isEmpty) {
+                    javaDoc.add("\n\n")
+                }
+                javaDoc.add("@deprecated \$L", deprecationReason)
             }
 
-            javaDocCodeBlocks
-                .takeIf { it.isNotEmpty() }
-                ?.joinToString("\n\n")
-                ?.also { methodBuilder.addJavadoc(it) }
+            if (!javaDoc.isEmpty) {
+                methodBuilder.addJavadoc(javaDoc.build())
+            }
 
             builderClass.addMethod(methodBuilder.build())
                 .addField(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
@@ -675,13 +667,9 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun getDeprecatedReason(directive: Directive): String? {
-        return directive
-            ?.getArgument("reason")
+        return directive.getArgument("reason")
             ?.let { it.value as? StringValue }
             ?.value
-    }
-    private fun truncatePrefix(prefix: String): String {
-        return if (config.shortProjectionNames) ClassnameShortener.shorten(prefix) else prefix
     }
 
     private fun getPackageName(): String {

@@ -3504,6 +3504,9 @@ It takes a title and such.
             Anything with a title!
             ""${'"'}
             interface Titled {
+                ""${'"'}
+                The title field; must not contain '$'
+                ""${'"'}
                 title: String
             }                                 
         """.trimIndent()
@@ -3515,10 +3518,8 @@ It takes a title and such.
             )
         ).generate()
 
-        assertThat(result.javaInterfaces[0].typeSpec.javadoc.toString()).isEqualTo(
-            """Anything with a title!
-            """.trimIndent()
-        )
+        assertThat(result.javaInterfaces[0].typeSpec.javadoc.toString()).isEqualTo("Anything with a title!")
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo("The title field; must not contain '\$'")
     }
 
     @Test
@@ -3539,10 +3540,7 @@ It takes a title and such.
             )
         ).generate()
 
-        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo(
-            """The original, non localized title.
-            """.trimIndent()
-        )
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo("The original, non localized title.")
     }
 
     @Test
