@@ -41,11 +41,11 @@ object EntitiesRepresentationTypeGeneratorUtils {
         representationGenerator: RepresentationGenerator
     ): CodeGenResult {
         if (config.skipEntityQueries) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
         val representationName = toRepresentationName(definition)
         if (representationName in generatedRepresentations) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         val directiveArg =

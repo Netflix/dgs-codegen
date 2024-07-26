@@ -34,7 +34,7 @@ class KotlinUnionTypeGenerator(private val config: CodeGenConfig) {
 
     fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)

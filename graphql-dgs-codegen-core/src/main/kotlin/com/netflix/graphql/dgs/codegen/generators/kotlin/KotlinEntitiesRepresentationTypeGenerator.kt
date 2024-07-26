@@ -35,6 +35,7 @@ import graphql.language.EnumTypeDefinition
 import graphql.language.FieldDefinition
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.ObjectTypeDefinition
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 class KotlinEntitiesRepresentationTypeGenerator(config: CodeGenConfig, document: Document) :
@@ -60,9 +61,9 @@ class KotlinEntitiesRepresentationTypeGenerator(config: CodeGenConfig, document:
         keyFields: Map<String, Any>
     ): CodeGenResult {
         if (representationName in generatedRepresentations) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
-        var fieldsCodeGenAccumulator = CodeGenResult()
+        var fieldsCodeGenAccumulator = CodeGenResult.EMPTY
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", STRING, false, CodeBlock.of("%S", definitionName))
         val fieldDefinitions =
@@ -85,7 +86,7 @@ class KotlinEntitiesRepresentationTypeGenerator(config: CodeGenConfig, document:
                                 .replace(type.name, fieldTypeRepresentationName).removeSuffix("?")
 
                         if (generatedRepresentations.containsKey(fieldTypeRepresentationName)) {
-                            logger.trace("Representation fo $fieldTypeRepresentationName was already generated.")
+                            logger.trace("Representation for {} was already generated.", fieldTypeRepresentationName)
                         } else {
                             logger.debug("Generating entity representation {} ...", fieldTypeRepresentationName)
                             val fieldTypeRepresentation = generateRepresentations(
@@ -134,7 +135,6 @@ class KotlinEntitiesRepresentationTypeGenerator(config: CodeGenConfig, document:
     }
 
     companion object {
-        private val logger: org.slf4j.Logger =
-            LoggerFactory.getLogger(KotlinEntitiesRepresentationTypeGenerator::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(KotlinEntitiesRepresentationTypeGenerator::class.java)
     }
 }

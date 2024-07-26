@@ -28,39 +28,35 @@ import kotlinx.serialization.json.*
 import java.math.BigDecimal
 import java.math.BigInteger
 
-@Suppress("FoldInitializerAndIfToElvis")
 class DocGenerator(private val config: CodeGenConfig, private val document: Document) {
     private val gqlParser = Parser()
-    private val packageName = config.packageNameDocs
     fun generate(
         definition: Definition<*>
     ): CodeGenResult {
         if (definition !is ObjectTypeDefinition) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         val docFiles: MutableList<DocFileSpec> = mutableListOf()
 
-        if (definition.name.equals("Query")) {
+        if (definition.name == "Query") {
             definition.fieldDefinitions.forEach {
-                val markdownText: String? = getFieldDefinitionMarkdown(it, definition)
-                if (markdownText != null) {
-                    docFiles.add(DocFileSpec.get("${definition.name}.${it.name}", markdownText))
-                }
+                val markdownText = getFieldDefinitionMarkdown(it, definition)
+                docFiles += DocFileSpec.get("${definition.name}.${it.name}", markdownText)
             }
         }
 
         if (definition.directivesByName["key"] != null) {
             val entitiesMarkdown: String? = getEntitiesMarkdown(definition)
             if (entitiesMarkdown != null) {
-                docFiles.add(DocFileSpec.get("Entities.${definition.name}", entitiesMarkdown))
+                docFiles += DocFileSpec.get("Entities.${definition.name}", entitiesMarkdown)
             }
         }
 
         return CodeGenResult(docFiles = docFiles)
     }
 
-    private fun getFieldDefinitionMarkdown(field: FieldDefinition, definition: ObjectTypeDefinition): String? {
+    private fun getFieldDefinitionMarkdown(field: FieldDefinition, definition: ObjectTypeDefinition): String {
         return """
             |# ${definition.name}.${field.name}: ${AstPrinter.printAst(field.type)}
             ${if (field.inputValueDefinitions.size > 0) {
@@ -132,10 +128,8 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
     private fun getExampleEntitiesQueryVariables(definition: ObjectTypeDefinition): String? {
         val representations: MutableList<JsonElement> = mutableListOf()
 
-        val fieldsArgument: Argument? = definition.getDirectives("key")?.get(0)?.getArgument("fields")
-        if (fieldsArgument == null) {
-            return null
-        }
+        val fieldsArgument: Argument = definition.getDirectives("key")?.get(0)?.getArgument("fields")
+            ?: return null
 
         if (fieldsArgument.value is StringValue) {
             val strValue: StringValue = fieldsArgument.value as StringValue
@@ -169,15 +163,17 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
             return JsonObject(map)
         }
 
-        var fieldValue: MutableMap<String, JsonElement>?
+        val fieldValue: Map<String, JsonElement>?
 
         if (definition is ObjectTypeDefinition) {
             val gqlValue: Value<*> = getMockGQLValue(definition.fieldDefinitions.first { it.name.equals(field.name) }?.type)
             val mockedValue: JsonElement = toJsonPrimitive(gqlValue)
-            fieldValue = mutableMapOf(field.name to mockedValue)
-            fieldValue.put("__typename", JsonPrimitive(definition.name))
+            fieldValue = mapOf(
+                field.name to mockedValue,
+                "__typename" to JsonPrimitive(definition.name)
+            )
         } else {
-            fieldValue = mutableMapOf(field.name to JsonPrimitive("foo"))
+            fieldValue = mapOf(field.name to JsonPrimitive("foo"))
         }
 
         return JsonObject(fieldValue)

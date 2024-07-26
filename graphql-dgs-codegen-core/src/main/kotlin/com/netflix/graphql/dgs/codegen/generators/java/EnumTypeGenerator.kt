@@ -37,7 +37,7 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
 
     fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         logger.info("Generating enum type {}", definition.name)
