@@ -244,17 +244,20 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
-        val methodNames = mutableSetOf<String>()
-        return if (config.generateClientApi || config.generateClientApiv2) {
-            definitions.asSequence()
-                .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
-                .sortedBy { it.name.length }
-                .map {
-                    ClientApiGenerator(config, document).generate(it, methodNames)
-                }
-                .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
-        } else CodeGenResult.EMPTY
+        if (!(config.generateClientApi || config.generateClientApiv2)) {
+            return CodeGenResult.EMPTY
+        }
+        var result = CodeGenResult.EMPTY
+        for (definition in definitions) {
+            if (definition !is ObjectTypeDefinition) {
+                continue
+            }
+            if (!(definition.name == "Query" || definition.name == "Mutation" || definition.name == "Subscription")) {
+                continue
+            }
+            result = result.merge(ClientApiGenerator(config, document).generate(definition))
+        }
+        return result
     }
 
     private fun generateJavaClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -631,7 +634,7 @@ data class CodeGenResult(
     }
 }
 
-fun List<FieldDefinition>.filterSkipped(): List<FieldDefinition> {
+fun Iterable<FieldDefinition>.filterSkipped(): Iterable<FieldDefinition> {
     return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
 }
 
@@ -639,7 +642,11 @@ fun Sequence<FieldDefinition>.filterSkipped(): Sequence<FieldDefinition> {
     return this.filter { it.directives.none { d -> d.name == "skipcodegen" } }
 }
 
-fun List<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): List<FieldDefinition> {
+fun Iterable<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): Iterable<FieldDefinition> {
+    return asSequence().filterIncludedInConfig(definitionName, config).toList()
+}
+
+fun Sequence<FieldDefinition>.filterIncludedInConfig(definitionName: String, config: CodeGenConfig): Sequence<FieldDefinition> {
     return when (definitionName) {
         "Query" -> {
             if (config.includeQueries.isEmpty()) {
