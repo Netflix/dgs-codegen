@@ -48,7 +48,7 @@ class ClientApiGenSubscriptionTest {
         ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLSubscription")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
@@ -81,7 +81,7 @@ class ClientApiGenSubscriptionTest {
         ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLMutation")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
@@ -107,7 +107,7 @@ class ClientApiGenSubscriptionTest {
         ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieTitleGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieTitleGraphQLSubscription")
 
         assertCompilesJava(codeGenResult)
     }

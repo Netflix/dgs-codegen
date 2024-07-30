@@ -24,11 +24,15 @@ import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Classpath
+import org.gradle.api.tasks.Input
+import org.gradle.api.tasks.InputFiles
+import org.gradle.api.tasks.OutputDirectory
+import org.gradle.api.tasks.TaskAction
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
-import java.util.*
+import java.util.Locale
 import javax.inject.Inject
 
 open class GenerateJavaTask @Inject constructor(
@@ -166,20 +170,24 @@ open class GenerateJavaTask @Inject constructor(
 
     @TaskAction
     fun generate() {
-        val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
-        val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
-        schemaPaths.filter { !it.exists() }.forEach {
-            logger.warn("Schema location ${it.absolutePath} does not exist")
-        }
+        val schemaPaths = schemaPaths.asSequence()
+            .map { Paths.get(it.toString()).toFile() }
+            .sorted()
+            .toSet()
+
         logger.info("Processing schema files:")
-        schemaPaths.forEach {
-            logger.info("Processing $it")
+        for (schemaPath in schemaPaths) {
+            if (!schemaPath.exists()) {
+                logger.warn("Schema location {} does not exist", schemaPath.absolutePath)
+            } else {
+                logger.info("Processing {}", schemaPath)
+            }
         }
 
         val config = CodeGenConfig(
             schemas = emptySet(),
             schemaFiles = schemaPaths,
-            schemaJarFilesFromDependencies = schemaJarFilesFromDependencies,
+            schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList(),
             outputDir = getOutputDir().toPath(),
             examplesOutputDir = getExampleOutputDir().toPath(),
             writeToFiles = true,

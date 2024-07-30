@@ -28,10 +28,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.*
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.util.stream.Stream
-import java.util.stream.Stream.of
 
 class KotlinCodeGenTest {
 
@@ -1115,7 +1118,7 @@ class KotlinCodeGenTest {
     }
 
     class MappedTypesTestCases : ArgumentsProvider {
-        override fun provideArguments(context: ExtensionContext): Stream<out Arguments> = of(
+        override fun provideArguments(context: ExtensionContext): Stream<Arguments> = Stream.of(
             arguments("java.time.LocalDateTime", "java.time.LocalDateTime"),
             arguments("String", "kotlin.String"),
             arguments("BigDecimal", "java.math.BigDecimal"),
@@ -1862,7 +1865,7 @@ class KotlinCodeGenTest {
     companion object {
         @JvmStatic
         fun generateConstantsArguments(): Stream<Arguments> {
-            return of(
+            return Stream.of(
                 Arguments.of(
                     true,
                     listOf(
@@ -3614,17 +3617,24 @@ It takes a title and such.
         ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(9)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("ShowsGraphQLQuery")
-        assertThat(codeGenResult.javaQueryTypes[1].typeSpec.name).isEqualTo("MovieGraphQLQuery")
-
-        assertThat(codeGenResult.javaQueryTypes[2].typeSpec.name).isEqualTo("ShowsGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[3].typeSpec.name).isEqualTo("MovieGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[4].typeSpec.name).isEqualTo("FooGraphQLQuery")
-
-        assertThat(codeGenResult.javaQueryTypes[5].typeSpec.name).isEqualTo("ShowsGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[6].typeSpec.name).isEqualTo("MovieGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[7].typeSpec.name).isEqualTo("FooGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[8].typeSpec.name).isEqualTo("BarGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("ShowsGraphQLQuery") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("ShowsGraphQLSubscription") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("ShowsGraphQLMutation") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("MovieGraphQLQuery") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("MovieGraphQLMutation") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("MovieGraphQLSubscription") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("FooGraphQLMutation") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("FooGraphQLSubscription") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", com.squareup.javapoet.TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("BarGraphQLSubscription") }
 
         assertCompilesJava(codeGenResult.javaQueryTypes)
     }

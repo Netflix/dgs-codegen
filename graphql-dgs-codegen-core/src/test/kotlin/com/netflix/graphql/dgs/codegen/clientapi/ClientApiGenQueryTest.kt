@@ -19,11 +19,10 @@
 package com.netflix.graphql.dgs.codegen.clientapi
 
 import com.netflix.graphql.dgs.codegen.*
+import com.squareup.javapoet.TypeSpec
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Ignore
 import org.junit.jupiter.api.Test
 
-@Ignore
 class ClientApiGenQueryTest {
     @Test
     fun generateQueryType() {
@@ -916,17 +915,24 @@ class ClientApiGenQueryTest {
         ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(9)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("ShowsGraphQLQuery")
-        assertThat(codeGenResult.javaQueryTypes[1].typeSpec.name).isEqualTo("MovieGraphQLQuery")
-
-        assertThat(codeGenResult.javaQueryTypes[2].typeSpec.name).isEqualTo("ShowsGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[3].typeSpec.name).isEqualTo("MovieGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[4].typeSpec.name).isEqualTo("FooGraphQLQuery")
-
-        assertThat(codeGenResult.javaQueryTypes[5].typeSpec.name).isEqualTo("ShowsGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[6].typeSpec.name).isEqualTo("MovieGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[7].typeSpec.name).isEqualTo("FooGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[8].typeSpec.name).isEqualTo("BarGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("ShowsGraphQLQuery") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("ShowsGraphQLSubscription") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("ShowsGraphQLMutation") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("MovieGraphQLQuery") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("MovieGraphQLMutation") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("MovieGraphQLSubscription") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("FooGraphQLMutation") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("FooGraphQLSubscription") }
+        assertThat(codeGenResult.javaQueryTypes).extracting("typeSpec", TypeSpec::class.java)
+            .satisfiesOnlyOnce { spec -> assertThat(spec.name).isEqualTo("BarGraphQLSubscription") }
 
         assertCompilesJava(codeGenResult.javaQueryTypes)
     }
