@@ -173,9 +173,9 @@ abstract class GraphQLInput : InputValue {
         }
 
         @JvmStatic
-        protected inline fun <reified TClass, reified TValue> default(arg: String): TValue? {
+        protected inline fun <reified TClass, reified TValue> default(arg: String, defaultValue: TValue): TValue {
             DefaultTracker.add(TClass::class.qualifiedName!!, arg)
-            return null
+            return defaultValue
         }
     }
 

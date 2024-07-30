@@ -35,16 +35,32 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
-import graphql.language.*
+import graphql.language.Definition
+import graphql.language.DirectivesContainer
+import graphql.language.Document
+import graphql.language.EnumTypeDefinition
+import graphql.language.FieldDefinition
+import graphql.language.InputObjectTypeDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.NamedNode
+import graphql.language.ObjectTypeDefinition
+import graphql.language.ObjectTypeExtensionDefinition
+import graphql.language.ScalarTypeDefinition
+import graphql.language.Type
+import graphql.language.TypeDefinition
+import graphql.language.TypeName
+import graphql.language.UnionTypeDefinition
 import graphql.parser.InvalidSyntaxException
 import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
 import graphql.parser.ParserOptions
+import graphql.schema.idl.ScalarInfo
+import graphql.schema.idl.TypeUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.io.*
+import java.io.File
+import java.io.Reader
 import java.lang.annotation.RetentionPolicy
-import java.nio.charset.StandardCharsets
 import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.zip.ZipFile
@@ -66,7 +82,6 @@ class CodeGen(private val config: CodeGenConfig) {
         config = config
     )
 
-    @Suppress("DuplicatedCode")
     fun generate(): CodeGenResult {
         val codeGenResult = when (config.language) {
             Language.JAVA -> generateJava()
@@ -115,14 +130,15 @@ class CodeGen(private val config: CodeGenConfig) {
 
         loadSchemaReaders(readerBuilder, debugReaderBuilder)
         // process schema from dependencies
-        config.schemaJarFilesFromDependencies.forEach {
-            val zipFile = ZipFile(it)
-            zipFile.entries().toList().forEach { entry ->
-                if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
-                    (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql"))
-                ) {
-                    logger.info("Generating schema from ${it.name}:  ${entry.name}")
-                    readerBuilder.reader(InputStreamReader(zipFile.getInputStream(entry), StandardCharsets.UTF_8), "codegen")
+        config.schemaJarFilesFromDependencies.forEach { file ->
+            ZipFile(file).use { zipFile ->
+                for (entry in zipFile.entries()) {
+                    if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
+                        (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql"))
+                    ) {
+                        logger.info("Generating schema from {}: {}", file.name, entry.name)
+                        readerBuilder.reader(zipFile.getInputStream(entry).reader(), "codegen")
+                    }
                 }
             }
         }
@@ -132,7 +148,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 parser.parseDocument(reader, options)
             } catch (exception: InvalidSyntaxException) {
                 // check if the schema is empty
-                if (exception.sourcePreview.trim() == "") {
+                if (exception.sourcePreview.isBlank()) {
                     logger.warn("Schema is empty")
                     // return an empty document
                     return Document.newDocument().build()
@@ -150,7 +166,8 @@ class CodeGen(private val config: CodeGenConfig) {
      */
     private fun loadSchemaReaders(vararg readerBuilders: MultiSourceReader.Builder) {
         readerBuilders.forEach { rb ->
-            val schemaFiles = config.schemaFiles.sorted()
+            val schemaFiles = config.schemaFiles.asSequence()
+                .sorted()
                 .flatMap { it.walkTopDown() }
                 .filter { it.isFile }
                 .filter { it.name.endsWith(".graphql") || it.name.endsWith(".graphqls") }
@@ -180,7 +197,7 @@ class CodeGen(private val config: CodeGenConfig) {
         // Data Fetchers
         val dataFetchersResult = generateJavaDataFetchers(definitions)
         val generatedAnnotation = generateJavaGeneratedAnnotation(config)
-        var docFiles = generateDocFiles(definitions)
+        val docFiles = generateDocFiles(definitions)
 
         return dataTypesResult
             .merge(dataFetchersResult)
@@ -202,7 +219,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
             .map { EnumTypeGenerator(config).generate(it, findEnumExtensions(it.name, definitions)) }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateJavaUnions(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -211,7 +228,7 @@ class CodeGen(private val config: CodeGenConfig) {
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
             .map { UnionTypeGenerator(config, document).generate(it, findUnionExtensions(it.name, definitions)) }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateJavaInterfaces(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -223,7 +240,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 val extensions = findInterfaceExtensions(it.name, definitions)
                 InterfaceGenerator(config, document).generate(it, extensions)
             }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -236,8 +253,8 @@ class CodeGen(private val config: CodeGenConfig) {
                 .map {
                     ClientApiGenerator(config, document).generate(it, methodNames)
                 }
-                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
-        } else CodeGenResult()
+                .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+        } else CodeGenResult.EMPTY
     }
 
     private fun generateJavaClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -247,7 +264,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .filter { it.hasDirective("key") }
                 .toList()
             ClientApiGenerator(config, document).generateEntities(federatedDefinitions)
-        } else CodeGenResult()
+        } else CodeGenResult.EMPTY
     }
 
     private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -258,8 +275,8 @@ class CodeGen(private val config: CodeGenConfig) {
                 .filter { it.hasDirective("key") }
                 .map { d ->
                     EntitiesRepresentationTypeGenerator(config, document).generate(d, generatedRepresentations)
-                }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
-        } else CodeGenResult()
+                }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+        } else CodeGenResult.EMPTY
     }
 
     private fun generateJavaDataFetchers(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -267,13 +284,13 @@ class CodeGen(private val config: CodeGenConfig) {
             .filterIsInstance<ObjectTypeDefinition>()
             .filter { it.name == "Query" }
             .map { DatafetcherGenerator(config, document).generate(it) }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateJavaGeneratedAnnotation(config: CodeGenConfig): CodeGenResult {
         return if (config.addGeneratedAnnotation) {
             val retention = AnnotationSpec.builder(java.lang.annotation.Retention::class.java)
-                .addMember("value", "${'$'}T.${'$'}N", RetentionPolicy::class.java, "CLASS")
+                .addMember("value", "\$T.\$L", RetentionPolicy::class.java, RetentionPolicy.CLASS.name)
                 .build()
             val generated =
                 TypeSpec.annotationBuilder(ClassName.get(config.packageName, "Generated"))
@@ -283,7 +300,7 @@ class CodeGen(private val config: CodeGenConfig) {
             val generatedFile = JavaFile.builder(config.packageName, generated).build()
             CodeGenResult(javaInterfaces = listOf(generatedFile))
         } else {
-            CodeGenResult()
+            CodeGenResult.EMPTY
         }
     }
 
@@ -295,19 +312,20 @@ class CodeGen(private val config: CodeGenConfig) {
             .filter { config.generateInterfaces || config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
                 DataTypeGenerator(config, document).generate(it, findTypeExtensions(it.name, definitions))
-            }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateJavaInputType(definitions: Collection<Definition<*>>): CodeGenResult {
-        val inputTypes = definitions.asSequence()
+        val inputTypeDefinitions = definitions
             .filterIsInstance<InputObjectTypeDefinition>()
+        val inputTypes = inputTypeDefinitions.asSequence()
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
 
         return inputTypes
             .map { d ->
-                InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions))
-            }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+                InputTypeGenerator(config, document).generate(d, findInputExtensions(d.name, definitions), inputTypeDefinitions)
+            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateKotlin(): CodeGenResult {
@@ -339,7 +357,7 @@ class CodeGen(private val config: CodeGenConfig) {
                     val extensions = findUnionExtensions(it.name, definitions)
                     KotlinUnionTypeGenerator(config).generate(it, extensions)
                 }
-                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+                .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
 
             val enumsResult = definitions.asSequence()
                 .filterIsInstance<EnumTypeDefinition>()
@@ -349,7 +367,7 @@ class CodeGen(private val config: CodeGenConfig) {
                     val extensions = findEnumExtensions(it.name, definitions)
                     KotlinEnumTypeGenerator(config).generate(it, extensions)
                 }
-                .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+                .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
 
             val constantsClass = KotlinConstantsGenerator(config, document).generate()
 
@@ -386,7 +404,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .addAnnotation(
                     KAnnotationSpec
                         .builder(Retention::class)
-                        .addMember("value = %T.%N", AnnotationRetention::class, "BINARY")
+                        .addMember("value = %T.%L", AnnotationRetention::class, AnnotationRetention.BINARY.name)
                         .build()
                 )
                 .build()
@@ -394,31 +412,20 @@ class CodeGen(private val config: CodeGenConfig) {
                 FileSpec.builder(config.packageName, "Generated").addType(generated).build()
             CodeGenResult(kotlinInterfaces = listOf(generatedFile))
         } else {
-            CodeGenResult()
+            CodeGenResult.EMPTY
         }
     }
 
-    private fun generateKotlinClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi) {
-            val generatedRepresentations = mutableMapOf<String, Any>()
-            return definitions.asSequence()
-                .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.hasDirective("key") }
-                .map { d ->
-                    KotlinEntitiesRepresentationTypeGenerator(config, document).generate(d, generatedRepresentations)
-                }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
-        } else CodeGenResult()
-    }
-
     private fun generateKotlinInputTypes(definitions: Collection<Definition<*>>): CodeGenResult {
-        return definitions.asSequence()
+        val inputTypeDefinitions = definitions
             .filterIsInstance<InputObjectTypeDefinition>()
+        return inputTypeDefinitions.asSequence()
             .excludeSchemaTypeExtension()
             .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
             .map {
-                KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions))
+                KotlinInputTypeGenerator(config, document).generate(it, findInputExtensions(it.name, definitions), inputTypeDefinitions)
             }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateKotlinDataTypes(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -431,12 +438,12 @@ class CodeGen(private val config: CodeGenConfig) {
                 val extensions = findTypeExtensions(it.name, definitions)
                 KotlinDataTypeGenerator(config, document).generate(it, extensions)
             }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateKotlinInterfaceTypes(definitions: Collection<Definition<*>>): CodeGenResult {
         if (!config.generateDataTypes && !config.generateInterfaces) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         return definitions.asSequence()
@@ -446,26 +453,26 @@ class CodeGen(private val config: CodeGenConfig) {
                 val extensions = findInterfaceExtensions(it.name, definitions)
                 KotlinInterfaceTypeGenerator(config, document).generate(it, extensions)
             }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 
     private fun generateDocFiles(definitions: Collection<Definition<*>>): CodeGenResult {
         if (!config.generateDocs) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         return definitions.asSequence()
             .map {
                 DocGenerator(config, document).generate(it)
             }
-            .fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
     }
 }
 
 class CodeGenConfig(
     var schemas: Set<String> = emptySet(),
     var schemaFiles: Set<File> = emptySet(),
-    var schemaJarFilesFromDependencies: List<java.io.File> = emptyList(),
+    var schemaJarFilesFromDependencies: List<File> = emptyList(),
     var outputDir: Path = Paths.get("generated"),
     var examplesOutputDir: Path = Paths.get("generated-examples"),
     var writeToFiles: Boolean = false,
@@ -506,6 +513,7 @@ class CodeGenConfig(
     var javaGenerateAllConstructor: Boolean = true,
     var implementSerializable: Boolean = false,
     var addGeneratedAnnotation: Boolean = false,
+    var disableDatesInGeneratedAnnotation: Boolean = false,
     var addDeprecatedAnnotation: Boolean = false
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
@@ -561,39 +569,32 @@ data class CodeGenResult(
     val kotlinClientTypes: List<FileSpec> = listOf(),
     val docFiles: List<DocFileSpec> = listOf()
 ) {
+    companion object {
+        val EMPTY = CodeGenResult()
+    }
     fun merge(current: CodeGenResult): CodeGenResult {
-        val javaDataTypes = this.javaDataTypes.plus(current.javaDataTypes)
-        val javaInterfaces = this.javaInterfaces.plus(current.javaInterfaces)
-        val javaEnumTypes = this.javaEnumTypes.plus(current.javaEnumTypes)
-        val javaDataFetchers = this.javaDataFetchers.plus(current.javaDataFetchers)
-        val javaQueryTypes = this.javaQueryTypes.plus(current.javaQueryTypes)
-        val clientProjections = this.clientProjections.plus(current.clientProjections).distinct()
-        val javaConstants = this.javaConstants.plus(current.javaConstants)
-        val kotlinDataTypes = this.kotlinDataTypes.plus(current.kotlinDataTypes)
-        val kotlinInputTypes = this.kotlinInputTypes.plus(current.kotlinInputTypes)
-        val kotlinInterfaces = this.kotlinInterfaces.plus(current.kotlinInterfaces)
-        val kotlinEnumTypes = this.kotlinEnumTypes.plus(current.kotlinEnumTypes)
-        val kotlinDataFetchers = this.kotlinDataFetchers.plus(current.kotlinDataFetchers)
-        val kotlinConstants = this.kotlinConstants.plus(current.kotlinConstants)
-        val kotlinClientTypes = this.kotlinClientTypes.plus(current.kotlinClientTypes)
-        val docFiles = this.docFiles.plus(current.docFiles)
-
+        if (current === EMPTY) {
+            return this
+        }
+        if (this === EMPTY) {
+            return current
+        }
         return CodeGenResult(
-            javaDataTypes = javaDataTypes,
-            javaInterfaces = javaInterfaces,
-            javaEnumTypes = javaEnumTypes,
-            javaDataFetchers = javaDataFetchers,
-            javaQueryTypes = javaQueryTypes,
-            clientProjections = clientProjections,
-            javaConstants = javaConstants,
-            kotlinDataTypes = kotlinDataTypes,
-            kotlinInputTypes = kotlinInputTypes,
-            kotlinInterfaces = kotlinInterfaces,
-            kotlinEnumTypes = kotlinEnumTypes,
-            kotlinDataFetchers = kotlinDataFetchers,
-            kotlinConstants = kotlinConstants,
-            kotlinClientTypes = kotlinClientTypes,
-            docFiles = docFiles
+            javaDataTypes = javaDataTypes.concat(current.javaDataTypes),
+            javaInterfaces = javaInterfaces.concat(current.javaInterfaces),
+            javaEnumTypes = javaEnumTypes.concat(current.javaEnumTypes),
+            javaDataFetchers = javaDataFetchers.concat(current.javaDataFetchers),
+            javaQueryTypes = javaQueryTypes.concat(current.javaQueryTypes),
+            clientProjections = clientProjections.concat(current.clientProjections).distinct(),
+            javaConstants = javaConstants.concat(current.javaConstants),
+            kotlinDataTypes = kotlinDataTypes.concat(current.kotlinDataTypes),
+            kotlinInputTypes = kotlinInputTypes.concat(current.kotlinInputTypes),
+            kotlinInterfaces = kotlinInterfaces.concat(current.kotlinInterfaces),
+            kotlinEnumTypes = kotlinEnumTypes.concat(current.kotlinEnumTypes),
+            kotlinDataFetchers = kotlinDataFetchers.concat(current.kotlinDataFetchers),
+            kotlinConstants = kotlinConstants.concat(current.kotlinConstants),
+            kotlinClientTypes = kotlinClientTypes.concat(current.kotlinClientTypes),
+            docFiles = docFiles.concat(current.docFiles)
         )
     }
 
@@ -618,6 +619,16 @@ data class CodeGenResult(
             .plus(kotlinConstants)
             .plus(kotlinClientTypes)
             .toList()
+    }
+
+    private fun <T> List<T>.concat(other: List<T>): List<T> {
+        if (other.isEmpty()) {
+            return this
+        }
+        if (isEmpty()) {
+            return other
+        }
+        return this + other
     }
 }
 
@@ -676,70 +687,26 @@ fun Type<*>.findTypeDefinition(
     includeBaseTypes: Boolean = false,
     includeScalarTypes: Boolean = false
 ): TypeDefinition<*>? {
-    return when (this) {
-        is NonNullType -> {
-            this.type.findTypeDefinition(document, excludeExtensions, includeBaseTypes, includeScalarTypes)
-        }
-        is ListType -> {
-            this.type.findTypeDefinition(document, excludeExtensions, includeBaseTypes, includeScalarTypes)
-        }
-        else -> {
-            if (includeBaseTypes && this.isBaseType()) {
-                this.findBaseTypeDefinition()
+    val unwrapped = TypeUtil.unwrapAll(this)
+    return if (includeBaseTypes && unwrapped.isBaseType()) {
+        unwrapped.findBaseTypeDefinition()
+    } else {
+        document.definitions.asSequence().filterIsInstance<TypeDefinition<*>>().find {
+            if (it is ScalarTypeDefinition) {
+                includeScalarTypes && it.name == unwrapped.name
             } else {
-                document.definitions.asSequence().filterIsInstance<TypeDefinition<*>>().find {
-                    if (it is ScalarTypeDefinition) {
-                        includeScalarTypes && it.name == (this as TypeName).name
-                    } else {
-                        it.name == (this as TypeName).name && (!excludeExtensions || it !is ObjectTypeExtensionDefinition)
-                    }
-                }
+                it.name == unwrapped.name && (!excludeExtensions || it !is ObjectTypeExtensionDefinition)
             }
         }
     }
 }
 
-fun Type<*>.isBaseType(): Boolean {
-    return when (this) {
-        is NonNullType -> {
-            this.type.isBaseType()
-        }
-        is ListType -> {
-            this.type.isBaseType()
-        }
-        is TypeName -> {
-            when (this.name) {
-                "String", "Boolean", "Float", "Int" -> true
-                else -> false
-            }
-        }
-        else -> {
-            false
-        }
-    }
+private fun TypeName.isBaseType(): Boolean {
+    return ScalarInfo.isGraphqlSpecifiedScalar(name)
 }
 
-fun Type<*>.findBaseTypeDefinition(): TypeDefinition<*>? {
-    return when (this) {
-        is NonNullType -> {
-            this.type.findBaseTypeDefinition()
-        }
-        is ListType -> {
-            this.type.findBaseTypeDefinition()
-        }
-        is TypeName -> {
-            when (this.name) {
-                "String" -> ScalarTypeDefinition.newScalarTypeDefinition().name("String").build()
-                "Boolean" -> ScalarTypeDefinition.newScalarTypeDefinition().name("Boolean").build()
-                "Float" -> ScalarTypeDefinition.newScalarTypeDefinition().name("Float").build()
-                "Int" -> ScalarTypeDefinition.newScalarTypeDefinition().name("Int").build()
-                else -> null
-            }
-        }
-        else -> {
-            null
-        }
-    }
+private fun TypeName.findBaseTypeDefinition(): TypeDefinition<*>? {
+    return ScalarInfo.GRAPHQL_SPECIFICATION_SCALARS_DEFINITIONS[name]
 }
 
 class CodeGenSchemaParsingException(

@@ -22,26 +22,18 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
+import com.netflix.graphql.dgs.codegen.generators.shared.generateKotlinCode
 import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.AnnotationSpec
-import com.squareup.kotlinpoet.ClassName
-import com.squareup.kotlinpoet.CodeBlock
-import com.squareup.kotlinpoet.FileSpec
-import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.KModifier
-import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
-import com.squareup.kotlinpoet.PropertySpec
-import com.squareup.kotlinpoet.TypeSpec
-import com.squareup.kotlinpoet.asClassName
-import graphql.language.Document
-import graphql.language.InputObjectTypeDefinition
-import graphql.language.InputValueDefinition
+import graphql.language.*
 
 fun generateKotlin2InputTypes(
     config: CodeGenConfig,
@@ -49,6 +41,12 @@ fun generateKotlin2InputTypes(
     requiredTypes: Set<String>
 ): List<FileSpec> {
     val typeLookup = Kotlin2TypeLookup(config, document)
+
+    val typeUtils = KotlinTypeUtils(
+        packageName = config.packageName,
+        config = config,
+        document = document
+    )
 
     return document
         .getDefinitionsOfType(InputObjectTypeDefinition::class.java)
@@ -94,8 +92,18 @@ fun generateKotlin2InputTypes(
                                     type = type
                                 ).addAnnotation(AnnotationSpec.builder(JsonProperty::class).addMember("%S", field.name).build())
                                     .apply {
-                                        if (type.isNullable) {
-                                            defaultValue("default<%T, %T>(%S)", typeName, type, field.name)
+                                        if (field.defaultValue != null || type.isNullable) {
+                                            val value = field.defaultValue?.let {
+                                                generateKotlinCode(
+                                                    it,
+                                                    type,
+                                                    document
+                                                        .getDefinitionsOfType(InputObjectTypeDefinition::class.java),
+                                                    config,
+                                                    typeUtils
+                                                )
+                                            }
+                                            defaultValue("default<%T, %T>(%S, $value)", typeName, type, field.name)
                                         }
                                     }
                                     .build()

@@ -35,7 +35,6 @@ import com.squareup.javapoet.WildcardTypeName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.ArrayValue
 import graphql.language.BooleanValue
-import graphql.language.Description
 import graphql.language.EnumValue
 import graphql.language.FloatValue
 import graphql.language.IntValue
@@ -44,7 +43,6 @@ import graphql.language.ObjectField
 import graphql.language.ObjectValue
 import graphql.language.StringValue
 import graphql.language.Value
-import java.lang.IllegalArgumentException
 
 /**
  * Generate a [JsonTypeInfo] annotation, which allows for Jackson
@@ -58,14 +56,6 @@ import java.lang.IllegalArgumentException
  *   property = "__typename")
  * ```
  */
-
-/**
- * Adds @Deprecated annotation
- */
-fun deprecatedAnnotation(): AnnotationSpec {
-    return AnnotationSpec.builder(java.lang.Deprecated::class.java).build()
-}
-
 fun jsonTypeInfoAnnotation(): AnnotationSpec {
     return AnnotationSpec.builder(JsonTypeInfo::class.java)
         .addMember("use", "\$T.\$L", JsonTypeInfo.Id::class.java, JsonTypeInfo.Id.NAME.name)
@@ -122,22 +112,6 @@ fun jsonSubTypeAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
     return annotationSpec.build()
 }
 
-/**
- * Javapoet treats $ as a reference
- * https://github.com/square/javapoet/issues/670
- */
-fun Description.sanitizeJavaDoc(): String {
-    return this.content.lines().joinToString("\n").sanitizeJavaDoc()
-}
-
-/**
- * Javapoet treats $ as a reference
- * https://github.com/square/javapoet/issues/670
- */
-fun String.sanitizeJavaDoc(): String {
-    return replace("$", "$$")
-}
-
 fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
@@ -156,7 +130,7 @@ fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
     }
 }
 
-private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
+private fun generatedAnnotation(packageName: String, generateDate: Boolean): List<AnnotationSpec> {
     val graphqlGenerated = AnnotationSpec
         .builder(ClassName.get(packageName, "Generated"))
         .build()
@@ -166,19 +140,21 @@ private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
     } else {
         val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
 
-        val javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
+        var jakartaGeneratedBuilder = AnnotationSpec.builder(generatedAnnotation)
             .addMember("value", "${'$'}S", CodeGen::class.qualifiedName!!)
-            .addMember("date", "${'$'}S", generatedDate)
-            .build()
 
-        listOf(javaxGenerated, graphqlGenerated)
+        if (generateDate) {
+            jakartaGeneratedBuilder = jakartaGeneratedBuilder.addMember("date", "${'$'}S", generatedDate)
+        }
+
+        listOf(jakartaGeneratedBuilder.build(), graphqlGenerated)
     }
 }
 
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
-            generatedAnnotation(config.packageName).forEach { addAnnotation(it) }
+            generatedAnnotation(config.packageName, !config.disableDatesInGeneratedAnnotation).forEach { addAnnotation(it) }
         }
     }
 
@@ -219,11 +195,11 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
  */
 private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotationName: String, prefix: String = ""): CodeBlock =
     when (value) {
-        is BooleanValue -> CodeBlock.of("\$L", (value as BooleanValue).isValue)
-        is IntValue -> CodeBlock.of("\$L", (value as IntValue).value)
+        is BooleanValue -> CodeBlock.of("\$L", value.isValue)
+        is IntValue -> CodeBlock.of("\$L", value.value)
         is StringValue -> {
             // If string value ends with .class and classImports mapping is provided, treat as Java Class
-            val string = (value as StringValue).value
+            val string = value.value
             if (string.endsWith(ParserConstants.CLASS_STRING)) {
                 val className = string.dropLast(ParserConstants.CLASS_LENGTH)
                 // Use annotationName and className in the PackagerParserUtil to get Class Package name.
@@ -232,32 +208,35 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotati
                 else CodeBlock.of("\$S", string)
             } else CodeBlock.of("\$S", string)
         }
-        is FloatValue -> CodeBlock.of("\$L", (value as FloatValue).value)
+        is FloatValue -> CodeBlock.of("\$L", value.value)
         // In an enum value the prefix (key in the parameters map for the enum) is used to get the package name from the config
         // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
         is EnumValue -> CodeBlock.of(
             "\$T",
-            ClassName.get(PackageParserUtil.getEnumPackage(config, annotationName, prefix), (value as EnumValue).name)
+            ClassName.get(PackageParserUtil.getEnumPackage(config, annotationName, prefix), value.name)
         )
         is ArrayValue ->
-            if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("{}")
-            else CodeBlock.of("{\$L}", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, annotationName = annotationName, prefix = if (v is EnumValue) prefix else "").toString() })
+            if (value.values.isEmpty()) {
+                CodeBlock.of("{}")
+            } else {
+                CodeBlock.of("{\$L}", value.values.joinToString { v -> generateCode(config = config, value = v, annotationName = annotationName, prefix = if (v is EnumValue) prefix else "").toString() })
+            }
         else -> CodeBlock.of("\$L", value)
     }
 
 private fun typeClassBestGuess(name: String): TypeName {
     return when (name) {
         "String" -> ClassName.get("java.lang", "String")
-        "Integer" -> ClassName.get("java.lang", "Integer")
-        "Long" -> ClassName.get("java.lang", "Long")
-        "Float" -> ClassName.get("java.lang", "Float")
-        "Double" -> ClassName.get("java.lang", "Double")
-        "Character" -> ClassName.get("java.lang", "Character")
-        "Short" -> ClassName.get("java.lang", "Short")
-        "Byte" -> ClassName.get("java.lang", "Byte")
+        "Integer" -> ClassName.INT.box()
+        "Long" -> ClassName.LONG.box()
+        "Float" -> ClassName.FLOAT.box()
+        "Double" -> ClassName.DOUBLE.box()
+        "Character" -> ClassName.CHAR.box()
+        "Short" -> ClassName.SHORT.box()
+        "Byte" -> ClassName.BYTE.box()
         "Number" -> ClassName.get("java.lang", "Number")
-        "Boolean" -> ClassName.get("java.lang", "Boolean")
-        "Object" -> ClassName.get("java.lang", "Object")
+        "Boolean" -> ClassName.BOOLEAN.box()
+        "Object" -> ClassName.OBJECT
         "BigDecimal" -> ClassName.get("java.math", "BigDecimal")
         "List" -> ClassName.get("java.util", "List")
         "ArrayList" -> ClassName.get("java.util", "ArrayList")

@@ -32,10 +32,8 @@ public class Person(
     private val nameDefault: () -> String? = 
         { throw IllegalStateException("Field `name` was not requested") }
 
-
     private val emailDefault: () -> List<String?>? = 
         { throw IllegalStateException("Field `email` was not requested") }
-
   }
 
   @JsonPOJOBuilder

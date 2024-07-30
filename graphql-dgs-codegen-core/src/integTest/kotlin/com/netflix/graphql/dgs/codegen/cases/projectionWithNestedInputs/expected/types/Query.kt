@@ -31,10 +31,8 @@ public class Query(
     private val q1Default: () -> String? = 
         { throw IllegalStateException("Field `q1` was not requested") }
 
-
     private val q2Default: () -> String? = 
         { throw IllegalStateException("Field `q2` was not requested") }
-
   }
 
   @JsonPOJOBuilder

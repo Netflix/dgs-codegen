@@ -15,8 +15,8 @@ public class QueryProjection(
     _alias: String? = null,
     _projection: PersonProjection.() -> PersonProjection,
   ): QueryProjection {
-    field(_alias, "person", PersonProjection(inputValueSerializer), _projection, "a1" to a1 , "a2"
-        to a2 , "a3" to a3)
+    field(_alias, "person", PersonProjection(inputValueSerializer), _projection, "a1" to a1, "a2" to
+        a2, "a3" to a3)
     return this
   }
 }

@@ -31,10 +31,8 @@ public class Query(
     private val peopleDefault: () -> List<Person?>? = 
         { throw IllegalStateException("Field `people` was not requested") }
 
-
     private val friendsDefault: () -> List<Person?>? = 
         { throw IllegalStateException("Field `friends` was not requested") }
-
   }
 
   @JsonPOJOBuilder

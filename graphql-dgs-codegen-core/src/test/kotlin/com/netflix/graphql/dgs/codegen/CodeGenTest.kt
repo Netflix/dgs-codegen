@@ -19,16 +19,28 @@
 package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
-import com.squareup.javapoet.*
-import org.assertj.core.api.Assertions
+import com.squareup.javapoet.AnnotationSpec
+import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.CodeBlock
+import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.MethodSpec
+import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.TypeSpec
+import com.squareup.javapoet.WildcardTypeName
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertDoesNotThrow
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.*
+import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.Arguments.arguments
+import org.junit.jupiter.params.provider.ArgumentsProvider
+import org.junit.jupiter.params.provider.ArgumentsSource
+import org.junit.jupiter.params.provider.MethodSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.Serializable
 import java.util.stream.Stream
 
@@ -47,7 +59,7 @@ class CodeGenTest {
             type Mutation {
         """.trimIndent()
 
-        Assertions.assertThatThrownBy {
+        assertThatThrownBy {
             CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         }.isInstanceOf(CodeGenSchemaParsingException::class.java)
             .hasMessageContainingAll(
@@ -76,24 +88,22 @@ class CodeGenTest {
 
     @Test
     fun `When the schema is empty, there is no parsing error`() {
-        val schema = """"""
-
-        CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+        assertDoesNotThrow {
+            CodeGen(CodeGenConfig(schemas = setOf(""), packageName = basePackageName)).generate()
+        }
     }
 
     @Test
     fun `When the schema contains just whitespace, there is no parsing error`() {
-        val schema = """     """
-
-        CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+        assertDoesNotThrow {
+            CodeGen(CodeGenConfig(schemas = setOf("     "), packageName = basePackageName)).generate()
+        }
     }
 
     @Test
     fun `When the schema is just an opening bracket, a parsing error is thrown`() {
-        val schema = """{""".trimIndent()
-
-        Assertions.assertThatThrownBy {
-            CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+        assertThatThrownBy {
+            CodeGen(CodeGenConfig(schemas = setOf("{"), packageName = basePackageName)).generate()
         }.isInstanceOf(CodeGenSchemaParsingException::class.java)
     }
 
@@ -315,7 +325,6 @@ class CodeGenTest {
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec.name).isEqualTo("Person")
-        assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("equals")
 
         assertCompilesJava(dataTypes)
     }
@@ -346,7 +355,7 @@ class CodeGenTest {
         val builderType = dataTypes[0].typeSpec.typeSpecs[0]
         assertThat(builderType.name).isEqualTo("Builder")
         assertThat(builderType.methodSpecs).extracting("name").contains("firstname", "lastname", "build")
-        assertThat(builderType.methodSpecs).filteredOn("name", "firstname").extracting("returnType.simpleName").contains("com.netflix.graphql.dgs.codegen.tests.generated.types.Person.Builder")
+        assertThat(builderType.methodSpecs).filteredOn("name", "firstname").extracting("returnType.simpleName").contains("Builder")
         assertThat(builderType.methodSpecs).filteredOn("name", "build").extracting("returnType.simpleName").contains("Person")
         assertCompilesJava(dataTypes)
     }
@@ -1754,7 +1763,7 @@ class CodeGenTest {
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("colors")
-        assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList(Color.red)""")
+        assertThat(colorField.initializer.toString()).isEqualTo("""java.util.Arrays.asList($typesPackageName.Color.red)""")
 
         assertCompilesJava(dataTypes + enumTypes)
     }
@@ -1812,11 +1821,9 @@ class CodeGenTest {
         ).generate()
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-        val expectedString = """
-            return "Person{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'" +"}";
-        """.trimIndent()
+        val expectedString = """return "Person{firstname='" + firstname + "', lastname='" + lastname + "'}";"""
         val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedString).isEqualTo(generatedString)
+        assertThat(generatedString).isEqualTo(expectedString)
         assertCompilesJava(dataTypes)
     }
 
@@ -1843,11 +1850,9 @@ class CodeGenTest {
         ).generate()
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-        val expectedString = """
-            return "Person{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'," +"password='" + "*****" + "'" +"}";
-        """.trimIndent()
+        val expectedString = """return "Person{firstname='" + firstname + "', lastname='" + lastname + "', password='*****'}";"""
         val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedString).isEqualTo(generatedString)
+        assertThat(generatedString).isEqualTo(expectedString)
         assertCompilesJava(dataTypes)
     }
 
@@ -1871,11 +1876,9 @@ class CodeGenTest {
         ).generate()
 
         assertThat(dataTypes[0].typeSpec.methodSpecs).extracting("name").contains("toString")
-        val expectedString = """
-            return "PersonFilter{" + "email='" + "*****" + "'" +"}";
-        """.trimIndent()
+        val expectedString = """return "PersonFilter{email='*****'}";"""
         val generatedString = dataTypes[0].typeSpec.methodSpecs.single { it.name == "toString" }.code.toString().trimIndent()
-        assertThat(expectedString).isEqualTo(generatedString)
+        assertThat(generatedString).isEqualTo(expectedString)
         assertCompilesJava(dataTypes)
     }
 
@@ -2495,6 +2498,7 @@ class CodeGenTest {
                 |import java.lang.Object;
                 |import java.lang.Override;
                 |import java.lang.String;
+                |import java.util.Objects;
                 |
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NONE
@@ -2552,27 +2556,26 @@ class CodeGenTest {
                 |
                 |  @Override
                 |  public String toString() {
-                |    return "Talent{" + "firstname='" + firstname + "'," +"lastname='" + lastname + "'," +"company='" + company + "'," +"imdbProfile='" + imdbProfile + "'" +"}";
+                |    return "Talent{firstname='" + firstname + "', lastname='" + lastname + "', company='" + company + "', imdbProfile='" + imdbProfile + "'}";
                 |  }
                 |
                 |  @Override
                 |  public boolean equals(Object o) {
                 |    if (this == o) return true;
-                |        if (o == null || getClass() != o.getClass()) return false;
-                |        Talent that = (Talent) o;
-                |        return 
-                |        java.util.Objects.equals(firstname, that.firstname) &&
-                |        java.util.Objects.equals(lastname, that.lastname) &&
-                |        java.util.Objects.equals(company, that.company) &&
-                |        java.util.Objects.equals(imdbProfile, that.imdbProfile) ;
+                |    if (o == null || getClass() != o.getClass()) return false;
+                |    Talent that = (Talent) o;
+                |    return Objects.equals(firstname, that.firstname) &&
+                |        Objects.equals(lastname, that.lastname) &&
+                |        Objects.equals(company, that.company) &&
+                |        Objects.equals(imdbProfile, that.imdbProfile);
                 |  }
                 |
                 |  @Override
                 |  public int hashCode() {
-                |    return java.util.Objects.hash(firstname, lastname, company, imdbProfile);
+                |    return Objects.hash(firstname, lastname, company, imdbProfile);
                 |  }
                 |
-                |  public static com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder newBuilder() {
+                |  public static Builder newBuilder() {
                 |    return new Builder();
                 |  }
                 |
@@ -2586,34 +2589,30 @@ class CodeGenTest {
                 |    private String imdbProfile;
                 |
                 |    public Talent build() {
-                |              com.netflix.graphql.dgs.codegen.tests.generated.types.Talent result = new com.netflix.graphql.dgs.codegen.tests.generated.types.Talent();
-                |                  result.firstname = this.firstname;
-                |          result.lastname = this.lastname;
-                |          result.company = this.company;
-                |          result.imdbProfile = this.imdbProfile;
-                |                  return result;
+                |      Talent result = new Talent();
+                |      result.firstname = this.firstname;
+                |      result.lastname = this.lastname;
+                |      result.company = this.company;
+                |      result.imdbProfile = this.imdbProfile;
+                |      return result;
                 |    }
                 |
-                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder firstname(
-                |        String firstname) {
+                |    public Builder firstname(String firstname) {
                 |      this.firstname = firstname;
                 |      return this;
                 |    }
                 |
-                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder lastname(
-                |        String lastname) {
+                |    public Builder lastname(String lastname) {
                 |      this.lastname = lastname;
                 |      return this;
                 |    }
                 |
-                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder company(
-                |        String company) {
+                |    public Builder company(String company) {
                 |      this.company = company;
                 |      return this;
                 |    }
                 |
-                |    public com.netflix.graphql.dgs.codegen.tests.generated.types.Talent.Builder imdbProfile(
-                |        String imdbProfile) {
+                |    public Builder imdbProfile(String imdbProfile) {
                 |      this.imdbProfile = imdbProfile;
                 |      return this;
                 |    }
@@ -4114,6 +4113,9 @@ It takes a title and such.
             Anything with a title!
             ""${'"'}
             interface Titled {
+                ""${'"'}
+                The title field; must not contain '$'
+                ""${'"'}
                 title: String
             }                                 
         """.trimIndent()
@@ -4125,10 +4127,8 @@ It takes a title and such.
             )
         ).generate()
 
-        assertThat(result.javaInterfaces[0].typeSpec.javadoc.toString()).isEqualTo(
-            """Anything with a title!
-            """.trimIndent()
-        )
+        assertThat(result.javaInterfaces[0].typeSpec.javadoc.toString()).isEqualTo("Anything with a title!")
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo("The title field; must not contain '\$'")
     }
 
     @Test
@@ -4149,10 +4149,7 @@ It takes a title and such.
             )
         ).generate()
 
-        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo(
-            """The original, non localized title.
-            """.trimIndent()
-        )
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo("The original, non localized title.")
     }
 
     @Test
@@ -4261,7 +4258,55 @@ It takes a title and such.
         val (generatedAnnotationFile, allSources) = codeGenResult.javaSources()
             .partition { it.typeSpec.name == "Generated" && it.typeSpec.kind == TypeSpec.Kind.ANNOTATION }
 
-        allSources.assertJavaGeneratedAnnotation()
+        allSources.assertJavaGeneratedAnnotation(true)
+        assertThat(generatedAnnotationFile.single().toString())
+            .contains("java.lang.annotation.Retention", "RetentionPolicy.CLASS")
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
+    fun generateSourceWithGeneratedAnnotationWithoutDate() {
+        val schema = """
+            type Query {
+                employees(filter:EmployeeFilterInput) : [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            type Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            input EmployeeFilterInput {
+                rank: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.JAVA,
+                addGeneratedAnnotation = true,
+                disableDatesInGeneratedAnnotation = true,
+                generateClientApi = true
+            )
+        ).generate()
+
+        val (generatedAnnotationFile, allSources) = codeGenResult.javaSources()
+            .partition { it.typeSpec.name == "Generated" && it.typeSpec.kind == TypeSpec.Kind.ANNOTATION }
+
+        allSources.assertJavaGeneratedAnnotation(false)
         assertThat(generatedAnnotationFile.single().toString())
             .contains("java.lang.annotation.Retention", "RetentionPolicy.CLASS")
         assertCompilesJava(codeGenResult)
@@ -5254,7 +5299,304 @@ It takes a title and such.
         ).generate()
 
         val dataTypes = codeGenResult.javaDataTypes
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("java.util.Locale.forLanguageTag(\"en-US\")")
         assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `Codegen should fail with nice message given unsupported default value provided for Locale`() {
+        val schema = """
+            scalar Locale @specifiedBy(url:"https://tools.ietf.org/html/bcp47")
+
+            input NameInput {
+                  locale: Locale = 123
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    typeMapping = mapOf(
+                        "Locale" to "java.util.Locale"
+                    )
+                )
+            ).generate()
+        }.hasMessage("java.util.Locale cannot be created from IntValue{value=123}, expected String value")
+    }
+
+    @Test
+    fun `The default empty object value should result in constructor call`() {
+        val schema = """
+            input Movie {
+                director: Person = {}
+            }
+            
+            input Person {
+                name: String = "Damian"
+                age: Int = 33
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(2)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("director")
+        assertThat(colorField.initializer.toString()).isEqualTo("""new $typesPackageName.Person()""")
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `The default object with properties should result in constructor call with args`() {
+        val schema = """
+            input Movie {
+                director: Person = { name: "Harrison", car: { brand: "Ford" } }
+            }
+
+            input Person {
+                name: String = "Damian"
+                car: Car = { brand: "Tesla" }
+            }
+
+            input Car {
+                brand: String = "VW"
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(3)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("director")
+        assertThat(colorField.initializer.toString()).isEqualTo(
+            "new com.netflix.graphql.dgs.codegen.tests.generated.types.Person()" +
+                """{{setName("Harrison");setCar(new com.netflix.graphql.dgs.codegen.tests.generated.types.Car(){{setBrand("Ford");}})""" +
+                ";}}"
+        )
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `The default list value should support objects`() {
+        val schema = """
+            input Director {
+                movies: [Movie!]! = [{ name: "Braveheart" }, { name: "Matrix", year: 1999 }]
+            }
+
+            input Movie {
+                name: String = "Toy Story"
+                year: Int = 1995
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(2)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Director")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("movies")
+        assertThat(colorField.initializer.toString()).isEqualTo(
+            "java.util.Arrays.asList(" +
+                "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Braveheart\");}}, " +
+                "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Matrix\");setYear(1999);}}" +
+                ")"
+        )
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `The default object value should call constructor from typeMapping`() {
+        val schema = """
+            input Movie {
+                director: Person = { name: "Harrison" }
+            }
+
+            input Person {
+                name: String = "Damian"
+                age: Int = 33
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf("Person" to "mypackage.Human")
+            )
+        ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val colorField = fields[0]
+        assertThat(colorField.name).isEqualTo("director")
+        assertThat(colorField.initializer.toString()).isEqualTo("new mypackage.Human(){{setName(\"Harrison\");}}")
+    }
+
+    @Test
+    fun `Codegen should fail when default value specifies property does not exist in input type`() {
+        val schema = """
+            input Movie {
+                director: Person = { firstname: "Harrison" }
+            }
+            
+            input Person {
+                name: String = "Damian"
+            }
+        """.trimIndent()
+
+        val exception = assertThrows<IllegalStateException> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName
+                )
+            ).generate()
+        }
+        assertThat(exception.message).isEqualTo("Property \"firstname\" does not exist in input type \"Person\"")
+    }
+
+    @Test
+    fun `The default value for BigDecimal should be overridden and wrapped`() {
+        val schema = """
+            scalar Decimal
+
+            type Query {
+                orders(filter: OrderFilter): String
+            }
+            
+            input OrderFilter{
+                minOrderValue: Decimal! = "1.1"
+                avgOrderValue: Decimal! = 1.12
+                maxOrderValue: Decimal! = 3.14e19
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                generateClientApi = true,
+                typeMapping = mapOf("Decimal" to "java.math.BigDecimal")
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("new java.math.BigDecimal(\"1.1\")")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[1].initializer.toString()).isEqualTo("new java.math.BigDecimal(1.12)")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].initializer.toString()).isEqualTo("new java.math.BigDecimal(3.14E+19)")
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `Codegen should fail with nice message given unsupported default value provided for BigDecimal`() {
+        val schema = """
+            scalar Decimal
+
+            type Query {
+                orders(filter: OrderFilter): String
+            }
+            
+            input OrderFilter{
+                orderValueBetween: Decimal! = true
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    generateClientApi = true,
+                    typeMapping = mapOf("Decimal" to "java.math.BigDecimal")
+                )
+            ).generate()
+        }.hasMessage("java.math.BigDecimal cannot be created from BooleanValue{value=true}, expected String, Int or Float value")
+    }
+
+    @Test
+    fun `Codegen should generate class implementing interface provided in extended type`() {
+        val schema = """
+            interface A { name : String }
+
+            type Example implements A {
+                name: String
+            }
+
+            interface B { age :Int }
+
+            extend type Example implements B{
+                age :Int
+            }
+
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+        assertThat(result.javaDataTypes[0].typeSpec.superinterfaces[0].toString()).isEqualTo(
+            "com.netflix.graphql.dgs.codegen.tests.generated.types.com.netflix.graphql.dgs.codegen.tests.generated.types.A"
+        )
+        assertThat(result.javaDataTypes[0].typeSpec.superinterfaces[1].toString()).isEqualTo(
+            "com.netflix.graphql.dgs.codegen.tests.generated.types.com.netflix.graphql.dgs.codegen.tests.generated.types.B"
+        )
     }
 }

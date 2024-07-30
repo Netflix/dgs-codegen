@@ -34,26 +34,29 @@ import javax.lang.model.element.Modifier
 
 class InterfaceGenerator(private val config: CodeGenConfig, private val document: Document) {
 
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(InterfaceGenerator::class.java)
+    }
+
     private val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config, document)
     private val useInterfaceType = config.generateInterfaces
-    private val logger: Logger = LoggerFactory.getLogger(InterfaceGenerator::class.java)
 
     fun generate(
         definition: InterfaceTypeDefinition,
         extensions: List<InterfaceTypeExtensionDefinition>
     ): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
-        logger.info("Generating type ${definition.name}")
+        logger.info("Generating type {}", definition.name)
         val javaType = TypeSpec.interfaceBuilder(definition.name)
             .addOptionalGeneratedAnnotation(config)
             .addModifiers(Modifier.PUBLIC)
 
         if (definition.description != null) {
-            javaType.addJavadoc(definition.description.sanitizeJavaDoc())
+            javaType.addJavadoc("\$L", definition.description.content)
         }
 
         definition.implements
@@ -119,7 +122,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
             .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
             .returns(returnType)
         if (fieldDefinition.description != null) {
-            getterBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
+            getterBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
         javaType.addMethod(getterBuilder.build())
 
@@ -129,7 +132,7 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
                 .addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldName))
 
             if (fieldDefinition.description != null) {
-                setterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+                setterBuilder.addJavadoc("\$L", fieldDefinition.description.content)
             }
             javaType.addMethod(setterBuilder.build())
         }

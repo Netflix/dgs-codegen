@@ -11,13 +11,13 @@ public class QueryProjection(
 ) : GraphQLProjection(inputValueSerializer) {
   public fun q1(arg1: String? = default<QueryProjection, String?>("arg1"), arg2: I2? =
       default<QueryProjection, I2?>("arg2")): QueryProjection {
-    field("q1", "arg1" to arg1 , "arg2" to arg2)
+    field("q1", "arg1" to arg1, "arg2" to arg2)
     return this
   }
 
   public fun q2(arg1: I1? = default<QueryProjection, I1?>("arg1"), arg2: String? =
       default<QueryProjection, String?>("arg2")): QueryProjection {
-    field("q2", "arg1" to arg1 , "arg2" to arg2)
+    field("q2", "arg1" to arg1, "arg2" to arg2)
     return this
   }
 }

@@ -31,10 +31,8 @@ public class EntityConnection(
     private val pageInfoDefault: () -> PageInfo = 
         { throw IllegalStateException("Field `pageInfo` was not requested") }
 
-
     private val edgesDefault: () -> List<EntityEdge?>? = 
         { throw IllegalStateException("Field `edges` was not requested") }
-
   }
 
   @JsonPOJOBuilder

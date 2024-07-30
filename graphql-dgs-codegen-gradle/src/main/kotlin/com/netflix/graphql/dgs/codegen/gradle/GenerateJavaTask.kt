@@ -145,6 +145,9 @@ open class GenerateJavaTask @Inject constructor(
     var addGeneratedAnnotation = false
 
     @Input
+    var disableDatesInGeneratedAnnotation = false
+
+    @Input
     var addDeprecatedAnnotation = false
 
     @Input
@@ -212,6 +215,7 @@ open class GenerateJavaTask @Inject constructor(
             snakeCaseConstantNames = snakeCaseConstantNames,
             implementSerializable = implementSerializable,
             addGeneratedAnnotation = addGeneratedAnnotation,
+            disableDatesInGeneratedAnnotation = disableDatesInGeneratedAnnotation,
             addDeprecatedAnnotation = addDeprecatedAnnotation,
             includeImports = includeImports,
             includeEnumImports = includeEnumImports,

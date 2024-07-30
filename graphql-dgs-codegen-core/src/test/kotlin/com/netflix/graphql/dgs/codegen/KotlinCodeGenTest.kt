@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.data.Index
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -3670,7 +3671,7 @@ It takes a title and such.
             .partition { it.name == "Generated" }
 
         allKotlinSources.assertKotlinGeneratedAnnotation()
-        codeGenResult.javaSources().assertJavaGeneratedAnnotation()
+        codeGenResult.javaSources().assertJavaGeneratedAnnotation(true)
 
         assertThat(generatedAnnotationFile.single().toString())
             .contains("@Retention(value = AnnotationRetention.BINARY)")
@@ -3763,5 +3764,367 @@ It takes a title and such.
         val typeSpec = dataTypes[0].members[0] as TypeSpec
         assertThat(typeSpec.primaryConstructor!!.parameters[0].defaultValue.toString()).isEqualTo("Locale.forLanguageTag(\"en-US\")")
         assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun `Codegen should fail with nice message given unsupported default value provided for Locale`() {
+        val schema = """
+            scalar Locale @specifiedBy(url:"https://tools.ietf.org/html/bcp47")
+
+            input NameInput {
+                  locale: Locale = 123
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    typeMapping = mapOf(
+                        "Locale" to "java.util.Locale"
+                    )
+                )
+            ).generate()
+        }.hasMessage("java.util.Locale? cannot be created from IntValue{value=123}, expected String value")
+    }
+
+    @Test
+    fun `The default empty object value should result in constructor call`() {
+        val schema = """
+            input Movie {
+                director: Person = {}
+            }
+            
+            input Person {
+                name: String = "Damian"
+                age: Int = 33
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(2)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("director")
+        assertThat(colorParam.type.toString()).isEqualTo("$typesPackageName.Person?")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("$typesPackageName.Person()")
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun `The default object with properties should result in constructor call with args`() {
+        val schema = """
+            input Movie {
+                director: Person = { name: "Harrison", car: { brand: "Ford" } }
+            }
+            
+            input Person {
+                name: String = "Damian"
+                car: Car = { brand: "Tesla" }
+            }
+            
+            input Car {
+                brand: String = "VW"
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(3)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("director")
+        assertThat(colorParam.type.toString()).isEqualTo("$typesPackageName.Person?")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("$typesPackageName.Person(name = \"Harrison\", car = $typesPackageName.Car(brand = \"Ford\"))")
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun `The default list value should support objects`() {
+        val schema = """
+            input Director {
+                movies: [Movie!]! = [{ name: "Braveheart" }, { name: "Matrix", year: 1999 }]
+            }
+            
+            input Movie {
+                name: String = "Toy Story"
+                year: Int = 1995
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+        assertThat(dataTypes).hasSize(2)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("Director")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("movies")
+        assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<$typesPackageName.Movie>")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf($typesPackageName.Movie(name = "Braveheart"), $typesPackageName.Movie(name = "Matrix", year = 1_999))""")
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun `The default list value should support objects with typeMapping`() {
+        val schema = """
+            input Director {
+                movies: [Movie!]! = [{ name: "Braveheart" }, { name: "Matrix", year: 1999 }]
+            }
+            
+            input Movie {
+                name: String = "Toy Story"
+                year: Int = 1995
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf("Movie" to "mypackage.Film")
+            )
+        ).generate().kotlinDataTypes
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("Director")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("movies")
+        assertThat(colorParam.type.toString()).isEqualTo("kotlin.collections.List<mypackage.Film>")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("""listOf(mypackage.Film(name = "Braveheart"), mypackage.Film(name = "Matrix", year = 1_999))""")
+    }
+
+    @Test
+    fun `The default object value should call constructor from typeMapping`() {
+        val schema = """
+            input Movie {
+                director: Person = { name: "Harrison" }
+            }
+            
+            input Person {
+                name: String = "Damian"
+                age: Int = 33
+            }
+        """.trimIndent()
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf("Person" to "mypackage.Human")
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val colorParam = ctorSpec.parameters[0]
+        assertThat(colorParam.name).isEqualTo("director")
+        assertThat(colorParam.type.toString()).isEqualTo("mypackage.Human?")
+        assertThat(colorParam.defaultValue).isNotNull
+        assertThat(colorParam.defaultValue.toString()).isEqualTo("mypackage.Human(name = \"Harrison\")")
+    }
+
+    @Test
+    fun `Codegen should fail when default value specifies property does not exist in input type`() {
+        val schema = """
+            input Movie {
+                director: Person = { firstname: "Harrison",  }
+            }
+            
+            input Person {
+                name: String = "Damian"
+            }
+        """.trimIndent()
+
+        val exception = assertThrows<IllegalStateException> {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN
+                )
+            ).generate()
+        }
+        assertThat(exception.message).isEqualTo("Property \"firstname\" does not exist in input type \"Person\"")
+    }
+
+    @Test
+    fun `The default value for BigDecimal should be overridden and wrapped`() {
+        val schema = """
+            scalar Decimal
+
+            type Query {
+                orders(filter: OrderFilter): String
+            }
+            
+            input OrderFilter{
+                minOrderValue: Decimal! = "1.1"
+                avgOrderValue: Decimal! = 1.12
+                maxOrderValue: Decimal! = 3.14e19
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf("Decimal" to "java.math.BigDecimal")
+            )
+        ).generate()
+
+        val dataTypes = codeGenResult.kotlinDataTypes
+        val typeSpec = dataTypes[0].members[0] as TypeSpec
+        assertThat(typeSpec.primaryConstructor!!.parameters[0].defaultValue.toString()).isEqualTo("java.math.BigDecimal(\"1.1\")")
+        assertThat(typeSpec.primaryConstructor!!.parameters[1].defaultValue.toString()).isEqualTo("java.math.BigDecimal(1.12)")
+        assertThat(typeSpec.primaryConstructor!!.parameters[2].defaultValue.toString()).isEqualTo("java.math.BigDecimal(3.14E+19)")
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun `Codegen should fail with nice message given unsupported default value provided for BigDecimal`() {
+        val schema = """
+            scalar Decimal
+
+            type Query {
+                orders(filter: OrderFilter): String
+            }
+            
+            input OrderFilter{
+                orderValueBetween: Decimal! = true
+            }
+        """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = basePackageName,
+                    language = Language.KOTLIN,
+                    typeMapping = mapOf("Decimal" to "java.math.BigDecimal")
+                )
+            ).generate()
+        }.hasMessage("java.math.BigDecimal cannot be created from BooleanValue{value=true}, expected String, Int or Float value")
+    }
+
+    @Test
+    fun `Codegen should generate class implementing interface provided in extended type`() {
+        val schema = """
+            interface A { name : String }
+
+            type Example implements A {
+                name: String
+            }
+
+            interface B { age :Int }
+
+            extend type Example implements B{
+                age :Int
+            }
+
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
+        val superinterfaces = result.kotlinDataTypes[0].typeSpecs[0].superinterfaces.keys.map { it.toString() }
+        assertThat(superinterfaces.size).isEqualTo(2)
+        assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.A")
+        assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.B")
     }
 }

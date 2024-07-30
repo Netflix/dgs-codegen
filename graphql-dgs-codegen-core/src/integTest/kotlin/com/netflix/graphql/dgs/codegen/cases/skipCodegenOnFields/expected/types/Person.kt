@@ -23,7 +23,6 @@ public class Person(
   public companion object {
     private val nameDefault: () -> String? = 
         { throw IllegalStateException("Field `name` was not requested") }
-
   }
 
   @JsonPOJOBuilder

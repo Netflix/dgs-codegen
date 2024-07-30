@@ -15,7 +15,7 @@ import kotlin.collections.List
  */
 public class MovieFilter @JsonCreator constructor(
   @JsonProperty("titleFilter")
-  public val titleFilter: String? = default<MovieFilter, String?>("titleFilter"),
+  public val titleFilter: String? = default<MovieFilter, String?>("titleFilter", null),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("titleFilter" to titleFilter)
 }

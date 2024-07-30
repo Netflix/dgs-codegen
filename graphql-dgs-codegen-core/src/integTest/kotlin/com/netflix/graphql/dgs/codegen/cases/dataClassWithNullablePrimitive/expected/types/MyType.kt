@@ -40,14 +40,11 @@ public class MyType(
     private val countDefault: () -> Int? = 
         { throw IllegalStateException("Field `count` was not requested") }
 
-
     private val truthDefault: () -> Boolean? = 
         { throw IllegalStateException("Field `truth` was not requested") }
 
-
     private val floatyDefault: () -> Double? = 
         { throw IllegalStateException("Field `floaty` was not requested") }
-
   }
 
   @JsonPOJOBuilder

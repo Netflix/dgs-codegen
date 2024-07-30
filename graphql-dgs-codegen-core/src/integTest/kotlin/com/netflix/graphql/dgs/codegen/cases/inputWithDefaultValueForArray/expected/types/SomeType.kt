@@ -10,7 +10,7 @@ import kotlin.collections.List
 
 public class SomeType @JsonCreator constructor(
   @JsonProperty("names")
-  public val names: List<String?>? = default<SomeType, List<String?>?>("names"),
+  public val names: List<String?>? = default<SomeType, List<String?>?>("names", emptyList()),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("names" to names)
 }

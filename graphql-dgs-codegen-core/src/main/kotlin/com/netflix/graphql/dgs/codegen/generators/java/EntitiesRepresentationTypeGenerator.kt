@@ -31,6 +31,7 @@ import graphql.language.EnumTypeDefinition
 import graphql.language.FieldDefinition
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.ObjectTypeDefinition
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Suppress("UNCHECKED_CAST")
@@ -59,9 +60,9 @@ class EntitiesRepresentationTypeGenerator(
         keyFields: Map<String, Any>
     ): CodeGenResult {
         if (generatedRepresentations.containsKey(representationName)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
-        var fieldsCodeGenAccumulator = CodeGenResult()
+        var fieldsCodeGenAccumulator = CodeGenResult.EMPTY
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", ClassName.get(String::class.java), CodeBlock.of("\$S", definitionName))
         val fieldDefinitions =
@@ -84,7 +85,7 @@ class EntitiesRepresentationTypeGenerator(
                                 .replace(type.name, fieldTypeRepresentationName)
 
                         if (generatedRepresentations.containsKey(fieldTypeRepresentationName)) {
-                            logger.trace("Representation fo $fieldTypeRepresentationName was already generated.")
+                            logger.trace("Representation for {} was already generated.", fieldTypeRepresentationName)
                         } else {
                             logger.debug("Generating entity representation {} ...", fieldTypeRepresentationName)
                             val fieldTypeRepresentation = generateRepresentations(
@@ -106,7 +107,7 @@ class EntitiesRepresentationTypeGenerator(
         val parentRepresentationCodeGen = super.generate(
             name = representationName,
             interfaces = emptyList(),
-            fields = fieldDefinitions.plus(typeName),
+            fields = fieldDefinitions + typeName,
             description = null,
             directives = emptyList(),
             isInputType = false
@@ -117,7 +118,6 @@ class EntitiesRepresentationTypeGenerator(
     }
 
     companion object {
-        private val logger: org.slf4j.Logger =
-            LoggerFactory.getLogger(EntitiesRepresentationTypeGenerator::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(EntitiesRepresentationTypeGenerator::class.java)
     }
 }

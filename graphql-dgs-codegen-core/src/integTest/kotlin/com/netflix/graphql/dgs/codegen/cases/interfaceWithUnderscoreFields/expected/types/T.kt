@@ -33,10 +33,8 @@ public class T(
     private val _idDefault: () -> String? = 
         { throw IllegalStateException("Field `_id` was not requested") }
 
-
     private val idDefault: () -> String? = 
         { throw IllegalStateException("Field `id` was not requested") }
-
   }
 
   @JsonPOJOBuilder

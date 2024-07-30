@@ -24,7 +24,6 @@ public class Query(
   public companion object {
     private val moviesDefault: () -> List<String?>? = 
         { throw IllegalStateException("Field `movies` was not requested") }
-
   }
 
   @JsonPOJOBuilder

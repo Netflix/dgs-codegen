@@ -11,7 +11,7 @@ import kotlin.collections.List
 
 public class SomeType @JsonCreator constructor(
   @JsonProperty("numbers")
-  public val numbers: List<Int?>? = default<SomeType, List<Int?>?>("numbers"),
+  public val numbers: List<Int?>? = default<SomeType, List<Int?>?>("numbers", listOf(1, 2, 3)),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("numbers" to numbers)
 }

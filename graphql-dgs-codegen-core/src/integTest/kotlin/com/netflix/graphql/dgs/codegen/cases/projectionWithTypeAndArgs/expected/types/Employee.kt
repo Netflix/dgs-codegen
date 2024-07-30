@@ -33,10 +33,8 @@ public class Employee(
     private val firstnameDefault: () -> String? = 
         { throw IllegalStateException("Field `firstname` was not requested") }
 
-
     private val companyDefault: () -> String? = 
         { throw IllegalStateException("Field `company` was not requested") }
-
   }
 
   @JsonPOJOBuilder
