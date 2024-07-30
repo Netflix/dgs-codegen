@@ -37,6 +37,7 @@ import com.palantir.javapoet.ParameterSpec
 import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.TypeVariableName
+import com.palantir.javapoet.WildcardTypeName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.Directive
 import graphql.language.DirectivesContainer
@@ -61,6 +62,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.let
 import kotlin.to
+import com.palantir.javapoet.TypeName as JavaTypeName
 
 class ClientApiGenerator internal constructor(
     private val config: CodeGenConfig,
@@ -80,8 +82,18 @@ class ClientApiGenerator internal constructor(
     private val allClaimedNames = mutableSetOf<String>()
     private val builtSources = mutableSetOf<ProjectionSource>()
     private val deferredRoots = mutableListOf<Pair<TypeDefinition<*>, String>>()
+    private val parentType = TypeVariableName.get("PARENT")
+    private val rootType = TypeVariableName.get("ROOT")
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, schemaIndex)
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
+
+    private fun projectionType(
+        name: String,
+        parent: JavaTypeName,
+        root: JavaTypeName,
+    ): ParameterizedTypeName = ParameterizedTypeName.get(ClassName.get(getPackageName(), name), parent, root)
+
+    private fun selfType(name: String): ParameterizedTypeName = projectionType(name, parentType, rootType)
 
     fun generate(
         definition: ObjectTypeDefinition,
@@ -454,17 +466,21 @@ class ClientApiGenerator internal constructor(
     private fun createProjectionClass(clazzName: String): TypeSpec.Builder {
         val baseProjectionClass = ClassName.get(BaseSubProjectionNode::class.java)
         val baseProjectionType =
-            ParameterizedTypeName.get(baseProjectionClass, TypeVariableName.get("?"), TypeVariableName.get("?"))
-        val parentType = TypeVariableName.get("PARENT").withBounds(baseProjectionType)
-        val rootType = TypeVariableName.get("ROOT").withBounds(baseProjectionType)
+            ParameterizedTypeName.get(
+                baseProjectionClass,
+                WildcardTypeName.subtypeOf(Any::class.java),
+                WildcardTypeName.subtypeOf(Any::class.java),
+            )
+        val boundedParentType = parentType.withBounds(baseProjectionType)
+        val boundedRootType = rootType.withBounds(baseProjectionType)
 
         return TypeSpec
             .classBuilder(clazzName)
             .addOptionalGeneratedAnnotation(config)
-            .addTypeVariable(parentType)
-            .addTypeVariable(rootType)
+            .addTypeVariable(boundedParentType)
+            .addTypeVariable(boundedRootType)
             .addModifiers(Modifier.PUBLIC)
-            .superclass(ParameterizedTypeName.get(baseProjectionClass, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+            .superclass(ParameterizedTypeName.get(baseProjectionClass, parentType, rootType))
     }
 
     private fun createRootProjectionConstructor(typeName: String): MethodSpec =
@@ -601,7 +617,7 @@ class ClientApiGenerator internal constructor(
             createProjectionClass(clazzName)
                 .addMethod(createRootProjectionConstructor(type.name))
 
-        val typeVariable = TypeVariableName.get("$clazzName<PARENT, ROOT>")
+        val typeVariable = selfType(clazzName)
         javaType.addMethod(
             MethodSpec
                 .methodBuilder(TypeNameMetaFieldDef.name)
@@ -631,10 +647,7 @@ class ClientApiGenerator internal constructor(
             }.forEach { (fieldDef, typeDef) ->
                 val projectionName = "${typeDef.name.capitalized()}Projection"
                 if (typeDef !is ScalarTypeDefinition) {
-                    val projectionTypeVariable =
-                        TypeVariableName.get(
-                            "$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>>",
-                        )
+                    val projectionTypeVariable = projectionType(projectionName, selfType(clazzName), selfType(clazzName))
                     val noArgMethodBuilder =
                         MethodSpec
                             .methodBuilder(javaReservedKeywordSanitizer.sanitize(fieldDef.name))
@@ -650,8 +663,7 @@ class ClientApiGenerator internal constructor(
                 }
 
                 if (fieldDef.inputValueDefinitions.isNotEmpty()) {
-                    addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "this")
-                    addFieldSelectionMethodWithArgumentsReferences(fieldDef, projectionName, javaType, projectionRoot = "this")
+                    addFieldSelectionMethodsWithArguments(fieldDef, projectionName, javaType, projectionRoot = "this")
                 }
             }
 
@@ -661,7 +673,7 @@ class ClientApiGenerator internal constructor(
                 javaType.addMethod(
                     MethodSpec
                         .methodBuilder(javaReservedKeywordSanitizer.sanitize(it.name))
-                        .returns(TypeVariableName.get("$clazzName<PARENT, ROOT>"))
+                        .returns(selfType(clazzName))
                         .addCode(
                             """
                             |getFields().put("${it.name}", null);
@@ -682,85 +694,57 @@ class ClientApiGenerator internal constructor(
         ).merge(walkProjectionDescendants(type, javaType.build(), isRoot = true))
     }
 
-    private fun addFieldSelectionMethodWithArguments(
+    private fun addFieldSelectionMethodsWithArguments(
         fieldDefinition: FieldDefinition,
         projectionName: String,
         javaType: TypeSpec.Builder,
         projectionRoot: String,
-    ): TypeSpec.Builder? {
+    ) {
         val clazzName = javaType.build().name()
         val rootTypeName = if (projectionRoot == "this") "$clazzName<PARENT, ROOT>" else "ROOT"
-        val returnTypeName = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName>")
-        val methodBuilder =
-            MethodSpec
-                .methodBuilder(javaReservedKeywordSanitizer.sanitize(fieldDefinition.name))
-                .returns(returnTypeName)
-                .addCode(
-                    """
-                |$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName> projection = new $projectionName<>(this, $projectionRoot);    
-                |getFields().put("${fieldDefinition.name}", projection);
-                |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());                      
-                |${
-                        fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
-                            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
-                            """
-                     |InputArgument ${sanitizedName}Arg = new InputArgument("${input.name}", $sanitizedName, false, null);
-                     |getInputArguments().get("${fieldDefinition.name}").add(${sanitizedName}Arg);
-                            """.trimMargin()
-                        }
-                    }
-                |return projection;
-                    """.trimMargin(),
-                    ArrayList::class.java,
-                ).addModifiers(Modifier.PUBLIC)
-
-        fieldDefinition.inputValueDefinitions.forEach { input ->
-            methodBuilder.addParameter(
-                ParameterSpec.builder(typeUtils.findReturnType(input.type), javaReservedKeywordSanitizer.sanitize(input.name)).build(),
+        val projectionRootType = if (projectionRoot == "this") selfType(clazzName) else rootType
+        val returnTypeName =
+            projectionType(
+                projectionName,
+                selfType(clazzName),
+                projectionRootType,
             )
-        }
-        return javaType.addMethod(methodBuilder.build())
-    }
-
-    private fun addFieldSelectionMethodWithArgumentsReferences(
-        fieldDefinition: FieldDefinition,
-        projectionName: String,
-        javaType: TypeSpec.Builder,
-        projectionRoot: String,
-    ): TypeSpec.Builder? {
-        val clazzName = javaType.build().name()
-        val rootTypeName = if (projectionRoot == "this") "$clazzName<PARENT, ROOT>" else "ROOT"
-        val returnTypeName = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName>")
-        val methodBuilder =
-            MethodSpec
-                .methodBuilder(javaReservedKeywordSanitizer.sanitize(fieldDefinition.name + "WithVariableReferences"))
-                .returns(returnTypeName)
-                .addCode(
-                    """
-                |$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName> projection = new $projectionName<>(this, $projectionRoot);    
-                |getFields().put("${fieldDefinition.name}", projection);
-                |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());              
-                |${
-                        fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
-                            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
-                            """
-                     |InputArgument ${sanitizedName}Arg = new InputArgument("${input.name}", ${sanitizedName}Reference, true, ${getVariableDefinitionType(
-                                input.type,
-                            )});
-                     |getInputArguments().get("${fieldDefinition.name}").add(${sanitizedName}Arg);
-                            """.trimMargin()
+        for (withVariableReferences in listOf(false, true)) {
+            val methodName = fieldDefinition.name + if (withVariableReferences) "WithVariableReferences" else ""
+            val methodBuilder =
+                MethodSpec
+                    .methodBuilder(javaReservedKeywordSanitizer.sanitize(methodName))
+                    .returns(returnTypeName)
+                    .addModifiers(Modifier.PUBLIC)
+            val argumentCode =
+                fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
+                    val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
+                    val parameterName = sanitizedName + if (withVariableReferences) "Reference" else ""
+                    val parameterType =
+                        if (withVariableReferences) {
+                            ClassName.get(String::class.java)
+                        } else {
+                            typeUtils.findReturnType(input.type)
                         }
-                    }
+                    methodBuilder.addParameter(ParameterSpec.builder(parameterType, parameterName).build())
+                    val referenceInfo = if (withVariableReferences) "true, ${getVariableDefinitionType(input.type)}" else "false, null"
+                    """
+                    |InputArgument ${sanitizedName}Arg = new InputArgument("${input.name}", $parameterName, $referenceInfo);
+                    |getInputArguments().get("${fieldDefinition.name}").add(${sanitizedName}Arg);
+                    """.trimMargin()
+                }
+            methodBuilder.addCode(
+                """
+                |$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName> projection = new $projectionName<>(this, $projectionRoot);
+                |getFields().put("${fieldDefinition.name}", projection);
+                |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());
+                |$argumentCode
                 |return projection;
-                    """.trimMargin(),
-                    ArrayList::class.java,
-                ).addModifiers(Modifier.PUBLIC)
-
-        fieldDefinition.inputValueDefinitions.forEach { input ->
-            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
-            methodBuilder.addParameter(ParameterSpec.builder(ClassName.get(String::class.java), "${sanitizedName}Reference").build())
+                """.trimMargin(),
+                ArrayList::class.java,
+            )
+            javaType.addMethod(methodBuilder.build())
         }
-        return javaType.addMethod(methodBuilder.build())
     }
 
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
@@ -775,7 +759,7 @@ class ClientApiGenerator internal constructor(
             federatedTypes
                 .map { objTypeDef ->
                     val projectionName = "Entities${objTypeDef.name.capitalized()}KeyProjection"
-                    val returnType = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>>")
+                    val returnType = projectionType(projectionName, selfType(clazzName), selfType(clazzName))
                     javaType.addMethod(
                         MethodSpec
                             .methodBuilder("on${objTypeDef.name}")
@@ -835,7 +819,13 @@ class ClientApiGenerator internal constructor(
         val parentRef = javaType.build().name()
         val projectionName = "${it.name.capitalized()}Fragment"
         val fullProjectionName = "${projectionName}Projection"
-        val typeVariable = TypeVariableName.get("$fullProjectionName<$parentRef<PARENT, ROOT>, $rootTypeName>")
+        val fragmentRootType = if (rootRef == "this") selfType(rootType.name()) else this.rootType
+        val typeVariable =
+            projectionType(
+                fullProjectionName,
+                selfType(parentRef),
+                fragmentRootType,
+            )
         javaType.addMethod(
             MethodSpec
                 .methodBuilder("on${it.name}")
@@ -938,7 +928,7 @@ class ClientApiGenerator internal constructor(
                 )
 
         // add a method for setting the __typename
-        val typeVariable = TypeVariableName.get("$clazzName<PARENT, ROOT>")
+        val typeVariable = selfType(clazzName)
         javaType.addMethod(
             MethodSpec
                 .methodBuilder(TypeNameMetaFieldDef.name)
@@ -962,7 +952,7 @@ class ClientApiGenerator internal constructor(
             }.forEach { (fieldDef, typeDef) ->
                 val projectionName = "${typeDef.name.capitalized()}Projection"
                 val methodName = javaReservedKeywordSanitizer.sanitize(fieldDef.name)
-                val projectionTypeVariable = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, ROOT>")
+                val projectionTypeVariable = projectionType(projectionName, selfType(clazzName), rootType)
                 javaType.addMethod(
                     MethodSpec
                         .methodBuilder(methodName)
@@ -978,8 +968,7 @@ class ClientApiGenerator internal constructor(
                 )
 
                 if (fieldDef.inputValueDefinitions.isNotEmpty()) {
-                    addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
-                    addFieldSelectionMethodWithArgumentsReferences(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
+                    addFieldSelectionMethodsWithArguments(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
                 }
             }
 
@@ -991,7 +980,7 @@ class ClientApiGenerator internal constructor(
                     javaType.addMethod(
                         MethodSpec
                             .methodBuilder(javaReservedKeywordSanitizer.sanitize(it.name))
-                            .returns(TypeVariableName.get("$clazzName<PARENT, ROOT>"))
+                            .returns(selfType(clazzName))
                             .addCode(
                                 """
                                 |getFields().put("${it.name}", null);
@@ -1005,7 +994,7 @@ class ClientApiGenerator internal constructor(
                         val methodWithInputArgumentsBuilder =
                             MethodSpec
                                 .methodBuilder(javaReservedKeywordSanitizer.sanitize(it.name))
-                                .returns(TypeVariableName.get("$clazzName<PARENT, ROOT>"))
+                                .returns(selfType(clazzName))
                                 .addCode(
                                     """
                                 |getFields().put("${it.name}", null);
