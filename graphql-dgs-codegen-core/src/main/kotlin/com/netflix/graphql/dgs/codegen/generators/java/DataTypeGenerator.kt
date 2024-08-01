@@ -401,7 +401,6 @@ abstract class BaseDataTypeGenerator(
             )
         )
         javaType.addMethod(methodBuilder.build())
-
     }
 
     private fun addToString(fieldDefinitions: List<Field>, javaType: TypeSpec.Builder) {
