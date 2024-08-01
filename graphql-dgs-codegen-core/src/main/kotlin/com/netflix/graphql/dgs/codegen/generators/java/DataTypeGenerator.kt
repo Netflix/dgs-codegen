@@ -18,7 +18,9 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
 import com.squareup.javapoet.ClassName
@@ -48,6 +50,7 @@ import graphql.language.Type
 import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 import graphql.language.Value
+import graphql.schema.idl.TypeUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
@@ -119,13 +122,15 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
             val fieldDefinitions = definition.fieldDefinitions
                 .asSequence()
                 .filterSkipped()
-                .map {
+                .map { fieldDefinition ->
+                    val isNullable = !TypeUtil.isNonNull(fieldDefinition.type)
                     Field(
-                        it.name,
-                        typeUtils.findReturnType(it.type, useInterfaceType, true),
+                        fieldDefinition.name,
+                        typeUtils.findReturnType(fieldDefinition.type, useInterfaceType, true),
                         overrideGetter = overrideGetter,
-                        description = it.description,
-                        directives = it.directives
+                        description = fieldDefinition.description,
+                        directives = fieldDefinition.directives,
+                        isNullable = isNullable
                     )
                 }
                 .plus(
@@ -170,6 +175,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
 
         val name = definition.name
         val fieldDefinitions = definition.inputValueDefinitions.asSequence().map {
+            val isNullable = !TypeUtil.isNonNull(it.type)
             val type = typeUtils.findReturnType(it.type)
             val defaultValue = it.defaultValue?.let { defVal ->
                 generateCode(defVal, type, inputTypeDefinitions)
@@ -179,11 +185,12 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                 type = type,
                 initialValue = defaultValue,
                 description = it.description,
-                directives = it.directives
+                directives = it.directives,
+                isNullable = isNullable
             )
         }.plus(extensions.asSequence().flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
             .toList()
-        return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)
+        return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives, true)
     }
 
     private fun generateCode(
@@ -264,7 +271,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         }
 }
 
-internal data class Field(val name: String, val type: JavaTypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<Directive> = listOf())
+internal data class Field(val name: String, val type: JavaTypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<Directive> = listOf(), val isNullable: Boolean = true)
 
 abstract class BaseDataTypeGenerator(
     internal val packageName: String,
@@ -278,7 +285,8 @@ abstract class BaseDataTypeGenerator(
         interfaces: List<String>,
         fields: List<Field>,
         description: Description? = null,
-        directives: List<Directive> = emptyList()
+        directives: List<Directive> = emptyList(),
+        isInputType: Boolean = false
     ): CodeGenResult {
         val javaType = TypeSpec.classBuilder(name)
             .addOptionalGeneratedAnnotation(config)
@@ -311,20 +319,20 @@ abstract class BaseDataTypeGenerator(
         }
 
         fields.forEach {
-            addField(it, javaType)
+            addField(it, javaType, isInputType)
         }
 
         addDefaultConstructor(javaType)
 
         if (config.javaGenerateAllConstructor && fields.isNotEmpty()) {
-            addParameterizedConstructor(fields, javaType)
+            addParameterizedConstructor(fields, javaType, isInputType)
         }
 
         addToString(fields, javaType)
 
-        addEquals(javaType)
+        addEquals(fields, javaType)
         addHashcode(javaType)
-        addBuilder(javaType)
+        addBuilder(fields, javaType, isInputType)
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
@@ -366,8 +374,7 @@ abstract class BaseDataTypeGenerator(
         )
         javaType.addMethod(methodBuilder.build())
     }
-
-    private fun addEquals(javaType: TypeSpec.Builder) {
+    private fun addEquals(fields: List<Field>, javaType: TypeSpec.Builder) {
         val builtType = javaType.build()
         if (builtType.fieldSpecs.isEmpty()) {
             return
@@ -379,9 +386,7 @@ abstract class BaseDataTypeGenerator(
             .returns(JavaTypeName.BOOLEAN)
             .addParameter(JavaTypeName.OBJECT, "o")
 
-        methodBuilder.addStatement("if (this == o) return true")
-        methodBuilder.addStatement("if (o == null || getClass() != o.getClass()) return false")
-        methodBuilder.addStatement("\$L that = (\$L) o", builtType.name, builtType.name)
+        val fieldSpecs = javaType.build().fieldSpecs
         methodBuilder.addStatement(
             "return \$L",
             CodeBlock.join(
@@ -423,7 +428,7 @@ abstract class BaseDataTypeGenerator(
         javaType.addMethod(methodBuilder.build())
     }
 
-    private fun addParameterizedConstructor(fieldDefinitions: List<Field>, javaType: TypeSpec.Builder) {
+    private fun addParameterizedConstructor(fieldDefinitions: List<Field>, javaType: TypeSpec.Builder, isInputType: Boolean = false) {
         val constructorBuilder = MethodSpec.constructorBuilder()
         for (fieldDefinition in fieldDefinitions) {
             val sanitizedName = ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
@@ -438,7 +443,22 @@ abstract class BaseDataTypeGenerator(
             constructorBuilder
                 .addParameter(parameterBuilder.build())
                 .addModifiers(Modifier.PUBLIC)
-                .addStatement("this.\$N = \$N", sanitizedName, sanitizedName)
+        }
+
+        fieldDefinitions.forEach {
+            val constructor = constructorBuilder
+                .addStatement(
+                    "this.\$N = \$N",
+                    ReservedKeywordSanitizer.sanitize(it.name),
+                    ReservedKeywordSanitizer.sanitize(it.name)
+                )
+            if (config.generateIsSetFields && isInputType && it.isNullable && it.initialValue == null) {
+                constructorBuilder
+                    .addStatement(
+                        "this.\$N = true",
+                        generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(it.name))
+                    )
+            }
         }
         javaType.addMethod(constructorBuilder.build())
     }
@@ -454,11 +474,41 @@ abstract class BaseDataTypeGenerator(
         javaType.addSuperinterface(interfaceName)
     }
 
-    private fun addField(fieldDefinition: Field, javaType: TypeSpec.Builder) {
-        addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
+    private fun addField(fieldDefinition: Field, javaType: TypeSpec.Builder, isInputType: Boolean = false) {
+        addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType, isInputType)
+        // Generate for all nullable fields without any defaults
+        if (config.generateIsSetFields && isInputType && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
+            addIsDefinedFieldWithGetters(fieldDefinition, javaType)
+        }
     }
 
-    private fun addFieldWithGetterAndSetter(returnType: JavaTypeName, fieldDefinition: Field, javaType: TypeSpec.Builder) {
+    private fun addIsDefinedFieldWithGetters(fieldDefinition: Field, javaType: TypeSpec.Builder) {
+        val fieldName = generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+        val field = FieldSpec
+            .builder(com.squareup.javapoet.TypeName.BOOLEAN, fieldName)
+            .addModifiers(Modifier.PRIVATE)
+            .initializer("false")
+            .build()
+        val getterName = "${fieldName}Defined"
+
+        val getter = MethodSpec
+            .methodBuilder(getterName)
+            .addModifiers(Modifier.PUBLIC)
+            .addAnnotation(JsonIgnore::class.java)
+            .returns(com.squareup.javapoet.TypeName.BOOLEAN)
+            .addStatement(
+                "return \$N",
+                fieldName
+            ).build()
+        javaType.addField(field)
+        javaType.addMethod(getter)
+    }
+
+    private fun generateBooleanFieldName(name: String): String {
+        return "is${name.capitalized()}Set"
+    }
+
+    private fun addFieldWithGetterAndSetter(returnType: JavaTypeName, fieldDefinition: Field, javaType: TypeSpec.Builder, isInputType: Boolean) {
         val fieldBuilder = if (fieldDefinition.initialValue != null) {
             FieldSpec
                 .builder(fieldDefinition.type, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
@@ -486,6 +536,7 @@ abstract class BaseDataTypeGenerator(
 
         val setterName = typeUtils.transformIfDefaultClassMethodExists("set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}", TypeUtils.setClass)
         val parameterBuilder = ParameterSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+
         val setterMethodBuilder = MethodSpec.methodBuilder(setterName)
             .addModifiers(Modifier.PUBLIC)
             .addStatement(
@@ -493,6 +544,13 @@ abstract class BaseDataTypeGenerator(
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             )
+        if (config.generateIsSetFields && isInputType && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
+            setterMethodBuilder
+                .addStatement(
+                    "this.\$N = true",
+                    generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                )
+        }
 
         if (fieldDefinition.directives.isNotEmpty()) {
             val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
@@ -527,7 +585,7 @@ abstract class BaseDataTypeGenerator(
         )
     }
 
-    private fun addBuilder(javaType: TypeSpec.Builder) {
+    private fun addBuilder(fields: List<Field>, javaType: TypeSpec.Builder, isInputType: Boolean = false) {
         val builtType = javaType.build()
         val name = builtType.name
         val className = ClassName.get(packageName, name)
@@ -561,15 +619,25 @@ abstract class BaseDataTypeGenerator(
 
         builtType.fieldSpecs.forEach {
             builderType.addField(it)
-            builderType.addMethod(
-                MethodSpec.methodBuilder(it.name)
-                    .addJavadoc(it.javadoc)
-                    .returns(builderClassName)
-                    .addStatement("this.\$N = \$N", it.name, it.name)
-                    .addStatement("return this")
-                    .addParameter(ParameterSpec.builder(it.type, it.name).build())
-                    .addModifiers(Modifier.PUBLIC).build()
-            )
+            val method = MethodSpec.methodBuilder(it.name)
+                .addJavadoc(it.javadoc)
+                .returns(builderClassName)
+                .addStatement("this.\$N = \$N", it.name, it.name)
+
+            val fieldName = it.name
+            val field = fields.find { iter -> ReservedKeywordSanitizer.sanitize(iter.name) == fieldName }
+            if (config.generateIsSetFields && isInputType && field?.isNullable == true && field?.initialValue == null) {
+                method
+                    .addStatement(
+                        "this.\$N = true",
+                        generateBooleanFieldName(it.name)
+                    )
+            }
+
+            method
+                .addStatement("return this")
+                .addParameter(ParameterSpec.builder(it.type, it.name).build())
+                .addModifiers(Modifier.PUBLIC).build()
         }
 
         javaType.addType(builderType.build())

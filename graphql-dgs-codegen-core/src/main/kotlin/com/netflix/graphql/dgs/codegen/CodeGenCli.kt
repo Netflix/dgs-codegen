@@ -46,7 +46,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     )
     private val language by option("--language", "-l", help = "Output language").choice("java", "kotlin", ignoreCase = true)
         .default("java")
-    private val generateClient by option("--generate-client", "-c", help = "Genereate client api").flag(default = false)
+    private val generateClient by option("--generate-client", "-c", help = "Generate client api").flag(default = false)
     private val generateDataTypes by option(
         "--generate-data-types",
         help = "Generate data types. Not needed when only generating an API"
@@ -59,6 +59,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val shortProjectionNames by option("--short-projection-names").flag()
     private val generateInterfaceSetters by option("--generate-interface-setters").flag()
     private val generateDocs by option("--generate-docs").flag()
+    private val generateIsSetFields by option("--generate-isset-fields", help = "Generate Boolean is<field>Set field for all nullable fields without any defaults").flag("--skip-generate-isset-fields", default = true)
 
     override fun run() {
         val inputSchemas = if (schemas.isEmpty()) {
@@ -94,7 +95,8 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                     generateDataTypes = generateDataTypes,
                     generateInterfaces = generateInterfaces,
                     generateInterfaceSetters = generateInterfaceSetters,
-                    generateDocs = generateDocs
+                    generateDocs = generateDocs,
+                    generateIsSetFields = generateIsSetFields
                 )
             } else {
                 CodeGenConfig(
@@ -115,7 +117,8 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                     generateDataTypes = generateDataTypes,
                     generateInterfaces = generateInterfaces,
                     generateInterfaceSetters = generateInterfaceSetters,
-                    generateDocs = generateDocs
+                    generateDocs = generateDocs,
+                    generateIsSetFields = generateIsSetFields
                 )
             }
         ).generate()
