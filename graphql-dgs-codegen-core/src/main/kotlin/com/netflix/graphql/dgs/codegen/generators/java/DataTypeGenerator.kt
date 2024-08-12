@@ -374,6 +374,7 @@ abstract class BaseDataTypeGenerator(
         )
         javaType.addMethod(methodBuilder.build())
     }
+
     private fun addEquals(fields: List<Field>, javaType: TypeSpec.Builder) {
         val builtType = javaType.build()
         if (builtType.fieldSpecs.isEmpty()) {
@@ -386,11 +387,15 @@ abstract class BaseDataTypeGenerator(
             .returns(JavaTypeName.BOOLEAN)
             .addParameter(JavaTypeName.OBJECT, "o")
 
-        val fieldSpecs = javaType.build().fieldSpecs
+        methodBuilder.addStatement("if (this == o) return true")
+        methodBuilder.addStatement("if (o == null || getClass() != o.getClass()) return false")
+        methodBuilder.addStatement("\$L that = (\$L) o", builtType.name, builtType.name)
         methodBuilder.addStatement(
             "return \$L",
             CodeBlock.join(
-                builtType.fieldSpecs.map { field ->
+                builtType.fieldSpecs
+                    .filter{ field -> fields.any{ it.name == ReservedKeywordSanitizer.sanitize(field.name)}}
+                    .map { field ->
                     if (field.type.isPrimitive) {
                         CodeBlock.of("\$L == that.\$L", field.name, field.name)
                     } else {
@@ -489,10 +494,9 @@ abstract class BaseDataTypeGenerator(
             .addModifiers(Modifier.PRIVATE)
             .initializer("false")
             .build()
-        val getterName = "${fieldName}Defined"
 
         val getter = MethodSpec
-            .methodBuilder(getterName)
+            .methodBuilder(fieldName)
             .addModifiers(Modifier.PUBLIC)
             .addAnnotation(JsonIgnore::class.java)
             .returns(com.squareup.javapoet.TypeName.BOOLEAN)
@@ -638,6 +642,8 @@ abstract class BaseDataTypeGenerator(
                 .addStatement("return this")
                 .addParameter(ParameterSpec.builder(it.type, it.name).build())
                 .addModifiers(Modifier.PUBLIC).build()
+
+            builderType.addMethod(method.build())
         }
 
         javaType.addType(builderType.build())
