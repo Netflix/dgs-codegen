@@ -396,7 +396,7 @@ abstract class BaseDataTypeGenerator(
             CodeBlock.join(
                 builtType.fieldSpecs
                     // Skip generated Boolean presence fields
-                    .filterNot{ fieldSpec -> fields.any{ field -> generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(field.name)) == fieldSpec.name }}
+                    .filterNot { fieldSpec -> fields.any { field -> generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(field.name)) == fieldSpec.name } }
                     .map { field ->
                         if (field.type.isPrimitive) {
                             CodeBlock.of("\$L == that.\$L", field.name, field.name)

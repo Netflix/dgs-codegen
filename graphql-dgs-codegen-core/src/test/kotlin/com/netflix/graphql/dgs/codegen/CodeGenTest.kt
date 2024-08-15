@@ -4794,8 +4794,8 @@ It takes a title and such.
         assertThat(colorField.name).isEqualTo("director")
         assertThat(colorField.initializer.toString()).isEqualTo(
             "new com.netflix.graphql.dgs.codegen.tests.generated.types.Person()" +
-                    """{{setName("Harrison");setCar(new com.netflix.graphql.dgs.codegen.tests.generated.types.Car(){{setBrand("Ford");}})""" +
-                    ";}}"
+                """{{setName("Harrison");setCar(new com.netflix.graphql.dgs.codegen.tests.generated.types.Car(){{setBrand("Ford");}})""" +
+                ";}}"
         )
         assertCompilesJava(dataTypes)
     }
@@ -4835,9 +4835,9 @@ It takes a title and such.
         assertThat(colorField.name).isEqualTo("movies")
         assertThat(colorField.initializer.toString()).isEqualTo(
             "java.util.Arrays.asList(" +
-                    "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Braveheart\");}}, " +
-                    "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Matrix\");setYear(1999);}}" +
-                    ")"
+                "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Braveheart\");}}, " +
+                "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Matrix\");setYear(1999);}}" +
+                ")"
         )
         assertCompilesJava(dataTypes)
     }
