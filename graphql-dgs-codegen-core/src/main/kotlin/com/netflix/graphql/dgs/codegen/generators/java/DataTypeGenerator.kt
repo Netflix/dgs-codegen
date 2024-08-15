@@ -390,18 +390,20 @@ abstract class BaseDataTypeGenerator(
         methodBuilder.addStatement("if (this == o) return true")
         methodBuilder.addStatement("if (o == null || getClass() != o.getClass()) return false")
         methodBuilder.addStatement("\$L that = (\$L) o", builtType.name, builtType.name)
+
         methodBuilder.addStatement(
             "return \$L",
             CodeBlock.join(
                 builtType.fieldSpecs
-                    .filter{ field -> fields.any{ it.name == ReservedKeywordSanitizer.sanitize(field.name)}}
+                    // Skip generated Boolean presence fields
+                    .filterNot{ fieldSpec -> fields.any{ field -> generateBooleanFieldName(ReservedKeywordSanitizer.sanitize(field.name)) == fieldSpec.name }}
                     .map { field ->
-                    if (field.type.isPrimitive) {
-                        CodeBlock.of("\$L == that.\$L", field.name, field.name)
-                    } else {
-                        CodeBlock.of("\$T.equals(\$L, that.\$L)", Objects::class.java, field.name, field.name)
-                    }
-                },
+                        if (field.type.isPrimitive) {
+                            CodeBlock.of("\$L == that.\$L", field.name, field.name)
+                        } else {
+                            CodeBlock.of("\$T.equals(\$L, that.\$L)", Objects::class.java, field.name, field.name)
+                        }
+                    },
                 " &&\n"
             )
         )

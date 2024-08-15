@@ -3208,14 +3208,14 @@ class CodeGenTest {
         val movieFilter = dataTypes[4]
         assertThat(movieFilter.typeSpec.name).isEqualTo("MovieFilter")
         assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(0)
-        assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating")
+        assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "isTitleSet", "genre", "isGenreSet", "language", "isLanguageSet", "tags", "isTagsSet", "rating", "isRatingSet")
         assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
-        assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("Genre")
-        assertThat(movieFilter.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("Language")
-        parameterizedTypeName = movieFilter.typeSpec.fieldSpecs[3].type as ParameterizedTypeName
+        assertThat(movieFilter.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("Genre")
+        assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").isEqualTo("Language")
+        parameterizedTypeName = movieFilter.typeSpec.fieldSpecs[6].type as ParameterizedTypeName
         assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
         assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
-        assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").isEqualTo("Rating")
+        assertThat(movieFilter.typeSpec.fieldSpecs[8].type).extracting("simpleName").isEqualTo("Rating")
 
         assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
     }
@@ -5316,13 +5316,11 @@ return result;
             .isEqualTo(
                 """
                     |if (this == o) return true;
-                    |    if (o == null || getClass() != o.getClass()) return false;
-                    |    Show that = (Show) o;
-                    |    return 
-                    |    java.util.Objects.equals(id, that.id) &&
+                    |if (o == null || getClass() != o.getClass()) return false;
+                    |Show that = (Show) o;
+                    |return java.util.Objects.equals(id, that.id) &&
                     |    java.util.Objects.equals(title, that.title) &&
-                    |    java.util.Objects.equals(isTitleSet, that.isTitleSet) &&
-                    |    java.util.Objects.equals(releaseYear, that.releaseYear) ;
+                    |    java.util.Objects.equals(releaseYear, that.releaseYear);
                 """.trimMargin()
             )
 
