@@ -1619,7 +1619,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("ColorFilter")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("color")
@@ -1673,7 +1673,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("names")
@@ -1700,7 +1700,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("names")
@@ -1727,7 +1727,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("numbers")
@@ -1759,7 +1759,7 @@ class CodeGenTest {
         assertThat(type.name).isEqualTo("SomeType")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("colors")
@@ -4746,7 +4746,7 @@ It takes a title and such.
         assertThat(type.name).isEqualTo("Movie")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("director")
@@ -4788,7 +4788,7 @@ It takes a title and such.
         assertThat(type.name).isEqualTo("Movie")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("director")
@@ -4872,7 +4872,7 @@ It takes a title and such.
         assertThat(type.name).isEqualTo("Movie")
 
         val fields = type.fieldSpecs
-        assertThat(fields).hasSize(1)
+        assertThat(fields).hasSize(2)
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("director")

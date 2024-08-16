@@ -459,7 +459,7 @@ abstract class BaseDataTypeGenerator(
                     ReservedKeywordSanitizer.sanitize(it.name),
                     ReservedKeywordSanitizer.sanitize(it.name)
                 )
-            if (config.generateIsSetFields && isInputType && it.isNullable && it.initialValue == null) {
+            if (config.generateIsSetFields && isInputType && it.isNullable) {
                 constructorBuilder
                     .addStatement(
                         "this.\$N = true",
@@ -484,7 +484,7 @@ abstract class BaseDataTypeGenerator(
     private fun addField(fieldDefinition: Field, javaType: TypeSpec.Builder, isInputType: Boolean = false) {
         addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType, isInputType)
         // Generate for all nullable fields without any defaults
-        if (config.generateIsSetFields && isInputType && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
+        if (config.generateIsSetFields && isInputType && fieldDefinition.isNullable) {
             addIsDefinedFieldWithGetters(fieldDefinition, javaType)
         }
     }
@@ -550,7 +550,7 @@ abstract class BaseDataTypeGenerator(
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name),
                 ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             )
-        if (config.generateIsSetFields && isInputType && fieldDefinition.isNullable && fieldDefinition.initialValue == null) {
+        if (config.generateIsSetFields && isInputType && fieldDefinition.isNullable) {
             setterMethodBuilder
                 .addStatement(
                     "this.\$N = true",
@@ -632,7 +632,7 @@ abstract class BaseDataTypeGenerator(
 
             val fieldName = it.name
             val field = fields.find { iter -> ReservedKeywordSanitizer.sanitize(iter.name) == fieldName }
-            if (config.generateIsSetFields && isInputType && field?.isNullable == true && field?.initialValue == null) {
+            if (config.generateIsSetFields && isInputType && field?.isNullable == true) {
                 method
                     .addStatement(
                         "this.\$N = true",
