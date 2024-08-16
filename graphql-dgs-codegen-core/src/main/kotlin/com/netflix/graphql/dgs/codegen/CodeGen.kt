@@ -355,7 +355,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 .excludeSchemaTypeExtension()
                 .map {
                     val extensions = findUnionExtensions(it.name, definitions)
-                    KotlinUnionTypeGenerator(config).generate(it, extensions)
+                    KotlinUnionTypeGenerator(config, document).generate(it, extensions)
                 }
                 .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
 

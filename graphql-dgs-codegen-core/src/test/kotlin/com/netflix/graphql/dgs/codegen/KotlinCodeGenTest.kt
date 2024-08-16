@@ -1114,6 +1114,56 @@ class KotlinCodeGenTest {
         )
     }
 
+    @Test
+    fun `Use mapped type name when the type implements non-mapped union type`() {
+        val schema = """
+            union Pet = Cat | Dog
+            type Cat implements Pet {
+              name: ID!
+            }
+            type Dog implements Pet {
+              name: ID!
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf(
+                    "Cat" to "mypackage.Cat"
+                )
+            )
+        ).generate()
+        val interfaces = codeGenResult.kotlinInterfaces
+
+        assertThat(interfaces.size).isEqualTo(1)
+        assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types
+                |
+                |import com.fasterxml.jackson.`annotation`.JsonSubTypes
+                |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import mypackage.Cat
+                |
+                |@JsonTypeInfo(
+                |  use = JsonTypeInfo.Id.NAME,
+                |  include = JsonTypeInfo.As.PROPERTY,
+                |  property = "__typename",
+                |)
+                |@JsonSubTypes(value = [
+                |  JsonSubTypes.Type(value = Cat::class, name = "Cat"),
+                |  JsonSubTypes.Type(value = Dog::class, name = "Dog")
+                |])
+                |public interface Pet {
+                |  public companion object
+                |}
+                |
+            """.trimMargin()
+        )
+    }
+
     class MappedTypesTestCases : ArgumentsProvider {
         override fun provideArguments(context: ExtensionContext): Stream<out Arguments> = of(
             arguments("java.time.LocalDateTime", "java.time.LocalDateTime"),
