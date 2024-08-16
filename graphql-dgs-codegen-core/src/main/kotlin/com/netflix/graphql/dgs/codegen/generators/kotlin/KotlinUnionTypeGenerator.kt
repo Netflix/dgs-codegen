@@ -24,13 +24,15 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
+import graphql.language.Document
 import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
 
-class KotlinUnionTypeGenerator(private val config: CodeGenConfig) {
+class KotlinUnionTypeGenerator(private val config: CodeGenConfig, document: Document) {
 
     private val packageName = config.packageNameTypes
+    private val typeUtils = KotlinTypeUtils(packageName, config, document)
 
     fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): CodeGenResult {
         if (definition.shouldSkip(config)) {
@@ -42,7 +44,8 @@ class KotlinUnionTypeGenerator(private val config: CodeGenConfig) {
 
         val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
             .filterIsInstance<TypeName>()
-            .map { member -> ClassName(packageName, member.name) }
+            .map { member -> typeUtils.findKtInterfaceName(member.name, packageName) }
+            .filterIsInstance<ClassName>()
             .toList()
 
         if (memberTypes.isNotEmpty()) {
