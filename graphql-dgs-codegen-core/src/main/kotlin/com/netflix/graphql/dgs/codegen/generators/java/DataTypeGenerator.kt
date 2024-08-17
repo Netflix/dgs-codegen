@@ -468,6 +468,7 @@ abstract class BaseDataTypeGenerator(
             FieldSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name)).addModifiers(Modifier.PRIVATE)
         }
 
+        fieldBuilder.addAnnotation(jsonPropertyAnnotation(fieldDefinition.name))
         if (fieldDefinition.description != null) {
             fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
