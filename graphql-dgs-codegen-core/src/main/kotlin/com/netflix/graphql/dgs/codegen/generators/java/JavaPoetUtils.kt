@@ -65,7 +65,6 @@ fun jsonTypeInfoAnnotation(): AnnotationSpec {
         .build()
 }
 
-
 /**
  * Generate a [JsonProperty] annotation for the supplied
  * field name.
@@ -78,7 +77,7 @@ fun jsonTypeInfoAnnotation(): AnnotationSpec {
 fun jsonPropertyAnnotation(name: String): AnnotationSpec {
     return AnnotationSpec.builder(JsonProperty::class.java)
         .addMember("value", "\$S", name)
-        .build();
+        .build()
 }
 
 /**
