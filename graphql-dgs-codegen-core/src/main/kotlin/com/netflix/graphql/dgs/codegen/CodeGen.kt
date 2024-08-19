@@ -131,14 +131,13 @@ class CodeGen(private val config: CodeGenConfig) {
         loadSchemaReaders(readerBuilder, debugReaderBuilder)
         // process schema from dependencies
         config.schemaJarFilesFromDependencies.forEach { file ->
-            ZipFile(file).use { zipFile ->
-                for (entry in zipFile.entries()) {
-                    if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
-                        (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql"))
-                    ) {
-                        logger.info("Generating schema from {}: {}", file.name, entry.name)
-                        readerBuilder.reader(zipFile.getInputStream(entry).reader(), "codegen")
-                    }
+            val zipFile = ZipFile(file)
+            for (entry in zipFile.entries()) {
+                if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
+                    (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql"))
+                ) {
+                    logger.info("Generating schema from {}: {}", file.name, entry.name)
+                    readerBuilder.reader(zipFile.getInputStream(entry).reader(), "codegen")
                 }
             }
         }
