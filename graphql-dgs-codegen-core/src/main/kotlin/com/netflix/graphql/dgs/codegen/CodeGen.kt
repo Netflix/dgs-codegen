@@ -83,6 +83,8 @@ class CodeGen(private val config: CodeGenConfig) {
     )
 
     fun generate(): CodeGenResult {
+        loadTypeMappingsFromDependencies()
+
         val codeGenResult = when (config.language) {
             Language.JAVA -> generateJava()
             Language.KOTLIN -> generateKotlin()
@@ -156,7 +158,36 @@ class CodeGen(private val config: CodeGenConfig) {
                 }
             }
         }
+
         return document
+    }
+
+    private fun loadTypeMappingsFromDependencies() {
+        val typeMappingReaderBuilder = MultiSourceReader.newMultiSourceReader()
+        // process type mappings from dependencies
+        config.schemaJarFilesFromDependencies.forEach { file ->
+            val zipFile = ZipFile(file)
+            for (entry in zipFile.entries()) {
+                if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
+                    (entry.name.equals("dgs.codegen.typemappings"))
+                ) {
+                    logger.info("Reading schema typemappings for codegen from {}: {}", file.name, entry.name)
+                    typeMappingReaderBuilder.reader(zipFile.getInputStream(entry).reader(), "codegen")
+                }
+            }
+        }
+
+        val typeMappingsFromDependencies = emptyMap<String, String>().toMutableMap()
+        typeMappingReaderBuilder.build().use { reader ->
+            reader.readLines().forEach { line ->
+                val mapping = line.split(":")
+                logger.info("Adding type mapping for codegen from {}: {}", mapping[0].trim(), mapping[1].trim())
+                typeMappingsFromDependencies[mapping[0]] = mapping[1]
+            }
+        }
+        // Add the new type mappings from dependencies to existing type mappings.
+        // The user provided config overrides mappings from the dependencies.
+        config.typeMapping = typeMappingsFromDependencies.plus(config.typeMapping)
     }
 
     /**
