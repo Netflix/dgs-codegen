@@ -63,6 +63,8 @@ import java.io.Reader
 import java.lang.annotation.RetentionPolicy
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.*
+import java.util.jar.JarFile
 import java.util.zip.ZipFile
 import javax.lang.model.element.Modifier
 import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
@@ -163,31 +165,22 @@ class CodeGen(private val config: CodeGenConfig) {
     }
 
     private fun loadTypeMappingsFromDependencies() {
-        val typeMappingReaderBuilder = MultiSourceReader.newMultiSourceReader()
         // process type mappings from dependencies
         config.schemaJarFilesFromDependencies.forEach { file ->
-            val zipFile = ZipFile(file)
-            for (entry in zipFile.entries()) {
-                if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
-                    (entry.name.equals("dgs.codegen.typemappings"))
-                ) {
-                    logger.info("Reading schema typemappings for codegen from {}: {}", file.name, entry.name)
-                    typeMappingReaderBuilder.reader(zipFile.getInputStream(entry).reader(), "codegen")
+            val typeMappingFile = JarFile(file).getJarEntry("META-INF/dgs.codegen.typemappings")
+            if (typeMappingFile != null) {
+                val zipFile = ZipFile(file)
+                zipFile.getInputStream(typeMappingFile).use { typeMappingInput ->
+                    val props = Properties()
+                    props.load(typeMappingInput)
+
+                    // Add the new type mappings from dependencies to existing type mappings.
+                    // The user provided config overrides mappings from the dependencies.
+                    @Suppress("UNCHECKED_CAST")
+                    config.typeMapping = (props as Map<String, String>).plus(config.typeMapping)
                 }
             }
         }
-
-        val typeMappingsFromDependencies = emptyMap<String, String>().toMutableMap()
-        typeMappingReaderBuilder.build().use { reader ->
-            reader.readLines().forEach { line ->
-                val mapping = line.split(":")
-                logger.info("Adding type mapping for codegen from {}: {}", mapping[0].trim(), mapping[1].trim())
-                typeMappingsFromDependencies[mapping[0]] = mapping[1]
-            }
-        }
-        // Add the new type mappings from dependencies to existing type mappings.
-        // The user provided config overrides mappings from the dependencies.
-        config.typeMapping = typeMappingsFromDependencies.plus(config.typeMapping)
     }
 
     /**
