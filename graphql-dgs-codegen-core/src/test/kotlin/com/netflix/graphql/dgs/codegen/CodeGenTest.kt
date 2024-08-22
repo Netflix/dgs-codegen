@@ -42,6 +42,7 @@ import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
 import java.io.Serializable
+import java.nio.file.Paths
 import java.util.stream.Stream
 
 class CodeGenTest {
@@ -4989,5 +4990,54 @@ It takes a title and such.
         assertThat(result.javaDataTypes[0].typeSpec.superinterfaces[1].toString()).isEqualTo(
             "com.netflix.graphql.dgs.codegen.tests.generated.types.com.netflix.graphql.dgs.codegen.tests.generated.types.B"
         )
+    }
+
+    @Test
+    fun `Codegen should pick up type mappings for schema from JAR files in dependencies`() {
+        val typeMappingDependency = Paths.get("src/test/resources/dependencies/testDependency.jar").toAbsolutePath().toFile()
+        val schema = """
+            type Query {
+                person: Person
+            }
+            scalar BigDecimal 
+            
+            type Person {
+                firstname: String
+                data: BigDecimal
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                schemaJarFilesFromDependencies = listOf(typeMappingDependency)
+            )
+        ).generate()
+        assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString() == "java.math.BigDecimal")
+    }
+
+    @Test
+    fun `Codegen should use user specfied typemappings to override type mappings from typemappings in dependencies`() {
+        val typeMappingDependency = Paths.get("src/test/resources/dependencies/testDependency.jar").toAbsolutePath().toFile()
+        val schema = """
+            type Query {
+                person: Person
+            }
+            scalar BigDecimal 
+            
+            type Person {
+                firstname: String
+                data: BigDecimal
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                schemaJarFilesFromDependencies = listOf(typeMappingDependency),
+                typeMapping = mapOf("BigDecimal" to "java.lang.String")
+            )
+        ).generate()
+        assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString() == "java.lang.String")
     }
 }
