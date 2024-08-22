@@ -35,21 +35,7 @@ import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
-import graphql.language.Definition
-import graphql.language.DirectivesContainer
-import graphql.language.Document
-import graphql.language.EnumTypeDefinition
-import graphql.language.FieldDefinition
-import graphql.language.InputObjectTypeDefinition
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.NamedNode
-import graphql.language.ObjectTypeDefinition
-import graphql.language.ObjectTypeExtensionDefinition
-import graphql.language.ScalarTypeDefinition
-import graphql.language.Type
-import graphql.language.TypeDefinition
-import graphql.language.TypeName
-import graphql.language.UnionTypeDefinition
+import graphql.language.*
 import graphql.parser.InvalidSyntaxException
 import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
@@ -167,17 +153,18 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun loadTypeMappingsFromDependencies() {
         // process type mappings from dependencies
         config.schemaJarFilesFromDependencies.forEach { file ->
-            val typeMappingFile = JarFile(file).getJarEntry("META-INF/dgs.codegen.typemappings")
-            if (typeMappingFile != null) {
-                val zipFile = ZipFile(file)
-                zipFile.getInputStream(typeMappingFile).use { typeMappingInput ->
-                    val props = Properties()
-                    props.load(typeMappingInput)
+            JarFile(file).use { jarFile ->
+                val typeMappingsFile = jarFile.getJarEntry("META-INF/dgs.codegen.typemappings")
+                if (typeMappingsFile != null) {
+                    jarFile.getInputStream(typeMappingsFile).use { typeMappingInput ->
+                        val props = Properties()
+                        props.load(typeMappingInput)
 
-                    // Add the new type mappings from dependencies to existing type mappings.
-                    // The user provided config overrides mappings from the dependencies.
-                    @Suppress("UNCHECKED_CAST")
-                    config.typeMapping = (props as Map<String, String>).plus(config.typeMapping)
+                        // Add the new type mappings from dependencies to existing type mappings.
+                        // The user provided config overrides mappings from the dependencies.
+                        @Suppress("UNCHECKED_CAST")
+                        config.typeMapping = (props as Map<String, String>).plus(config.typeMapping)
+                    }
                 }
             }
         }
