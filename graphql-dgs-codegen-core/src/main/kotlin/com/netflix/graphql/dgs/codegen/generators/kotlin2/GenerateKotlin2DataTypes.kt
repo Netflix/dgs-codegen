@@ -33,6 +33,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
@@ -76,8 +77,14 @@ fun generateKotlin2DataTypes(
             val implementedUnionTypes = typeLookup.implementedUnionTypes(typeDefinition.name)
             val superInterfaces = implementedInterfaces + implementedUnionTypes
 
-            // get any fields defined via schema extensions
-            val extensionTypes = findTypeExtensions(typeDefinition.name, document.definitions)
+            // get any implemented interfaces fields defined via schema extensions
+            val implementedInterfacesExtensionTypes = implementedInterfaces
+                .flatMap { findInterfaceExtensions(it, document.definitions) }
+
+            // get any data types fields defined via schema extensions
+            val typeExtensionTypes = findTypeExtensions(typeDefinition.name, document.definitions)
+
+            val extensionTypes = typeExtensionTypes + implementedInterfacesExtensionTypes
 
             // get all fields defined on the type itself or any extension types
             val fields = sequenceOf(typeDefinition)
@@ -155,7 +162,8 @@ fun generateKotlin2DataTypes(
                         .returns(typeDefinition.name.toKtTypeName())
                         .addCode(
                             fields.let { fs ->
-                                val builder = CodeBlock.builder().add("return %T(\n", ClassName(config.packageNameTypes, typeDefinition.name))
+                                val builder = CodeBlock.builder()
+                                    .add("return %T(\n", ClassName(config.packageNameTypes, typeDefinition.name))
                                 fs.forEach { f -> builder.add("  %N = %N,\n", f.name, f.name) }
                                 builder.add(")").build()
                             }

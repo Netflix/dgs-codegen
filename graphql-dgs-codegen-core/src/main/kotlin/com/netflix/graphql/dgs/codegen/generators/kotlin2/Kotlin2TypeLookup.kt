@@ -143,7 +143,8 @@ class Kotlin2TypeLookup(
      */
     private val interfaceFields: Map<String, List<String>> = document
         .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
-        .associate { i -> i.name to i.fieldDefinitions.map { it.name } }
+        .groupBy(keySelector = { it.name }, valueTransform = { it.fieldDefinitions })
+        .mapValues { e -> e.value.flatten().map { i -> i.name } }
 
     /**
      * A map of interfaces to the types that implement them
