@@ -19,6 +19,8 @@ public object DgsConstants {
     public const val Lastname: String = "lastname"
 
     public const val Company: String = "company"
+
+    public const val Age: String = "age"
   }
 
   public object PERSON {

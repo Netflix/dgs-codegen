@@ -77,14 +77,8 @@ fun generateKotlin2DataTypes(
             val implementedUnionTypes = typeLookup.implementedUnionTypes(typeDefinition.name)
             val superInterfaces = implementedInterfaces + implementedUnionTypes
 
-            // get any implemented interfaces fields defined via schema extensions
-            val implementedInterfacesExtensionTypes = implementedInterfaces
-                .flatMap { findInterfaceExtensions(it, document.definitions) }
-
-            // get any data types fields defined via schema extensions
-            val typeExtensionTypes = findTypeExtensions(typeDefinition.name, document.definitions)
-
-            val extensionTypes = typeExtensionTypes + implementedInterfacesExtensionTypes
+            // get any fields defined via schema extensions
+            val extensionTypes = findTypeExtensions(typeDefinition.name, document.definitions)
 
             // get all fields defined on the type itself or any extension types
             val fields = sequenceOf(typeDefinition)

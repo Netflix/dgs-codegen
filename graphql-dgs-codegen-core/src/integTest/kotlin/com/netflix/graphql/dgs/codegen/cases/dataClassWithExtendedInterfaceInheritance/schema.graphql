@@ -14,7 +14,9 @@ type Employee implements Person {
 }
 
 extend interface Person {
-
   age: Int!
+}
 
+extend type Employee {
+  age: Int!
 }

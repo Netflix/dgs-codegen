@@ -23,4 +23,10 @@ public class EmployeeProjection(
       field("company")
       return this
     }
+
+  public val age: EmployeeProjection
+    get() {
+      field("age")
+      return this
+    }
 }
