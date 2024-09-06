@@ -48,7 +48,7 @@ class ClientApiGenMutationTest {
         ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLMutation")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
@@ -81,7 +81,7 @@ class ClientApiGenMutationTest {
         ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLMutation")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
@@ -162,15 +162,18 @@ class ClientApiGenMutationTest {
         val expected = """
             |super("mutation", queryName);
             |if (movie != null || fieldsSet.contains("movie")) {
-            |    getInput().put("movie", movie);
-            |}if (reviews != null || fieldsSet.contains("reviews")) {
-            |    getInput().put("reviews", reviews);
-            |}if (uuid != null || fieldsSet.contains("uuid")) {
-            |    getInput().put("uuid", uuid);
+            |  getInput().put("movie", movie);
             |}
+            |if (reviews != null || fieldsSet.contains("reviews")) {
+            |  getInput().put("reviews", reviews);
+            |}
+            |if (uuid != null || fieldsSet.contains("uuid")) {
+            |  getInput().put("uuid", uuid);
+            |}
+            |
         """.trimMargin()
 
-        assert(initMethod.contains(expected))
+        assertThat(initMethod).isEqualTo(expected)
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
         )
@@ -197,11 +200,8 @@ class ClientApiGenMutationTest {
             )
         ).generate()
 
-        assert(
-            codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs
-                .find { it.name == "<init>" }?.code.toString()
-                .contains("super(\"mutation\", queryName);\ngetInput().put(\"movieId\", movieId);")
-        )
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs.find { it.name == "<init>" }?.code.toString())
+            .contains("super(\"mutation\", queryName);\ngetInput().put(\"movieId\", movieId);")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
@@ -269,7 +269,7 @@ class ClientApiGenMutationTest {
         assertThat(codeGenResult.javaEnumTypes)
             .extracting("typeSpec").extracting("name").containsExactly("ShowType", "SourceType")
         assertThat(codeGenResult.javaQueryTypes)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowsGraphQLQuery")
+            .extracting("typeSpec").extracting("name").containsExactly("ShowsGraphQLMutation")
         assertThat(codeGenResult.clientProjections)
             .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot", "BooleanProjection")
 
@@ -295,7 +295,7 @@ class ClientApiGenMutationTest {
         ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieTitleGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieTitleGraphQLMutation")
 
         assertCompilesJava(codeGenResult)
     }
