@@ -34,6 +34,7 @@ fun generateKotlinCode(
     checkAndGetLocaleCodeBlock(value, type)
         ?: checkAndGetLongCodeBlock(value, type)
         ?: checkAndGetBigDecimalCodeBlock(value, type)
+        ?: checkAndGetCurrencyCodeBlock(value, type)
         ?: when (value) {
             is BooleanValue -> CodeBlock.of("%L", value.isValue)
             is IntValue -> CodeBlock.of("%L", value.value)
@@ -123,6 +124,19 @@ private fun checkAndGetBigDecimalCodeBlock(
             is IntValue -> CodeBlock.of("%L", "java.math.BigDecimal(${value.value})")
             is FloatValue -> CodeBlock.of("%L", "java.math.BigDecimal(${value.value})")
             else -> error("$type cannot be created from $value, expected String, Int or Float value")
+        }
+    } else {
+        null
+    }
+
+private fun checkAndGetCurrencyCodeBlock(
+    value: Value<Value<*>>,
+    type: TypeName,
+): CodeBlock? =
+    if (type.className.canonicalName == "java.util.Currency") {
+        when (value) {
+            is StringValue -> CodeBlock.of("%L", "java.util.Currency.getInstance(\"${value.value}\")")
+            else -> error("$type cannot be created from $value, expected String value")
         }
     } else {
         null
