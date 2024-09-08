@@ -19,7 +19,9 @@
 package com.netflix.graphql.dgs.codegen
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.fail
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
 import java.nio.file.Files
@@ -62,6 +64,9 @@ class Kotlin2CodeGenTest {
                     "inputWithDefaultBigDecimal" -> mapOf(
                         "Decimal" to "java.math.BigDecimal"
                     )
+                    "inputWithDefaultCurrency" -> mapOf(
+                        "Currency" to "java.util.Currency"
+                    )
                     else -> emptyMap()
                 }
             )
@@ -99,6 +104,11 @@ class Kotlin2CodeGenTest {
         }
 
         assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun `assert updateExpected is false`() {
+        Assertions.assertFalse(updateExpected)
     }
 
     companion object {
