@@ -39,7 +39,7 @@ dependencies {
     implementation 'com.github.ajalt.clikt:clikt:4.4.+'
 
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.+'
-    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+    implementation 'jakarta.annotation:jakarta.annotation-api:3.0.0'
 
 
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
