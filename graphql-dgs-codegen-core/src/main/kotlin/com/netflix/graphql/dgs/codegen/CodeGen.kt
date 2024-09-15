@@ -39,6 +39,7 @@ import graphql.language.*
 import graphql.parser.InvalidSyntaxException
 import graphql.parser.MultiSourceReader
 import graphql.parser.Parser
+import graphql.parser.ParserEnvironment
 import graphql.parser.ParserOptions
 import graphql.schema.idl.ScalarInfo
 import graphql.schema.idl.TypeUtil
@@ -134,7 +135,10 @@ class CodeGen(private val config: CodeGenConfig) {
 
         val document = readerBuilder.build().use { reader ->
             try {
-                parser.parseDocument(reader, options)
+                parser.parseDocument(
+                    ParserEnvironment.newParserEnvironment().document(reader)
+                        .parserOptions(options).build()
+                )
             } catch (exception: InvalidSyntaxException) {
                 // check if the schema is empty
                 if (exception.sourcePreview.isBlank()) {

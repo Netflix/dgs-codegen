@@ -570,7 +570,7 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
@@ -1226,7 +1226,7 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
