@@ -18,9 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
+import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.FieldSpec
@@ -71,7 +75,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
 
         logger.info("Generating data type {}", definition.name)
 
-        val name = definition.name
+        val name = definition.templatedClassName(config.nameTemplate)
         val unionTypes = document.getDefinitionsOfType(UnionTypeDefinition::class.java).asSequence().filter { union ->
             union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
         }.map { it.name }.toList()
@@ -168,7 +172,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
 
         logger.info("Generating input type {}", definition.name)
 
-        val name = definition.name
+        val name = definition.templatedClassName(config.nameTemplate)
         val fieldDefinitions = definition.inputValueDefinitions.asSequence().map {
             val type = typeUtils.findReturnType(it.type)
             val defaultValue = it.defaultValue?.let { defVal ->

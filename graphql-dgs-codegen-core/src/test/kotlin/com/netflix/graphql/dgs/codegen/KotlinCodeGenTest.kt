@@ -4176,4 +4176,21 @@ It takes a title and such.
         assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.A")
         assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.B")
     }
+
+    @TemplateClassNameTest
+    fun `Should generate class names based on template`(
+        schema: String,
+        nameTemplate: String?,
+        expectedName: String
+    ) {
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                language = Language.KOTLIN,
+                nameTemplate = nameTemplate
+            )
+        ).generate().kotlinSources()
+
+        assertThat(dataTypes.firstOrNull()?.name).isEqualTo(expectedName)
+    }
 }

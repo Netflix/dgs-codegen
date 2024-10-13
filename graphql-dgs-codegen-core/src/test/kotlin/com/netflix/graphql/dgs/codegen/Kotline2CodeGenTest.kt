@@ -28,23 +28,7 @@ import java.io.Serializable
 class Kotline2CodeGenTest {
     @Test
     fun generateSerializableDataClass() {
-        val schema = """
-            type Person {
-                firstname: String
-                lastname: String
-            }
-        """.trimIndent()
-
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                language = Language.KOTLIN,
-                generateKotlinNullableClasses = true,
-                generateKotlinClosureProjections = true,
-                implementSerializable = true
-            )
-        ).generate()
+        val codeGenResult = CodeGen(getTestCodeGenConfig()).generate()
 
         val dataTypes = codeGenResult.kotlinDataTypes
 
@@ -133,5 +117,33 @@ class Kotline2CodeGenTest {
         )
 
         assertCompilesKotlin(result.kotlinEnumTypes)
+    }
+
+    @TemplateClassNameTest
+    fun generateSerializedDataClassWithCustomName(
+        schema: String,
+        nameTemplate: String?,
+        expectedName: String
+    ) {
+        val dataTypes = CodeGen(getTestCodeGenConfig(nameTemplate = nameTemplate, schema = schema))
+            .generate()
+            .kotlinSources()
+
+        assertThat(dataTypes.firstOrNull()?.name).isEqualTo(expectedName)
+    }
+
+    companion object {
+        private fun getTestCodeGenConfig(
+            nameTemplate: String? = null,
+            schema: String = PERSON_TYPE_SCHEMA
+        ): CodeGenConfig = CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            generateKotlinNullableClasses = true,
+            generateKotlinClosureProjections = true,
+            implementSerializable = true,
+            nameTemplate = nameTemplate
+        )
     }
 }
