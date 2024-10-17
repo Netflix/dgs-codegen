@@ -27,7 +27,6 @@ abstract class GraphQLQuery(val operation: String, val name: String?) {
     constructor() : this("query")
 
     open fun getOperationType(): String? {
-        VariableDefinition.newVariableDefinition()
         return operation
     }
 
