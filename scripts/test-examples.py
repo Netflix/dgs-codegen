@@ -161,7 +161,7 @@ def main(argv):
             Out.error("Unable to resolved a Codegen Version!")
             exit(2)
 
-    clone_repos(load_config(), projects_dir)
+   # clone_repos(load_config(), projects_dir)
     projects = next(os.walk(projects_dir))[1]
     if not projects:
         Out.error(f"No projects available at [{projects_dir}]!")
