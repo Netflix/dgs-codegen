@@ -18,6 +18,6 @@
 # as part of the job steps. If we try to clone them as part of
 # the Python scripts instead it will fail. Because of this, the list of examples
 # is duplicated in the ./github/workflows/ci-beta.yml file.
-repositories:
-    - "git@github.com:Netflix/dgs-examples-java.git"
-    - "git@github.com:Netflix/dgs-examples-kotlin.git"
+#repositories:
+#    - "git@github.com:Netflix/dgs-examples-java.git"
+#    - "git@github.com:Netflix/dgs-examples-kotlin.git"
