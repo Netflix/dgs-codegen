@@ -64,7 +64,8 @@ class CodeGenTest {
             CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
         }.isInstanceOf(CodeGenSchemaParsingException::class.java)
             .hasMessageContainingAll(
-                "Invalid Syntax : offending token '<EOF>' at line 8 column 16",
+                "Unable to parse the schema...",
+                "Invalid syntax with offending token '<EOF>' at line 8 column 16",
                 """
                 |Schema Section:
                 |>>>

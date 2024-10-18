@@ -6,30 +6,27 @@
     },
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -70,36 +67,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -117,68 +114,53 @@
             ]
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
                 "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib-common",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
-            ]
-        },
-        "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
-                "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
@@ -193,44 +175,39 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     },
     "implementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -253,36 +230,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -294,10 +271,7 @@
             "locked": "1.17.0"
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "net.java.dev.jna:jna": {
             "locked": "5.14.0",
@@ -309,39 +283,27 @@
             "locked": "1.9.25"
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
                 "com.github.ajalt.colormath:colormath",
                 "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet",
                 "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json",
                 "org.jetbrains:markdown"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
-                "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json"
-            ]
-        },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3"
+            "locked": "1.7.3"
         },
         "org.jetbrains:markdown": {
             "locked": "0.7.0",
@@ -352,44 +314,39 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     },
     "integTestCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -496,36 +453,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -543,23 +500,18 @@
             ]
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
             "transitive": [
                 "com.google.testing.compile:compile-testing",
-                "com.google.truth:truth",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.google.truth:truth"
             ]
         },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.14.18",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
             ]
         },
@@ -572,10 +524,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.26.3"
         },
         "org.checkerframework:checker-qual": {
             "locked": "3.26.0",
@@ -588,7 +537,6 @@
         "org.hamcrest:hamcrest-core": {
             "locked": "1.3",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "junit:junit"
             ]
         },
@@ -604,14 +552,12 @@
         "org.jetbrains.kotlin:kotlin-compiler": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
@@ -619,19 +565,17 @@
         "org.jetbrains.kotlin:kotlin-script-runtime": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
                 "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-common",
@@ -642,20 +586,16 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -664,7 +604,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -674,46 +613,44 @@
         "org.jetbrains.kotlinx:kotlinx-coroutines-core": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
@@ -726,39 +663,35 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-params",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.3",
+            "locked": "1.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -781,44 +714,39 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     },
     "integTestImplementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -907,36 +835,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -948,23 +876,18 @@
             "locked": "1.17.0"
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
             "transitive": [
                 "com.google.testing.compile:compile-testing",
-                "com.google.truth:truth",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.google.truth:truth"
             ]
         },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.14.18",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
             ]
         },
@@ -983,10 +906,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.26.3"
         },
         "org.checkerframework:checker-qual": {
             "locked": "3.26.0",
@@ -999,7 +919,6 @@
         "org.hamcrest:hamcrest-core": {
             "locked": "1.3",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "junit:junit"
             ]
         },
@@ -1015,14 +934,12 @@
         "org.jetbrains.kotlin:kotlin-compiler": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
@@ -1030,19 +947,17 @@
         "org.jetbrains.kotlin:kotlin-script-runtime": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
                 "com.github.ajalt.colormath:colormath",
                 "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-common",
@@ -1054,21 +969,17 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:atomicfu",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json"
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
@@ -1076,7 +987,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
@@ -1090,18 +1000,17 @@
         "org.jetbrains.kotlinx:kotlinx-coroutines-core": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3"
+            "locked": "1.7.3"
         },
         "org.jetbrains:markdown": {
             "locked": "0.7.0",
@@ -1110,39 +1019,35 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-params",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.3",
+            "locked": "1.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -1165,44 +1070,41 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     },
     "integTestRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -1309,36 +1211,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -1362,23 +1264,18 @@
             ]
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
             "transitive": [
                 "com.google.testing.compile:compile-testing",
-                "com.google.truth:truth",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.google.truth:truth"
             ]
         },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.14.18",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
             ]
         },
@@ -1389,10 +1286,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.26.3"
         },
         "org.checkerframework:checker-qual": {
             "locked": "3.26.0",
@@ -1405,7 +1299,6 @@
         "org.hamcrest:hamcrest-core": {
             "locked": "1.3",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "junit:junit"
             ]
         },
@@ -1424,7 +1317,6 @@
         "org.jetbrains.kotlin:kotlin-compiler": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
@@ -1432,7 +1324,6 @@
             "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
@@ -1441,19 +1332,17 @@
         "org.jetbrains.kotlin:kotlin-script-runtime": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
                 "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-reflect",
@@ -1466,20 +1355,16 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -1488,7 +1373,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -1498,46 +1382,44 @@
         "org.jetbrains.kotlinx:kotlinx-coroutines-core": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
@@ -1562,16 +1444,14 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -1579,40 +1459,36 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.3",
+            "locked": "1.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.10.3",
+            "locked": "1.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -1638,16 +1514,13 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.35",
+            "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     },
@@ -1956,30 +1829,29 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -2020,36 +1892,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -2073,10 +1945,7 @@
             ]
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "net.java.dev.jna:jna": {
             "locked": "5.14.0",
@@ -2094,67 +1963,54 @@
             "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
                 "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-reflect",
-                "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
                 "org.jetbrains:markdown-jvm"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
-                "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
-            ]
-        },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
@@ -2181,45 +2037,39 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.35",
+            "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -2326,36 +2176,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -2373,23 +2223,18 @@
             ]
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
             "transitive": [
                 "com.google.testing.compile:compile-testing",
-                "com.google.truth:truth",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.google.truth:truth"
             ]
         },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.14.18",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
             ]
         },
@@ -2402,10 +2247,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.26.3"
         },
         "org.checkerframework:checker-qual": {
             "locked": "3.26.0",
@@ -2418,7 +2260,6 @@
         "org.hamcrest:hamcrest-core": {
             "locked": "1.3",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "junit:junit"
             ]
         },
@@ -2434,14 +2275,12 @@
         "org.jetbrains.kotlin:kotlin-compiler": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
@@ -2449,19 +2288,17 @@
         "org.jetbrains.kotlin:kotlin-script-runtime": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
                 "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-common",
@@ -2472,20 +2309,16 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -2494,7 +2327,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -2504,46 +2336,44 @@
         "org.jetbrains.kotlinx:kotlinx-coroutines-core": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
@@ -2556,39 +2386,35 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-params",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.3",
+            "locked": "1.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -2611,44 +2437,39 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     },
     "testImplementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -2737,36 +2558,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -2778,23 +2599,18 @@
             "locked": "1.17.0"
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
             "transitive": [
                 "com.google.testing.compile:compile-testing",
-                "com.google.truth:truth",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.google.truth:truth"
             ]
         },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.14.18",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
             ]
         },
@@ -2813,10 +2629,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.26.3"
         },
         "org.checkerframework:checker-qual": {
             "locked": "3.26.0",
@@ -2829,7 +2642,6 @@
         "org.hamcrest:hamcrest-core": {
             "locked": "1.3",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "junit:junit"
             ]
         },
@@ -2845,14 +2657,12 @@
         "org.jetbrains.kotlin:kotlin-compiler": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
@@ -2860,19 +2670,17 @@
         "org.jetbrains.kotlin:kotlin-script-runtime": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt",
                 "com.github.ajalt.colormath:colormath",
                 "com.github.ajalt.mordant:mordant",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-common",
@@ -2884,21 +2692,17 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlinx:atomicfu",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json"
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
@@ -2906,7 +2710,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
@@ -2920,18 +2723,17 @@
         "org.jetbrains.kotlinx:kotlinx-coroutines-core": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3"
+            "locked": "1.7.3"
         },
         "org.jetbrains:markdown": {
             "locked": "0.7.0",
@@ -2940,39 +2742,35 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-params",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.3",
+            "locked": "1.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -2995,44 +2793,41 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
             "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
-                "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.13.4",
+            "locked": "2.18.0",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -3139,36 +2934,36 @@
             ]
         },
         "com.graphql-java:graphql-java": {
-            "locked": "19.2",
+            "locked": "22.1",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.graphql-java:java-dataloader": {
-            "locked": "3.2.0",
+            "locked": "3.3.0",
             "transitive": [
-                "com.graphql-java:graphql-java"
+                "com.graphql-java:graphql-java",
+                "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core": {
             "project": true
         },
         "com.netflix.graphql.dgs:graphql-dgs": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
             ]
         },
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
-            "locked": "5.5.1",
+            "locked": "9.1.3",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
@@ -3192,23 +2987,18 @@
             ]
         },
         "jakarta.annotation:jakarta.annotation-api": {
-            "locked": "2.1.1",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.0.0"
         },
         "junit:junit": {
             "locked": "4.13.2",
             "transitive": [
                 "com.google.testing.compile:compile-testing",
-                "com.google.truth:truth",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.google.truth:truth"
             ]
         },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.14.18",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.assertj:assertj-core"
             ]
         },
@@ -3219,10 +3009,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3",
-            "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
-            ]
+            "locked": "3.26.3"
         },
         "org.checkerframework:checker-qual": {
             "locked": "3.26.0",
@@ -3235,7 +3022,6 @@
         "org.hamcrest:hamcrest-core": {
             "locked": "1.3",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "junit:junit"
             ]
         },
@@ -3254,7 +3040,6 @@
         "org.jetbrains.kotlin:kotlin-compiler": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
@@ -3262,7 +3047,6 @@
             "locked": "1.9.25",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
@@ -3271,19 +3055,17 @@
         "org.jetbrains.kotlin:kotlin-script-runtime": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
                 "com.github.ajalt.clikt:clikt-jvm",
                 "com.github.ajalt.colormath:colormath-jvm",
                 "com.github.ajalt.mordant:mordant-jvm",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-reflect",
@@ -3296,20 +3078,16 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-common": {
-            "locked": "1.9.25",
+            "locked": "2.0.20",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
-                "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
@@ -3318,7 +3096,6 @@
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
             "locked": "1.9.25",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -3328,46 +3105,44 @@
         "org.jetbrains.kotlinx:kotlinx-coroutines-core": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
             "locked": "1.5.0",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-bom": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm": {
-            "locked": "1.6.3",
+            "locked": "1.7.3",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-serialization-bom",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json"
@@ -3392,16 +3167,14 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-api": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit.jupiter:junit-jupiter-params",
@@ -3409,40 +3182,36 @@
             ]
         },
         "org.junit.jupiter:junit-jupiter-engine": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.jupiter:junit-jupiter-params": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-commons": {
-            "locked": "1.10.3",
+            "locked": "1.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-api",
                 "org.junit.platform:junit-platform-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit.platform:junit-platform-engine": {
-            "locked": "1.10.3",
+            "locked": "1.10.5",
             "transitive": [
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies",
                 "org.junit.jupiter:junit-jupiter-engine",
                 "org.junit:junit-bom"
             ]
         },
         "org.junit:junit-bom": {
-            "locked": "5.10.3",
+            "locked": "5.10.5",
             "transitive": [
                 "org.junit.jupiter:junit-jupiter",
                 "org.junit.jupiter:junit-jupiter-api",
@@ -3468,16 +3237,13 @@
         "org.reactivestreams:reactive-streams": {
             "locked": "1.0.3",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:graphql-java"
             ]
         },
         "org.slf4j:slf4j-api": {
-            "locked": "1.7.35",
+            "locked": "1.7.30",
             "transitive": [
-                "com.graphql-java:graphql-java",
-                "com.graphql-java:java-dataloader",
-                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+                "com.graphql-java:java-dataloader"
             ]
         }
     }

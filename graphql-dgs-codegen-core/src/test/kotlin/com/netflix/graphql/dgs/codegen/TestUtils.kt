@@ -33,6 +33,7 @@ import org.jetbrains.kotlin.cli.common.arguments.K2JVMCompilerArguments
 import org.jetbrains.kotlin.cli.common.messages.MessageRenderer
 import org.jetbrains.kotlin.cli.common.messages.PrintingMessageCollector
 import org.jetbrains.kotlin.cli.jvm.K2JVMCompiler
+import org.jetbrains.kotlin.config.JvmTarget
 import org.jetbrains.kotlin.config.Services
 import org.junit.platform.commons.util.ReflectionUtils
 import java.io.File
@@ -90,6 +91,7 @@ fun assertCompilesKotlin(files: Collection<FileSpec>, tests: Map<String, String>
                 classpath = classpath()
                 noStdlib = true
                 noReflect = true
+                jvmTarget = JvmTarget.JVM_17.description
             }
         )
         assertThat(exitCode).isEqualTo(ExitCode.OK)
