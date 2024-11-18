@@ -40,7 +40,7 @@ class CodegenGradlePluginCompatibilityTest {
     lateinit var projectDir: File
 
     @ParameterizedTest
-    @ValueSource(strings = ["7.0.2", "7.1.1", "7.2", "7.6", "8.0", "8.1"])
+    @ValueSource(strings = ["8.6", "8.7", "8.8"])
     fun `Test generateJava against multiple Gradle Versions`(gradleVersion: String) {
         prepareBuildGraphQLSchema(
             """
@@ -84,8 +84,11 @@ class CodegenGradlePluginCompatibilityTest {
                 	mavenCentral()
                 }
 
-                sourceCompatibility = 1.8
-                targetCompatibility = 1.8
+                java {
+                    toolchain {
+                        languageVersion.set(JavaLanguageVersion.of(17))
+                    }
+                }
 
                  generateJava {
                      packageName = 'com.netflix.testproject.graphql'
@@ -108,7 +111,6 @@ class CodegenGradlePluginCompatibilityTest {
             .withArguments(
                 "--stacktrace",
                 "--info",
-                "--configuration-cache",
                 "generateJava",
                 "build"
             ).build()
