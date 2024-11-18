@@ -82,17 +82,18 @@ Working on the code base
 
 IDE setup
 -----
-The DGS codebases are Kotlin based. We strongly recommend using Intellij because of the excellent support for Kotlin and
-Gradle. You can use the free [Intellij Community Edition](https://www.jetbrains.com/idea/download/).
+The DGS codebases are Kotlin based.
+We strongly recommend using IntelliJ because of the excellent support for Kotlin and Gradle.
+You can use the free [IntelliJ Community Edition](https://www.jetbrains.com/idea/download/).
 
-Clone and open the project using the "project from version control feature" and let Gradle import all dependencies. Note
-that we build on Java 8, so a Java 8 JDK is required. If you don't have a JDK, you can use [sdkman](https://sdkman.io/)
-or [Intellij](https://www.jetbrains.com/help/idea/sdk.html) to install one. Because almost all the code is Kotlin, we
-don't miss any language features of newer Java releases while supporting a broad range of older releases.
+Clone and open the project using the "project from version control feature" and let Gradle import all dependencies.
+Note that we build on Java 17, so a Java 17 JDK is required.
+If you don't have a JDK, you can use [sdkman](https://sdkman.io/) or [IntelliJ](https://www.jetbrains.com/help/idea/sdk.html) to install one.
+Because almost all the code is Kotlin, we don't miss any language features of newer Java releases while supporting a broad range of older releases.
 
 Code conventions
 -----
-We use the standard Kotlin coding conventions. Intellij should select the correct style automatically because we checked
+We use the standard Kotlin coding conventions. IntelliJ should select the correct style automatically because we checked
 in the `.idea/codeStyle` folder. Furthermore, we're also using [Ktlint](https://ktlint.github.io/). You can run
 formatting manually using Gradle:
 

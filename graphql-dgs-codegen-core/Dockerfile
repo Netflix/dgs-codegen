@@ -1,4 +1,4 @@
-FROM dockerregistry.test.netflix.net:7002/platform/java/8:latest
+FROM dockerregistry.test.netflix.net:7002/platform/java/17:latest
 
 COPY build/distributions/*.tar /app/
 
