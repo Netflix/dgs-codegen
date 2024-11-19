@@ -139,7 +139,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 parser.parseDocument(parserEnv)
             } catch (exception: InvalidSyntaxException) {
                 // check if the schema is empty
-                if (exception.sourcePreview.isBlank()) {
+                if (exception.sourcePreview == null || exception.sourcePreview.isBlank()) {
                     logger.warn("Schema is empty")
                     // return an empty document
                     return Document.newDocument().build()
