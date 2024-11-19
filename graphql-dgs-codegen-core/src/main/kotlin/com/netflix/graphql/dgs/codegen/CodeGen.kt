@@ -62,6 +62,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
     companion object {
         private const val SDL_MAX_ALLOWED_SCHEMA_TOKENS: Int = Int.MAX_VALUE
+        private const val SDL_MAX_CHARACTERS: Int = Int.MAX_VALUE
         private val logger: Logger = LoggerFactory.getLogger(CodeGen::class.java)
     }
 
@@ -112,7 +113,10 @@ class CodeGen(private val config: CodeGenConfig) {
      */
     private fun buildDocument(): Document {
         val options = ParserOptions.getDefaultParserOptions().transform { builder ->
-            builder.maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS).maxWhitespaceTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
+            builder
+                .maxTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
+                .maxWhitespaceTokens(SDL_MAX_ALLOWED_SCHEMA_TOKENS)
+                .maxCharacters(SDL_MAX_CHARACTERS)
         }
         val parser = Parser()
 
@@ -139,7 +143,7 @@ class CodeGen(private val config: CodeGenConfig) {
                 parser.parseDocument(parserEnv)
             } catch (exception: InvalidSyntaxException) {
                 // check if the schema is empty
-                if (exception.sourcePreview == null || exception.sourcePreview.isBlank()) {
+                if (exception.sourcePreview != null && exception.sourcePreview.isBlank()) {
                     logger.warn("Schema is empty")
                     // return an empty document
                     return Document.newDocument().build()
