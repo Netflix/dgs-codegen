@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
 import graphql.language.*
@@ -46,7 +47,7 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
 
         logger.info("Generating type {}", definition.name)
 
-        val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
+        val interfaceBuilder = TypeSpec.interfaceBuilder(definition.templatedClassName(config.nameTemplate))
             .addOptionalGeneratedAnnotation(config)
         if (definition.description != null) {
             interfaceBuilder.addKdoc("%L", definition.description.sanitizeKdoc())
@@ -85,11 +86,15 @@ class KotlinInterfaceTypeGenerator(private val config: CodeGenConfig, private va
             interfaceBuilder.addProperty(propertySpec.build())
         }
 
-        val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
-            .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
-            .map { node -> typeUtils.findKtInterfaceName(node.name, packageName) }
-            .filterIsInstance<ClassName>()
-            .toList()
+        val implementations: Map<String, ClassName> =
+            document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
+                .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
+                .associate {
+                    it.name to typeUtils
+                        .findKtInterfaceName(it.templatedClassName(config.nameTemplate), packageName) as? ClassName
+                }
+                .mapNotNull { (name, className) -> className?.let { name to it } }
+                .toMap()
 
         if (implementations.isNotEmpty()) {
             interfaceBuilder.addAnnotation(jsonTypeInfoAnnotation())

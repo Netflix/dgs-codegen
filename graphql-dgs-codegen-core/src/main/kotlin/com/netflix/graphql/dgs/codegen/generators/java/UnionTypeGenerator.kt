@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
@@ -46,11 +47,12 @@ class UnionTypeGenerator(private val config: CodeGenConfig, private val document
 
         val memberTypes = definition.memberTypes.asSequence().plus(extensions.asSequence().flatMap { it.memberTypes })
             .filterIsInstance<TypeName>()
-            .map { member ->
-                typeUtils.findJavaInterfaceName(member.name, packageName)
+            .associate {
+                it.name to typeUtils
+                    .findJavaInterfaceName(it.templatedClassName(config.nameTemplate), packageName) as? ClassName
             }
-            .filterIsInstance<ClassName>()
-            .toList()
+            .mapNotNull { (name, className) -> className?.let { name to it } }
+            .toMap()
 
         if (memberTypes.isNotEmpty()) {
             javaType.addAnnotation(jsonTypeInfoAnnotation())

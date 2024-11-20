@@ -18,6 +18,12 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
+import graphql.language.EnumTypeDefinition
+import graphql.language.InputObjectTypeDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.NamedNode
+import graphql.language.ObjectTypeDefinition
+
 object CodeGeneratorUtils {
 
     enum class Case {
@@ -39,6 +45,37 @@ object CodeGeneratorUtils {
     }
 
     fun String.capitalized(): String = replaceFirstChar(Character::toTitleCase)
+
+    /**
+     * Returns the name generated using [nameTemplate]. If [nameTemplate] is null, returns the name of the node.
+     *
+     * The following variables are available in the template:
+     * - name: the original name of the node
+     * - schemaType: the GraphQL Schema type of the node (Type, Input, Interface, Enum)
+     *
+     * Examples:
+     * Given a node named "Person" and schema type "Type", the following templates will generate the following names:
+     * - null -> "Person"
+     * - "{name}GraphQL{schemaType}" -> "PersonGraphQLType"
+     * - "{name}GraphQL" -> "PersonGraphQL"
+     * - "{name}{schemaType}" -> "PersonType"
+     */
+    fun NamedNode<*>.templatedClassName(nameTemplate: String?): String =
+        nameTemplate
+            ?.replace(
+                "{name}",
+                this.name
+            )
+            ?.replace(
+                "{schemaType}",
+                when (this) {
+                    is ObjectTypeDefinition -> "Type"
+                    is InputObjectTypeDefinition -> "Input"
+                    is InterfaceTypeDefinition -> "Interface"
+                    is EnumTypeDefinition -> "Enum"
+                    else -> ""
+                }
+            ) ?: this.name
 
     /**
      * Mostly copied from Apache Commons StringUtils.splitByCharacterType
