@@ -50,4 +50,10 @@ application {
     mainClassName = 'com.netflix.graphql.dgs.codegen.CodeGenCliKt'
 }
 
-tasks.lintKotlinIntegTest.enabled = false
+tasks.named("lintKotlinIntegTest") {
+    exclude("**/cases/**/*.kt")
+}
+
+tasks.named("formatKotlinIntegTest") {
+    exclude("**/cases/**/*.kt")
+}
