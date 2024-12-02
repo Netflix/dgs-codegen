@@ -6,27 +6,27 @@
     },
     "compileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -187,27 +187,27 @@
     },
     "implementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -326,27 +326,27 @@
     },
     "integTestCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -726,27 +726,27 @@
     },
     "integTestImplementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -1082,7 +1082,7 @@
     },
     "integTestRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -1090,21 +1090,21 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -1829,7 +1829,7 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -1837,21 +1837,21 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -2049,27 +2049,27 @@
     },
     "testCompileClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -2449,27 +2449,27 @@
     },
     "testImplementationDependenciesMetadata": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -2805,7 +2805,7 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -2813,21 +2813,21 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.18.0",
+            "locked": "2.17.2",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
