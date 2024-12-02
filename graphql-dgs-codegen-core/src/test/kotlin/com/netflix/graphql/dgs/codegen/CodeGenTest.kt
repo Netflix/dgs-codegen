@@ -2070,6 +2070,30 @@ class CodeGenTest {
     }
 
     @Test
+    fun `Dedupe type names in Constants to support multiple schema files`() {
+        val schema = """
+            type Query {
+                q1: String
+            }
+            
+            type Query {
+                q2: String
+            }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+        val type = result.javaConstants[0].typeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY")
+        assertThat(type.typeSpecs[0].fieldSpecs).extracting("name")
+            .contains("Q1", "Q2")
+    }
+
+    @Test
     fun generateUnion() {
         val schema = """
             type Query {
