@@ -59,16 +59,25 @@ object CodeGeneratorUtils {
             if (type == Character.LOWERCASE_LETTER.toInt() && currentType == Character.UPPERCASE_LETTER.toInt()) {
                 val newTokenStart = pos - 1
                 if (newTokenStart != tokenStart) {
-                    list.add(String(c, tokenStart, newTokenStart - tokenStart))
+                    val part = String(c, tokenStart, newTokenStart - tokenStart)
+                    if (part != "_") {
+                        list.add(part)
+                    }
                     tokenStart = newTokenStart
                 }
             } else {
-                list.add(String(c, tokenStart, pos - tokenStart))
+                val part = String(c, tokenStart, pos - tokenStart)
+                if (part != "_") {
+                    list.add(part)
+                }
                 tokenStart = pos
             }
             currentType = type
         }
-        list.add(String(c, tokenStart, c.size - tokenStart))
+        val part = String(c, tokenStart, c.size - tokenStart)
+        if (part != "_") {
+            list.add(part)
+        }
         return list.toTypedArray()
     }
 }

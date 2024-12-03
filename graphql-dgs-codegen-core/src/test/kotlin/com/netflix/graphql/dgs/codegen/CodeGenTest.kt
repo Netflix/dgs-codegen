@@ -2037,8 +2037,9 @@ class CodeGenTest {
         assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People", "Friends")
     }
 
-    @Test
-    fun generateConstantsForQueryInputArguments() {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun generateConstantsForQueryInputArguments(snakeCaseEnabled: Boolean) {
         val schema = """
             type Query {
                 shows(titleFilter: String,moveFilter: MovieFilter): [Show]
@@ -2059,11 +2060,13 @@ class CodeGenTest {
         val result = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName
+                packageName = basePackageName,
+                snakeCaseConstantNames = snakeCaseEnabled
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
-        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "SHOW", "MOVIEFILTER")
+        val movieFilterName = if (snakeCaseEnabled) "MOVIE_FILTER" else "MOVIEFILTER"
+        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "SHOW", movieFilterName)
         assertThat(type.typeSpecs[0].typeSpecs).extracting("name").containsExactly("SHOWS_INPUT_ARGUMENT")
         assertThat(type.typeSpecs[0].typeSpecs[0].fieldSpecs).extracting("name")
             .containsExactly("TitleFilter", "MoveFilter")
