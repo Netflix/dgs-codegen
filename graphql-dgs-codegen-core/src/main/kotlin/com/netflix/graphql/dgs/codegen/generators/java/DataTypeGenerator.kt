@@ -168,9 +168,37 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
 
         logger.info("Generating input type {}", definition.name)
 
+        var useInterfaceType = false
+        var overrideGetter = false
+        var interfaceCodeGenResult = CodeGenResult.EMPTY
         val name = definition.name
+        var implements: List<String> = emptyList()
+
+        if (config.generateInterfaces) {
+            useInterfaceType = true
+
+            overrideGetter = true
+            val fieldDefinitions = definition.inputValueDefinitions
+                .asSequence()
+                .map {
+                    Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true))
+                }
+                .plus(
+                    extensions
+                        .asSequence()
+                        .flatMap { it.fieldDefinitions() }
+                        .filterSkipped()
+                        .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) }
+                )
+                .toList()
+
+            val interfaceName = "I$name"
+            implements = implements + listOf(interfaceName)
+            interfaceCodeGenResult = generateInterface(interfaceName, emptyList(), fieldDefinitions)
+        }
+
         val fieldDefinitions = definition.inputValueDefinitions.asSequence().map {
-            val type = typeUtils.findReturnType(it.type)
+            val type = typeUtils.findReturnType(it.type, useInterfaceType)
             val defaultValue = it.defaultValue?.let { defVal ->
                 generateCode(defVal, type, inputTypeDefinitions)
             }
@@ -178,12 +206,13 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                 name = it.name,
                 type = type,
                 initialValue = defaultValue,
+                overrideGetter = overrideGetter,
                 description = it.description,
                 directives = it.directives
             )
         }.plus(extensions.asSequence().flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) })
             .toList()
-        return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)
+        return generate(name, implements, fieldDefinitions, definition.description, definition.directives).merge(interfaceCodeGenResult)
     }
 
     private fun generateCode(
