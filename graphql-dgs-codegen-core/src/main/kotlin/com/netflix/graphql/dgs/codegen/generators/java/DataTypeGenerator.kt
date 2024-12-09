@@ -54,6 +54,7 @@ import java.io.Serializable
 import java.math.BigDecimal
 import java.util.Arrays
 import java.util.Collections
+import java.util.Currency
 import java.util.Locale
 import java.util.Objects
 import javax.lang.model.element.Modifier
@@ -155,6 +156,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
         private val LOCALE: ClassName = ClassName.get(Locale::class.java)
         private val BIG_DECIMAL: ClassName = ClassName.get(BigDecimal::class.java)
+        private val CURRENCY: ClassName = ClassName.get(Currency::class.java)
     }
 
     fun generate(
@@ -191,11 +193,19 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         type: JavaTypeName,
         inputTypeDefinitions: List<InputObjectTypeDefinition>
     ): CodeBlock {
-        if (type == LOCALE) {
-            return localeCodeBlock(value, type)
-        } else if (type == BIG_DECIMAL) {
-            return bigDecimalCodeBlock(value, type)
+        return when (type) {
+            LOCALE -> localeCodeBlock(value, type)
+            BIG_DECIMAL -> bigDecimalCodeBlock(value, type)
+            CURRENCY -> currencyCodeBlock(value, type)
+            else -> defaultCodeBlock(value, type, inputTypeDefinitions)
         }
+    }
+
+    private fun defaultCodeBlock(
+        value: Value<out Value<*>>,
+        type: JavaTypeName,
+        inputTypeDefinitions: List<InputObjectTypeDefinition>
+    ): CodeBlock {
         return when (value) {
             is BooleanValue -> CodeBlock.of("\$L", value.isValue)
             is IntValue -> CodeBlock.of("\$L", value.value)
@@ -253,6 +263,13 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
             is IntValue -> CodeBlock.of("new \$T(\$L)", BIG_DECIMAL, value.value)
             is FloatValue -> CodeBlock.of("new \$T(\$L)", BIG_DECIMAL, value.value)
             else -> error("$type cannot be created from $value, expected String, Int or Float value")
+        }
+    }
+
+    private fun currencyCodeBlock(value: Value<out Value<*>>, type: JavaTypeName): CodeBlock {
+        return when (value) {
+            is StringValue -> CodeBlock.of("\$T.getInstance(\$S)", CURRENCY, value.value)
+            else -> error("$type cannot be created from $value, expected String value")
         }
     }
 
