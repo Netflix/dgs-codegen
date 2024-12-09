@@ -25,6 +25,7 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.tasks.*
+import org.gradle.api.tasks.Optional
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
@@ -159,6 +160,10 @@ open class GenerateJavaTask @Inject constructor(
     @Input
     var includeClassImports = mutableMapOf<String, MutableMap<String, String>>()
 
+    @Input
+    @Optional
+    var nameTemplate: String? = null
+
     @Classpath
     val dgsCodegenClasspath: ConfigurableFileCollection = objectFactory.fileCollection().from(
         project.configurations.findByName("dgsCodegen")
@@ -216,7 +221,8 @@ open class GenerateJavaTask @Inject constructor(
             includeImports = includeImports,
             includeEnumImports = includeEnumImports,
             includeClassImports = includeClassImports,
-            generateCustomAnnotations = generateCustomAnnotations
+            generateCustomAnnotations = generateCustomAnnotations,
+            nameTemplate = nameTemplate
         )
 
         logger.info("Codegen config: {}", config)

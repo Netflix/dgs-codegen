@@ -5065,4 +5065,57 @@ It takes a title and such.
         ).generate()
         assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString() == "java.lang.String")
     }
+
+    @TemplateClassNameTest
+    fun generateSerializedDataClassWithCustomName(
+        schema: String,
+        nameTemplate: String?,
+        expectedName: String
+    ) {
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                nameTemplate = nameTemplate
+            )
+        )
+            .generate()
+            .javaSources()
+
+        assertThat(dataTypes.firstOrNull()?.typeSpec?.name).isEqualTo(expectedName)
+    }
+
+    @Test
+    fun generateSerializedDataClassWithCustomName_InterfaceImplementations() {
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(SHOW_INTERFACE_WITH_IMPLEMENTATIONS_SCHEMA),
+                nameTemplate = SHOW_INTERFACE_WITH_IMPLEMENTATIONS_NAME_TEMPLATE
+
+            )
+        )
+            .generate()
+            .javaSources()
+
+        assertThat(dataTypes.map { it.typeSpec.name })
+            .containsExactlyInAnyOrderElementsOf(listOf("MovieType", "SeriesType", "ShowInterface", "DgsConstants"))
+        assertThat(
+            dataTypes
+                .find { it.typeSpec.name == "ShowInterface" }
+                ?.typeSpec
+                ?.annotations
+                ?.find { it.canonicalName().endsWith("JsonSubTypes") }
+                ?.members
+                ?.values
+                ?.first()
+                ?.toString()
+        )
+            .contains(
+                "Type(value = com.netflix.graphql-dgs-codegen-core.generated.types.MovieType.class, name = \"Movie\")"
+            )
+            .contains(
+                "Type(value = com.netflix.graphql-dgs-codegen-core.generated.types.SeriesType.class," +
+                    " name = \"Series\")"
+            )
+    }
 }

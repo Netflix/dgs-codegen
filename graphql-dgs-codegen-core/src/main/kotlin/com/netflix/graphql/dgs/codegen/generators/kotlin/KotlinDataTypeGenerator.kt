@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
 import com.netflix.graphql.dgs.codegen.generators.shared.generateKotlinCode
 import com.netflix.graphql.dgs.codegen.shouldSkip
@@ -84,7 +85,7 @@ class KotlinDataTypeGenerator(config: CodeGenConfig, document: Document) :
                     )
                 }
         val interfaces = definition.implements + extensions.flatMap { it.implements }
-        return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
+        return generate(definition.templatedClassName(config.nameTemplate), fields, interfaces, document, definition.description, definition.directives)
     }
 }
 
@@ -139,7 +140,7 @@ class KotlinInputTypeGenerator(config: CodeGenConfig, document: Document) :
                 }
             )
         val interfaces = emptyList<Type<*>>()
-        return generate(definition.name, fields, interfaces, document, definition.description, definition.directives)
+        return generate(definition.templatedClassName(config.nameTemplate), fields, interfaces, document, definition.description, definition.directives)
     }
 }
 

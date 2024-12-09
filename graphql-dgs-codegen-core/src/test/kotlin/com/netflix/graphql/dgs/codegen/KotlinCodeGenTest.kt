@@ -4176,4 +4176,55 @@ It takes a title and such.
         assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.A")
         assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.B")
     }
+
+    @TemplateClassNameTest
+    fun `Should generate class names based on template`(
+        schema: String,
+        nameTemplate: String?,
+        expectedName: String
+    ) {
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                language = Language.KOTLIN,
+                nameTemplate = nameTemplate
+            )
+        ).generate().kotlinSources()
+
+        assertThat(dataTypes.firstOrNull()?.name).isEqualTo(expectedName)
+    }
+
+    @Test
+    fun generateSerializedDataClassWithCustomName_InterfaceImplementations() {
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(SHOW_INTERFACE_WITH_IMPLEMENTATIONS_SCHEMA),
+                language = Language.KOTLIN,
+                nameTemplate = SHOW_INTERFACE_WITH_IMPLEMENTATIONS_NAME_TEMPLATE
+            )
+        )
+            .generate()
+            .kotlinSources()
+
+        assertThat(dataTypes.map { it.name })
+            .containsExactlyInAnyOrderElementsOf(listOf("MovieType", "SeriesType", "ShowInterface", "DgsConstants"))
+        assertThat(
+            dataTypes.find { it.name == "ShowInterface" }
+                ?.typeSpecs
+                ?.first()
+                ?.annotations
+                ?.find { it.canonicalName().endsWith("JsonSubTypes") }
+                ?.members
+                ?.first()
+                ?.toString()
+        )
+            .contains(
+                "Type(value = com.netflix.`graphql-dgs-codegen-core`.generated.types.MovieType::class," +
+                    " name = \"Movie\")"
+            )
+            .contains(
+                "Type(value = com.netflix.`graphql-dgs-codegen-core`.generated.types.SeriesType::class," +
+                    " name = \"Series\")"
+            )
+    }
 }
