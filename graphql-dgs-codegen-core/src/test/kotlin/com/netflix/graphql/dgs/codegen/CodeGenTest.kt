@@ -3237,7 +3237,7 @@ class CodeGenTest {
 
         val movieFilter = dataTypes[4]
         assertThat(movieFilter.typeSpec.name).isEqualTo("MovieFilter")
-        assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(1) //IMovieFilter
+        assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(1) // IMovieFilter
         assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating")
         assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
         assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("Genre")
