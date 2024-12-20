@@ -186,8 +186,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                 .plus(
                     extensions
                         .asSequence()
-                        .flatMap { it.fieldDefinitions() }
-                        .filterSkipped()
+                        .flatMap { it.inputValueDefinitions }
                         .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) }
                 )
                 .toList()
@@ -198,7 +197,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         }
 
         val fieldDefinitions = definition.inputValueDefinitions.asSequence().map {
-            val type = typeUtils.findReturnType(it.type, useInterfaceType)
+            val type = typeUtils.findReturnType(it.type)
             val defaultValue = it.defaultValue?.let { defVal ->
                 generateCode(defVal, type, inputTypeDefinitions)
             }

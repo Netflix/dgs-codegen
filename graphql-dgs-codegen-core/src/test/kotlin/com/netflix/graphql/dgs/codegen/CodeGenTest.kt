@@ -3168,7 +3168,7 @@ class CodeGenTest {
         val interfaces = result.javaInterfaces
         val dataTypes = result.javaDataTypes
 
-        assertThat(interfaces).hasSize(4) // IMovie, IMoviePage, IGenre, IRating
+        assertThat(interfaces).hasSize(5) // IMovie, IMoviePage, IGenre, IRating, IMovieFilter
         assertThat(dataTypes).hasSize(5) // Movie, MoviePage, Genre, Rating, MovieFilter
 
         val iMovie = interfaces[0]
@@ -3198,6 +3198,10 @@ class CodeGenTest {
         val iRating = interfaces[3]
         assertThat(iRating.typeSpec.name).isEqualTo("IRating")
         assertThat(iRating.typeSpec.methodSpecs).extracting("name").containsExactly("getName")
+
+        val iMovieFilter = interfaces[4]
+        assertThat(iMovieFilter.typeSpec.name).isEqualTo("IMovieFilter")
+        assertThat(iMovieFilter.typeSpec.methodSpecs).extracting("name").containsExactly("getTitle", "getGenre", "getLanguage", "getTags", "getRating")
 
         val movie = dataTypes[0]
         assertThat(movie.typeSpec.name).isEqualTo("Movie")
@@ -3233,7 +3237,7 @@ class CodeGenTest {
 
         val movieFilter = dataTypes[4]
         assertThat(movieFilter.typeSpec.name).isEqualTo("MovieFilter")
-        assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(0)
+        assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(1) //IMovieFilter
         assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating")
         assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
         assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("Genre")
