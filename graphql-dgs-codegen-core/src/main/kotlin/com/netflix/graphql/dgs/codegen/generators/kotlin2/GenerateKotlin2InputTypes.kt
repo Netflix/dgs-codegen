@@ -70,7 +70,8 @@ fun generateKotlin2InputTypes(
 
             fun type(field: InputValueDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
 
-            val typeName = ClassName(config.packageNameTypes, inputDefinition.name)
+            val name = config.typePrefix + inputDefinition.name + config.typeSuffix
+            val typeName = ClassName(config.packageNameTypes, name)
 
             // create the input class
             val typeSpec =
