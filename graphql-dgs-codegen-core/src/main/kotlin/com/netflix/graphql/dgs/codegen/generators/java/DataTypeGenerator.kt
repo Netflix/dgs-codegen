@@ -18,44 +18,20 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.CodeBlock
-import com.squareup.javapoet.FieldSpec
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterSpec
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeSpec
-import graphql.language.ArrayValue
-import graphql.language.BooleanValue
-import graphql.language.Description
-import graphql.language.Directive
-import graphql.language.Document
-import graphql.language.EnumValue
-import graphql.language.FloatValue
-import graphql.language.InputObjectTypeDefinition
-import graphql.language.InputObjectTypeExtensionDefinition
-import graphql.language.IntValue
-import graphql.language.InterfaceTypeDefinition
-import graphql.language.ObjectTypeDefinition
-import graphql.language.ObjectTypeExtensionDefinition
-import graphql.language.ObjectValue
-import graphql.language.StringValue
-import graphql.language.Type
+import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.javapoet.*
+import graphql.language.*
 import graphql.language.TypeName
-import graphql.language.UnionTypeDefinition
-import graphql.language.Value
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
 import java.math.BigDecimal
-import java.util.Arrays
-import java.util.Collections
-import java.util.Locale
-import java.util.Objects
+import java.util.*
 import javax.lang.model.element.Modifier
 import com.squareup.javapoet.TypeName as JavaTypeName
 
@@ -71,7 +47,7 @@ class DataTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTyp
 
         logger.info("Generating data type {}", definition.name)
 
-        val name = definition.name
+        val name = config.typePrefix + definition.name + config.typeSuffix
         val unionTypes = document.getDefinitionsOfType(UnionTypeDefinition::class.java).asSequence().filter { union ->
             union.memberTypes.asSequence().map { it as TypeName }.any { it.name == name }
         }.map { it.name }.toList()
@@ -211,6 +187,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                     CodeBlock.join(value.values.map { generateCode(it, type.className, inputTypeDefinitions) }, ", ")
                 )
             }
+
             is ObjectValue -> {
                 val inputObjectDefinition = inputTypeDefinitions.first {
                     val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
@@ -238,6 +215,7 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
                     )
                 }
             }
+
             else -> CodeBlock.of("\$L", value)
         }
     }
@@ -264,7 +242,15 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
         }
 }
 
-internal data class Field(val name: String, val type: JavaTypeName, val initialValue: CodeBlock? = null, val overrideGetter: Boolean = false, val interfaceType: com.squareup.javapoet.TypeName? = null, val description: Description? = null, val directives: List<Directive> = listOf())
+internal data class Field(
+    val name: String,
+    val type: JavaTypeName,
+    val initialValue: CodeBlock? = null,
+    val overrideGetter: Boolean = false,
+    val interfaceType: com.squareup.javapoet.TypeName? = null,
+    val description: Description? = null,
+    val directives: List<Directive> = listOf()
+)
 
 abstract class BaseDataTypeGenerator(
     internal val packageName: String,
@@ -449,7 +435,8 @@ abstract class BaseDataTypeGenerator(
 
     private fun addInterface(type: String, javaType: TypeSpec.Builder) {
         val interfaceTypeMappedName: String? = config.typeMapping[type]
-        val interfaceName: ClassName = if (interfaceTypeMappedName == null) ClassName.get(packageName, type) else ClassName.bestGuess(interfaceTypeMappedName)
+        val interfaceName: ClassName =
+            if (interfaceTypeMappedName == null) ClassName.get(packageName, type) else ClassName.bestGuess(interfaceTypeMappedName)
 
         javaType.addSuperinterface(interfaceName)
     }
@@ -472,10 +459,15 @@ abstract class BaseDataTypeGenerator(
             fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
 
-        val getterPrefix = if (returnType == com.squareup.javapoet.TypeName.BOOLEAN && config.generateIsGetterForPrimitiveBooleanFields) "is" else "get"
-        val getterName = typeUtils.transformIfDefaultClassMethodExists("${getterPrefix}${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}", TypeUtils.getClass)
+        val getterPrefix =
+            if (returnType == com.squareup.javapoet.TypeName.BOOLEAN && config.generateIsGetterForPrimitiveBooleanFields) "is" else "get"
+        val getterName = typeUtils.transformIfDefaultClassMethodExists(
+            "${getterPrefix}${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}",
+            TypeUtils.getClass
+        )
 
-        val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType).addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+        val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType)
+            .addStatement("return \$N", ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
         if (fieldDefinition.overrideGetter) {
             getterMethodBuilder.addAnnotation(Override::class.java)
         }
@@ -484,7 +476,10 @@ abstract class BaseDataTypeGenerator(
             getterMethodBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
 
-        val setterName = typeUtils.transformIfDefaultClassMethodExists("set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}", TypeUtils.setClass)
+        val setterName = typeUtils.transformIfDefaultClassMethodExists(
+            "set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}",
+            TypeUtils.setClass
+        )
         val parameterBuilder = ParameterSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
         val setterMethodBuilder = MethodSpec.methodBuilder(setterName)
             .addModifiers(Modifier.PUBLIC)
