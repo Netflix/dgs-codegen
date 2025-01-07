@@ -18,9 +18,12 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
+import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.FieldSpec
@@ -81,7 +84,7 @@ class DataTypeGenerator(
 
         logger.info("Generating data type {}", definition.name)
 
-        val name = definition.name
+        val name = config.typePrefix + definition.name + config.typeSuffix
         val unionTypes =
             document
                 .getDefinitionsOfType(UnionTypeDefinition::class.java)
