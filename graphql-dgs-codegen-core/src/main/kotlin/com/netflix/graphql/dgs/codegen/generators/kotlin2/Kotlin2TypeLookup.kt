@@ -69,6 +69,9 @@ class Kotlin2TypeLookup(
             "Subscription" to OperationDefinition.Operation.SUBSCRIPTION,
         )
 
+    private val typePrefix = config.typePrefix
+    private val typeSuffix = config.typeSuffix
+
     /**
      * A set of object type names defined in the document
      */
@@ -301,6 +304,8 @@ class Kotlin2TypeLookup(
             return builtinType
         }
 
-        return "$packageName.${typeName.name}".toKtTypeName()
+        val name = typePrefix + typeName.name + typeSuffix
+
+        return "$packageName.$name".toKtTypeName()
     }
 }
