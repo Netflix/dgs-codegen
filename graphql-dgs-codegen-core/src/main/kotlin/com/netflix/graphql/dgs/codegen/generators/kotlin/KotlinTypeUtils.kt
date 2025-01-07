@@ -131,6 +131,8 @@ class KotlinTypeUtils internal constructor(
             return commonScalars.getValue(name)
         }
 
+        val affixedName = config.typePrefix + name + config.typeSuffix
+
         return when (name) {
             STRING.simpleName -> STRING
             "StringValue" -> STRING
@@ -142,7 +144,7 @@ class KotlinTypeUtils internal constructor(
             "BooleanValue" -> BOOLEAN
             "ID" -> STRING
             "IDValue" -> STRING
-            else -> ClassName(config.packageNameTypes, name)
+            else -> ClassName(config.packageNameTypes, affixedName)
         }
     }
 

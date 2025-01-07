@@ -106,6 +106,7 @@ internal fun generateKotlin2DataTypes(
             val fields = fieldDefinitions.map(::KotlinFieldInfo)
 
             fun type(field: KotlinFieldInfo) = typeLookup.findReturnType(config.packageNameTypes, field.definition.type)
+            val typeName = config.typePrefix + typeDefinition.name + config.typeSuffix
 
             // get a list of fields to override
             val overrideFields = typeLookup.overrideFields(implementedInterfaces)
@@ -136,7 +137,7 @@ internal fun generateKotlin2DataTypes(
                     ).build()
 
             // create a builder for this class; default to lambda that throws if accessed
-            val className = ClassName(config.packageNameTypes, typeDefinition.name)
+            val className = ClassName(config.packageNameTypes, typeName)
             val builderClassName = className.nestedClass("Builder")
             val builder =
                 TypeSpec
@@ -191,7 +192,7 @@ internal fun generateKotlin2DataTypes(
             // create the data class
             val typeSpec =
                 TypeSpec
-                    .classBuilder(typeDefinition.name)
+                    .classBuilder(typeName)
                     .addOptionalGeneratedAnnotation(config)
                     // add docs if available
                     .apply {

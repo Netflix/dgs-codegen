@@ -80,6 +80,18 @@ class Kotlin2CodeGenTest {
                                 emptyMap()
                             }
                         },
+                    typePrefix =
+                        when (testName) {
+                            "dataClassWithPrefix" -> "Dgs"
+                            "inputWithPrefix" -> "Dgs"
+                            else -> ""
+                        },
+                    typeSuffix =
+                        when (testName) {
+                            "dataClassWithSuffix" -> "Type"
+                            "inputWithSuffix" -> "Type"
+                            else -> ""
+                        },
                 ),
             ).generate()
 

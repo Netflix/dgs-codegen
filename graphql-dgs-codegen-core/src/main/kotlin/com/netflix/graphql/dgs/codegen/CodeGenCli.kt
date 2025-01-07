@@ -77,6 +77,8 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
         "--file-write-parallelism",
         help = "Maximum number of generated files to write concurrently",
     ).int().restrictTo(min = 1).default(CodeGenConfig.DEFAULT_FILE_WRITE_PARALLELISM)
+    private val typePrefix by option("--type-prefix").default("")
+    private val typeSuffix by option("--type-suffix").default("")
 
     override fun run() {
         val inputSchemas =
@@ -115,6 +117,8 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                         generateInterfaces = generateInterfaces,
                         generateInterfaceSetters = generateInterfaceSetters,
                         generateDocs = generateDocs,
+                        typePrefix = typePrefix,
+                        typeSuffix = typeSuffix,
                     ).apply { fileWriteParallelism = this@CodeGenCli.fileWriteParallelism }
                 } else {
                     CodeGenConfig(
@@ -136,6 +140,8 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                         generateInterfaces = generateInterfaces,
                         generateInterfaceSetters = generateInterfaceSetters,
                         generateDocs = generateDocs,
+                        typePrefix = typePrefix,
+                        typeSuffix = typeSuffix,
                     ).apply { fileWriteParallelism = this@CodeGenCli.fileWriteParallelism }
                 },
             ).generate()

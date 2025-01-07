@@ -718,6 +718,8 @@ class CodeGenConfig(
     var trackInputFieldSet: Boolean = false,
     var generateJSpecifyAnnotations: Boolean = false,
     var jacksonVersions: Set<JacksonVersion> = emptySet(),
+    var typePrefix: String = "",
+    var typeSuffix: String = "",
 ) {
     companion object {
         @JvmField
