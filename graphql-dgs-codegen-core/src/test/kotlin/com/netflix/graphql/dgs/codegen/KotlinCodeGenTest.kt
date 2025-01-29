@@ -4159,8 +4159,59 @@ It takes a title and such.
                 .kotlinSources()
                 .partition { it.name == "Generated" }
 
-        allKotlinSources.assertKotlinGeneratedAnnotation()
-        codeGenResult.javaSources().assertJavaGeneratedAnnotation(true)
+        allKotlinSources.assertKotlinGeneratedAnnotation(shouldHaveDate = true)
+        codeGenResult.javaSources().assertJavaGeneratedAnnotation(shouldHaveDate = true)
+
+        assertThat(generatedAnnotationFile.single().toString())
+            .contains("@Retention(value = AnnotationRetention.BINARY)")
+
+        assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun generateSourceWithGeneratedAnnotationWithoutDate() {
+        val schema = """
+            type Query {
+                employees(filter:EmployeeFilterInput) : [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            type Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+            
+            input EmployeeFilterInput {
+                rank: String
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                addGeneratedAnnotation = true,
+                disableDatesInGeneratedAnnotation = true,
+                generateClientApi = true
+            )
+        ).generate()
+
+        val (generatedAnnotationFile, allKotlinSources) = codeGenResult.kotlinSources()
+            .partition { it.name == "Generated" }
+
+        allKotlinSources.assertKotlinGeneratedAnnotation(shouldHaveDate = false)
+        codeGenResult.javaSources().assertJavaGeneratedAnnotation(shouldHaveDate = false)
 
         assertThat(generatedAnnotationFile.single().toString())
             .contains("@Retention(value = AnnotationRetention.BINARY)")
