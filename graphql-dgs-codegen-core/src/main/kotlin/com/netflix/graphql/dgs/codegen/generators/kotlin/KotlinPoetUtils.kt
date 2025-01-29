@@ -173,7 +173,7 @@ fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec {
         .build()
 }
 
-private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
+private fun generatedAnnotation(packageName: String, generateDate: Boolean): List<AnnotationSpec> {
     val graphqlGenerated = AnnotationSpec
         .builder(ClassName(packageName, "Generated"))
         .build()
@@ -183,12 +183,14 @@ private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
     } else {
         val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
 
-        val javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
+        var javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
             .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
-            .addMember("date = %S", generatedDate)
-            .build()
 
-        listOf(javaxGenerated, graphqlGenerated)
+        if (generateDate) {
+            javaxGenerated = javaxGenerated.addMember("date = %S", generatedDate)
+        }
+
+        listOf(javaxGenerated.build(), graphqlGenerated)
     }
 }
 
@@ -211,9 +213,18 @@ fun deprecatedAnnotation(reason: String): AnnotationSpec {
     // TODO support for level
     val replace = reason.substringAfter(ParserConstants.REPLACE_WITH_STR, "")
     val builder: AnnotationSpec.Builder = AnnotationSpec.builder(Deprecated::class)
-        .addMember("${ParserConstants.MESSAGE}${ParserConstants.ASSIGNMENT_OPERATOR}%S", reason.substringBefore(ParserConstants.REPLACE_WITH_STR))
+        .addMember(
+            "${ParserConstants.MESSAGE}${ParserConstants.ASSIGNMENT_OPERATOR}%S",
+            reason.substringBefore(ParserConstants.REPLACE_WITH_STR)
+        )
     if (replace.isNotEmpty()) {
-        builder.addMember(CodeBlock.of("${ParserConstants.REPLACE_WITH}${ParserConstants.ASSIGNMENT_OPERATOR}%M(%S)", MemberName("kotlin", ParserConstants.REPLACE_WITH_CLASS), reason.substringAfter(ParserConstants.REPLACE_WITH_STR)))
+        builder.addMember(
+            CodeBlock.of(
+                "${ParserConstants.REPLACE_WITH}${ParserConstants.ASSIGNMENT_OPERATOR}%M(%S)",
+                MemberName("kotlin", ParserConstants.REPLACE_WITH_CLASS),
+                reason.substringAfter(ParserConstants.REPLACE_WITH_STR)
+            )
+        )
     }
     return builder.build()
 }
@@ -289,7 +300,10 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
  * inputs -> These are the input parameters needed for the annotation. If empty no inputs will be present for the annotation
  * target -> The site target where the annotation should be applied. If no site target is present annotation will not contain any site targets
  */
-fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>, config: CodeGenConfig): AnnotationSpec {
+fun customAnnotation(
+    annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
+    config: CodeGenConfig
+): AnnotationSpec {
     if (annotationArgumentMap.isEmpty() || !annotationArgumentMap.containsKey(ParserConstants.NAME) || annotationArgumentMap[ParserConstants.NAME] is NullValue || (annotationArgumentMap[ParserConstants.NAME] as StringValue).value.isEmpty()) {
         throw IllegalArgumentException("Invalid annotate directive")
     }
@@ -304,7 +318,11 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
         annotation.useSiteTarget(AnnotationSpec.UseSiteTarget.valueOf((annotationArgumentMap[ParserConstants.SITE_TARGET] as StringValue).value.uppercase()))
     }
     if (annotationArgumentMap.containsKey(ParserConstants.INPUTS)) {
-        val codeBlocks: List<CodeBlock> = parseInputs(config, annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue, (annotationArgumentMap[ParserConstants.NAME] as StringValue).value)
+        val codeBlocks: List<CodeBlock> = parseInputs(
+            config,
+            annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue,
+            (annotationArgumentMap[ParserConstants.NAME] as StringValue).value
+        )
         codeBlocks.forEach { codeBlock ->
             annotation.addMember(codeBlock)
         }
@@ -315,7 +333,13 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
 /**
  * Generates the code block containing the parameters of an annotation in the format key = value
  */
-private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotationName: String, prefix: String = "", type: String = ""): CodeBlock =
+private fun generateCode(
+    config: CodeGenConfig,
+    value: Value<Value<*>>,
+    annotationName: String,
+    prefix: String = "",
+    type: String = ""
+): CodeBlock =
     when (value) {
         is BooleanValue -> CodeBlock.of("$prefix%L", (value as BooleanValue).isValue)
         is IntValue -> CodeBlock.of("$prefix%L", (value as IntValue).value)
@@ -330,20 +354,41 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotati
                 else CodeBlock.of("$prefix%S", string)
             } else CodeBlock.of("$prefix%S", string)
         }
+
         is FloatValue -> CodeBlock.of("$prefix%L", (value as FloatValue).value)
         // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
         is EnumValue -> CodeBlock.of(
             "$prefix%M",
             MemberName(
                 // Use annotationName in the PackagerParserUtil to get Enum Package name.
-                if (prefix.isNotEmpty()) PackageParserUtil.getEnumPackage(config, annotationName, prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR))
-                else PackageParserUtil.getEnumPackage(config, annotationName, type.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR)),
+                if (prefix.isNotEmpty()) PackageParserUtil.getEnumPackage(
+                    config,
+                    annotationName,
+                    prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR)
+                )
+                else PackageParserUtil.getEnumPackage(
+                    config,
+                    annotationName,
+                    type.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR)
+                ),
                 (value as EnumValue).name
             )
         )
+
         is ArrayValue ->
             if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("[]")
-            else CodeBlock.of("$prefix[%L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, annotationName = annotationName, type = if (v is EnumValue) prefix else "").toString() })
+            else CodeBlock.of(
+                "$prefix[%L]",
+                (value as ArrayValue).values.joinToString { v ->
+                    generateCode(
+                        config = config,
+                        value = v,
+                        annotationName = annotationName,
+                        type = if (v is EnumValue) prefix else ""
+                    ).toString()
+                }
+            )
+
         else -> CodeBlock.of("$prefix%L", value)
     }
 
@@ -353,7 +398,14 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotati
 private fun parseInputs(config: CodeGenConfig, inputs: ObjectValue, annotationName: String): List<CodeBlock> {
     val objectFields: List<ObjectField> = inputs.objectFields
     return objectFields.fold(mutableListOf()) { codeBlocks, objectField ->
-        codeBlocks.add(generateCode(config, objectField.value, annotationName, objectField.name + ParserConstants.ASSIGNMENT_OPERATOR))
+        codeBlocks.add(
+            generateCode(
+                config,
+                objectField.value,
+                annotationName,
+                objectField.name + ParserConstants.ASSIGNMENT_OPERATOR
+            )
+        )
         codeBlocks
     }
 }
@@ -376,6 +428,8 @@ fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.B
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
-            generatedAnnotation(config.packageName).forEach { addAnnotation(it) }
+            generatedAnnotation(config.packageName, !config.disableDatesInGeneratedAnnotation).forEach {
+                addAnnotation(it)
+            }
         }
     }
