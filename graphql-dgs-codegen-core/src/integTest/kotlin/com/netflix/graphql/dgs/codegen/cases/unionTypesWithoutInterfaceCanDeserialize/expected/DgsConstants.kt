@@ -5,14 +5,14 @@ import kotlin.String
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
-  public object QUERY {
-    public const val TYPE_NAME: String = "Query"
+  public object DROID {
+    public const val TYPE_NAME: String = "Droid"
 
-    public const val Search: String = "search"
+    public const val Id: String = "id"
 
-    public object SEARCH_INPUT_ARGUMENT {
-      public const val Text: String = "text"
-    }
+    public const val Name: String = "name"
+
+    public const val PrimaryFunction: String = "primaryFunction"
   }
 
   public object HUMAN {
@@ -25,14 +25,14 @@ public object DgsConstants {
     public const val TotalCredits: String = "totalCredits"
   }
 
-  public object DROID {
-    public const val TYPE_NAME: String = "Droid"
+  public object QUERY {
+    public const val TYPE_NAME: String = "Query"
 
-    public const val Id: String = "id"
+    public const val Search: String = "search"
 
-    public const val Name: String = "name"
-
-    public const val PrimaryFunction: String = "primaryFunction"
+    public object SEARCH_INPUT_ARGUMENT {
+      public const val Text: String = "text"
+    }
   }
 
   public object SEARCHRESULTPAGE {

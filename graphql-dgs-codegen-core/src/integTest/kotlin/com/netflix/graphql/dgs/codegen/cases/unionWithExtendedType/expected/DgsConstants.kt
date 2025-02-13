@@ -5,10 +5,10 @@ import kotlin.String
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
-  public object QUERY {
-    public const val TYPE_NAME: String = "Query"
+  public object ACTOR {
+    public const val TYPE_NAME: String = "Actor"
 
-    public const val Search: String = "search"
+    public const val Name: String = "name"
   }
 
   public object MOVIE {
@@ -17,10 +17,10 @@ public object DgsConstants {
     public const val Title: String = "title"
   }
 
-  public object ACTOR {
-    public const val TYPE_NAME: String = "Actor"
+  public object QUERY {
+    public const val TYPE_NAME: String = "Query"
 
-    public const val Name: String = "name"
+    public const val Search: String = "search"
   }
 
   public object RATING {

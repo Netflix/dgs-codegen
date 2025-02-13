@@ -18,10 +18,10 @@ public object DgsConstants {
   public object ORDERFILTER {
     public const val TYPE_NAME: String = "OrderFilter"
 
-    public const val Min: String = "min"
-
     public const val Avg: String = "avg"
 
     public const val Max: String = "max"
+
+    public const val Min: String = "min"
   }
 }

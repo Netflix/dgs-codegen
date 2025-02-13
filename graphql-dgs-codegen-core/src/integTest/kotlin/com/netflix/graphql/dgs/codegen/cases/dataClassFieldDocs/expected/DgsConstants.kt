@@ -5,6 +5,12 @@ import kotlin.String
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
+  public object MOVIE {
+    public const val TYPE_NAME: String = "Movie"
+
+    public const val Title: String = "title"
+  }
+
   public object QUERY {
     public const val TYPE_NAME: String = "Query"
 
@@ -13,12 +19,6 @@ public object DgsConstants {
     public object SEARCH_INPUT_ARGUMENT {
       public const val MovieFilter: String = "movieFilter"
     }
-  }
-
-  public object MOVIE {
-    public const val TYPE_NAME: String = "Movie"
-
-    public const val Title: String = "title"
   }
 
   public object MOVIEFILTER {

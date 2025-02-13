@@ -5,6 +5,14 @@ import kotlin.String
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
+  public object PERSON {
+    public const val TYPE_NAME: String = "Person"
+
+    public const val Firstname: String = "firstname"
+
+    public const val Lastname: String = "lastname"
+  }
+
   public object QUERY {
     public const val TYPE_NAME: String = "Query"
 
@@ -13,14 +21,6 @@ public object DgsConstants {
     public object PEOPLE_INPUT_ARGUMENT {
       public const val Filter: String = "filter"
     }
-  }
-
-  public object PERSON {
-    public const val TYPE_NAME: String = "Person"
-
-    public const val Firstname: String = "firstname"
-
-    public const val Lastname: String = "lastname"
   }
 
   public object PERSONFILTER {

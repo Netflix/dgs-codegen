@@ -62,7 +62,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
                     )
                 }
 
-                fields.forEach { field ->
+                fields.sortedBy { it.name }.forEach { field ->
                     addFieldNameConstant(constantsType, field.name)
                     addQueryInputArgument(constantsType, field)
                 }
@@ -70,13 +70,12 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
                 types[it.name] = constantsType
             }
 
-        types.values.forEach {
-            javaType.addType(it.build())
-        }
+        types.values.map { it.build() }.sortedBy { it.name }.forEach(javaType::addType)
 
         document.definitions.filterIsInstance<InputObjectTypeDefinition>()
             .asSequence()
             .excludeSchemaTypeExtension()
+            .sortedBy { it.name }
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
                 constantsType.addField(
@@ -85,13 +84,13 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
                         .initializer("\$S", it.name).build()
                 )
 
-                for (definition in it.inputValueDefinitions) {
+                for (definition in it.inputValueDefinitions.sortedBy { it.name }) {
                     addFieldNameConstant(constantsType, definition.name)
                 }
 
                 val extensions = findInputExtensions(it.name, document.definitions)
-                for (extension in extensions) {
-                    for (definition in extension.inputValueDefinitions) {
+                for (extension in extensions.sortedBy { it.name }) {
+                    for (definition in extension.inputValueDefinitions.sortedBy { it.name }) {
                         addFieldNameConstant(constantsType, definition.name)
                     }
                 }
@@ -102,6 +101,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
         document.definitions.filterIsInstance<InterfaceTypeDefinition>()
             .asSequence()
             .excludeSchemaTypeExtension()
+            .sortedBy { it.name }
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -111,13 +111,13 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
                         .initializer("\$S", it.name).build()
                 )
 
-                for (definition in it.fieldDefinitions) {
+                for (definition in it.fieldDefinitions.sortedBy { it.name }) {
                     addFieldNameConstant(constantsType, definition.name)
                 }
 
                 val extensions = findInterfaceExtensions(it.name, document.definitions)
-                for (extension in extensions) {
-                    for (definition in extension.fieldDefinitions) {
+                for (extension in extensions.sortedBy { it.name }) {
+                    for (definition in extension.fieldDefinitions.sortedBy { it.name }) {
                         addFieldNameConstant(constantsType, definition.name)
                     }
                 }
@@ -128,6 +128,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
         document.definitions.filterIsInstance<UnionTypeDefinition>()
             .asSequence()
             .excludeSchemaTypeExtension()
+            .sortedBy { it.name }
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
                 constantsType.addField(
@@ -201,7 +202,7 @@ class ConstantsGenerator(private val config: CodeGenConfig, private val document
         val name = getConstantTypeName(config, field.name + "_INPUT_ARGUMENT")
         if (inputFields.isNotEmpty() && !constantsType.typeSpecs.any { it.name == name }) {
             val inputConstantsType = createConstantTypeBuilder(config, name)
-            inputFields.forEach { inputField ->
+            inputFields.sortedBy { it.name }.forEach { inputField ->
                 addFieldNameConstant(inputConstantsType, inputField.name)
             }
 

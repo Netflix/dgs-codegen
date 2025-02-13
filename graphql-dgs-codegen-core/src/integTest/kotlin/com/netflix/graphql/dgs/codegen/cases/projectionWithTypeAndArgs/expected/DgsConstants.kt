@@ -5,6 +5,14 @@ import kotlin.String
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
+  public object EMPLOYEE {
+    public const val TYPE_NAME: String = "Employee"
+
+    public const val Company: String = "company"
+
+    public const val Firstname: String = "firstname"
+  }
+
   public object QUERY {
     public const val TYPE_NAME: String = "Query"
 
@@ -17,14 +25,6 @@ public object DgsConstants {
 
       public const val A3: String = "a3"
     }
-  }
-
-  public object EMPLOYEE {
-    public const val TYPE_NAME: String = "Employee"
-
-    public const val Firstname: String = "firstname"
-
-    public const val Company: String = "company"
   }
 
   public object I {

@@ -1917,7 +1917,7 @@ class CodeGenTest {
         val type = result.javaConstants[0].typeSpec
         assertThat(type.name).isEqualTo("DgsConstants")
         assertThat(type.typeSpecs).extracting("name").containsExactlyElementsOf(constantNames)
-        assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People")
+        assertThat(type.typeSpecs[2].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People")
     }
 
     @Test
@@ -1944,7 +1944,7 @@ class CodeGenTest {
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
-        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
+        assertThat(type.typeSpecs).extracting("name").containsExactly("PERSON", "QUERY", "PERSONFILTER")
         assertThat(type.typeSpecs[2].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Email")
         assertThat(type.typeSpecs[2].fieldSpecs[0].initializer.toString()).contains("\"PersonFilter\"")
     }
@@ -1977,7 +1977,7 @@ class CodeGenTest {
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
-        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON", "PERSONFILTER")
+        assertThat(type.typeSpecs).extracting("name").containsExactly("PERSON", "QUERY", "PERSONFILTER")
         assertThat(type.typeSpecs[2].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Email", "BirthYear")
     }
 
@@ -2005,8 +2005,8 @@ class CodeGenTest {
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
-        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
-        assertThat(type.typeSpecs[1].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Firstname", "Lastname", "Email")
+        assertThat(type.typeSpecs).extracting("name").containsExactly("PERSON", "QUERY")
+        assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Email", "Firstname", "Lastname")
     }
 
     @Test
@@ -2033,8 +2033,8 @@ class CodeGenTest {
             )
         ).generate()
         val type = result.javaConstants[0].typeSpec
-        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "PERSON")
-        assertThat(type.typeSpecs[0].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "People", "Friends")
+        assertThat(type.typeSpecs).extracting("name").containsExactly("PERSON", "QUERY")
+        assertThat(type.typeSpecs[1].fieldSpecs).extracting("name").containsExactly("TYPE_NAME", "Friends", "People")
     }
 
     @Test
@@ -2066,7 +2066,7 @@ class CodeGenTest {
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY", "SHOW", "MOVIEFILTER")
         assertThat(type.typeSpecs[0].typeSpecs).extracting("name").containsExactly("SHOWS_INPUT_ARGUMENT")
         assertThat(type.typeSpecs[0].typeSpecs[0].fieldSpecs).extracting("name")
-            .containsExactly("TitleFilter", "MoveFilter")
+            .containsExactly("MoveFilter", "TitleFilter")
     }
 
     @Test
@@ -3624,11 +3624,11 @@ It takes a title and such.
             return Stream.of(
                 arguments(
                     true,
-                    listOf("QUERY", "PERSON", "PERSON_META_DATA", "V_PERSON_META_DATA", "V_1_PERSON_META_DATA", "URL_META_DATA")
+                    listOf("PERSON", "PERSON_META_DATA", "QUERY", "URL_META_DATA", "V_1_PERSON_META_DATA", "V_PERSON_META_DATA")
                 ),
                 arguments(
                     false,
-                    listOf("QUERY", "PERSON", "PERSONMETADATA", "VPERSONMETADATA", "V1PERSONMETADATA", "URLMETADATA")
+                    listOf("PERSON", "PERSONMETADATA", "QUERY", "URLMETADATA", "V1PERSONMETADATA", "VPERSONMETADATA")
                 )
             )
         }
