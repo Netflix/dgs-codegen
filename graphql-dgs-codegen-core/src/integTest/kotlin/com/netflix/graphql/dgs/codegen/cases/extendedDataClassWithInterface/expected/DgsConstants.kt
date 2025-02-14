@@ -6,9 +6,9 @@ public object DgsConstants {
   public object EXAMPLE {
     public const val TYPE_NAME: String = "Example"
 
-    public const val Age: String = "age"
-
     public const val Name: String = "name"
+
+    public const val Age: String = "age"
   }
 
   public object A {

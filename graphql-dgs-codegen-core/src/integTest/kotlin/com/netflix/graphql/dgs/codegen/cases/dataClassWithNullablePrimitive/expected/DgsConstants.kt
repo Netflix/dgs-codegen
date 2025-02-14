@@ -8,8 +8,8 @@ public object DgsConstants {
 
     public const val Count: String = "count"
 
-    public const val Floaty: String = "floaty"
-
     public const val Truth: String = "truth"
+
+    public const val Floaty: String = "floaty"
   }
 }

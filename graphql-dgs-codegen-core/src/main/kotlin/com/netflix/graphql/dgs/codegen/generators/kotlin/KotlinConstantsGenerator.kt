@@ -39,7 +39,6 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
         document.definitions.filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .sortedBy { it.name }
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -49,7 +48,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
                 constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
 
-                fields.filter(ReservedKeywordFilter.filterInvalidNames).sortedBy { it.name }.forEach { field ->
+                fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
                     addQueryInputArgument(constantsType, field)
                 }
@@ -59,14 +58,13 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
         document.definitions.filterIsInstance<InputObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .sortedBy { it.name }
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
                 val extensions = findInputExtensions(it.name, document.definitions)
                 val fields = it.inputValueDefinitions + extensions.flatMap { ext -> ext.inputValueDefinitions }
                 constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
-                fields.filter(ReservedKeywordFilter.filterInvalidNames).sortedBy { it.name }.forEach { field ->
+                fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
                 }
 
@@ -75,7 +73,6 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
         document.definitions.filterIsInstance<InterfaceTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .sortedBy { it.name }
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -84,7 +81,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
                 val extensions = SchemaExtensionsUtils.findInterfaceExtensions(it.name, document.definitions)
                 val fields = it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions }
 
-                fields.filter(ReservedKeywordFilter.filterInvalidNames).sortedBy { it.name }.forEach { field ->
+                fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
                 }
 
@@ -93,7 +90,6 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
 
         document.definitions.filterIsInstance<UnionTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .sortedBy { it.name }
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
@@ -140,7 +136,7 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
         val inputFields = field.inputValueDefinitions
         if (inputFields.isNotEmpty()) {
             val inputConstantsType = createConstantTypeBuilder(config, field.name + "_INPUT_ARGUMENT")
-            inputFields.sortedBy { it.name }.forEach { inputField ->
+            inputFields.forEach { inputField ->
                 addFieldName(inputConstantsType, inputField.name)
             }
             constantsType.addType(inputConstantsType.build())

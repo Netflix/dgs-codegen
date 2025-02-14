@@ -14,23 +14,13 @@ public object DgsConstants {
   public object TALENT {
     public const val TYPE_NAME: String = "Talent"
 
-    public const val Company: String = "company"
-
     public const val Firstname: String = "firstname"
+
+    public const val Lastname: String = "lastname"
+
+    public const val Company: String = "company"
 
     public const val ImdbProfile: String = "imdbProfile"
-
-    public const val Lastname: String = "lastname"
-  }
-
-  public object EMPLOYEE {
-    public const val TYPE_NAME: String = "Employee"
-
-    public const val Company: String = "company"
-
-    public const val Firstname: String = "firstname"
-
-    public const val Lastname: String = "lastname"
   }
 
   public object PERSON {
@@ -39,5 +29,15 @@ public object DgsConstants {
     public const val Firstname: String = "firstname"
 
     public const val Lastname: String = "lastname"
+  }
+
+  public object EMPLOYEE {
+    public const val TYPE_NAME: String = "Employee"
+
+    public const val Firstname: String = "firstname"
+
+    public const val Lastname: String = "lastname"
+
+    public const val Company: String = "company"
   }
 }

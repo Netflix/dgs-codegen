@@ -26,8 +26,8 @@ public object DgsConstants {
   public object STONEFRUIT {
     public const val TYPE_NAME: String = "StoneFruit"
 
-    public const val Fuzzy: String = "fuzzy"
-
     public const val Seeds: String = "seeds"
+
+    public const val Fuzzy: String = "fuzzy"
   }
 }
