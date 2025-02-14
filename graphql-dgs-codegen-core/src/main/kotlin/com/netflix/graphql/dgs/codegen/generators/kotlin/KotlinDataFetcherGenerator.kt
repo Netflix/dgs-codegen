@@ -7,10 +7,12 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.Document
 import graphql.language.FieldDefinition
@@ -32,17 +34,24 @@ class KotlinDataFetcherGenerator(private val config: CodeGenConfig, private val 
         val fieldName = field.name.capitalized()
         val className = fieldName + topLevelObjectName
 
-        val returnType = typeUtils.findReturnType(field.type)
+        val returnType = if (topLevelObjectName == "Subscription") {
+            val genericType = typeUtils.findReturnType(field.type)
+            ClassName.bestGuess("org.reactivestreams.Publisher").parameterizedBy(genericType)
+        } else {
+            typeUtils.findReturnType(field.type)
+        }
 
         val annotationParentType = when (topLevelObjectName) {
             "Query" -> "DgsConstants.QUERY.TYPE_NAME"
             "Mutation" -> "DgsConstants.MUTATION.TYPE_NAME"
+            "Subscription" -> "DgsConstants.SUBSCRIPTION.TYPE_NAME"
             else -> error("not supported top level object type: $topLevelObjectName")
         }
 
         val annotationFieldName = when (topLevelObjectName) {
             "Query" -> "DgsConstants.QUERY.$fieldName"
             "Mutation" -> "DgsConstants.MUTATION.$fieldName"
+            "Subscription" -> "DgsConstants.SUBSCRIPTION.$fieldName"
             else -> error("not supported top level object type: $topLevelObjectName")
         }
 

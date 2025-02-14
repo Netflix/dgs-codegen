@@ -217,6 +217,52 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateSubscriptionInterfaceWithArgument() {
+        val schema = """
+            type Subscription {
+                personUpdated(id: Int): Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val dataFetchers = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDataFetcherInterfaces = true
+            )
+        ).generate().kotlinDataFetchers
+
+        assertThat(dataFetchers.size).isEqualTo(1)
+        assertThat(dataFetchers[0].name).isEqualTo("PersonUpdatedSubscription")
+        assertThat(dataFetchers[0].packageName).isEqualTo(datafetchersPackageName)
+        val type = dataFetchers[0].members[0] as TypeSpec
+
+        assertThat(type.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
+        assertThat(type.funSpecs).hasSize(1)
+        val fn = type.funSpecs.single()
+        assertThat(fn.name).isEqualTo("personUpdated")
+        assertThat((fn.returnType as ParameterizedTypeName).rawType.canonicalName).isEqualTo("org.reactivestreams.Publisher")
+        assertThat((fn.returnType as ParameterizedTypeName).typeArguments[0].toString()).isEqualTo("$typesPackageName.Person?")
+        assertThat(fn.parameters).hasSize(2)
+        val arg0 = fn.parameters[0]
+        assertThat(arg0.name).isEqualTo("id")
+        assertThat((arg0.type as ClassName).canonicalName).isEqualTo("kotlin.Int")
+        assertThat(arg0.annotations).hasSize(1)
+        val arg0Annotation = arg0.annotations[0]
+        assertThat(arg0Annotation.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.InputArgument")
+        assertThat(arg0Annotation.members.single().toString()).isEqualTo("\"id\"")
+        val arg1 = fn.parameters[1]
+        assertThat(arg1.name).isEqualTo("dataFetchingEnvironment")
+        assertThat((arg1.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
+    }
+
+    @Test
     fun generateDataClassWithNullablePrimitive() {
         val schema = """
             type MyType {

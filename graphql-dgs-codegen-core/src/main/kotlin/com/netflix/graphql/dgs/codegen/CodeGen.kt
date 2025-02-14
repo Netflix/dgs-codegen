@@ -396,7 +396,7 @@ class CodeGen(private val config: CodeGenConfig) {
             val dataFetchers = if (config.generateDataFetcherInterfaces) {
                 definitions.asSequence()
                     .filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.name == "Query" || it.name == "Mutation" }
+                    .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
                     .map { KotlinDataFetcherGenerator(config, document).generate(it) }
                     .fold(CodeGenResult()) { result, next -> result.merge(next) }
             } else {
