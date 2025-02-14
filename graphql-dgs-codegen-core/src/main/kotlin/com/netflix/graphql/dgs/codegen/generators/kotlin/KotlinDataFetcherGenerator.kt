@@ -23,23 +23,35 @@ class KotlinDataFetcherGenerator(private val config: CodeGenConfig, private val 
     private val typeUtils = KotlinTypeUtils(config.packageNameTypes, config, document)
     private val dsgConstantsPackageName = config.packageName
 
-    fun generate(query: ObjectTypeDefinition): CodeGenResult =
-        query.fieldDefinitions
-            .map { generateField(it) }
+    fun generate(topLevelObject: ObjectTypeDefinition): CodeGenResult =
+        topLevelObject.fieldDefinitions
+            .map { generateField(it, topLevelObject.name) }
             .fold(CodeGenResult()) { left, right -> left.merge(right) }
 
-    private fun generateField(field: FieldDefinition): CodeGenResult {
+    private fun generateField(field: FieldDefinition, topLevelObjectName: String): CodeGenResult {
         val fieldName = field.name.capitalized()
-        val className = fieldName + "Datafetcher"
+        val className = fieldName + topLevelObjectName
 
         val returnType = typeUtils.findReturnType(field.type)
 
+        val annotationParentType = when (topLevelObjectName) {
+            "Query" -> "DgsConstants.QUERY.TYPE_NAME"
+            "Mutation" -> "DgsConstants.MUTATION.TYPE_NAME"
+            else -> error("not supported top level object type: $topLevelObjectName")
+        }
+
+        val annotationFieldName = when (topLevelObjectName) {
+            "Query" -> "DgsConstants.QUERY.$fieldName"
+            "Mutation" -> "DgsConstants.MUTATION.$fieldName"
+            else -> error("not supported top level object type: $topLevelObjectName")
+        }
+
         val dsgDataAnnotation = AnnotationSpec.builder(DgsData::class)
-            .addMember("parentType = DgsConstants.QUERY.TYPE_NAME")
-            .addMember("field = DgsConstants.QUERY.$fieldName")
+            .addMember("parentType = $annotationParentType")
+            .addMember("field = $annotationFieldName")
             .build()
 
-        val methodSpec = FunSpec.builder("get$fieldName")
+        val methodSpec = FunSpec.builder("${field.name}")
             .addAnnotation(dsgDataAnnotation)
             .addModifiers(KModifier.ABSTRACT)
             .addInputArguments(field)

@@ -96,7 +96,7 @@ class KotlinCodeGenTest {
         ).generate().kotlinDataFetchers
 
         assertThat(dataFetchers.size).isEqualTo(1)
-        assertThat(dataFetchers[0].name).isEqualTo("PeopleDatafetcher")
+        assertThat(dataFetchers[0].name).isEqualTo("PeopleQuery")
         assertThat(dataFetchers[0].packageName).isEqualTo(datafetchersPackageName)
         val type = dataFetchers[0].members[0] as TypeSpec
 
@@ -106,7 +106,7 @@ class KotlinCodeGenTest {
         })
         assertThat(type.funSpecs).hasSize(1)
         val fn = type.funSpecs.single()
-        assertThat(fn.name).isEqualTo("getPeople")
+        assertThat(fn.name).isEqualTo("people")
         val returnType = fn.returnType as ParameterizedTypeName
         assertThat(fn.returnType)
         assertThat(returnType.rawType.canonicalName).isEqualTo(List::class.qualifiedName)
@@ -149,14 +149,14 @@ class KotlinCodeGenTest {
         ).generate().kotlinDataFetchers
 
         assertThat(dataFetchers.size).isEqualTo(1)
-        assertThat(dataFetchers[0].name).isEqualTo("PersonDatafetcher")
+        assertThat(dataFetchers[0].name).isEqualTo("PersonQuery")
         assertThat(dataFetchers[0].packageName).isEqualTo(datafetchersPackageName)
         val type = dataFetchers[0].members[0] as TypeSpec
 
         assertThat(type.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
         assertThat(type.funSpecs).hasSize(1)
         val fn = type.funSpecs.single()
-        assertThat(fn.name).isEqualTo("getPerson")
+        assertThat(fn.name).isEqualTo("person")
         assertThat((fn.returnType as ClassName).canonicalName).isEqualTo("$typesPackageName.Person")
         assertThat(fn.parameters).hasSize(2)
         val arg0 = fn.parameters[0]
@@ -166,6 +166,51 @@ class KotlinCodeGenTest {
         val arg0Annotation = arg0.annotations[0]
         assertThat(arg0Annotation.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.InputArgument")
         assertThat(arg0Annotation.members.single().toString()).isEqualTo("\"name\"")
+        val arg1 = fn.parameters[1]
+        assertThat(arg1.name).isEqualTo("dataFetchingEnvironment")
+        assertThat((arg1.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
+    }
+
+    @Test
+    fun generateMutationInterfaceWithArgument() {
+        val schema = """
+            type Mutation {
+                addPerson(person: Person): Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val dataFetchers = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                generateDataFetcherInterfaces = true
+            )
+        ).generate().kotlinDataFetchers
+
+        assertThat(dataFetchers.size).isEqualTo(1)
+        assertThat(dataFetchers[0].name).isEqualTo("AddPersonMutation")
+        assertThat(dataFetchers[0].packageName).isEqualTo(datafetchersPackageName)
+        val type = dataFetchers[0].members[0] as TypeSpec
+
+        assertThat(type.kind).isEqualTo(TypeSpec.Kind.INTERFACE)
+        assertThat(type.funSpecs).hasSize(1)
+        val fn = type.funSpecs.single()
+        assertThat(fn.name).isEqualTo("addPerson")
+        assertThat((fn.returnType as ClassName).canonicalName).isEqualTo("$typesPackageName.Person")
+        assertThat(fn.parameters).hasSize(2)
+        val arg0 = fn.parameters[0]
+        assertThat(arg0.name).isEqualTo("person")
+        assertThat((arg0.type as ClassName).canonicalName).isEqualTo("$typesPackageName.Person")
+        assertThat(arg0.annotations).hasSize(1)
+        val arg0Annotation = arg0.annotations[0]
+        assertThat(arg0Annotation.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.InputArgument")
+        assertThat(arg0Annotation.members.single().toString()).isEqualTo("\"person\"")
         val arg1 = fn.parameters[1]
         assertThat(arg1.name).isEqualTo("dataFetchingEnvironment")
         assertThat((arg1.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
