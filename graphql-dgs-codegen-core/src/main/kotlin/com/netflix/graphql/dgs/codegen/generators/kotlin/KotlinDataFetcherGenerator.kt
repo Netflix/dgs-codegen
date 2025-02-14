@@ -41,19 +41,16 @@ class KotlinDataFetcherGenerator(private val config: CodeGenConfig, private val 
             typeUtils.findReturnType(field.type)
         }
 
-        val annotationParentType = when (topLevelObjectName) {
-            "Query" -> "DgsConstants.QUERY.TYPE_NAME"
-            "Mutation" -> "DgsConstants.MUTATION.TYPE_NAME"
-            "Subscription" -> "DgsConstants.SUBSCRIPTION.TYPE_NAME"
+        val dsgConstantPrefix = when (topLevelObjectName) {
+            "Query" -> "DgsConstants.QUERY"
+            "Mutation" -> "DgsConstants.MUTATION"
+            "Subscription" -> "DgsConstants.SUBSCRIPTION"
             else -> error("not supported top level object type: $topLevelObjectName")
         }
 
-        val annotationFieldName = when (topLevelObjectName) {
-            "Query" -> "DgsConstants.QUERY.$fieldName"
-            "Mutation" -> "DgsConstants.MUTATION.$fieldName"
-            "Subscription" -> "DgsConstants.SUBSCRIPTION.$fieldName"
-            else -> error("not supported top level object type: $topLevelObjectName")
-        }
+        val annotationParentType = "$dsgConstantPrefix.TYPE_NAME"
+
+        val annotationFieldName = "$dsgConstantPrefix.$fieldName"
 
         val dsgDataAnnotation = AnnotationSpec.builder(DgsData::class)
             .addMember("parentType = $annotationParentType")
@@ -63,7 +60,7 @@ class KotlinDataFetcherGenerator(private val config: CodeGenConfig, private val 
         val methodSpec = FunSpec.builder("${field.name}")
             .addAnnotation(dsgDataAnnotation)
             .addModifiers(KModifier.ABSTRACT)
-            .addInputArguments(field)
+            .addInputArguments(field, dsgConstantPrefix)
             .addParameter("dataFetchingEnvironment", DataFetchingEnvironment::class)
             .returns(returnType)
             .build()
@@ -81,10 +78,10 @@ class KotlinDataFetcherGenerator(private val config: CodeGenConfig, private val 
         return CodeGenResult(kotlinDataFetchers = listOf(fileSpec))
     }
 
-    private fun FunSpec.Builder.addInputArguments(field: FieldDefinition): FunSpec.Builder = apply {
+    private fun FunSpec.Builder.addInputArguments(field: FieldDefinition, prefix: String): FunSpec.Builder = apply {
         field.inputValueDefinitions.forEach { input ->
             val inputAnnotation = AnnotationSpec.builder(InputArgument::class)
-                .addMember("\"${input.name}\"")
+                .addMember("$prefix.${field.name.uppercase()}_INPUT_ARGUMENT.${input.name.capitalized()}")
                 .build()
             val inputType = ParameterSpec.builder(input.name, typeUtils.findReturnType(input.type))
                 .addAnnotation(inputAnnotation)

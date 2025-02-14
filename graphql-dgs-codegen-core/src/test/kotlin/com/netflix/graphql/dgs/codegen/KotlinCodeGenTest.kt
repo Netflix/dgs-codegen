@@ -165,7 +165,7 @@ class KotlinCodeGenTest {
         assertThat(arg0.annotations).hasSize(1)
         val arg0Annotation = arg0.annotations[0]
         assertThat(arg0Annotation.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.InputArgument")
-        assertThat(arg0Annotation.members.single().toString()).isEqualTo("\"name\"")
+        assertThat(arg0Annotation.members.single().toString()).isEqualTo("DgsConstants.QUERY.PERSON_INPUT_ARGUMENT.Name")
         val arg1 = fn.parameters[1]
         assertThat(arg1.name).isEqualTo("dataFetchingEnvironment")
         assertThat((arg1.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
@@ -210,7 +210,7 @@ class KotlinCodeGenTest {
         assertThat(arg0.annotations).hasSize(1)
         val arg0Annotation = arg0.annotations[0]
         assertThat(arg0Annotation.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.InputArgument")
-        assertThat(arg0Annotation.members.single().toString()).isEqualTo("\"person\"")
+        assertThat(arg0Annotation.members.single().toString()).isEqualTo("DgsConstants.MUTATION.ADDPERSON_INPUT_ARGUMENT.Person")
         val arg1 = fn.parameters[1]
         assertThat(arg1.name).isEqualTo("dataFetchingEnvironment")
         assertThat((arg1.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
@@ -256,7 +256,7 @@ class KotlinCodeGenTest {
         assertThat(arg0.annotations).hasSize(1)
         val arg0Annotation = arg0.annotations[0]
         assertThat(arg0Annotation.typeName.toString()).isEqualTo("com.netflix.graphql.dgs.InputArgument")
-        assertThat(arg0Annotation.members.single().toString()).isEqualTo("\"id\"")
+        assertThat(arg0Annotation.members.single().toString()).isEqualTo("DgsConstants.SUBSCRIPTION.PERSONUPDATED_INPUT_ARGUMENT.Id")
         val arg1 = fn.parameters[1]
         assertThat(arg1.name).isEqualTo("dataFetchingEnvironment")
         assertThat((arg1.type as ClassName).canonicalName).isEqualTo(DataFetchingEnvironment::class.qualifiedName)
