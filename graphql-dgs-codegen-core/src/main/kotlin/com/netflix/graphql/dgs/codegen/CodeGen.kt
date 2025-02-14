@@ -125,7 +125,7 @@ class CodeGen(private val config: CodeGenConfig) {
 
         loadSchemaReaders(readerBuilder, debugReaderBuilder)
         // process schema from dependencies
-        config.schemaJarFilesFromDependencies.forEach { file ->
+        config.schemaJarFilesFromDependencies.sorted().forEach { file ->
             val zipFile = ZipFile(file)
             for (entry in zipFile.entries()) {
                 if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
@@ -183,10 +183,10 @@ class CodeGen(private val config: CodeGenConfig) {
     private fun loadSchemaReaders(vararg readerBuilders: MultiSourceReader.Builder) {
         readerBuilders.forEach { rb ->
             val schemaFiles = config.schemaFiles.asSequence()
-                .sorted()
                 .flatMap { it.walkTopDown() }
                 .filter { it.isFile }
                 .filter { it.name.endsWith(".graphql") || it.name.endsWith(".graphqls") }
+                .sorted()
             for (schemaFile in schemaFiles) {
                 rb.string("\n", "codegen")
                 rb.reader(schemaFile.reader(), schemaFile.name)
