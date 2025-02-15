@@ -365,7 +365,8 @@ class CodeGen(private val config: CodeGenConfig) {
                 kotlinInputTypes = generateKotlin2InputTypes(config, document, requiredTypes),
                 kotlinInterfaces = generateKotlin2Interfaces(config, document),
                 kotlinEnumTypes = generateKotlin2EnumTypes(config, document, requiredTypes),
-                kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants
+                kotlinConstants = KotlinConstantsGenerator(config, document).generate().kotlinConstants,
+                kotlinDataFetchers = generateKotlin2DataFetcherInterfaces(config, document)
             )
         } else {
             val datatypesResult = generateKotlinDataTypes(definitions)
