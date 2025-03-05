@@ -8,7 +8,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class SomeType @JsonCreator constructor(
+public data class SomeType @JsonCreator constructor(
   @JsonProperty("names")
   public val names: List<String?>? = default<SomeType, List<String?>?>("names", listOf("A", "B")),
 ) : GraphQLInput() {

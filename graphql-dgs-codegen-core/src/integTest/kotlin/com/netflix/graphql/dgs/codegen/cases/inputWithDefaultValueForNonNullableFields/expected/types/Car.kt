@@ -8,7 +8,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class Car @JsonCreator constructor(
+public data class Car @JsonCreator constructor(
   @JsonProperty("brand")
   public val brand: String = default<Car, String>("brand", "BMW"),
 ) : GraphQLInput() {

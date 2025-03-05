@@ -8,7 +8,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class I @JsonCreator constructor(
+public data class I @JsonCreator constructor(
   @JsonProperty("arg")
   public val arg: String? = default<I, String?>("arg", null),
 ) : GraphQLInput() {

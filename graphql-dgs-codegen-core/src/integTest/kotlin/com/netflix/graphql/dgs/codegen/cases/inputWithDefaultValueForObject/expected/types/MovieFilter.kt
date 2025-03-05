@@ -8,7 +8,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class MovieFilter @JsonCreator constructor(
+public data class MovieFilter @JsonCreator constructor(
   @JsonProperty("director")
   public val director: Person? = default<MovieFilter, Person?>("director",
       com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.types.Person(name
