@@ -13,7 +13,7 @@ import kotlin.collections.List
  *
  * It takes a title and such.
  */
-public class MovieFilter @JsonCreator constructor(
+public data class MovieFilter @JsonCreator constructor(
   @JsonProperty("titleFilter")
   public val titleFilter: String? = default<MovieFilter, String?>("titleFilter", null),
 ) : GraphQLInput() {

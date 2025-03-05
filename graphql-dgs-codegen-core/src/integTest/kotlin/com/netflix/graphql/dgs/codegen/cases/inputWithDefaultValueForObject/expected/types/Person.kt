@@ -9,7 +9,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class Person @JsonCreator constructor(
+public data class Person @JsonCreator constructor(
   @JsonProperty("name")
   public val name: String? = default<Person, String?>("name", "John"),
   @JsonProperty("age")
