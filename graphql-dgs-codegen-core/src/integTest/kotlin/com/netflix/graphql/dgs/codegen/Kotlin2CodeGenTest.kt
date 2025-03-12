@@ -63,7 +63,17 @@ class Kotlin2CodeGenTest {
                         "Decimal" to "java.math.BigDecimal"
                     )
                     else -> emptyMap()
-                }
+                },
+                typePrefix = when (testName) {
+                    "dataClassWithPrefix" -> "Dgs"
+                    "inputWithPrefix" -> "Dgs"
+                    else -> ""
+                },
+                typeSuffix = when (testName) {
+                    "dataClassWithSuffix" -> "Type"
+                    "inputWithSuffix" -> "Type"
+                    else -> ""
+                },
             )
         ).generate()
 

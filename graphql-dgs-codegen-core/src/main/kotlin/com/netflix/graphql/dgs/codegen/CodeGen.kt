@@ -529,7 +529,9 @@ class CodeGenConfig(
     var implementSerializable: Boolean = false,
     var addGeneratedAnnotation: Boolean = false,
     var disableDatesInGeneratedAnnotation: Boolean = false,
-    var addDeprecatedAnnotation: Boolean = false
+    var addDeprecatedAnnotation: Boolean = false,
+    var typePrefix: String = "",
+    var typeSuffix: String = ""
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
