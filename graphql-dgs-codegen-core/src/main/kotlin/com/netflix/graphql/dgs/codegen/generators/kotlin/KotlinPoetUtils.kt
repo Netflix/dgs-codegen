@@ -97,15 +97,15 @@ fun disableJsonTypeInfoAnnotation(): AnnotationSpec {
  *  ])
  *  ```
  */
-fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
-    val subTypeAnnotations = subTypes.map { type ->
+fun jsonSubTypesAnnotation(subTypes: Map<String, ClassName>): AnnotationSpec {
+    val subTypeAnnotations = subTypes.map { (name, type) ->
         AnnotationSpec.builder(JsonSubTypes.Type::class)
             .addMember("value = %T::class", type)
-            .addMember("name = %S", type.simpleName)
+            .addMember("name = %S", name)
             .build()
     }
 
-    val formatString = subTypes.joinToString(
+    val formatString = subTypes.entries.joinToString(
         separator = ",\n",
         prefix = "value = [\n⇥",
         postfix = "⇤\n]"

@@ -26,6 +26,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.generators.shared.generateKotlinCode
@@ -71,7 +72,7 @@ fun generateKotlin2InputTypes(
             val typeName = ClassName(config.packageNameTypes, inputDefinition.name)
 
             // create the input class
-            val typeSpec = TypeSpec.classBuilder(typeName)
+            val typeSpec = TypeSpec.classBuilder(inputDefinition.templatedClassName(config.nameTemplate))
                 .addOptionalGeneratedAnnotation(config)
                 // add docs if available
                 .apply {

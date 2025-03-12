@@ -33,6 +33,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.templatedClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
@@ -165,7 +166,7 @@ fun generateKotlin2DataTypes(
                 .build()
 
             // create the data class
-            val typeSpec = TypeSpec.classBuilder(typeDefinition.name)
+            val typeSpec = TypeSpec.classBuilder(typeDefinition.templatedClassName(config.nameTemplate))
                 .addOptionalGeneratedAnnotation(config)
                 // add docs if available
                 .apply {
