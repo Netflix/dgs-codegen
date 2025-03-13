@@ -8,7 +8,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class MovieFilter @JsonCreator constructor(
+public data class MovieFilter @JsonCreator constructor(
   @JsonProperty("genre")
   public val genre: String? = default<MovieFilter, String?>("genre", null),
 ) : GraphQLInput() {

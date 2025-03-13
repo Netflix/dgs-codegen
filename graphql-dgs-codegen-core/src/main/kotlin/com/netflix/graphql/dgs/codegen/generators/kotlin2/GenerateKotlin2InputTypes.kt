@@ -79,6 +79,7 @@ fun generateKotlin2InputTypes(
                         addKdoc("%L", inputDefinition.description.sanitizeKdoc())
                     }
                 }
+                .addModifiers(KModifier.DATA)
                 .superclass(GraphQLInput::class)
                 // add a constructor with a parameter for every field
                 .primaryConstructor(

@@ -8,7 +8,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class I2 @JsonCreator constructor(
+public data class I2 @JsonCreator constructor(
   @JsonProperty("arg1")
   public val arg1: String? = default<I2, String?>("arg1", null),
   @JsonProperty("arg2")

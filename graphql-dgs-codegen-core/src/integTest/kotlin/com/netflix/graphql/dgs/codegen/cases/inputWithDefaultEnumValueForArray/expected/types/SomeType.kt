@@ -8,7 +8,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class SomeType @JsonCreator constructor(
+public data class SomeType @JsonCreator constructor(
   @JsonProperty("colors")
   public val colors: List<Color?>? = default<SomeType, List<Color?>?>("colors",
       listOf(com.netflix.graphql.dgs.codegen.cases.inputWithDefaultEnumValueForArray.expected.types.Color.red)),
