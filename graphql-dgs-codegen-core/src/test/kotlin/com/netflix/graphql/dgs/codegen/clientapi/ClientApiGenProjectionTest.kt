@@ -22,7 +22,7 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
 import com.netflix.graphql.dgs.codegen.basePackageName
-import com.squareup.javapoet.TypeVariableName
+import com.squareup.javapoet.TypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -754,11 +754,11 @@ class ClientApiGenProjectionTest {
         ).generate()
 
         val methodSpecs = codeGenResult.clientProjections[1].typeSpec.methodSpecs
-        val methodWithArgs = methodSpecs.find { !it.isConstructor && it.parameters.size > 0 }
+        val methodWithArgs = methodSpecs.find { !it.isConstructor && it.parameters.isNotEmpty() }
             ?: fail("Method not found")
-        assertThat(methodWithArgs.returnType).extracting { (it as TypeVariableName).name }
-            .isEqualTo("AwardProjection<ActorProjection<PARENT, ROOT>, ROOT>")
+        assertThat(methodWithArgs.returnType).extracting { it.toString() }
+            .isEqualTo("com.netflix.graphql.dgs.codegen.tests.generated.client.AwardProjection<com.netflix.graphql.dgs.codegen.tests.generated.client.ActorProjection<PARENT, ROOT>, ROOT>")
         assertThat(methodWithArgs.parameters[0].name).isEqualTo("oscarsOnly")
-        assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
+        assertThat(methodWithArgs.parameters[0].type).isEqualTo(TypeName.BOOLEAN.box())
     }
 }
