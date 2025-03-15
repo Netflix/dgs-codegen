@@ -84,6 +84,9 @@ open class GenerateJavaTask @Inject constructor(
     var generateKotlinClosureProjections = false
 
     @Input
+    var generateDataFetcherInterfaces = false
+
+    @Input
     var generateDataTypes = true
 
     @Input
@@ -194,6 +197,7 @@ open class GenerateJavaTask @Inject constructor(
             generateClientApiv2 = generateClientv2,
             generateKotlinNullableClasses = generateKotlinNullableClasses,
             generateKotlinClosureProjections = generateKotlinClosureProjections,
+            generateDataFetcherInterfaces = generateDataFetcherInterfaces,
             generateInterfaces = generateInterfaces,
             generateInterfaceSetters = generateInterfaceSetters,
             generateInterfaceMethodsForInterfaceFields = generateInterfaceMethodsForInterfaceFields,
