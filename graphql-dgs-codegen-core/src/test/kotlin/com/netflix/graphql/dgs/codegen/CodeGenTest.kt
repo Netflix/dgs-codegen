@@ -918,7 +918,7 @@ class CodeGenTest {
             )
         ).generate()
 
-        assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn { it.name.equals("<init>") && it.parameters.size > 0 }.hasSize(0)
+        assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn { it.name.equals("<init>") && it.parameters.isNotEmpty() }.hasSize(0)
         assertCompilesJava(dataTypes)
     }
 
@@ -942,7 +942,7 @@ class CodeGenTest {
             )
         ).generate()
 
-        assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn { it.name.equals("<init>") && it.parameters.size > 0 }.hasSize(1)
+        assertThat(dataTypes[0].typeSpec.methodSpecs).filteredOn { it.name.equals("<init>") && it.parameters.isNotEmpty() }.hasSize(1)
         assertCompilesJava(dataTypes)
     }
 
@@ -3545,7 +3545,7 @@ It takes a title and such.
         ).generate()
 
         assertThat(result.javaInterfaces[0].typeSpec.javadoc.toString()).isEqualTo("Anything with a title!")
-        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo("The title field; must not contain '\$'")
+        assertThat(result.javaInterfaces[0].typeSpec.methodSpecs[0].javadoc.toString()).isEqualTo("The title field; must not contain '$'")
     }
 
     @Test
@@ -4280,7 +4280,7 @@ It takes a title and such.
     }
 
     @Test
-    fun deprecateAnnotationWithNoMesssage() {
+    fun deprecateAnnotationWithNoMessage() {
         val schema = """
             input Person @deprecated {
                 name: String
@@ -5042,7 +5042,7 @@ It takes a title and such.
     }
 
     @Test
-    fun `Codegen should use user specfied typemappings to override type mappings from typemappings in dependencies`() {
+    fun `Codegen should use user specified typemappings to override type mappings from typemappings in dependencies`() {
         val typeMappingDependency = Paths.get("src/test/resources/dependencies/testDependency.jar").toAbsolutePath().toFile()
         val schema = """
             type Query {
@@ -5064,5 +5064,42 @@ It takes a title and such.
             )
         ).generate()
         assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString() == "java.lang.String")
+    }
+
+    @Test
+    fun `Codegen should generate schema with unsigned int`() {
+        val schema = """
+            scalar UnsignedInt
+            
+            type Person {
+                id: ID!
+                name: String!
+                age: UnsignedInt
+                numberOfDependents: UnsignedInt
+            }
+            
+            input PersonInput {
+                numberOfDependents: UnsignedInt = 0
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                typeMapping = mapOf("UnsignedInt" to "java.lang.Long")
+            )
+        ).generate()
+        val dataFetchers = codeGenResult.javaDataFetchers
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataFetchers).isEmpty()
+        assertThat(dataTypes.size).isEqualTo(2)
+        assertCompilesJava(dataTypes)
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].name == "age")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString() == "java.lang.Long")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].name == "numberOfDependents")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString() == "java.lang.Long")
+        assertThat(dataTypes[1].typeSpec.fieldSpecs[0].name == "numberOfDependents")
+        assertThat(dataTypes[1].typeSpec.fieldSpecs[0].initializer.toString() == "0L")
     }
 }

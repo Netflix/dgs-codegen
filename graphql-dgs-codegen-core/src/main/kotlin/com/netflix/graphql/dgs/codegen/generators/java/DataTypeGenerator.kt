@@ -193,6 +193,8 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
     ): CodeBlock {
         if (type == LOCALE) {
             return localeCodeBlock(value, type)
+        } else if (type == ClassName.LONG.box()) {
+            return longCodeBlock(value, type)
         } else if (type == BIG_DECIMAL) {
             return bigDecimalCodeBlock(value, type)
         }
@@ -245,6 +247,11 @@ class InputTypeGenerator(config: CodeGenConfig, document: Document) : BaseDataTy
     private fun localeCodeBlock(value: Value<out Value<*>>, type: JavaTypeName): CodeBlock {
         check(value is StringValue) { "$type cannot be created from $value, expected String value" }
         return CodeBlock.of("\$T.forLanguageTag(\$S)", LOCALE, value.value)
+    }
+
+    private fun longCodeBlock(value: Value<out Value<*>>, type: JavaTypeName): CodeBlock {
+        check(value is IntValue) { "$type cannot be created from $value, expected Int value" }
+        return CodeBlock.of("\$LL", value.value)
     }
 
     private fun bigDecimalCodeBlock(value: Value<out Value<*>>, type: JavaTypeName): CodeBlock {
