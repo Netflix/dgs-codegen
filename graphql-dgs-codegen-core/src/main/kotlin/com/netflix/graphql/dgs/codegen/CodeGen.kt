@@ -128,7 +128,7 @@ class CodeGen(private val config: CodeGenConfig) {
         config.schemaJarFilesFromDependencies.forEach { file ->
             val zipFile = ZipFile(file)
             for (entry in zipFile.entries()) {
-                if (!entry.isDirectory && entry.name.startsWith("META-INF") &&
+                if (!entry.isDirectory &&
                     (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql"))
                 ) {
                     logger.info("Generating schema from {}: {}", file.name, entry.name)
