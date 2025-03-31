@@ -5038,7 +5038,7 @@ It takes a title and such.
                 schemaJarFilesFromDependencies = listOf(typeMappingDependency)
             )
         ).generate()
-        assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString() == "java.math.BigDecimal")
+        assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.math.BigDecimal")
     }
 
     @Test
@@ -5063,7 +5063,7 @@ It takes a title and such.
                 typeMapping = mapOf("BigDecimal" to "java.lang.String")
             )
         ).generate()
-        assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString() == "java.lang.String")
+        assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.lang.String")
     }
 
     @Test
@@ -5095,11 +5095,39 @@ It takes a title and such.
         assertThat(dataFetchers).isEmpty()
         assertThat(dataTypes.size).isEqualTo(2)
         assertCompilesJava(dataTypes)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].name == "age")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString() == "java.lang.Long")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].name == "numberOfDependents")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString() == "java.lang.Long")
-        assertThat(dataTypes[1].typeSpec.fieldSpecs[0].name == "numberOfDependents")
-        assertThat(dataTypes[1].typeSpec.fieldSpecs[0].initializer.toString() == "0L")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].name).isEqualTo("age")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Long")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[3].name).isEqualTo("numberOfDependents")
+        assertThat(dataTypes[0].typeSpec.fieldSpecs[3].type.toString()).isEqualTo("java.lang.Long")
+        assertThat(dataTypes[1].typeSpec.fieldSpecs[0].name).isEqualTo("numberOfDependents")
+        assertThat(dataTypes[1].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("0L")
+    }
+
+    @Test
+    fun `Codegen should correctly handle default float values`() {
+        val schema = """
+            input ExampleInput {
+                min: Float! = 0.0
+                max: Float
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName
+            )
+        ).generate()
+        val dataFetchers = codeGenResult.javaDataFetchers
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataFetchers).isEmpty()
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertCompilesJava(dataTypes)
+        val minFieldSpec = dataTypes[0].typeSpec.fieldSpecs[0]
+        assertThat(minFieldSpec.type.toString()).isEqualTo("double")
+        assertThat(minFieldSpec.initializer.toString()).isEqualTo("0.0")
+        val maxFieldSpec = dataTypes[0].typeSpec.fieldSpecs[1]
+        assertThat(maxFieldSpec.type.toString()).isEqualTo("java.lang.Double")
+        assertThat(maxFieldSpec.initializer.toString()).isEmpty()
     }
 }
