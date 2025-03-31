@@ -1599,8 +1599,9 @@ class CodeGenTest {
         assertCompilesJava(dataTypes)
     }
 
-    @Test
-    fun generateInputWithDefaultValueForEnum() {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun generateInputWithDefaultValueForEnum(trackInputFieldSet: Boolean) {
         val schema = """
             enum Color {
                 red
@@ -1611,7 +1612,7 @@ class CodeGenTest {
             }
         """.trimIndent()
 
-        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName)).generate()
+        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, trackInputFieldSet = trackInputFieldSet)).generate()
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -1625,8 +1626,13 @@ class CodeGenTest {
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("color")
-        assertThat(colorField.type.toString()).isEqualTo("$typesPackageName.Color")
-        assertThat(colorField.initializer.toString()).isEqualTo("$typesPackageName.Color.red")
+        if (trackInputFieldSet) {
+            assertThat(colorField.type.toString()).isEqualTo("java.util.Optional<$typesPackageName.Color>")
+            assertThat(colorField.initializer.toString()).isEqualTo("Optional.of($typesPackageName.Color.red)")
+        } else {
+            assertThat(colorField.type.toString()).isEqualTo("$typesPackageName.Color")
+            assertThat(colorField.initializer.toString()).isEqualTo("$typesPackageName.Color.red")
+        }
 
         assertCompilesJava(enumTypes + dataTypes)
     }
@@ -3112,8 +3118,9 @@ class CodeGenTest {
         assertCompilesJava(dataTypes + interfaces)
     }
 
-    @Test
-    fun generateObjectTypeInterface() {
+    @ParameterizedTest
+    @ValueSource(booleans = [true])
+    fun generateObjectTypeInterface(trackInputFieldSet: Boolean) {
         val schema = """
             type Query {
                 movie(id: ID): Movie
@@ -3164,7 +3171,8 @@ class CodeGenTest {
             CodeGenConfig(
                 schemas = setOf(schema),
                 packageName = basePackageName,
-                generateInterfaces = true
+                generateInterfaces = true,
+                trackInputFieldSet = trackInputFieldSet
             )
         ).generate()
 
@@ -3238,13 +3246,24 @@ class CodeGenTest {
         assertThat(movieFilter.typeSpec.name).isEqualTo("MovieFilter")
         assertThat(movieFilter.typeSpec.superinterfaces.size).isEqualTo(0)
         assertThat(movieFilter.typeSpec.fieldSpecs).extracting("name").containsExactly("title", "genre", "language", "tags", "rating")
-        assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
-        assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("Genre")
-        assertThat(movieFilter.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("Language")
-        parameterizedTypeName = movieFilter.typeSpec.fieldSpecs[3].type as ParameterizedTypeName
-        assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
-        assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
-        assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").isEqualTo("Rating")
+
+        if (trackInputFieldSet) {
+            assertThat((movieFilter.typeSpec.fieldSpecs[0].type as ParameterizedTypeName).typeArguments[0]).extracting("simpleName").isEqualTo("String")
+            assertThat((movieFilter.typeSpec.fieldSpecs[1].type as ParameterizedTypeName).typeArguments[0]).extracting("simpleName").isEqualTo("Genre")
+            assertThat((movieFilter.typeSpec.fieldSpecs[2].type as ParameterizedTypeName).typeArguments[0]).extracting("simpleName").isEqualTo("Language")
+            parameterizedTypeName = (movieFilter.typeSpec.fieldSpecs[3].type as ParameterizedTypeName).typeArguments[0] as ParameterizedTypeName
+            assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+            assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
+            assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").isEqualTo("Rating")
+        } else {
+            assertThat(movieFilter.typeSpec.fieldSpecs[0].type).extracting("simpleName").isEqualTo("String")
+            assertThat(movieFilter.typeSpec.fieldSpecs[1].type).extracting("simpleName").isEqualTo("Genre")
+            assertThat(movieFilter.typeSpec.fieldSpecs[2].type).extracting("simpleName").isEqualTo("Language")
+            parameterizedTypeName = movieFilter.typeSpec.fieldSpecs[3].type as ParameterizedTypeName
+            assertThat(parameterizedTypeName.rawType).extracting("simpleName").isEqualTo("List")
+            assertThat(parameterizedTypeName.typeArguments[0]).extracting("simpleName").isEqualTo("String")
+            assertThat(movieFilter.typeSpec.fieldSpecs[4].type).extracting("simpleName").isEqualTo("Rating")
+        }
 
         assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
     }
@@ -4746,8 +4765,9 @@ It takes a title and such.
         }.hasMessage("java.util.Locale cannot be created from IntValue{value=123}, expected String value")
     }
 
-    @Test
-    fun `The default empty object value should result in constructor call`() {
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `The default empty object value should result in constructor call`(trackInputFieldSet: Boolean) {
         val schema = """
             input Movie {
                 director: Person = {}
@@ -4762,7 +4782,8 @@ It takes a title and such.
         val dataTypes = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
-                packageName = basePackageName
+                packageName = basePackageName,
+                trackInputFieldSet = trackInputFieldSet
             )
         ).generate().javaDataTypes
 
@@ -4779,7 +4800,11 @@ It takes a title and such.
 
         val colorField = fields[0]
         assertThat(colorField.name).isEqualTo("director")
-        assertThat(colorField.initializer.toString()).isEqualTo("""new $typesPackageName.Person()""")
+        if (trackInputFieldSet) {
+            assertThat(colorField.initializer.toString()).isEqualTo("""Optional.of(new $typesPackageName.Person())""")
+        } else {
+            assertThat(colorField.initializer.toString()).isEqualTo("""new $typesPackageName.Person()""")
+        }
 
         assertCompilesJava(dataTypes)
     }
@@ -5171,7 +5196,54 @@ It takes a title and such.
         assertThat(parameters.find { it.name == "variableDefinitions" }?.type.toString()).isEqualTo("java.util.List<graphql.language.VariableDefinition>")
 
         // Validate Builder methods
-        assertThat(result.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).extracting("name").contains("nameReference", "ageReference", "aliasesReference", "filterReference")
-        assertThat(result.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs.find { it.name == "nameReference" }!!.parameters[0].name).isEqualTo("variableRef")
+        assertThat(result.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).extracting("name")
+            .contains("nameReference", "ageReference", "aliasesReference", "filterReference")
+        assertThat(result.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs.find { it.name == "nameReference" }!!.parameters[0].name).isEqualTo(
+            "variableRef"
+        )
+    }
+
+    @Test
+    fun generateInputTrackFieldSet() {
+        val schema = """
+            input SomeType {
+                number: Int
+                string: String
+                requiredString: String!
+            }
+        """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = basePackageName, trackInputFieldSet = true)).generate()
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(typesPackageName)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("SomeType")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(3)
+
+        val numberField = fields[0]
+        assertThat(numberField.name).isEqualTo("number")
+        assertThat(numberField.type.toString()).isEqualTo("java.util.Optional<java.lang.Integer>")
+
+        val stringField = fields[1]
+        assertThat(stringField.name).isEqualTo("string")
+        assertThat(stringField.type.toString()).isEqualTo("java.util.Optional<java.lang.String>")
+
+        val requiredStringField = fields[2]
+        assertThat(requiredStringField.name).isEqualTo("requiredString")
+        assertThat(requiredStringField.type.toString()).isEqualTo("java.lang.String")
+
+        val methods = type.methodSpecs
+        assertThat(methods.single { it.name == "getNumber" }.code.toString().trimIndent()).isEqualTo("return number == null ? null : number.orElse(null);")
+        assertThat(methods.single { it.name == "hasNumber" }.code.toString().trimIndent()).isEqualTo("return number != null;")
+        assertThat(methods.single { it.name == "setNumber" }.code.toString().trimIndent()).isEqualTo("this.number = Optional.ofNullable(number);")
+        assertThat(methods.none { it.name == "hasRequiredString" }).isTrue()
+        assertThat(methods.single { it.name == "getRequiredString" }.code.toString().trimIndent()).isEqualTo("return requiredString;")
+
+        assertCompilesJava(dataTypes)
     }
 }
