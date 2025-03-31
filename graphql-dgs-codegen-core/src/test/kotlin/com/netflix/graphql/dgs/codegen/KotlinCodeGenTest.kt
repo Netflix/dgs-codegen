@@ -4230,4 +4230,41 @@ It takes a title and such.
         assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.A")
         assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.B")
     }
+
+    @Test
+    fun `Generate Kotlin data types with prefix and suffix`() {
+        val schema = """
+            type Query {
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val config = CodeGenConfig(
+            schemas = setOf(schema),
+            packageName = basePackageName,
+            language = Language.KOTLIN,
+            typePrefix = "My",
+            typeSuffix = "Type"
+        )
+
+        val codeGen = CodeGen(config)
+        val result = codeGen.generate()
+
+        val dataTypes = result.kotlinDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].name).isEqualTo("MyPersonType")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+        val type = dataTypes[0].members[0] as TypeSpec
+
+        assertThat(type.modifiers).contains(KModifier.DATA)
+        assertThat(type.propertySpecs.size).isEqualTo(2)
+        assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname")
+
+        assertCompilesKotlin(dataTypes)
+    }
 }
