@@ -16,6 +16,7 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import graphql.GraphQLContext
 import graphql.language.Argument
 import graphql.language.AstPrinter
 import graphql.language.Field
@@ -34,7 +35,7 @@ class GraphQLQueryRequest @JvmOverloads constructor(
     constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, projection = null, options = GraphQLQueryRequestOptions(scalars = scalars ?: emptyMap())) {
         this.selectionSet = selectionSet
     }
-    class GraphQLQueryRequestOptions(val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) {
+    class GraphQLQueryRequestOptions(val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(), val graphQLContext: GraphQLContext = GraphQLContext.getDefault()) {
         // When enabled, input values that are derived from properties
         // whose values are null will be serialized in the query request
         var allowNullablePropertyInputValues = false
@@ -44,7 +45,7 @@ class GraphQLQueryRequest @JvmOverloads constructor(
         if (options?.allowNullablePropertyInputValues == true) {
             NullableInputValueSerializer(options.scalars)
         } else {
-            InputValueSerializer(options?.scalars ?: emptyMap())
+            InputValueSerializer(options?.scalars ?: emptyMap(), options?.graphQLContext ?: GraphQLContext.getDefault())
         }
 
     val projectionSerializer = ProjectionSerializer(inputValueSerializer)

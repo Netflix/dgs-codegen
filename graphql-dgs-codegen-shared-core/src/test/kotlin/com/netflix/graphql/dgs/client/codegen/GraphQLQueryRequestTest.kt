@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.client.codegen
 
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest.GraphQLQueryRequestOptions
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
+import graphql.GraphQLContext
 import graphql.language.OperationDefinition
 import graphql.language.StringValue
 import graphql.language.Value
@@ -30,6 +31,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class GraphQLQueryRequestTest {
@@ -220,6 +222,26 @@ class GraphQLQueryRequestTest {
         assertThat(result).isEqualTo(
             """query TestNamedQuery {
             |  test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021", zoneId: "Europe/Berlin")
+            |}
+            """.trimMargin()
+        )
+    }
+
+    @Test
+    fun serializeWithScalarAndContext() {
+        val query = TestNamedGraphQLQuery().apply {
+            input["dateRange"] = DateRange(LocalDate.of(2022, 3, 31), LocalDate.of(2025, 12, 31))
+        }
+
+        val graphQLContext = GraphQLContext.getDefault().put("formatter", DateTimeFormatter.ofPattern("yyyy"))
+        val options = GraphQLQueryRequestOptions(mapOf(DateRange::class.java to DateRangeScalar()), graphQLContext)
+        val request = GraphQLQueryRequest(query, MovieProjection(), options)
+
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query TestNamedQuery {
+            |  test(dateRange: "2022-2025")
             |}
             """.trimMargin()
         )

@@ -16,6 +16,7 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import graphql.GraphQLContext
 import graphql.language.ArrayValue
 import graphql.language.AstPrinter
 import graphql.language.BooleanValue
@@ -42,7 +43,7 @@ import kotlin.reflect.full.hasAnnotation
 import kotlin.reflect.full.memberProperties
 import kotlin.reflect.jvm.isAccessible
 
-open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) :
+open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(), private val graphQLContext: GraphQLContext = GraphQLContext.getDefault()) :
     InputValueSerializerInterface {
     companion object {
         private val toStringClasses = setOf(
@@ -92,7 +93,7 @@ open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *
 
         for (scalar in scalars.keys) {
             if (input::class.java == scalar || scalar.isAssignableFrom(input::class.java)) {
-                return Optional.of(scalars[scalar]!!.valueToLiteral(input))
+                return Optional.of(scalars[scalar]!!.valueToLiteral(input, graphQLContext, Locale.getDefault()))
             }
         }
 

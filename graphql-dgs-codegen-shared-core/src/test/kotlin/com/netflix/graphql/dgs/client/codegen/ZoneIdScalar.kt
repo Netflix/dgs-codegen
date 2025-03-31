@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.client.codegen
 
 import com.netflix.graphql.dgs.DgsScalar
+import graphql.GraphQLContext
 import graphql.language.StringValue
 import graphql.language.Value
 import graphql.schema.Coercing
@@ -28,6 +29,7 @@ import graphql.schema.CoercingSerializeException
 import java.time.ZoneId
 import java.time.format.DateTimeParseException
 import java.time.zone.ZoneRulesException
+import java.util.Locale
 
 @DgsScalar(name = "ZoneId")
 class ZoneIdScalar : Coercing<ZoneId, String> {
@@ -96,7 +98,7 @@ class ZoneIdScalar : Coercing<ZoneId, String> {
     }
 
     @Throws(CoercingParseLiteralException::class)
-    override fun valueToLiteral(input: Any): Value<out Value<*>> {
+    override fun valueToLiteral(input: Any, graphQLContext: GraphQLContext, locale: Locale): Value<*> {
         return StringValue.of(input.toString())
     }
 }
