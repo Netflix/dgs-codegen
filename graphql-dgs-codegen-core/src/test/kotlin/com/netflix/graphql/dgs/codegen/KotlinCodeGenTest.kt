@@ -30,8 +30,12 @@ import org.junit.jupiter.api.extension.ExtensionContext
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.*
 import org.junit.jupiter.params.provider.Arguments.arguments
+import java.nio.file.Files
+import java.nio.file.Path
 import java.util.stream.Stream
 import java.util.stream.Stream.of
+import java.util.zip.ZipEntry
+import java.util.zip.ZipOutputStream
 
 class KotlinCodeGenTest {
 
@@ -51,6 +55,56 @@ class KotlinCodeGenTest {
         val dataTypes = CodeGen(
             CodeGenConfig(
                 schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate().kotlinDataTypes
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+        assertThat(dataTypes[0].packageName).isEqualTo(typesPackageName)
+        val type = dataTypes[0].members[0] as TypeSpec
+
+        assertThat(type.modifiers).contains(KModifier.DATA)
+        assertThat(type.propertySpecs.size).isEqualTo(2)
+        assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname")
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun generateDataClassesOutsideMetaInf() {
+        val schema = """
+            type Query {
+                people: [Person]
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+        """.trimIndent()
+
+        val tempDir: Path = Files.createTempDirectory("tempDirPrefix")
+        val zipFileName = "testSchema.zip"
+        val zipFilePath = tempDir.resolve(zipFileName)
+
+        // Create a zip file
+        ZipOutputStream(Files.newOutputStream(zipFilePath)).use { zipOut ->
+            // Define the .graphqls file name and content
+            val graphqlFileName = "schema.graphqls"
+            val graphqlContent = schema
+
+            // Add the .graphqls file to the zip
+            val zipEntry = ZipEntry(graphqlFileName)
+            zipOut.putNextEntry(zipEntry)
+            zipOut.write(graphqlContent.toByteArray())
+            zipOut.closeEntry()
+        }
+
+        val dataTypes = CodeGen(
+            CodeGenConfig(
+                schemaJarFilesFromDependencies = listOf(zipFilePath.toFile()),
                 packageName = basePackageName,
                 language = Language.KOTLIN
             )
