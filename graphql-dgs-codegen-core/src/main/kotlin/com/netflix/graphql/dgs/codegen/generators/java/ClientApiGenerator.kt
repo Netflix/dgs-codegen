@@ -20,12 +20,48 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
-import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.fieldDefinitions
+import com.netflix.graphql.dgs.codegen.filterIncludedInConfig
+import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.findTypeDefinition
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
-import com.squareup.javapoet.*
+import com.squareup.javapoet.ClassName
+import com.squareup.javapoet.CodeBlock
+import com.squareup.javapoet.FieldSpec
+import com.squareup.javapoet.JavaFile
+import com.squareup.javapoet.MethodSpec
+import com.squareup.javapoet.ParameterSpec
+import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.TypeSpec
+import com.squareup.javapoet.TypeVariableName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
-import graphql.language.*
+import graphql.language.Directive
+import graphql.language.DirectivesContainer
+import graphql.language.Document
+import graphql.language.FieldDefinition
+import graphql.language.InputValueDefinition
+import graphql.language.InterfaceTypeDefinition
+import graphql.language.ListType
+import graphql.language.NamedNode
+import graphql.language.NonNullType
+import graphql.language.ObjectTypeDefinition
+import graphql.language.ObjectTypeExtensionDefinition
+import graphql.language.ScalarTypeDefinition
+import graphql.language.StringValue
+import graphql.language.Type
+import graphql.language.TypeDefinition
+import graphql.language.TypeName
+import graphql.language.UnionTypeDefinition
+import graphql.language.VariableDefinition
+import java.lang.Deprecated
 import javax.lang.model.element.Modifier
+import kotlin.Int
+import kotlin.Pair
+import kotlin.String
+import kotlin.let
+import kotlin.to
 
 class ClientApiGenerator(private val config: CodeGenConfig, private val document: Document) {
     private val generatedClasses = mutableSetOf<String>()
@@ -57,6 +93,12 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
     }
 
     private fun createQueryClass(it: FieldDefinition, operation: String, methodNames: MutableSet<String>): JavaFile {
+        val setType = ClassName.get(Set::class.java)
+        val stringType = ClassName.get(String::class.java)
+        val setOfStringType = ParameterizedTypeName.get(setType, stringType)
+        val listOfVariablesType = ParameterizedTypeName.get(ClassName.get(List::class.java), ClassName.get(VariableDefinition::class.java))
+        val mapOfStringsType = ParameterizedTypeName.get(ClassName.get(Map::class.java), stringType, stringType)
+
         val methodName = generateMethodName(it.name.capitalized(), operation.lowercase(), methodNames)
         val javaType = TypeSpec.classBuilder(methodName)
             .addOptionalGeneratedAnnotation(config)
@@ -84,9 +126,6 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                 .build()
         )
 
-        val setType = ClassName.get(Set::class.java)
-        val setOfStringType = ParameterizedTypeName.get(setType, ClassName.get(String::class.java))
-
         val builderClass = TypeSpec.classBuilder("Builder").addModifiers(Modifier.STATIC, Modifier.PUBLIC)
             .addOptionalGeneratedAnnotation(config)
             .addMethod(
@@ -96,7 +135,7 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     .addCode(
                         if (it.inputValueDefinitions.isNotEmpty()) {
                             """
-                            |return new $methodName(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, queryName, fieldsSet);
+                            |return new $methodName(${it.inputValueDefinitions.joinToString(", ") { ReservedKeywordSanitizer.sanitize(it.name) }}, queryName, fieldsSet, variableReferences, variableDefinitions);
                             |         
                             """.trimMargin()
                         } else {
@@ -107,6 +146,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     )
                     .build()
             ).addField(FieldSpec.builder(setOfStringType, "fieldsSet", Modifier.PRIVATE).initializer("new \$T<>()", ClassName.get(HashSet::class.java)).build())
+            .addField(FieldSpec.builder(mapOfStringsType, "variableReferences", Modifier.PRIVATE, Modifier.FINAL).initializer("new \$T<>()", ClassName.get(HashMap::class.java)).build())
+            .addField(FieldSpec.builder(listOfVariablesType, "variableDefinitions", Modifier.PRIVATE, Modifier.FINAL).initializer("new \$T<>()", ClassName.get(ArrayList::class.java)).build())
 
         val constructorBuilder = MethodSpec.constructorBuilder()
             .addModifiers(Modifier.PUBLIC)
@@ -130,29 +171,27 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
                     """.trimMargin()
                 )
 
-            if (deprecatedDirective != null) {
-                methodBuilder.addAnnotation(java.lang.Deprecated::class.java)
-            }
-
-            // Build Javadoc, separate multiple blocks by empty line
-            val javaDoc = CodeBlock.builder()
-
-            if (inputValue.description != null) {
-                javaDoc.add("\$L", inputValue.description.content)
-            }
-            if (deprecationReason != null) {
-                if (!javaDoc.isEmpty) {
-                    javaDoc.add("\n\n")
-                }
-                javaDoc.add("@deprecated \$L", deprecationReason)
-            }
-
-            if (!javaDoc.isEmpty) {
-                methodBuilder.addJavadoc(javaDoc.build())
-            }
-
+            addDeprecationWarnings(deprecatedDirective, methodBuilder, inputValue, deprecationReason)
             builderClass.addMethod(methodBuilder.build())
                 .addField(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
+
+            val inputValueType = inputValue.type
+            val typeForVariableDefinition = getVariableDefinitionType(inputValueType)
+            val referenceMethodBuilder = MethodSpec.methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name) + "Reference")
+                .addParameter(stringType, "variableRef")
+                .returns(ClassName.get("", "Builder"))
+                .addModifiers(Modifier.PUBLIC)
+                .addCode(
+                    """
+                    |this.variableReferences.put("${ReservedKeywordSanitizer.sanitize(inputValue.name)}", variableRef);
+                    |this.variableDefinitions.add(graphql.language.VariableDefinition.newVariableDefinition(variableRef, $typeForVariableDefinition).build());
+                    |this.fieldsSet.add("${inputValue.name}");
+                    |return this;
+                    """.trimMargin()
+                )
+
+            addDeprecationWarnings(deprecatedDirective, referenceMethodBuilder, inputValue, deprecationReason)
+            builderClass.addMethod(referenceMethodBuilder.build())
 
             constructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
 
@@ -173,6 +212,21 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
             }
         }
 
+        if (it.inputValueDefinitions.isNotEmpty()) {
+            constructorBuilder.addCode(
+                """
+                |
+                |if(variableDefinitions != null) {
+                |   getVariableDefinitions().addAll(variableDefinitions);
+                |}
+                |
+                |if(variableReferences != null) {
+                |   getVariableReferences().putAll(variableReferences);
+                |}                      
+                """.trimMargin()
+            )
+        }
+
         val nameMethodBuilder = MethodSpec.methodBuilder("queryName")
             .addParameter(String::class.java, "queryName")
             .returns(ClassName.get("", "Builder"))
@@ -191,6 +245,8 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
 
         if (it.inputValueDefinitions.size > 0) {
             constructorBuilder.addParameter(setOfStringType, "fieldsSet")
+            constructorBuilder.addParameter(mapOfStringsType, "variableReferences")
+            constructorBuilder.addParameter(listOfVariablesType, "variableDefinitions")
         }
 
         javaType.addMethod(constructorBuilder.build())
@@ -211,6 +267,44 @@ class ClientApiGenerator(private val config: CodeGenConfig, private val document
         )
         javaType.addType(builderClass.build())
         return JavaFile.builder(getPackageName(), javaType.build()).build()
+    }
+
+    private fun getVariableDefinitionType(inputValueType: Type<*>): String {
+        return when (inputValueType) {
+            is TypeName -> "new graphql.language.TypeName(\"${inputValueType.name}\")"
+            is ListType -> "new graphql.language.ListType(${getVariableDefinitionType(inputValueType.type)})"
+            is NonNullType -> "new graphql.language.NonNullType(${getVariableDefinitionType(inputValueType.type)})"
+
+            else -> { "new graphql.language.TypeName(\"String\")" }
+        }
+    }
+
+    private fun addDeprecationWarnings(
+        deprecatedDirective: Directive?,
+        methodBuilder: MethodSpec.Builder,
+        inputValue: InputValueDefinition,
+        deprecationReason: String?
+    ) {
+        if (deprecatedDirective != null) {
+            methodBuilder.addAnnotation(Deprecated::class.java)
+        }
+
+        // Build Javadoc, separate multiple blocks by empty line
+        val javaDoc = CodeBlock.builder()
+
+        if (inputValue.description != null) {
+            javaDoc.add("\$L", inputValue.description.content)
+        }
+        if (deprecationReason != null) {
+            if (!javaDoc.isEmpty) {
+                javaDoc.add("\n\n")
+            }
+            javaDoc.add("@deprecated \$L", deprecationReason)
+        }
+
+        if (!javaDoc.isEmpty) {
+            methodBuilder.addJavadoc(javaDoc.build())
+        }
     }
 
     /**

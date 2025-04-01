@@ -21,6 +21,7 @@ import graphql.language.VariableDefinition
 abstract class GraphQLQuery(val operation: String, val name: String?) {
     val input: MutableMap<String, Any> = mutableMapOf()
     val variableDefinitions = mutableListOf<VariableDefinition>()
+    val variableReferences = mutableMapOf<String, String>()
     var queryAlias: String = ""
 
     constructor(operation: String) : this(operation, null)
