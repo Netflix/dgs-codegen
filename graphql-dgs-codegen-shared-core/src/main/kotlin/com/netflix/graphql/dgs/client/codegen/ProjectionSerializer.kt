@@ -22,9 +22,12 @@ import graphql.language.Field
 import graphql.language.InlineFragment
 import graphql.language.SelectionSet
 import graphql.language.TypeName
+import graphql.language.VariableDefinition
+import graphql.language.VariableReference
 
 class ProjectionSerializer(
     private val inputValueSerializer: InputValueSerializerInterface,
+    private val query: GraphQLQuery,
 ) {
     fun toSelectionSet(projection: BaseProjectionNode): SelectionSet {
         val selectionSet = SelectionSet.newSelectionSet()
@@ -35,8 +38,13 @@ class ProjectionSerializer(
                     .newField()
                     .name(fieldName)
                     .arguments(
-                        projection.inputArguments[fieldName].orEmpty().map { (argName, values) ->
-                            Argument(argName, inputValueSerializer.toValue(values))
+                        projection.inputArguments[fieldName].orEmpty().map { (argName, values, isReference, type) ->
+                            if (isReference) {
+                                query.variableDefinitions.add(VariableDefinition(values as String, type))
+                                Argument(argName, VariableReference(values as String))
+                            } else {
+                                Argument(argName, inputValueSerializer.toValue(values))
+                            }
                         },
                     )
             if (value is BaseProjectionNode) {

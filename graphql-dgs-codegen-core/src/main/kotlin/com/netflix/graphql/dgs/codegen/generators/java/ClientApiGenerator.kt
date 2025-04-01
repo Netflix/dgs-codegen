@@ -478,6 +478,7 @@ class ClientApiGenerator(
 
                     if (fieldDef.inputValueDefinitions.isNotEmpty()) {
                         addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "this")
+                        addFieldSelectionMethodWithArgumentsReferences(fieldDef, projectionName, javaType, projectionRoot = "this")
                     }
 
                     val processedEdges = mutableSetOf<Pair<String, String>>()
@@ -539,7 +540,7 @@ class ClientApiGenerator(
                 |${
                         fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
                             """
-                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}, false, null);
                      |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
                             """.trimMargin()
                         }
@@ -551,6 +552,45 @@ class ClientApiGenerator(
 
         fieldDefinition.inputValueDefinitions.forEach { input ->
             methodBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
+        }
+        return javaType.addMethod(methodBuilder.build())
+    }
+
+    private fun addFieldSelectionMethodWithArgumentsReferences(
+        fieldDefinition: FieldDefinition,
+        projectionName: String,
+        javaType: TypeSpec.Builder,
+        projectionRoot: String,
+    ): TypeSpec.Builder? {
+        val clazzName = javaType.build().name
+        val rootTypeName = if (projectionRoot == "this") "$clazzName<PARENT, ROOT>" else "ROOT"
+        val returnTypeName = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName>")
+        val methodBuilder =
+            MethodSpec
+                .methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDefinition.name + "WithVariableReferences"))
+                .returns(returnTypeName)
+                .addCode(
+                    """
+                |$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName> projection = new $projectionName<>(this, $projectionRoot);    
+                |getFields().put("${fieldDefinition.name}", projection);
+                |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());              
+                |${
+                        fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
+                            """
+                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}Reference, true, ${getVariableDefinitionType(
+                                input.type,
+                            )});
+                     |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
+                            """.trimMargin()
+                        }
+                    }
+                |return projection;
+                    """.trimMargin(),
+                    ArrayList::class.java,
+                ).addModifiers(Modifier.PUBLIC)
+
+        fieldDefinition.inputValueDefinitions.forEach { input ->
+            methodBuilder.addParameter(ParameterSpec.builder(ClassName.get(String::class.java), "${input.name}Reference").build())
         }
         return javaType.addMethod(methodBuilder.build())
     }
@@ -847,6 +887,7 @@ class ClientApiGenerator(
 
                     if (fieldDef.inputValueDefinitions.isNotEmpty()) {
                         addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
+                        addFieldSelectionMethodWithArgumentsReferences(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
                     }
 
                     val updatedProcessedEdges = processedEdges.toMutableSet()
@@ -892,7 +933,7 @@ class ClientApiGenerator(
                                 |${
                                         it.inputValueDefinitions.joinToString("\n") { input ->
                                             """
-                                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name});
+                                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}, false, null);
                                      |getInputArguments().get("${it.name}").add(${input.name}Arg);
                                             """.trimMargin()
                                         }}

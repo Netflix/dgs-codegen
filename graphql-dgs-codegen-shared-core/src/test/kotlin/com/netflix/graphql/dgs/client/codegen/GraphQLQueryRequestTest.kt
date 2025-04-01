@@ -185,7 +185,7 @@ class GraphQLQueryRequestTest {
                 input["movie"] = Movie(123, "greatMovie")
             }
         val inputValueSerializer = InputValueSerializer(emptyMap())
-        val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+        val projectionSerializer = ProjectionSerializer(inputValueSerializer, query)
         val selectionSet = projectionSerializer.toSelectionSet(MovieProjection().name().movieId())
         val request = GraphQLQueryRequest(query, selectionSet)
         val result = request.serialize()
@@ -211,7 +211,7 @@ class GraphQLQueryRequestTest {
             }
         val scalars = mapOf(DateRange::class.java to DateRangeScalar(), ZoneId::class.java to ZoneIdScalar())
         val inputValueSerializer = InputValueSerializer(scalars)
-        val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+        val projectionSerializer = ProjectionSerializer(inputValueSerializer, query)
         val selectionSet = projectionSerializer.toSelectionSet(MovieProjection().name().movieId())
         val request =
             GraphQLQueryRequest(query, selectionSet, scalars)

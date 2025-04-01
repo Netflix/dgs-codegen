@@ -27,11 +27,13 @@ import java.time.ZoneOffset
 import java.util.*
 
 internal class ProjectionSerializerTest {
+    val query = TestGraphQLQuery()
+
     @Test
     fun `Projection with argument that requires a scalar`() {
         val scalars: Map<Class<*>, Coercing<*, *>> =
             mapOf(OffsetDateTime::class.java to ExtendedScalars.DateTime.coercing)
-        val projectionSerializer = ProjectionSerializer(InputValueSerializer(scalars))
+        val projectionSerializer = ProjectionSerializer(InputValueSerializer(scalars), query)
 
         val projection =
             ShowsProjectionRoot()
@@ -63,7 +65,7 @@ internal class ProjectionSerializerTest {
             .username()
             .score()
         // when
-        val serialized = ProjectionSerializer(InputValueSerializer()).serialize(root)
+        val serialized = ProjectionSerializer(InputValueSerializer(), query).serialize(root)
         // then
         assertThat(serialized).isEqualTo(
             """{
@@ -96,7 +98,7 @@ internal class ProjectionSerializerTest {
                 .score()
                 .root()
         // when
-        val serialized = ProjectionSerializer(InputValueSerializer()).serialize(root)
+        val serialized = ProjectionSerializer(InputValueSerializer(), query).serialize(root)
         // then
         assertThat(serialized).isEqualTo(
             """{
