@@ -35,6 +35,19 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class GraphQLQueryRequestTest {
+
+    @Test
+    fun testSerializeCompactListOfStringsAsInput() {
+        val query = TestGraphQLQuery().apply {
+            input["actors"] = "actorA"
+            input["movies"] = listOf("movie1", "movie2")
+        }
+        val request = GraphQLQueryRequest(query)
+        val result = request.serializeCompact()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo("""{test(actors:"actorA",movies:["movie1","movie2"])}""")
+    }
+
     @Test
     fun testSerializeListOfStringsAsInput() {
         val query = TestGraphQLQuery().apply {
