@@ -22,6 +22,7 @@ import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.assertj.core.api.InstanceOfAssertFactories
 import org.assertj.core.data.Index
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -2232,7 +2233,9 @@ class KotlinCodeGenTest {
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
         assertThat(annotationSpec.members).hasSize(1)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("This is going bye bye"))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args")
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
+            .contains(listOf("message = ", "%S"), listOf("This is going bye bye"))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
@@ -2240,7 +2243,7 @@ class KotlinCodeGenTest {
         assertThat((parameterSpec.annotations[0].typeName as ClassName).canonicalName).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
         assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
         assertThat(parameterSpec.annotations[1].members).hasSize(2)
-        assertThat(parameterSpec.annotations[1].members[0]).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("This field is no longer available"))
+        assertThat(parameterSpec.annotations[1].members[0]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("message = ", "%S"), listOf("This field is no longer available"))
         assertThat(parameterSpec.annotations[1].members[1]).extracting("formatParts", "args").asString().contains("replaceWith = ", "%M", "(", "%S", ")", "kotlin.ReplaceWith", "firstName")
     }
 
@@ -2267,8 +2270,8 @@ class KotlinCodeGenTest {
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
-        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("maxLimit = ", "%L"), listOf("10"))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
@@ -2300,8 +2303,8 @@ class KotlinCodeGenTest {
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
-        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("maxLimit = ", "%L"), listOf("10"))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
@@ -2333,8 +2336,8 @@ class KotlinCodeGenTest {
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.validator.ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
-        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("maxLimit = ", "%L"), listOf("10"))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
@@ -2387,8 +2390,8 @@ class KotlinCodeGenTest {
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
-        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("maxLimit = ", "%L"), listOf("10"))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
@@ -2421,8 +2424,8 @@ class KotlinCodeGenTest {
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
         assertThat(annotationSpec.members).hasSize(2)
-        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asList().contains(listOf("maxLimit = ", "%L"), listOf("10"))
-        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asList().contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
+        assertThat(annotationSpec.members[0]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("maxLimit = ", "%L"), listOf("10"))
+        assertThat(annotationSpec.members[1]).extracting("formatParts", "args").asInstanceOf(InstanceOfAssertFactories.LIST).contains(listOf("types = [", "%L", "]"), listOf("\"husband\", \"wife\""))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
@@ -2456,7 +2459,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.test.validator.groups.BasicValidation")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2490,7 +2493,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("BasicValidation.class") // treat as string when no mapping is provided
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2530,7 +2533,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.test.validator.groups.BasicValidation", "com.test.validator.groups.AdvanceValidation")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2575,7 +2578,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.test.validator.groups.BasicValidation", "com.test.validator.groups.AdvanceValidation")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2617,7 +2620,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.MALE")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2653,7 +2656,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2691,7 +2694,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2733,7 +2736,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2769,7 +2772,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
@@ -2806,7 +2809,7 @@ class KotlinCodeGenTest {
 
         val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
         assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("com.test.validator.ValidPerson")
-        assertThat(annotationSpec.members[0]).extracting("args").asList().hasSize(1)
+        assertThat(annotationSpec.members[0]).extracting("args").asInstanceOf(InstanceOfAssertFactories.LIST).hasSize(1)
         assertThat(annotationSpec.members[0]).extracting("args").asString().contains("com.enums.HUSBAND", "com.enums.WIFE")
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
