@@ -19,16 +19,18 @@
 package com.netflix.graphql.dgs.codegen.generators.shared
 
 object CodeGeneratorUtils {
-
     enum class Case {
         LOWERCASE,
-        UPPERCASE
+        UPPERCASE,
     }
 
     /**
      * Transforms the input string expressing camel-case notation into one that expresses a snake-case notation.
      * */
-    fun camelCaseToSnakeCase(input: String, case: Case = Case.LOWERCASE): String {
+    fun camelCaseToSnakeCase(
+        input: String,
+        case: Case = Case.LOWERCASE,
+    ): String {
         val parts = splitByCharacterTypeCamelCase(input)
         return parts.joinToString(separator = "_") {
             when (case) {

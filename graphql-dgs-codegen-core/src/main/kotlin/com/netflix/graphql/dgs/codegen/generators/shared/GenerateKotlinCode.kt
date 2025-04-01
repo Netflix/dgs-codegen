@@ -29,9 +29,9 @@ fun generateKotlinCode(
     type: TypeName,
     inputTypeDefinitions: Collection<InputObjectTypeDefinition>,
     config: CodeGenConfig,
-    typeUtils: KotlinTypeUtils
-): CodeBlock {
-    return checkAndGetLocaleCodeBlock(value, type)
+    typeUtils: KotlinTypeUtils,
+): CodeBlock =
+    checkAndGetLocaleCodeBlock(value, type)
         ?: checkAndGetLongCodeBlock(value, type)
         ?: checkAndGetBigDecimalCodeBlock(value, type)
         ?: when (value) {
@@ -41,26 +41,30 @@ fun generateKotlinCode(
             is FloatValue -> CodeBlock.of("%L", value.value.toString())
             is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
             is ArrayValue ->
-                if (value.values.isEmpty()) CodeBlock.of("emptyList()")
-                else CodeBlock.of(
-                    "listOf(%L)",
-                    value.values.joinToString { v ->
-                        generateKotlinCode(
-                            v,
-                            type,
-                            inputTypeDefinitions,
-                            config,
-                            typeUtils
-                        ).toString()
-                    }
-                )
+                if (value.values.isEmpty()) {
+                    CodeBlock.of("emptyList()")
+                } else {
+                    CodeBlock.of(
+                        "listOf(%L)",
+                        value.values.joinToString { v ->
+                            generateKotlinCode(
+                                v,
+                                type,
+                                inputTypeDefinitions,
+                                config,
+                                typeUtils,
+                            ).toString()
+                        },
+                    )
+                }
 
             is ObjectValue -> {
-                val inputObjectDefinition = inputTypeDefinitions.first {
-                    val expectedCanonicalClassName =
-                        config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
-                    expectedCanonicalClassName == type.className.canonicalName
-                }
+                val inputObjectDefinition =
+                    inputTypeDefinitions.first {
+                        val expectedCanonicalClassName =
+                            config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
+                        expectedCanonicalClassName == type.className.canonicalName
+                    }
 
                 CodeBlock.of(
                     type.className.canonicalName + "(%L)",
@@ -70,52 +74,64 @@ fun generateKotlinCode(
                                 "Property \"${objectProperty.name}\" does not exist in input type \"${inputObjectDefinition.name}\""
                             }
                         "${objectProperty.name} = ${
-                        generateKotlinCode(
-                            objectProperty.value,
-                            typeUtils.findReturnType(argumentType.type),
-                            inputTypeDefinitions,
-                            config,
-                            typeUtils
-                        )
+                            generateKotlinCode(
+                                objectProperty.value,
+                                typeUtils.findReturnType(argumentType.type),
+                                inputTypeDefinitions,
+                                config,
+                                typeUtils,
+                            )
                         }"
-                    }
+                    },
                 )
             }
 
             else -> CodeBlock.of("%L", value)
         }
-}
 
-private fun checkAndGetLocaleCodeBlock(value: Value<Value<*>>, type: TypeName): CodeBlock? {
-    return if (type.className.canonicalName == "java.util.Locale") {
+private fun checkAndGetLocaleCodeBlock(
+    value: Value<Value<*>>,
+    type: TypeName,
+): CodeBlock? =
+    if (type.className.canonicalName == "java.util.Locale") {
         check(value is StringValue) {
             "$type cannot be created from $value, expected String value"
         }
         CodeBlock.of("%L", "Locale.forLanguageTag(\"${value.value}\")")
-    } else null
-}
+    } else {
+        null
+    }
 
-private fun checkAndGetLongCodeBlock(value: Value<Value<*>>, type: TypeName): CodeBlock? {
-    return if (type.className.canonicalName == "kotlin.Long") {
+private fun checkAndGetLongCodeBlock(
+    value: Value<Value<*>>,
+    type: TypeName,
+): CodeBlock? =
+    if (type.className.canonicalName == "kotlin.Long") {
         check(value is IntValue) { "$type cannot be created from $value, expected Int value" }
         CodeBlock.of("%LL", value.value)
-    } else null
-}
+    } else {
+        null
+    }
 
-private fun checkAndGetBigDecimalCodeBlock(value: Value<Value<*>>, type: TypeName): CodeBlock? {
-    return if (type.className.canonicalName == "java.math.BigDecimal") {
+private fun checkAndGetBigDecimalCodeBlock(
+    value: Value<Value<*>>,
+    type: TypeName,
+): CodeBlock? =
+    if (type.className.canonicalName == "java.math.BigDecimal") {
         when (value) {
             is StringValue -> CodeBlock.of("%L", "java.math.BigDecimal(\"${value.value}\")")
             is IntValue -> CodeBlock.of("%L", "java.math.BigDecimal(${value.value})")
             is FloatValue -> CodeBlock.of("%L", "java.math.BigDecimal(${value.value})")
             else -> error("$type cannot be created from $value, expected String, Int or Float value")
         }
-    } else null
-}
+    } else {
+        null
+    }
 
 private val TypeName.className: ClassName
-    get() = when (this) {
-        is ClassName -> this
-        is ParameterizedTypeName -> typeArguments[0].className
-        else -> TODO()
-    }
+    get() =
+        when (this) {
+            is ClassName -> this
+            is ParameterizedTypeName -> typeArguments[0].className
+            else -> TODO()
+        }

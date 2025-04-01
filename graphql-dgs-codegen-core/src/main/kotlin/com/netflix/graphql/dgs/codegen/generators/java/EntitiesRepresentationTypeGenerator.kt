@@ -37,27 +37,25 @@ import org.slf4j.LoggerFactory
 @Suppress("UNCHECKED_CAST")
 class EntitiesRepresentationTypeGenerator(
     config: CodeGenConfig,
-    document: Document
+    document: Document,
 ) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
-
     fun generate(
         definition: ObjectTypeDefinition,
-        generatedRepresentations: MutableMap<String, Any>
-    ): CodeGenResult {
-        return EntitiesRepresentationTypeGeneratorUtils.generate(
+        generatedRepresentations: MutableMap<String, Any>,
+    ): CodeGenResult =
+        EntitiesRepresentationTypeGeneratorUtils.generate(
             config,
             definition,
             generatedRepresentations,
-            this::generateRepresentations
+            this::generateRepresentations,
         )
-    }
 
     private fun generateRepresentations(
         definitionName: String,
         representationName: String,
         fields: List<FieldDefinition>,
         generatedRepresentations: MutableMap<String, Any>,
-        keyFields: Map<String, Any>
+        keyFields: Map<String, Any>,
     ): CodeGenResult {
         if (generatedRepresentations.containsKey(representationName)) {
             return CodeGenResult.EMPTY
@@ -75,7 +73,7 @@ class EntitiesRepresentationTypeGenerator(
                             type is ObjectTypeDefinition ||
                                 type is InterfaceTypeDefinition ||
                                 type is EnumTypeDefinition
-                            )
+                        )
                     ) {
                         val fieldTypeRepresentationName = toRepresentationName(type)
                         val fieldRepresentationType =
@@ -88,13 +86,14 @@ class EntitiesRepresentationTypeGenerator(
                             logger.trace("Representation for {} was already generated.", fieldTypeRepresentationName)
                         } else {
                             logger.debug("Generating entity representation {} ...", fieldTypeRepresentationName)
-                            val fieldTypeRepresentation = generateRepresentations(
-                                type.name,
-                                fieldTypeRepresentationName,
-                                type.fieldDefinitions(),
-                                generatedRepresentations,
-                                keyFields[it.name] as Map<String, Any>
-                            )
+                            val fieldTypeRepresentation =
+                                generateRepresentations(
+                                    type.name,
+                                    fieldTypeRepresentationName,
+                                    type.fieldDefinitions(),
+                                    generatedRepresentations,
+                                    keyFields[it.name] as Map<String, Any>,
+                                )
                             fieldsCodeGenAccumulator = fieldsCodeGenAccumulator.merge(fieldTypeRepresentation)
                             generatedRepresentations[fieldTypeRepresentationName] = fieldRepresentationType
                         }
@@ -104,13 +103,14 @@ class EntitiesRepresentationTypeGenerator(
                     }
                 }
         // Generate base type representation...
-        val parentRepresentationCodeGen = super.generate(
-            name = representationName,
-            interfaces = emptyList(),
-            fields = fieldDefinitions + typeName,
-            description = null,
-            directives = emptyList()
-        )
+        val parentRepresentationCodeGen =
+            super.generate(
+                name = representationName,
+                interfaces = emptyList(),
+                fields = fieldDefinitions + typeName,
+                description = null,
+                directives = emptyList(),
+            )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
         // Merge all results.
         return parentRepresentationCodeGen.merge(fieldsCodeGenAccumulator)

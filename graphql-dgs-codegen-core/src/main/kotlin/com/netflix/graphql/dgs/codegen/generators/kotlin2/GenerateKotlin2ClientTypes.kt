@@ -48,7 +48,7 @@ import graphql.language.UnionTypeDefinition
 
 fun generateKotlin2ClientTypes(
     config: CodeGenConfig,
-    document: Document
+    document: Document,
 ): List<FileSpec> {
     if (!config.generateClientApi) {
         return emptyList()
@@ -56,174 +56,193 @@ fun generateKotlin2ClientTypes(
 
     val typeLookup = Kotlin2TypeLookup(config, document)
 
-    val ivsParameter = ParameterSpec
-        .builder("inputValueSerializer", InputValueSerializerInterface::class.asTypeName().copy(nullable = true))
-        .defaultValue("null")
-        .build()
+    val ivsParameter =
+        ParameterSpec
+            .builder("inputValueSerializer", InputValueSerializerInterface::class.asTypeName().copy(nullable = true))
+            .defaultValue("null")
+            .build()
 
     // create a projection class for every interface & data type
-    val dataProjections = document.getDefinitionsOfType(ObjectTypeDefinition::class.java)
-        .plus(document.getDefinitionsOfType(InterfaceTypeDefinition::class.java))
-        .excludeSchemaTypeExtension()
-        .filter { type -> type.directives.none { it.name == "skipcodegen" } && !typeLookup.isScalar(type.name) }
-        .map { typeDefinition ->
+    val dataProjections =
+        document
+            .getDefinitionsOfType(ObjectTypeDefinition::class.java)
+            .plus(document.getDefinitionsOfType(InterfaceTypeDefinition::class.java))
+            .excludeSchemaTypeExtension()
+            .filter { type -> type.directives.none { it.name == "skipcodegen" } && !typeLookup.isScalar(type.name) }
+            .map { typeDefinition ->
 
-            // get any fields defined via schema extensions
-            val extensionTypes = SchemaExtensionsUtils.findTypeExtensions(typeDefinition.name, document.definitions)
+                // get any fields defined via schema extensions
+                val extensionTypes = SchemaExtensionsUtils.findTypeExtensions(typeDefinition.name, document.definitions)
 
-            // the name of the type is used in every parameter & return value
-            val typeName = ClassName(config.packageNameClient, "${typeDefinition.name}Projection")
+                // the name of the type is used in every parameter & return value
+                val typeName = ClassName(config.packageNameClient, "${typeDefinition.name}Projection")
 
-            // get all fields defined on the type itself or any extension types
-            val fields = listOf(typeDefinition)
-                .plus(extensionTypes)
-                .flatMap { it.fieldDefinitions }
-                .filterSkipped()
-                .filter(ReservedKeywordFilter.filterInvalidNames)
-                .map { field ->
+                // get all fields defined on the type itself or any extension types
+                val fields =
+                    listOf(typeDefinition)
+                        .plus(extensionTypes)
+                        .flatMap { it.fieldDefinitions }
+                        .filterSkipped()
+                        .filter(ReservedKeywordFilter.filterInvalidNames)
+                        .map { field ->
 
-                    val isScalar = typeLookup.isScalar(field.type)
-                    val hasArgs = field.inputValueDefinitions.isNotEmpty()
+                            val isScalar = typeLookup.isScalar(field.type)
+                            val hasArgs = field.inputValueDefinitions.isNotEmpty()
 
-                    when {
-                        // scalars without args are just parameters that note the field is requested
-                        isScalar && !hasArgs -> {
-                            PropertySpec.builder(
-                                name = field.name,
-                                type = typeName
-                            )
-                                .getter(
-                                    FunSpec.getterBuilder()
-                                        .addStatement("field(%S)", field.name)
-                                        .addStatement("return this")
-                                        .build()
-                                )
-                                .build()
+                            when {
+                                // scalars without args are just parameters that note the field is requested
+                                isScalar && !hasArgs -> {
+                                    PropertySpec
+                                        .builder(
+                                            name = field.name,
+                                            type = typeName,
+                                        ).getter(
+                                            FunSpec
+                                                .getterBuilder()
+                                                .addStatement("field(%S)", field.name)
+                                                .addStatement("return this")
+                                                .build(),
+                                        ).build()
+                                }
+
+                                // scalars with args are functions to take the args with no projection
+                                isScalar && hasArgs -> {
+                                    FunSpec
+                                        .builder(field.name)
+                                        .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
+                                        .returns(typeName)
+                                        .addCode(
+                                            field.inputValueDefinitions.let { iv ->
+                                                val builder = CodeBlock.builder().add("field(%S", field.name)
+                                                iv.forEach { d -> builder.add(", %S to %N", d.name, d.name) }
+                                                builder.add(")\nreturn this").build()
+                                            },
+                                        ).build()
+                                }
+
+                                // otherwise it's a projection with optional args
+                                // !isScalar && hasArgs
+                                else -> {
+                                    val projectionTypeName = projectionTypeName(field.type)
+                                    val (projectionType, projection) = projectionType(config.packageNameClient, projectionTypeName)
+
+                                    FunSpec
+                                        .builder(field.name)
+                                        .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
+                                        .addParameter(
+                                            ParameterSpec
+                                                .builder(
+                                                    "_alias",
+                                                    String::class.asTypeName().copy(nullable = true),
+                                                ).defaultValue("null")
+                                                .build(),
+                                        ).addParameter(projection)
+                                        .returns(typeName)
+                                        .addCode(
+                                            field.inputValueDefinitions.let { iv ->
+                                                val builder =
+                                                    CodeBlock.builder().add(
+                                                        "field(_alias, %S, %T(inputValueSerializer), _projection",
+                                                        field.name,
+                                                        projectionType,
+                                                    )
+                                                iv.forEach { d -> builder.add(", %S to %N", d.name, d.name) }
+                                                builder.add(")\nreturn this").build()
+                                            },
+                                        ).build()
+                                }
+                            }
                         }
 
-                        // scalars with args are functions to take the args with no projection
-                        isScalar && hasArgs -> {
-                            FunSpec.builder(field.name)
-                                .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
-                                .returns(typeName)
-                                .addCode(
-                                    field.inputValueDefinitions.let { iv ->
-                                        val builder = CodeBlock.builder().add("field(%S", field.name)
-                                        iv.forEach { d -> builder.add(", %S to %N", d.name, d.name) }
-                                        builder.add(")\nreturn this").build()
-                                    }
-                                )
-                                .build()
-                        }
+                // add the `... on XXX` projection for implementors of this interface
+                val implementors =
+                    typeLookup
+                        .interfaceImplementors(typeDefinition.name)
+                        .map { subclassName -> onSubclassProjection(config.packageNameClient, typeName, subclassName) }
 
-                        // otherwise it's a projection with optional args
-                        // !isScalar && hasArgs
-                        else -> {
-                            val projectionTypeName = projectionTypeName(field.type)
-                            val (projectionType, projection) = projectionType(config.packageNameClient, projectionTypeName)
+                // create the projection class
+                val typeSpec =
+                    TypeSpec
+                        .classBuilder(typeName)
+                        .addOptionalGeneratedAnnotation(config)
+                        .primaryConstructor(FunSpec.constructorBuilder().addParameter(ivsParameter).build())
+                        .superclass(GraphQLProjection::class)
+                        .addSuperclassConstructorParameter("inputValueSerializer")
+                        // we can't ask for `__typename` on a `Subscription` object
+                        .apply {
+                            if (typeDefinition.name == "Subscription") {
+                                addSuperclassConstructorParameter("defaultFields = emptySet()")
+                            }
+                        }.addProperties(fields.filterIsInstance<PropertySpec>())
+                        .addFunctions(fields.filterIsInstance<FunSpec>())
+                        .addFunctions(implementors)
+                        .build()
 
-                            FunSpec.builder(field.name)
-                                .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
-                                .addParameter(ParameterSpec.builder("_alias", String::class.asTypeName().copy(nullable = true)).defaultValue("null").build())
-                                .addParameter(projection)
-                                .returns(typeName)
-                                .addCode(
-                                    field.inputValueDefinitions.let { iv ->
-                                        val builder = CodeBlock.builder().add(
-                                            "field(_alias, %S, %T(inputValueSerializer), _projection",
-                                            field.name,
-                                            projectionType
-                                        )
-                                        iv.forEach { d -> builder.add(", %S to %N", d.name, d.name) }
-                                        builder.add(")\nreturn this").build()
-                                    }
-                                )
-                                .build()
-                        }
-                    }
-                }
-
-            // add the `... on XXX` projection for implementors of this interface
-            val implementors = typeLookup.interfaceImplementors(typeDefinition.name)
-                .map { subclassName -> onSubclassProjection(config.packageNameClient, typeName, subclassName) }
-
-            // create the projection class
-            val typeSpec = TypeSpec.classBuilder(typeName)
-                .addOptionalGeneratedAnnotation(config)
-                .primaryConstructor(FunSpec.constructorBuilder().addParameter(ivsParameter).build())
-                .superclass(GraphQLProjection::class)
-                .addSuperclassConstructorParameter("inputValueSerializer")
-                // we can't ask for `__typename` on a `Subscription` object
-                .apply {
-                    if (typeDefinition.name == "Subscription") {
-                        addSuperclassConstructorParameter("defaultFields = emptySet()")
-                    }
-                }
-                .addProperties(fields.filterIsInstance<PropertySpec>())
-                .addFunctions(fields.filterIsInstance<FunSpec>())
-                .addFunctions(implementors)
-                .build()
-
-            // return a file per type
-            FileSpec.get(config.packageNameClient, typeSpec)
-        }
+                // return a file per type
+                FileSpec.get(config.packageNameClient, typeSpec)
+            }
 
     // create a projection for each union
-    val unionProjections = document.getDefinitionsOfType(UnionTypeDefinition::class.java)
-        .excludeSchemaTypeExtension()
-        .filter { !it.shouldSkip(config) }
-        .map { unionDefinition ->
+    val unionProjections =
+        document
+            .getDefinitionsOfType(UnionTypeDefinition::class.java)
+            .excludeSchemaTypeExtension()
+            .filter { !it.shouldSkip(config) }
+            .map { unionDefinition ->
 
-            // the name of the type is used in every parameter & return value
-            val typeName = ClassName(config.packageNameClient, "${unionDefinition.name}Projection")
+                // the name of the type is used in every parameter & return value
+                val typeName = ClassName(config.packageNameClient, "${unionDefinition.name}Projection")
 
-            // get any members defined via schema extensions
-            val extensionTypes = SchemaExtensionsUtils.findUnionExtensions(unionDefinition.name, document.definitions)
+                // get any members defined via schema extensions
+                val extensionTypes = SchemaExtensionsUtils.findUnionExtensions(unionDefinition.name, document.definitions)
 
-            val implementations = unionDefinition.memberTypes
-                .plus(extensionTypes.flatMap { it.memberTypes })
+                val implementations =
+                    unionDefinition.memberTypes
+                        .plus(extensionTypes.flatMap { it.memberTypes })
 
-            val typeSpec = TypeSpec.classBuilder(typeName)
-                .addOptionalGeneratedAnnotation(config)
-                .primaryConstructor(FunSpec.constructorBuilder().addParameter(ivsParameter).build())
-                .superclass(GraphQLProjection::class)
-                .addSuperclassConstructorParameter("inputValueSerializer")
-                .addFunctions(
-                    implementations.map { subclass ->
-                        onSubclassProjection(config.packageNameClient, typeName, (subclass as NamedNode<*>).name)
-                    }
-                )
-                .build()
+                val typeSpec =
+                    TypeSpec
+                        .classBuilder(typeName)
+                        .addOptionalGeneratedAnnotation(config)
+                        .primaryConstructor(FunSpec.constructorBuilder().addParameter(ivsParameter).build())
+                        .superclass(GraphQLProjection::class)
+                        .addSuperclassConstructorParameter("inputValueSerializer")
+                        .addFunctions(
+                            implementations.map { subclass ->
+                                onSubclassProjection(config.packageNameClient, typeName, (subclass as NamedNode<*>).name)
+                            },
+                        ).build()
 
-            // return a file per type
-            FileSpec.get(config.packageNameClient, typeSpec)
-        }
+                // return a file per type
+                FileSpec.get(config.packageNameClient, typeSpec)
+            }
 
     // create a top-level client class
     val topLevelTypes = typeLookup.operations.filterKeys { typeLookup.objectTypeNames.contains(it) }
 
-    val clientSpec = TypeSpec.objectBuilder("DgsClient")
-        .addOptionalGeneratedAnnotation(config)
-        .addFunctions(
-            topLevelTypes.map { (type, op) ->
+    val clientSpec =
+        TypeSpec
+            .objectBuilder("DgsClient")
+            .addOptionalGeneratedAnnotation(config)
+            .addFunctions(
+                topLevelTypes.map { (type, op) ->
 
-                val (projectionType, projection) = projectionType(config.packageNameClient, type)
+                    val (projectionType, projection) = projectionType(config.packageNameClient, type)
 
-                FunSpec.builder("build$type")
-                    .addParameter(ivsParameter)
-                    .addParameter(projection)
-                    .returns(String::class)
-                    .addStatement(
-                        """return %T.asQuery(%T.%L, %T(inputValueSerializer), _projection)""",
-                        GraphQLProjection::class.asTypeName(),
-                        op::class.asTypeName(),
-                        op.name,
-                        projectionType
-                    )
-                    .build()
-            }
-        )
-        .build()
+                    FunSpec
+                        .builder("build$type")
+                        .addParameter(ivsParameter)
+                        .addParameter(projection)
+                        .returns(String::class)
+                        .addStatement(
+                            """return %T.asQuery(%T.%L, %T(inputValueSerializer), _projection)""",
+                            GraphQLProjection::class.asTypeName(),
+                            op::class.asTypeName(),
+                            op.name,
+                            projectionType,
+                        ).build()
+                },
+            ).build()
 
     val clientFile = FileSpec.get(config.packageName, clientSpec)
 
@@ -231,29 +250,34 @@ fun generateKotlin2ClientTypes(
 }
 
 // unpack the type to get the underlying type of the projection
-private fun projectionTypeName(type: Type<*>): String {
-    return when (type) {
+private fun projectionTypeName(type: Type<*>): String =
+    when (type) {
         is graphql.language.TypeName -> type.name
         is ListType -> projectionTypeName(type.type)
         is NonNullType -> projectionTypeName(type.type)
         else -> throw UnsupportedOperationException(type::class.qualifiedName)
     }
-}
 
 // create the `_projection = FooProjection.() -> FooProjection` parameter
-private fun projectionType(packageName: String, type: String): Pair<ClassName, ParameterSpec> {
-    val projectionType = ClassName(
-        packageName = packageName,
-        simpleNames = listOf("${type}Projection")
-    )
-
-    val parameter = ParameterSpec(
-        name = "_projection",
-        type = LambdaTypeName.get(
-            receiver = projectionType,
-            returnType = projectionType
+private fun projectionType(
+    packageName: String,
+    type: String,
+): Pair<ClassName, ParameterSpec> {
+    val projectionType =
+        ClassName(
+            packageName = packageName,
+            simpleNames = listOf("${type}Projection"),
         )
-    )
+
+    val parameter =
+        ParameterSpec(
+            name = "_projection",
+            type =
+                LambdaTypeName.get(
+                    receiver = projectionType,
+                    returnType = projectionType,
+                ),
+        )
 
     return projectionType to parameter
 }
@@ -262,31 +286,31 @@ private fun FunSpec.Builder.addInputArgs(
     config: CodeGenConfig,
     typeLookup: Kotlin2TypeLookup,
     typeName: ClassName,
-    inputValueDefinitions: List<InputValueDefinition>
-): FunSpec.Builder {
-    return this
+    inputValueDefinitions: List<InputValueDefinition>,
+): FunSpec.Builder =
+    this
         .addParameters(
             inputValueDefinitions.map {
                 val returnType = typeLookup.findReturnType(config.packageNameTypes, it.type)
-                ParameterSpec.builder(it.name, returnType)
+                ParameterSpec
+                    .builder(it.name, returnType)
                     .apply {
                         if (returnType.isNullable) {
                             defaultValue("default<%T, %T>(%S)", typeName, returnType, it.name)
                         }
-                    }
-                    .build()
-            }
+                    }.build()
+            },
         )
-}
 
 private fun onSubclassProjection(
     packageName: String,
     typeName: ClassName,
-    subclassName: String
+    subclassName: String,
 ): FunSpec {
     val (projectionType, projection) = projectionType(packageName, subclassName)
 
-    return FunSpec.builder("on$subclassName")
+    return FunSpec
+        .builder("on$subclassName")
         .addParameter(projection)
         .returns(typeName)
         .addStatement("""fragment(%S, %T(), _projection)""", subclassName, projectionType)

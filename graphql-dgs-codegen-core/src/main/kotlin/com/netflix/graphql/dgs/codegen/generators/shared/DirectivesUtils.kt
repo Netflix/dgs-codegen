@@ -27,18 +27,20 @@ import graphql.language.StringValue
 import graphql.language.Value
 import com.squareup.javapoet.AnnotationSpec as JavaAnnotationSpec
 
-fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> {
-    return directive.arguments.fold(mutableMapOf()) { argMap, argument ->
+fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> =
+    directive.arguments.fold(mutableMapOf()) { argMap, argument ->
         argMap[argument.name] = argument.value
         argMap
     }
-}
 
 /**
  * Applies directives like customAnnotation
  */
-fun applyDirectivesKotlin(directives: List<Directive>, config: CodeGenConfig): MutableList<AnnotationSpec> {
-    return directives.fold(mutableListOf()) { annotations, directive ->
+fun applyDirectivesKotlin(
+    directives: List<Directive>,
+    config: CodeGenConfig,
+): MutableList<AnnotationSpec> =
+    directives.fold(mutableListOf()) { annotations, directive ->
         val argumentMap = createArgumentMap(directive)
         if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
             annotations.add(customAnnotation(argumentMap, config))
@@ -53,7 +55,6 @@ fun applyDirectivesKotlin(directives: List<Directive>, config: CodeGenConfig): M
 
         annotations
     }
-}
 
 /**
  * Applies directives like customAnnotation, deprecated etc. The target value in the directives is used to decide where to apply the annotation.
@@ -61,25 +62,40 @@ fun applyDirectivesKotlin(directives: List<Directive>, config: CodeGenConfig): M
  * @input config: code generator config
  * @return Pair of (map of target site and corresponding annotations) and comments
  */
-fun applyDirectivesJava(directives: List<Directive>, config: CodeGenConfig): Pair<MutableMap<String, MutableList<JavaAnnotationSpec>>, String?> {
+fun applyDirectivesJava(
+    directives: List<Directive>,
+    config: CodeGenConfig,
+): Pair<MutableMap<String, MutableList<JavaAnnotationSpec>>, String?> {
     var commentFormat: String? = null
     return Pair(
         directives.fold(mutableMapOf()) { annotations, directive ->
             val argumentMap = createArgumentMap(directive)
-            val siteTarget = if (argumentMap.containsKey(ParserConstants.SITE_TARGET)) (argumentMap[ParserConstants.SITE_TARGET] as StringValue).value.uppercase() else SiteTarget.DEFAULT.name
-            if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
-                annotations[siteTarget] = if (annotations.containsKey(siteTarget)) {
-                    var annotationList: MutableList<JavaAnnotationSpec> = annotations[siteTarget]!!
-                    annotationList.add(
-                        com.netflix.graphql.dgs.codegen.generators.java.customAnnotation(
-                            argumentMap,
-                            config
-                        )
+            val siteTarget =
+                if (argumentMap.containsKey(
+                        ParserConstants.SITE_TARGET,
                     )
-                    annotationList
+                ) {
+                    (argumentMap[ParserConstants.SITE_TARGET] as StringValue).value.uppercase()
                 } else {
-                    mutableListOf(com.netflix.graphql.dgs.codegen.generators.java.customAnnotation(argumentMap, config))
+                    SiteTarget.DEFAULT.name
                 }
+            if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
+                annotations[siteTarget] =
+                    if (annotations.containsKey(siteTarget)) {
+                        var annotationList: MutableList<JavaAnnotationSpec> = annotations[siteTarget]!!
+                        annotationList.add(
+                            com.netflix.graphql.dgs.codegen.generators.java.customAnnotation(
+                                argumentMap,
+                                config,
+                            ),
+                        )
+                        annotationList
+                    } else {
+                        mutableListOf(
+                            com.netflix.graphql.dgs.codegen.generators.java
+                                .customAnnotation(argumentMap, config),
+                        )
+                    }
             }
             if (directive.name == ParserConstants.DEPRECATED && config.addDeprecatedAnnotation) {
                 annotations[siteTarget] = mutableListOf(JavaAnnotationSpec.builder(java.lang.Deprecated::class.java).build())
@@ -96,6 +112,6 @@ fun applyDirectivesJava(directives: List<Directive>, config: CodeGenConfig): Pai
             }
             annotations
         },
-        commentFormat
+        commentFormat,
     )
 }

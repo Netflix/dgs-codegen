@@ -20,8 +20,11 @@ package com.netflix.graphql.dgs.client.codegen.exampleprojection
 
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 
-class Movies_ReviewsProjection(parent: EntitiesMovieKeyProjection, root: EntitiesProjectionRoot) :
-    BaseSubProjectionNode<EntitiesMovieKeyProjection, EntitiesProjectionRoot>(parent, root) {
+@Suppress("ClassName", "ktlint:standard:class-naming")
+class Movies_ReviewsProjection(
+    parent: EntitiesMovieKeyProjection,
+    root: EntitiesProjectionRoot,
+) : BaseSubProjectionNode<EntitiesMovieKeyProjection, EntitiesProjectionRoot>(parent, root) {
     fun username(): Movies_ReviewsProjection {
         fields["username"] = null
         return this

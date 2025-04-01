@@ -24,8 +24,10 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import javax.tools.JavaFileObject
 
-internal class CodegenTestClassLoader(private val compilation: Compilation, parent: ClassLoader?) : ClassLoader(parent) {
-
+internal class CodegenTestClassLoader(
+    private val compilation: Compilation,
+    parent: ClassLoader?,
+) : ClassLoader(parent) {
     private val seenClasses = ConcurrentHashMap<String, Class<*>>()
 
     @Throws(ClassNotFoundException::class)
@@ -34,18 +36,20 @@ internal class CodegenTestClassLoader(private val compilation: Compilation, pare
         val normalizedName = "/CLASS_OUTPUT/$packageNameAsUnixPath.class"
 
         return seenClasses.computeIfAbsent(normalizedName) { _ ->
-            Optional.ofNullable(
-                compilation
-                    .generatedFiles()
-                    .find { it.kind == JavaFileObject.Kind.CLASS && it.name == normalizedName }
-            ).map { fileObject ->
-                val classData = fileObject.openInputStream().use { inputStream ->
-                    val buffer = ByteArrayOutputStream()
-                    inputStream.copyTo(buffer)
-                    buffer.toByteArray()
-                }
-                defineClass(name, classData, 0, classData.size)
-            }.orElse(super.loadClass(name))
+            Optional
+                .ofNullable(
+                    compilation
+                        .generatedFiles()
+                        .find { it.kind == JavaFileObject.Kind.CLASS && it.name == normalizedName },
+                ).map { fileObject ->
+                    val classData =
+                        fileObject.openInputStream().use { inputStream ->
+                            val buffer = ByteArrayOutputStream()
+                            inputStream.copyTo(buffer)
+                            buffer.toByteArray()
+                        }
+                    defineClass(name, classData, 0, classData.size)
+                }.orElse(super.loadClass(name))
         }
     }
 }

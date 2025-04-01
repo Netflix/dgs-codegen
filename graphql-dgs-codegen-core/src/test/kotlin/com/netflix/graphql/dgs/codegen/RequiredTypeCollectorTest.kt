@@ -23,8 +23,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class RequiredTypeCollectorTest {
-    private val document = Parser.parse(
-        """
+    private val document =
+        Parser.parse(
+            """
             type Query {
                 search(filter: Filter): [Show]
                 shows(type: ShowType!): [Show]
@@ -51,8 +52,8 @@ class RequiredTypeCollectorTest {
             input ExampleActor {
                 name: String
             }
-        """.trimIndent()
-    )
+            """.trimIndent(),
+        )
 
     @Test
     fun `Related input types and enums should be included`() {

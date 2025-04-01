@@ -35,9 +35,9 @@ import graphql.language.EnumTypeDefinition
 fun generateKotlin2EnumTypes(
     config: CodeGenConfig,
     document: Document,
-    requiredTypes: Set<String>
-): List<FileSpec> {
-    return document
+    requiredTypes: Set<String>,
+): List<FileSpec> =
+    document
         .getDefinitionsOfType(EnumTypeDefinition::class.java)
         .excludeSchemaTypeExtension()
         .filter { config.generateDataTypes || it.name in requiredTypes }
@@ -50,44 +50,47 @@ fun generateKotlin2EnumTypes(
             val extensionTypes = findEnumExtensions(enumDefinition.name, document.definitions)
 
             // get all fields defined on the type itself or any extension types
-            val fields = listOf(enumDefinition)
-                .plus(extensionTypes)
-                .flatMap { it.enumValueDefinitions }
+            val fields =
+                listOf(enumDefinition)
+                    .plus(extensionTypes)
+                    .flatMap { it.enumValueDefinitions }
 
-            val companionObject = TypeSpec.companionObjectBuilder()
-                .addOptionalGeneratedAnnotation(config)
-                .build()
+            val companionObject =
+                TypeSpec
+                    .companionObjectBuilder()
+                    .addOptionalGeneratedAnnotation(config)
+                    .build()
 
             // create the enum class
-            val enumSpec = TypeSpec.classBuilder(enumDefinition.name)
-                .addOptionalGeneratedAnnotation(config)
-                .addModifiers(KModifier.ENUM)
-                // add docs if available
-                .apply {
-                    if (enumDefinition.description != null) {
-                        addKdoc("%L", enumDefinition.description.sanitizeKdoc())
+            val enumSpec =
+                TypeSpec
+                    .classBuilder(enumDefinition.name)
+                    .addOptionalGeneratedAnnotation(config)
+                    .addModifiers(KModifier.ENUM)
+                    // add docs if available
+                    .apply {
+                        if (enumDefinition.description != null) {
+                            addKdoc("%L", enumDefinition.description.sanitizeKdoc())
+                        }
                     }
-                }
-                // add all fields
-                .addEnumConstants(
-                    fields.map { field ->
-                        TypeSpec.enumBuilder(field.name)
-                            .addOptionalGeneratedAnnotation(config)
-                            .apply {
-                                if (field.description != null) {
-                                    addKdoc("%L", field.description.sanitizeKdoc())
-                                }
-                                if (field.directives.isNotEmpty()) {
-                                    addAnnotations(applyDirectivesKotlin(field.directives, config))
-                                }
-                            }
-                            .build()
-                    }
-                )
-                .addType(companionObject)
-                .build()
+                    // add all fields
+                    .addEnumConstants(
+                        fields.map { field ->
+                            TypeSpec
+                                .enumBuilder(field.name)
+                                .addOptionalGeneratedAnnotation(config)
+                                .apply {
+                                    if (field.description != null) {
+                                        addKdoc("%L", field.description.sanitizeKdoc())
+                                    }
+                                    if (field.directives.isNotEmpty()) {
+                                        addAnnotations(applyDirectivesKotlin(field.directives, config))
+                                    }
+                                }.build()
+                        },
+                    ).addType(companionObject)
+                    .build()
 
             // return a file per enum
             FileSpec.get(config.packageNameTypes, enumSpec)
         }
-}

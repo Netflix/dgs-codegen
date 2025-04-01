@@ -27,38 +27,47 @@ import graphql.language.ObjectTypeExtensionDefinition
 import graphql.language.UnionTypeExtensionDefinition
 
 object SchemaExtensionsUtils {
-    fun findTypeExtensions(name: String, definitions: Collection<Definition<*>>) =
-        findExtensions<ObjectTypeExtensionDefinition>(name, definitions)
+    fun findTypeExtensions(
+        name: String,
+        definitions: Collection<Definition<*>>,
+    ) = findExtensions<ObjectTypeExtensionDefinition>(name, definitions)
 
-    fun findInputExtensions(name: String, definitions: Collection<Definition<*>>) =
-        findExtensions<InputObjectTypeExtensionDefinition>(name, definitions)
+    fun findInputExtensions(
+        name: String,
+        definitions: Collection<Definition<*>>,
+    ) = findExtensions<InputObjectTypeExtensionDefinition>(name, definitions)
 
-    fun findEnumExtensions(name: String, definitions: Collection<Definition<*>>) =
-        findExtensions<EnumTypeExtensionDefinition>(name, definitions)
+    fun findEnumExtensions(
+        name: String,
+        definitions: Collection<Definition<*>>,
+    ) = findExtensions<EnumTypeExtensionDefinition>(name, definitions)
 
-    fun findInterfaceExtensions(name: String, definitions: Collection<Definition<*>>) =
-        findExtensions<InterfaceTypeExtensionDefinition>(name, definitions)
+    fun findInterfaceExtensions(
+        name: String,
+        definitions: Collection<Definition<*>>,
+    ) = findExtensions<InterfaceTypeExtensionDefinition>(name, definitions)
 
-    fun findUnionExtensions(name: String, definitions: Collection<Definition<*>>) =
-        findExtensions<UnionTypeExtensionDefinition>(name, definitions)
+    fun findUnionExtensions(
+        name: String,
+        definitions: Collection<Definition<*>>,
+    ) = findExtensions<UnionTypeExtensionDefinition>(name, definitions)
 
-    private inline fun <reified R : NamedNode<*>> findExtensions(name: String, definitions: Collection<Definition<*>>) =
-        definitions.asSequence()
-            .filterIsInstance<R>()
-            .filter { name == it.name }
-            .toList()
+    private inline fun <reified R : NamedNode<*>> findExtensions(
+        name: String,
+        definitions: Collection<Definition<*>>,
+    ) = definitions
+        .asSequence()
+        .filterIsInstance<R>()
+        .filter { name == it.name }
+        .toList()
 }
 
-fun <T> Collection<T>.excludeSchemaTypeExtension(): Collection<T> {
-    return this.filter { !isSchemaTypeExtension(it) }
-}
+fun <T> Collection<T>.excludeSchemaTypeExtension(): Collection<T> = this.filter { !isSchemaTypeExtension(it) }
 
-fun <T> Sequence<T>.excludeSchemaTypeExtension(): Sequence<T> {
-    return this.filter { !isSchemaTypeExtension(it) }
-}
+fun <T> Sequence<T>.excludeSchemaTypeExtension(): Sequence<T> = this.filter { !isSchemaTypeExtension(it) }
 
-private fun <T> isSchemaTypeExtension(it: T): Boolean {
-    return when (it) {
+private fun <T> isSchemaTypeExtension(it: T): Boolean =
+    when (it) {
         is InputObjectTypeExtensionDefinition -> true
         is ObjectTypeExtensionDefinition -> true
         is EnumTypeExtensionDefinition -> true
@@ -66,4 +75,3 @@ private fun <T> isSchemaTypeExtension(it: T): Boolean {
         is UnionTypeExtensionDefinition -> true
         else -> false
     }
-}

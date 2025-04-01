@@ -31,205 +31,206 @@ import java.nio.file.Paths
 import java.util.*
 import javax.inject.Inject
 
-open class GenerateJavaTask @Inject constructor(
-    objectFactory: ObjectFactory
-) : DefaultTask() {
-    @Input
-    var generatedSourcesDir: String = project.buildDir.absolutePath
+open class GenerateJavaTask
+    @Inject
+    constructor(
+        objectFactory: ObjectFactory,
+    ) : DefaultTask() {
+        @Input
+        var generatedSourcesDir: String = project.buildDir.absolutePath
 
-    @InputFiles
-    var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
+        @InputFiles
+        var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
 
-    @Input
-    var packageName = "com.netflix.dgs.codegen.generated"
+        @Input
+        var packageName = "com.netflix.dgs.codegen.generated"
 
-    @Input
-    var subPackageNameClient = "client"
+        @Input
+        var subPackageNameClient = "client"
 
-    @Input
-    var subPackageNameDatafetchers = "datafetchers"
+        @Input
+        var subPackageNameDatafetchers = "datafetchers"
 
-    @Input
-    var subPackageNameTypes = "types"
+        @Input
+        var subPackageNameTypes = "types"
 
-    private val hasKotlinPluginWrapperClass = try {
-        this.javaClass.classLoader.loadClass("org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper")
-        true
-    } catch (ex: Exception) {
-        false
-    }
+        private val hasKotlinPluginWrapperClass =
+            try {
+                this.javaClass.classLoader.loadClass("org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper")
+                true
+            } catch (ex: Exception) {
+                false
+            }
 
-    @Input
-    var language = if (hasKotlinPluginWrapperClass && project.plugins.hasPlugin(KotlinPluginWrapper::class.java)) "KOTLIN" else "JAVA"
+        @Input
+        var language = if (hasKotlinPluginWrapperClass && project.plugins.hasPlugin(KotlinPluginWrapper::class.java)) "KOTLIN" else "JAVA"
 
-    @Input
-    var typeMapping = mutableMapOf<String, String>()
+        @Input
+        var typeMapping = mutableMapOf<String, String>()
 
-    @Input
-    var generateBoxedTypes = false
+        @Input
+        var generateBoxedTypes = false
 
-    @Input
-    var generateIsGetterForPrimitiveBooleanFields = false
+        @Input
+        var generateIsGetterForPrimitiveBooleanFields = false
 
-    @Input
-    var generateClient = false
+        @Input
+        var generateClient = false
 
-    @Input
-    var generateClientv2 = false
+        @Input
+        var generateClientv2 = false
 
-    @Input
-    var generateKotlinNullableClasses = false
+        @Input
+        var generateKotlinNullableClasses = false
 
-    @Input
-    var generateKotlinClosureProjections = false
+        @Input
+        var generateKotlinClosureProjections = false
 
-    @Input
-    var generateDataTypes = true
+        @Input
+        var generateDataTypes = true
 
-    @Input
-    var generateInterfaces = false
+        @Input
+        var generateInterfaces = false
 
-    @Input
-    var generateInterfaceSetters = true
+        @Input
+        var generateInterfaceSetters = true
 
-    @Input
-    var generateInterfaceMethodsForInterfaceFields = false
+        @Input
+        var generateInterfaceMethodsForInterfaceFields = false
 
-    @Input
-    var generateDocs = false
+        @Input
+        var generateDocs = false
 
-    @Input
-    var implementSerializable = false
+        @Input
+        var implementSerializable = false
 
-    @Input
-    var javaGenerateAllConstructor = true
+        @Input
+        var javaGenerateAllConstructor = true
 
-    @OutputDirectory
-    fun getOutputDir(): File {
-        return Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
-    }
+        @OutputDirectory
+        fun getOutputDir(): File = Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
 
-    @OutputDirectory
-    fun getExampleOutputDir(): File {
-        return Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen-generated-examples").toFile()
-    }
+        @OutputDirectory
+        fun getExampleOutputDir(): File = Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen-generated-examples").toFile()
 
-    @Input
-    var includeQueries = mutableListOf<String>()
+        @Input
+        var includeQueries = mutableListOf<String>()
 
-    @Input
-    var includeMutations = mutableListOf<String>()
+        @Input
+        var includeMutations = mutableListOf<String>()
 
-    @Input
-    var includeSubscriptions = mutableListOf<String>()
+        @Input
+        var includeSubscriptions = mutableListOf<String>()
 
-    @Input
-    var skipEntityQueries = false
+        @Input
+        var skipEntityQueries = false
 
-    @Input
-    var shortProjectionNames = false
+        @Input
+        var shortProjectionNames = false
 
-    @Input
-    var omitNullInputFields = false
+        @Input
+        var omitNullInputFields = false
 
-    @Input
-    var maxProjectionDepth = 10
+        @Input
+        var maxProjectionDepth = 10
 
-    @Input
-    var kotlinAllFieldsOptional = false
+        @Input
+        var kotlinAllFieldsOptional = false
 
-    @Input
-    var snakeCaseConstantNames = false
+        @Input
+        var snakeCaseConstantNames = false
 
-    @Input
-    var addGeneratedAnnotation = false
+        @Input
+        var addGeneratedAnnotation = false
 
-    @Input
-    var disableDatesInGeneratedAnnotation = false
+        @Input
+        var disableDatesInGeneratedAnnotation = false
 
-    @Input
-    var addDeprecatedAnnotation = false
+        @Input
+        var addDeprecatedAnnotation = false
 
-    @Input
-    var generateCustomAnnotations = false
+        @Input
+        var generateCustomAnnotations = false
 
-    @Input
-    var trackInputFieldSet = false
+        @Input
+        var trackInputFieldSet = false
 
-    @Input
-    var includeImports = mutableMapOf<String, String>()
+        @Input
+        var includeImports = mutableMapOf<String, String>()
 
-    @Input
-    var includeEnumImports = mutableMapOf<String, MutableMap<String, String>>()
+        @Input
+        var includeEnumImports = mutableMapOf<String, MutableMap<String, String>>()
 
-    @Input
-    var includeClassImports = mutableMapOf<String, MutableMap<String, String>>()
+        @Input
+        var includeClassImports = mutableMapOf<String, MutableMap<String, String>>()
 
-    @Classpath
-    val dgsCodegenClasspath: ConfigurableFileCollection = objectFactory.fileCollection().from(
-        project.configurations.findByName("dgsCodegen")
-    )
+        @Classpath
+        val dgsCodegenClasspath: ConfigurableFileCollection =
+            objectFactory.fileCollection().from(
+                project.configurations.findByName("dgsCodegen"),
+            )
 
-    @TaskAction
-    fun generate() {
-        val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
-        val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
-        schemaPaths.filter { !it.exists() }.forEach {
-            logger.warn("Schema location ${it.absolutePath} does not exist")
+        @TaskAction
+        fun generate() {
+            val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
+            val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
+            schemaPaths.filter { !it.exists() }.forEach {
+                logger.warn("Schema location ${it.absolutePath} does not exist")
+            }
+            logger.info("Processing schema files:")
+            schemaPaths.forEach {
+                logger.info("Processing $it")
+            }
+
+            val config =
+                CodeGenConfig(
+                    schemas = emptySet(),
+                    schemaFiles = schemaPaths,
+                    schemaJarFilesFromDependencies = schemaJarFilesFromDependencies,
+                    outputDir = getOutputDir().toPath(),
+                    examplesOutputDir = getExampleOutputDir().toPath(),
+                    writeToFiles = true,
+                    packageName = packageName,
+                    subPackageNameClient = subPackageNameClient,
+                    subPackageNameDatafetchers = subPackageNameDatafetchers,
+                    subPackageNameTypes = subPackageNameTypes,
+                    language = Language.valueOf(language.uppercase(Locale.getDefault())),
+                    generateBoxedTypes = generateBoxedTypes,
+                    generateIsGetterForPrimitiveBooleanFields = generateIsGetterForPrimitiveBooleanFields,
+                    generateClientApi = generateClient,
+                    generateClientApiv2 = generateClientv2,
+                    generateKotlinNullableClasses = generateKotlinNullableClasses,
+                    generateKotlinClosureProjections = generateKotlinClosureProjections,
+                    generateInterfaces = generateInterfaces,
+                    generateInterfaceSetters = generateInterfaceSetters,
+                    generateInterfaceMethodsForInterfaceFields = generateInterfaceMethodsForInterfaceFields,
+                    generateDocs = generateDocs,
+                    typeMapping = typeMapping,
+                    includeQueries = includeQueries.toSet(),
+                    includeMutations = includeMutations.toSet(),
+                    includeSubscriptions = includeSubscriptions.toSet(),
+                    skipEntityQueries = skipEntityQueries,
+                    shortProjectionNames = shortProjectionNames,
+                    generateDataTypes = generateDataTypes,
+                    omitNullInputFields = omitNullInputFields,
+                    maxProjectionDepth = maxProjectionDepth,
+                    kotlinAllFieldsOptional = kotlinAllFieldsOptional,
+                    snakeCaseConstantNames = snakeCaseConstantNames,
+                    implementSerializable = implementSerializable,
+                    addGeneratedAnnotation = addGeneratedAnnotation,
+                    disableDatesInGeneratedAnnotation = disableDatesInGeneratedAnnotation,
+                    addDeprecatedAnnotation = addDeprecatedAnnotation,
+                    includeImports = includeImports,
+                    includeEnumImports = includeEnumImports,
+                    includeClassImports = includeClassImports,
+                    generateCustomAnnotations = generateCustomAnnotations,
+                    javaGenerateAllConstructor = javaGenerateAllConstructor,
+                    trackInputFieldSet = trackInputFieldSet,
+                )
+
+            logger.info("Codegen config: {}", config)
+
+            val codegen = CodeGen(config)
+            codegen.generate()
         }
-        logger.info("Processing schema files:")
-        schemaPaths.forEach {
-            logger.info("Processing $it")
-        }
-
-        val config = CodeGenConfig(
-            schemas = emptySet(),
-            schemaFiles = schemaPaths,
-            schemaJarFilesFromDependencies = schemaJarFilesFromDependencies,
-            outputDir = getOutputDir().toPath(),
-            examplesOutputDir = getExampleOutputDir().toPath(),
-            writeToFiles = true,
-            packageName = packageName,
-            subPackageNameClient = subPackageNameClient,
-            subPackageNameDatafetchers = subPackageNameDatafetchers,
-            subPackageNameTypes = subPackageNameTypes,
-            language = Language.valueOf(language.uppercase(Locale.getDefault())),
-            generateBoxedTypes = generateBoxedTypes,
-            generateIsGetterForPrimitiveBooleanFields = generateIsGetterForPrimitiveBooleanFields,
-            generateClientApi = generateClient,
-            generateClientApiv2 = generateClientv2,
-            generateKotlinNullableClasses = generateKotlinNullableClasses,
-            generateKotlinClosureProjections = generateKotlinClosureProjections,
-            generateInterfaces = generateInterfaces,
-            generateInterfaceSetters = generateInterfaceSetters,
-            generateInterfaceMethodsForInterfaceFields = generateInterfaceMethodsForInterfaceFields,
-            generateDocs = generateDocs,
-            typeMapping = typeMapping,
-            includeQueries = includeQueries.toSet(),
-            includeMutations = includeMutations.toSet(),
-            includeSubscriptions = includeSubscriptions.toSet(),
-            skipEntityQueries = skipEntityQueries,
-            shortProjectionNames = shortProjectionNames,
-            generateDataTypes = generateDataTypes,
-            omitNullInputFields = omitNullInputFields,
-            maxProjectionDepth = maxProjectionDepth,
-            kotlinAllFieldsOptional = kotlinAllFieldsOptional,
-            snakeCaseConstantNames = snakeCaseConstantNames,
-            implementSerializable = implementSerializable,
-            addGeneratedAnnotation = addGeneratedAnnotation,
-            disableDatesInGeneratedAnnotation = disableDatesInGeneratedAnnotation,
-            addDeprecatedAnnotation = addDeprecatedAnnotation,
-            includeImports = includeImports,
-            includeEnumImports = includeEnumImports,
-            includeClassImports = includeClassImports,
-            generateCustomAnnotations = generateCustomAnnotations,
-            javaGenerateAllConstructor = javaGenerateAllConstructor,
-            trackInputFieldSet = trackInputFieldSet
-        )
-
-        logger.info("Codegen config: {}", config)
-
-        val codegen = CodeGen(config)
-        codegen.generate()
     }
-}

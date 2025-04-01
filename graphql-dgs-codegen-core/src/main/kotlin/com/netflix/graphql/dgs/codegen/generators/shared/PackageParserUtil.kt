@@ -21,7 +21,6 @@ package com.netflix.graphql.dgs.codegen.generators.shared
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 
 class PackageParserUtil {
-
     companion object {
         /**
          * Retrieves the package value in the directive.
@@ -29,7 +28,11 @@ class PackageParserUtil {
          * If neither of them are supplied the package name will be an empty String
          * Also parses the simpleName/className from the name argument in the directive
          */
-        fun getAnnotationPackage(config: CodeGenConfig, name: String, type: String? = null): Pair<String, String> {
+        fun getAnnotationPackage(
+            config: CodeGenConfig,
+            name: String,
+            type: String? = null,
+        ): Pair<String, String> {
             var packageName = name.substringBeforeLast(".", "")
             packageName =
                 if (packageName.isEmpty() && type != null) config.includeImports.getOrDefault(type, "") else packageName
@@ -42,18 +45,24 @@ class PackageParserUtil {
          * mapOf(annotationName to mapOf(enumType to enumPackageName)
          * If no key is found in the configuration an empty string is returned
          */
-        fun getEnumPackage(config: CodeGenConfig, annotationName: String, enumType: String): String {
-            return config.includeEnumImports[annotationName]?.getOrDefault(
+        fun getEnumPackage(
+            config: CodeGenConfig,
+            annotationName: String,
+            enumType: String,
+        ): String =
+            config.includeEnumImports[annotationName]?.getOrDefault(
                 enumType,
-                ""
+                "",
             ) ?: ""
-        }
 
-        fun getClassPackage(config: CodeGenConfig, annotationName: String, className: String): String {
-            return config.includeClassImports[annotationName]?.getOrDefault(
+        fun getClassPackage(
+            config: CodeGenConfig,
+            annotationName: String,
+            className: String,
+        ): String =
+            config.includeClassImports[annotationName]?.getOrDefault(
                 className,
-                ""
+                "",
             ) ?: ""
-        }
     }
 }

@@ -32,21 +32,34 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
 
-class KotlinConstantsGenerator(private val config: CodeGenConfig, private val document: Document) {
+class KotlinConstantsGenerator(
+    private val config: CodeGenConfig,
+    private val document: Document,
+) {
     fun generate(): CodeGenResult {
-        val baseConstantsType = TypeSpec.objectBuilder("DgsConstants")
-            .addOptionalGeneratedAnnotation(config)
+        val baseConstantsType =
+            TypeSpec
+                .objectBuilder("DgsConstants")
+                .addOptionalGeneratedAnnotation(config)
 
-        document.definitions.filterIsInstance<ObjectTypeDefinition>()
+        document.definitions
+            .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
                 val extensions = findTypeExtensions(it.name, document.definitions)
-                val fields = (it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions })
-                    .distinctBy { def -> def.name }
+                val fields =
+                    (it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions })
+                        .distinctBy { def -> def.name }
 
-                constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
+                constantsType.addProperty(
+                    PropertySpec
+                        .builder("TYPE_NAME", String::class)
+                        .addModifiers(KModifier.CONST)
+                        .initializer(""""${it.name}"""")
+                        .build(),
+                )
 
                 fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
@@ -56,14 +69,21 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
                 baseConstantsType.addType(constantsType.build())
             }
 
-        document.definitions.filterIsInstance<InputObjectTypeDefinition>()
+        document.definitions
+            .filterIsInstance<InputObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
                 val extensions = findInputExtensions(it.name, document.definitions)
                 val fields = it.inputValueDefinitions + extensions.flatMap { ext -> ext.inputValueDefinitions }
-                constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
+                constantsType.addProperty(
+                    PropertySpec
+                        .builder("TYPE_NAME", String::class)
+                        .addModifiers(KModifier.CONST)
+                        .initializer(""""${it.name}"""")
+                        .build(),
+                )
                 fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
                 }
@@ -71,12 +91,19 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
                 baseConstantsType.addType(constantsType.build())
             }
 
-        document.definitions.filterIsInstance<InterfaceTypeDefinition>()
+        document.definitions
+            .filterIsInstance<InterfaceTypeDefinition>()
             .excludeSchemaTypeExtension()
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
-                constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
+                constantsType.addProperty(
+                    PropertySpec
+                        .builder("TYPE_NAME", String::class)
+                        .addModifiers(KModifier.CONST)
+                        .initializer(""""${it.name}"""")
+                        .build(),
+                )
 
                 val extensions = SchemaExtensionsUtils.findInterfaceExtensions(it.name, document.definitions)
                 val fields = it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions }
@@ -88,32 +115,62 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
                 baseConstantsType.addType(constantsType.build())
             }
 
-        document.definitions.filterIsInstance<UnionTypeDefinition>()
+        document.definitions
+            .filterIsInstance<UnionTypeDefinition>()
             .excludeSchemaTypeExtension()
             .forEach {
                 val constantsType = createConstantTypeBuilder(config, it.name)
 
-                constantsType.addProperty(PropertySpec.builder("TYPE_NAME", String::class).addModifiers(KModifier.CONST).initializer(""""${it.name}"""").build())
+                constantsType.addProperty(
+                    PropertySpec
+                        .builder("TYPE_NAME", String::class)
+                        .addModifiers(KModifier.CONST)
+                        .initializer(""""${it.name}"""")
+                        .build(),
+                )
                 baseConstantsType.addType(constantsType.build())
             }
 
         if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Query" }) {
-            baseConstantsType.addProperty(PropertySpec.builder("QUERY_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Query"""").build())
+            baseConstantsType.addProperty(
+                PropertySpec
+                    .builder("QUERY_TYPE", String::class)
+                    .addModifiers(KModifier.CONST)
+                    .initializer(""""Query"""")
+                    .build(),
+            )
         }
 
         if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Mutation" }) {
-            baseConstantsType.addProperty(PropertySpec.builder("Mutation_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Mutation"""").build())
+            baseConstantsType.addProperty(
+                PropertySpec
+                    .builder("Mutation_TYPE", String::class)
+                    .addModifiers(KModifier.CONST)
+                    .initializer(""""Mutation"""")
+                    .build(),
+            )
         }
 
         if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Subscription" }) {
-            baseConstantsType.addProperty(PropertySpec.builder("Subscription_TYPE", String::class).addModifiers(KModifier.CONST).initializer(""""Subscription"""").build())
+            baseConstantsType.addProperty(
+                PropertySpec
+                    .builder(
+                        "Subscription_TYPE",
+                        String::class,
+                    ).addModifiers(KModifier.CONST)
+                    .initializer(""""Subscription"""")
+                    .build(),
+            )
         }
 
         val fileSpec = FileSpec.builder(config.packageName, "DgsConstants").addType(baseConstantsType.build()).build()
         return CodeGenResult(kotlinConstants = listOf(fileSpec))
     }
 
-    private fun createConstantTypeBuilder(conf: CodeGenConfig, name: String): TypeSpec.Builder {
+    private fun createConstantTypeBuilder(
+        conf: CodeGenConfig,
+        name: String,
+    ): TypeSpec.Builder {
         val className =
             if (conf.snakeCaseConstantNames) {
                 CodeGeneratorUtils.camelCaseToSnakeCase(name, CodeGeneratorUtils.Case.UPPERCASE)
@@ -121,18 +178,28 @@ class KotlinConstantsGenerator(private val config: CodeGenConfig, private val do
                 name.uppercase()
             }
 
-        return TypeSpec.objectBuilder(className)
+        return TypeSpec
+            .objectBuilder(className)
             .addOptionalGeneratedAnnotation(config)
     }
 
-    private fun addFieldName(constantsType: TypeSpec.Builder, name: String) {
+    private fun addFieldName(
+        constantsType: TypeSpec.Builder,
+        name: String,
+    ) {
         constantsType.addProperty(
-            PropertySpec.builder(name.capitalized(), String::class).addModifiers(KModifier.CONST)
-                .initializer(""""$name"""").build()
+            PropertySpec
+                .builder(name.capitalized(), String::class)
+                .addModifiers(KModifier.CONST)
+                .initializer(""""$name"""")
+                .build(),
         )
     }
 
-    private fun addQueryInputArgument(constantsType: TypeSpec.Builder, field: FieldDefinition) {
+    private fun addQueryInputArgument(
+        constantsType: TypeSpec.Builder,
+        field: FieldDefinition,
+    ) {
         val inputFields = field.inputValueDefinitions
         if (inputFields.isNotEmpty()) {
             val inputConstantsType = createConstantTypeBuilder(config, field.name + "_INPUT_ARGUMENT")

@@ -29,24 +29,34 @@ import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
 
-class KotlinUnionTypeGenerator(private val config: CodeGenConfig, document: Document) {
-
+class KotlinUnionTypeGenerator(
+    private val config: CodeGenConfig,
+    document: Document,
+) {
     private val packageName = config.packageNameTypes
     private val typeUtils = KotlinTypeUtils(packageName, config, document)
 
-    fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): CodeGenResult {
+    fun generate(
+        definition: UnionTypeDefinition,
+        extensions: List<UnionTypeExtensionDefinition>,
+    ): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult.EMPTY
         }
 
-        val interfaceBuilder = TypeSpec.interfaceBuilder(definition.name)
-            .addOptionalGeneratedAnnotation(config)
+        val interfaceBuilder =
+            TypeSpec
+                .interfaceBuilder(definition.name)
+                .addOptionalGeneratedAnnotation(config)
 
-        val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
-            .filterIsInstance<TypeName>()
-            .map { member -> typeUtils.findKtInterfaceName(member.name, packageName) }
-            .filterIsInstance<ClassName>()
-            .toList()
+        val memberTypes =
+            definition.memberTypes
+                .plus(extensions.flatMap { it.memberTypes })
+                .asSequence()
+                .filterIsInstance<TypeName>()
+                .map { member -> typeUtils.findKtInterfaceName(member.name, packageName) }
+                .filterIsInstance<ClassName>()
+                .toList()
 
         if (memberTypes.isNotEmpty()) {
             interfaceBuilder.addAnnotation(jsonTypeInfoAnnotation())

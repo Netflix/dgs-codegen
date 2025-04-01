@@ -28,17 +28,26 @@ class SchemaMergingTest {
     fun mergeSchemasJava() {
         val schemaDir = Paths.get("src/test/resources/schemas").toAbsolutePath().toFile()
 
-        val codeGen = CodeGen(
-            config = CodeGenConfig(
-                schemaFiles = setOf(schemaDir),
-                writeToFiles = false,
-                generateClientApi = true
+        val codeGen =
+            CodeGen(
+                config =
+                    CodeGenConfig(
+                        schemaFiles = setOf(schemaDir),
+                        writeToFiles = false,
+                        generateClientApi = true,
+                    ),
             )
-        )
         val result = codeGen.generate()
 
         Assertions.assertThat(result.javaDataTypes.size).isEqualTo(2)
-        Assertions.assertThat(result.javaDataTypes.single { it.typeSpec.name == "Person" }.typeSpec.fieldSpecs).extracting("name").contains("name", "movies")
+        Assertions
+            .assertThat(
+                result.javaDataTypes
+                    .single {
+                        it.typeSpec.name == "Person"
+                    }.typeSpec.fieldSpecs,
+            ).extracting("name")
+            .contains("name", "movies")
 
         val movieType = result.javaDataTypes.find { it.typeSpec.name == "Movie" }
         Assertions.assertThat(movieType).isNotNull
@@ -48,14 +57,16 @@ class SchemaMergingTest {
     fun mergeSchemasKotlin() {
         val schemaDir = Paths.get("src/test/resources/schemas").toAbsolutePath().toFile()
 
-        val codeGen = CodeGen(
-            config = CodeGenConfig(
-                schemaFiles = setOf(schemaDir),
-                writeToFiles = false,
-                language = Language.KOTLIN,
-                generateClientApi = true
+        val codeGen =
+            CodeGen(
+                config =
+                    CodeGenConfig(
+                        schemaFiles = setOf(schemaDir),
+                        writeToFiles = false,
+                        language = Language.KOTLIN,
+                        generateClientApi = true,
+                    ),
             )
-        )
         val result = codeGen.generate()
         val type = result.kotlinDataTypes.single { it.name == "Person" }.members[0] as TypeSpec
 

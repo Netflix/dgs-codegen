@@ -28,29 +28,32 @@ import java.io.Serializable
 class Kotline2CodeGenTest {
     @Test
     fun generateSerializableDataClass() {
-        val schema = """
+        val schema =
+            """
             type Person {
                 firstname: String
                 lastname: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                language = Language.KOTLIN,
-                generateKotlinNullableClasses = true,
-                generateKotlinClosureProjections = true,
-                implementSerializable = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                    implementSerializable = true,
+                ),
+            ).generate()
 
         val dataTypes = codeGenResult.kotlinDataTypes
 
         assertThat(dataTypes).hasSize(1)
-        assertThat(dataTypes.first().packageName).isEqualTo(typesPackageName)
-        assertThat(dataTypes.first().members).singleElement()
+        assertThat(dataTypes.first().packageName).isEqualTo(TYPES_PACKAGE_NAME)
+        assertThat(dataTypes.first().members)
+            .singleElement()
             .satisfies({ member ->
                 val typeSpec = member as TypeSpec
                 assertThat(typeSpec.superinterfaces).containsKey(Serializable::class.asClassName())
@@ -59,24 +62,26 @@ class Kotline2CodeGenTest {
 
     @Test
     fun `adds @Deprecated annotation from schema directives when setting enabled`() {
-        val schema = """
+        val schema =
+            """
             enum TownJobTypes {
                 LAMPLIGHTER @deprecated(reason: "town switched to electric lights")
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val result = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                language = Language.KOTLIN,
-                addDeprecatedAnnotation = true,
-                generateKotlinNullableClasses = true
-            )
-        ).generate()
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    addDeprecatedAnnotation = true,
+                    generateKotlinNullableClasses = true,
+                ),
+            ).generate()
         val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
 
-        assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+        assertThat(FileSpec.get("$BASE_PACKAGE_NAME.enums", type).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
@@ -90,33 +95,34 @@ class Kotline2CodeGenTest {
                 |  public companion object
                 |}
                 |
-            """.trimMargin()
-
+            """.trimMargin(),
         )
         assertCompilesKotlin(result.kotlinEnumTypes)
     }
 
     @Test
     fun `Add companion object to enum class`() {
-        val schema = """
+        val schema =
+            """
             enum MyEnum {
                 A
                 B
                 C
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val result = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                language = Language.KOTLIN
-            )
-        ).generate()
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                ),
+            ).generate()
 
         val type = result.kotlinEnumTypes[0].members[0] as TypeSpec
 
-        assertThat(FileSpec.get("$basePackageName.enums", type).toString()).isEqualTo(
+        assertThat(FileSpec.get("$BASE_PACKAGE_NAME.enums", type).toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
@@ -129,7 +135,7 @@ class Kotline2CodeGenTest {
                 |  public companion object
                 |}
                 |
-            """.trimMargin()
+            """.trimMargin(),
         )
 
         assertCompilesKotlin(result.kotlinEnumTypes)

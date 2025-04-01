@@ -18,17 +18,18 @@
 
 package com.netflix.graphql.dgs.codegen.clientapi
 
+import com.netflix.graphql.dgs.codegen.BASE_PACKAGE_NAME
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
-import com.netflix.graphql.dgs.codegen.basePackageName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class ClientApiGenSubscriptionTest {
     @Test
     fun generateSubscriptionType() {
-        val schema = """
+        val schema =
+            """
             type Subscription {
                 movie(movieId: ID, title: String): Movie
             }
@@ -37,15 +38,16 @@ class ClientApiGenSubscriptionTest {
                 movieId: ID
                 title: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLQuery")
@@ -55,7 +57,8 @@ class ClientApiGenSubscriptionTest {
 
     @Test
     fun generateSubscriptionWithInputType() {
-        val schema = """
+        val schema =
+            """
             type Mutation {
                 movie(movie: MovieDescription): Movie
             }
@@ -70,41 +73,44 @@ class ClientApiGenSubscriptionTest {
                 movieId: ID
                 lastname: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieGraphQLQuery")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
         )
     }
 
     @Test
     fun includeSubscriptionConfig() {
-        val schema = """
+        val schema =
+            """
             type Subscription {
                 movieTitle: String
                 addActorName: Boolean
             }           
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true,
-                includeSubscriptions = setOf("movieTitle")
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                    includeSubscriptions = setOf("movieTitle"),
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieTitleGraphQLQuery")

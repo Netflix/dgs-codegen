@@ -18,10 +18,10 @@
 
 package com.netflix.graphql.dgs.codegen.clientapi
 
+import com.netflix.graphql.dgs.codegen.BASE_PACKAGE_NAME
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
-import com.netflix.graphql.dgs.codegen.basePackageName
 import com.squareup.javapoet.JavaFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -29,7 +29,8 @@ import org.junit.jupiter.api.Test
 class ClientApiGenFragmentTest {
     @Test
     fun interfaceFragment() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 search(title: String): [Show]
             }
@@ -48,15 +49,16 @@ class ClientApiGenFragmentTest {
                 episodes: Int
             }
             
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -65,22 +67,26 @@ class ClientApiGenFragmentTest {
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("duration")
         assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs)
+            .extracting("name")
             .doesNotContain("episodes")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SeriesFragmentProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("episodes")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs)
+            .extracting("name")
             .doesNotContain("duration")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
+                codeGenResult.javaInterfaces,
         )
     }
 
     @Test
     fun interfaceFragmentOnSubType() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 search(title: String): [Result]
             }
@@ -103,15 +109,16 @@ class ClientApiGenFragmentTest {
                 episodes: Int
             }
             
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -122,22 +129,26 @@ class ClientApiGenFragmentTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MovieFragmentProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("duration")
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs)
+            .extracting("name")
             .doesNotContain("episodes")
         assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("SeriesFragmentProjection")
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("episodes")
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name")
+        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs)
+            .extracting("name")
             .doesNotContain("duration")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
+                codeGenResult.javaInterfaces,
         )
     }
 
     @Test
     fun unionFragment() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 search: [Result]
             }
@@ -151,15 +162,16 @@ class ClientApiGenFragmentTest {
             type Actor {
                 name: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -174,13 +186,15 @@ class ClientApiGenFragmentTest {
         assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
+                codeGenResult.javaInterfaces,
         )
     }
 
     @Test
     fun unionFragmentSharingSubProjection() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 search: [Result]
                 actor: Actor
@@ -195,15 +209,16 @@ class ClientApiGenFragmentTest {
             type Actor {
                 name: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -220,13 +235,15 @@ class ClientApiGenFragmentTest {
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
+                codeGenResult.javaInterfaces,
         )
     }
 
     @Test
     fun unionFragmentOnSubType() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 search(title: String): [Result]
             }
@@ -245,15 +262,16 @@ class ClientApiGenFragmentTest {
                 name: String
             }
             
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
@@ -269,12 +287,18 @@ class ClientApiGenFragmentTest {
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("name")
         assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
 
-        assertThat(codeGenResult.clientProjections[2].typeSpec.initializerBlock.isEmpty).isFalse
-        assertThat(codeGenResult.clientProjections[3].typeSpec.initializerBlock.isEmpty).isFalse
+        assertThat(
+            codeGenResult.clientProjections[2]
+                .typeSpec.initializerBlock.isEmpty,
+        ).isFalse
+        assertThat(
+            codeGenResult.clientProjections[3]
+                .typeSpec.initializerBlock.isEmpty,
+        ).isFalse
 
         val searchResult = codeGenResult.javaInterfaces[0].typeSpec
 
-        assertThat(JavaFile.builder("$basePackageName.types", searchResult).build().toString()).isEqualTo(
+        assertThat(JavaFile.builder("$BASE_PACKAGE_NAME.types", searchResult).build().toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
@@ -293,7 +317,7 @@ class ClientApiGenFragmentTest {
                 |public interface SearchResult {
                 |}
                 |
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 }
