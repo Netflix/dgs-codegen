@@ -34,7 +34,7 @@ import kotlin.io.path.readText
 class JavaCodeGenTest {
 
     // set this to true to update all expected outputs instead of running tests
-    private val updateExpected = true
+    private val updateExpected = false
 
     @ParameterizedTest
     @MethodSource("listTestsToRun")
