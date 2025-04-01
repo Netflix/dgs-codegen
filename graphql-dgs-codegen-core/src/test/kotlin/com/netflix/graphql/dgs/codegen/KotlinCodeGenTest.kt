@@ -4235,6 +4235,53 @@ It takes a title and such.
     }
 
     @Test
+    fun `Codegen should generate schema with unsigned int`() {
+        val schema = """
+            scalar UnsignedInt
+            
+            type Person {
+                id: ID!
+                name: String!
+                age: UnsignedInt
+                numberOfDependents: UnsignedInt
+            }
+            
+            input PersonInput {
+                numberOfDependents: UnsignedInt = 0
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN,
+                typeMapping = mapOf("UnsignedInt" to "kotlin.Long")
+            )
+        ).generate()
+        val dataFetchers = codeGenResult.kotlinDataFetchers
+        val dataTypes = codeGenResult.kotlinDataTypes
+        assertThat(dataFetchers).isEmpty()
+        assertThat(dataTypes.size).isEqualTo(2)
+        assertCompilesKotlin(dataTypes)
+        val ageField = dataTypes[0].typeSpecs[0].primaryConstructor?.parameters?.get(2)
+        assertThat(ageField).isNotNull()
+        assertThat(ageField?.name).isEqualTo("age")
+        assertThat(ageField?.type.toString()).isEqualTo("kotlin.Long?")
+        assertThat(ageField?.defaultValue.toString()).isEqualTo("null")
+        val numberOfDependentsOnType = dataTypes[0].typeSpecs[0].primaryConstructor?.parameters?.get(3)
+        assertThat(numberOfDependentsOnType).isNotNull()
+        assertThat(numberOfDependentsOnType?.name).isEqualTo("numberOfDependents")
+        assertThat(numberOfDependentsOnType?.type.toString()).isEqualTo("kotlin.Long?")
+        assertThat(numberOfDependentsOnType?.defaultValue.toString()).isEqualTo("null")
+        val numberOfDependentsOnInput = dataTypes[1].typeSpecs[0].primaryConstructor?.parameters?.get(0)
+        assertThat(numberOfDependentsOnInput).isNotNull()
+        assertThat(numberOfDependentsOnInput?.name).isEqualTo("numberOfDependents")
+        assertThat(numberOfDependentsOnInput?.type.toString()).isEqualTo("kotlin.Long?")
+        assertThat(numberOfDependentsOnInput?.defaultValue.toString()).isEqualTo("0L")
+    }
+
+    @Test
     fun `Codegen should correctly handle default float values`() {
         val schema = """
             input ExampleInput {

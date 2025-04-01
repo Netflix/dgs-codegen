@@ -5098,12 +5098,17 @@ It takes a title and such.
         assertThat(dataFetchers).isEmpty()
         assertThat(dataTypes.size).isEqualTo(2)
         assertCompilesJava(dataTypes)
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].name).isEqualTo("age")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.lang.Long")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[3].name).isEqualTo("numberOfDependents")
-        assertThat(dataTypes[0].typeSpec.fieldSpecs[3].type.toString()).isEqualTo("java.lang.Long")
-        assertThat(dataTypes[1].typeSpec.fieldSpecs[0].name).isEqualTo("numberOfDependents")
-        assertThat(dataTypes[1].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("0L")
+        val ageFieldSpec = dataTypes[0].typeSpec.fieldSpecs[2]
+        assertThat(ageFieldSpec.name).isEqualTo("age")
+        assertThat(ageFieldSpec.type.toString()).isEqualTo("java.lang.Long")
+        assertThat(ageFieldSpec.initializer.toString()).isEmpty()
+        val numberOfDependentsOnType = dataTypes[0].typeSpec.fieldSpecs[3]
+        assertThat(numberOfDependentsOnType.name).isEqualTo("numberOfDependents")
+        assertThat(numberOfDependentsOnType.type.toString()).isEqualTo("java.lang.Long")
+        assertThat(numberOfDependentsOnType.initializer.toString()).isEmpty()
+        val numberOfDependentsOnInput = dataTypes[1].typeSpec.fieldSpecs[0]
+        assertThat(numberOfDependentsOnInput.name).isEqualTo("numberOfDependents")
+        assertThat(numberOfDependentsOnInput.initializer.toString()).isEqualTo("0L")
     }
 
     @Test
