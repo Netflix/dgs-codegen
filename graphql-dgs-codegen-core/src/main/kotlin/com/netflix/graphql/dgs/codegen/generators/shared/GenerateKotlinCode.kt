@@ -37,7 +37,7 @@ fun generateKotlinCode(
             is BooleanValue -> CodeBlock.of("%L", value.isValue)
             is IntValue -> CodeBlock.of("%L", value.value)
             is StringValue -> CodeBlock.of("%S", value.value)
-            is FloatValue -> CodeBlock.of("%L", value.value)
+            is FloatValue -> CodeBlock.of("%L", value.value.toString())
             is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
             is ArrayValue ->
                 if (value.values.isEmpty()) CodeBlock.of("emptyList()")
