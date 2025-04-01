@@ -4230,4 +4230,37 @@ It takes a title and such.
         assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.A")
         assertThat(superinterfaces).contains("com.netflix.graphql.dgs.codegen.tests.generated.types.B")
     }
+
+    @Test
+    fun `Codegen should correctly handle default float values`() {
+        val schema = """
+            input ExampleInput {
+                min: Float! = 0.0
+                max: Float
+            }
+        """.trimIndent()
+
+        val codeGenResult = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = basePackageName,
+                language = Language.KOTLIN
+            )
+        ).generate()
+        val dataFetchers = codeGenResult.kotlinDataFetchers
+        val dataTypes = codeGenResult.kotlinDataTypes
+        assertThat(dataFetchers).isEmpty()
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertCompilesKotlin(dataTypes)
+        val minField = dataTypes[0].typeSpecs[0].primaryConstructor?.parameters?.get(0)
+        assertThat(minField).isNotNull()
+        assertThat(minField?.name).isEqualTo("min")
+        assertThat(minField?.type.toString()).isEqualTo("kotlin.Double")
+        assertThat(minField?.defaultValue.toString()).isEqualTo("0.0")
+        val maxField = dataTypes[0].typeSpecs[0].primaryConstructor?.parameters?.get(1)
+        assertThat(maxField).isNotNull()
+        assertThat(maxField?.name).isEqualTo("max")
+        assertThat(maxField?.type.toString()).isEqualTo("kotlin.Double?")
+        assertThat(maxField?.defaultValue.toString()).isEqualTo("null")
+    }
 }
