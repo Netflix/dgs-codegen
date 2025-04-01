@@ -56,6 +56,9 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
 
         mergedEnumDefinitions.forEach {
             val typeSpec = TypeSpec.anonymousClassBuilder("")
+            if (it.description != null && it.description.content.isNotBlank()) {
+                typeSpec.addJavadoc("\$L", it.description.content)
+            }
             if (it.directives.isNotEmpty()) {
                 val (annotations, comments) = applyDirectivesJava(it.directives, config)
                 if (!comments.isNullOrBlank()) {
