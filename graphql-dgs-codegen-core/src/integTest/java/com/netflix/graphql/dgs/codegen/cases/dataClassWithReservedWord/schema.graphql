@@ -1,0 +1,13 @@
+type SampleType {
+  return: String!
+}
+
+type Query {
+  people: [Person]
+}
+
+type Person {
+  # replace with package or any other reserved word after the sanitization issue is investigated and resolved
+  info(package1: String): String
+  interface: String
+}

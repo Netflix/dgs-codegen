@@ -1,0 +1,11 @@
+scalar Decimal
+
+type Query {
+  orders(filter: OrderFilter): String
+}
+
+input OrderFilter {
+  min: Decimal! = "1.1"
+  avg: Decimal! = 1.12
+  max: Decimal! = 3.14e19
+}

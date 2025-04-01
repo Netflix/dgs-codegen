@@ -1,0 +1,8 @@
+type Query {
+  e: E
+  es: [E]
+}
+
+enum E {
+  V
+}

@@ -1,0 +1,6 @@
+interface Titled {
+  """
+  The original, non localized title.
+  """
+  title: String
+}

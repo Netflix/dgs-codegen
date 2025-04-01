@@ -1,0 +1,6 @@
+type Query {
+  me: Person
+}
+
+type Person {
+}
