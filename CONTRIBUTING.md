@@ -107,3 +107,41 @@ Pull Request builds
 ----
 Pushing to a branch automatically kicks off a build. The build will be linked in the Pull Request, and under
 the [CI action](https://github.com/Netflix/dgs-framework/actions/workflows/ci.yml) on GitHub.
+
+Testing a local snapshot
+----
+To test codegen changes in an application, follow these steps:
+
+1. **Publish a local snapshot**
+   ```
+   ./gradlew publishToMavenLocal
+   ```
+   A successful output should print the snapshot version, i.e. `7.1.0-SNAPSHOT`
+
+2. **Update your application build files**
+   
+   - Add the following to `settings.gradle`
+
+      ```
+      pluginManagement {
+          repositories {
+              gradlePluginPortal()
+              mavenLocal()
+          }
+
+          resolutionStrategy {
+              eachPlugin {
+                  if (requested.id.namespace == "com.netflix.dgs") {
+                      useModule("com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:7.1.0-SNAPSHOT")
+                  }
+              }
+          }
+      }
+      ```
+   - Add maven local to `build.gradle`
+
+      ```
+      repositories {
+          mavenLocal()
+      }
+      ```
