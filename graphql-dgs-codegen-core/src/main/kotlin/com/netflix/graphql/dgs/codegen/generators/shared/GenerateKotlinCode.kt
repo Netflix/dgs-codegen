@@ -32,6 +32,7 @@ fun generateKotlinCode(
     typeUtils: KotlinTypeUtils
 ): CodeBlock {
     return checkAndGetLocaleCodeBlock(value, type)
+        ?: checkAndGetLongCodeBlock(value, type)
         ?: checkAndGetBigDecimalCodeBlock(value, type)
         ?: when (value) {
             is BooleanValue -> CodeBlock.of("%L", value.isValue)
@@ -91,6 +92,13 @@ private fun checkAndGetLocaleCodeBlock(value: Value<Value<*>>, type: TypeName): 
             "$type cannot be created from $value, expected String value"
         }
         CodeBlock.of("%L", "Locale.forLanguageTag(\"${value.value}\")")
+    } else null
+}
+
+private fun checkAndGetLongCodeBlock(value: Value<Value<*>>, type: TypeName): CodeBlock? {
+    return if (type.className.canonicalName == "kotlin.Long") {
+        check(value is IntValue) { "$type cannot be created from $value, expected Int value" }
+        CodeBlock.of("%LL", value.value)
     } else null
 }
 
