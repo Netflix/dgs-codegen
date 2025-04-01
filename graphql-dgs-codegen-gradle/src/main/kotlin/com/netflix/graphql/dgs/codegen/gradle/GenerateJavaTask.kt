@@ -101,6 +101,9 @@ open class GenerateJavaTask @Inject constructor(
     @Input
     var implementSerializable = false
 
+    @Input
+    var javaGenerateAllConstructor = true
+
     @OutputDirectory
     fun getOutputDir(): File {
         return Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
@@ -216,7 +219,8 @@ open class GenerateJavaTask @Inject constructor(
             includeImports = includeImports,
             includeEnumImports = includeEnumImports,
             includeClassImports = includeClassImports,
-            generateCustomAnnotations = generateCustomAnnotations
+            generateCustomAnnotations = generateCustomAnnotations,
+            javaGenerateAllConstructor = javaGenerateAllConstructor
         )
 
         logger.info("Codegen config: {}", config)
