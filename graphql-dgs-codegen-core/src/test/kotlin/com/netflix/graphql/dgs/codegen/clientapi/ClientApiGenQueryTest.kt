@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.clientapi
 
 import com.netflix.graphql.dgs.codegen.*
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.InstanceOfAssertFactories
 import org.junit.Ignore
 import org.junit.jupiter.api.Test
 
@@ -559,7 +560,7 @@ class ClientApiGenQueryTest {
             )
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
         // stringArrayField
         assertThat(
@@ -574,7 +575,7 @@ class ClientApiGenQueryTest {
             )
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
 
         // booleanField
@@ -590,7 +591,7 @@ class ClientApiGenQueryTest {
             )
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
 
         // booleanArrayField
@@ -606,7 +607,7 @@ class ClientApiGenQueryTest {
             )
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
 
         // floatField
@@ -622,7 +623,7 @@ class ClientApiGenQueryTest {
             )
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
 
         // booleanArrayField
@@ -638,7 +639,7 @@ class ClientApiGenQueryTest {
             )
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
     }
 
@@ -682,7 +683,7 @@ class ClientApiGenQueryTest {
             rootProjectionClass.getMethod("ping", java.lang.Boolean::class.java)
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
     }
 
