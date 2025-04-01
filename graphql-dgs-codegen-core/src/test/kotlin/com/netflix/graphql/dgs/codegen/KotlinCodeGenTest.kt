@@ -3615,7 +3615,12 @@ It takes a title and such.
             Some options
             ""${'"'}
             enum Color {
-                red,white,blue
+                ""${'"'}
+                Option one!
+                ""${'"'}
+                red,
+                white,
+                blue
             }                                 
         """.trimIndent()
 
@@ -3631,6 +3636,10 @@ It takes a title and such.
 
         assertThat(type.kdoc.toString()).isEqualTo(
             """Some options
+            """.trimIndent()
+        )
+        assertThat(type.enumConstants["red"]?.kdoc.toString()).isEqualTo(
+            """Option one!
             """.trimIndent()
         )
 

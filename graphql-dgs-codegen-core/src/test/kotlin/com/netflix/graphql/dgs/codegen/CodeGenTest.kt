@@ -3579,7 +3579,12 @@ It takes a title and such.
             Some options
             ""${'"'}
             enum Color {
-                red,white,blue
+                ""${'"'}
+                Option one!
+                ""${'"'}
+                red,
+                white,              
+                blue
             }                                 
         """.trimIndent()
 
@@ -3592,6 +3597,10 @@ It takes a title and such.
 
         assertThat(result.javaEnumTypes[0].typeSpec.javadoc.toString()).isEqualTo(
             """Some options
+            """.trimIndent()
+        )
+        assertThat(result.javaEnumTypes[0].typeSpec.enumConstants["red"]?.javadoc.toString()).isEqualTo(
+            """Option one!
             """.trimIndent()
         )
     }
