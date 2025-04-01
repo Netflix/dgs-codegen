@@ -21,6 +21,7 @@ import graphql.language.AstPrinter
 import graphql.language.Field
 import graphql.language.OperationDefinition
 import graphql.language.SelectionSet
+import graphql.language.VariableReference
 import graphql.schema.Coercing
 
 class GraphQLQueryRequest @JvmOverloads constructor(
@@ -63,7 +64,11 @@ class GraphQLQueryRequest @JvmOverloads constructor(
         if (query.input.isNotEmpty()) {
             selection.arguments(
                 query.input.map { (name, value) ->
-                    Argument(name, inputValueSerializer.toValue(value))
+                    if (query.variableReferences.containsKey(name)) {
+                        Argument(name, VariableReference.of(query.variableReferences[name]))
+                    } else {
+                        Argument(name, inputValueSerializer.toValue(value))
+                    }
                 }
             )
         }

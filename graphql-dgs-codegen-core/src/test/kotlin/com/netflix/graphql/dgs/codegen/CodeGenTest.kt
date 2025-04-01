@@ -5065,4 +5065,40 @@ It takes a title and such.
         ).generate()
         assertThat(result.javaDataTypes[0].typeSpec.fieldSpecs[1].type.toString() == "java.lang.String")
     }
+
+    @Test
+    fun `Generated queries should contain variable reference methods`() {
+        val schema = """
+            type Query {
+               findPeople(name: String, age: Int, aliases: [String!], filter: Filter!): [String]
+            }
+
+            input Filter {
+                gender: Gender!
+            }
+
+            enum Gender { MALE, FEMALE }
+        """.trimIndent()
+
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = "com.netflix.test",
+                generateClientApi = true
+            )
+        ).generate()
+
+        assertCompilesJava(result)
+        assertThat(result.javaQueryTypes).hasSize(1)
+        val parameters =
+            result.javaQueryTypes[0].typeSpec.methodSpecs.filter { it.isConstructor && !it.parameters.isEmpty() }
+                .get(0).parameters
+        assertThat(parameters).extracting("name").contains("variableReferences", "variableDefinitions")
+        assertThat(parameters.find { it.name == "variableReferences" }?.type.toString()).isEqualTo("java.util.Map<java.lang.String, java.lang.String>")
+        assertThat(parameters.find { it.name == "variableDefinitions" }?.type.toString()).isEqualTo("java.util.List<graphql.language.VariableDefinition>")
+
+        // Validate Builder methods
+        assertThat(result.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).extracting("name").contains("nameReference", "ageReference", "aliasesReference", "filterReference")
+        assertThat(result.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs.find { it.name == "nameReference" }!!.parameters[0].name).isEqualTo("variableRef")
+    }
 }

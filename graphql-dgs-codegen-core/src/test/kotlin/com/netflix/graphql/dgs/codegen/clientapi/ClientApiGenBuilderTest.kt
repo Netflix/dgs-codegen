@@ -166,7 +166,7 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(6)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.javadoc.toString()).startsWith(
                 "@deprecated DO NOT USE".trimMargin()
@@ -197,7 +197,7 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(6)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
                 """
@@ -233,7 +233,7 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(6)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
                 """
@@ -271,7 +271,7 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(6)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].toString()).startsWith(
                 """
@@ -310,7 +310,7 @@ class ClientApiGenBuilderTest {
             assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("FilterGraphQLQuery")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs).hasSize(1)
-            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(4)
+            assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs).hasSize(6)
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("nameFilter")
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].annotations).isEmpty()
             assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].javadoc.isEmpty).isTrue()
