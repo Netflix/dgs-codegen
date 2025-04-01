@@ -55,7 +55,7 @@ class GraphQLQueryRequest @JvmOverloads constructor(
     }
 
     fun serializeCompact(): String {
-        return serialize( true)
+        return serialize(true)
     }
 
     private fun serialize(compact: Boolean): String {
@@ -94,8 +94,8 @@ class GraphQLQueryRequest @JvmOverloads constructor(
 
         operationDef.selectionSet(SelectionSet.newSelectionSet().selection(selection.build()).build())
 
-        return if(compact) {
-            AstPrinter.printAstCompact(operationDef.build());
+        return if (compact) {
+            AstPrinter.printAstCompact(operationDef.build())
         } else {
             AstPrinter.printAst(operationDef.build())
         }
