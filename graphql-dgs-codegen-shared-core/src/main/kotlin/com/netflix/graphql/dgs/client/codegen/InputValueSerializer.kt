@@ -38,9 +38,7 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
-import kotlin.reflect.full.allSuperclasses
-import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.*
 import kotlin.reflect.jvm.isAccessible
 
 open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(), private val graphQLContext: GraphQLContext = GraphQLContext.getDefault()) :
@@ -175,9 +173,16 @@ open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *
                 if (property.name in propertyValues || property.isAbstract || property.hasAnnotation<Transient>()) {
                     continue
                 }
-
                 property.isAccessible = true
-                propertyValues[property.name] = property.call(input)
+                if (property.returnType.classifier == Optional::class) {
+                    val value = property.call(input)
+                    if (value != null && value is Optional<*>) {
+                        propertyValues[property.name] = value.orElse(null)
+                    }
+                    // if value is null, don't include the field
+                } else {
+                    propertyValues[property.name] = property.call(input)
+                }
             }
         }
         return propertyValues

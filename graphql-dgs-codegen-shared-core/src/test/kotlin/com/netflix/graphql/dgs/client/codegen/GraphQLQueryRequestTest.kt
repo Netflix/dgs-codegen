@@ -355,7 +355,7 @@ class GraphQLQueryRequestTest {
     @Test
     fun serializeWithNestedScalar() {
         val query = TestNamedGraphQLQuery().apply {
-            input["movie"] = Movie(123, "greatMovie", DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11)))
+            input["movie"] = Movie(123, "greatMovie", Optional.ofNullable(DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))))
         }
         val request =
             GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
@@ -374,7 +374,7 @@ class GraphQLQueryRequestTest {
     fun testSerializeMapAsInput() {
         val query = TestGraphQLQuery().apply {
             input["actors"] = mapOf("name" to "actorA", "movies" to listOf("movie1", "movie2"))
-            input["movie"] = Movie(123, "greatMovie", DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11)))
+            input["movie"] = Movie(123, "greatMovie", Optional.of(DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))))
         }
         val request = GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
         val result = request.serialize()
@@ -416,7 +416,29 @@ class GraphQLQueryRequestTest {
     }
 
     @Test
-    fun serializeWithNullableInputValueSerializer() {
+    fun serializeWithNullableInputValueSerializerAndOptionalField() {
+        val query = TestGraphQLQuery().apply {
+            input["movie"] = Movie(1234, "name", Optional.ofNullable(null))
+        }
+        val options = GraphQLQueryRequestOptions().apply {
+            allowNullablePropertyInputValues = true
+        }
+        val request = GraphQLQueryRequest(query, MovieProjection().name().movieId(), options)
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """{
+            |  test(movie: {movieId : 1234, name : "name", window : null}) {
+            |    name
+            |    movieId
+            |  }
+            |}
+            """.trimMargin()
+        )
+    }
+
+    @Test
+    fun serializeWithNullableInputValueSerializerAndNullField() {
         val query = TestGraphQLQuery().apply {
             input["movie"] = Movie(1234, "name", null)
         }
@@ -428,7 +450,7 @@ class GraphQLQueryRequestTest {
         assertValidQuery(result)
         assertThat(result).isEqualTo(
             """{
-            |  test(movie: {movieId : 1234, name : "name", window : null}) {
+            |  test(movie: {movieId : 1234, name : "name"}) {
             |    name
             |    movieId
             |  }
@@ -471,7 +493,7 @@ class TestGraphQLMutation : GraphQLQuery("mutation") {
     }
 }
 
-data class Movie(val movieId: Int, val name: String, val window: DateRange? = null)
+data class Movie(val movieId: Int, val name: String, val window: Optional<DateRange>? = null)
 
 class MovieProjection : BaseProjectionNode() {
     fun movieId(): MovieProjection {

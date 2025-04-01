@@ -154,6 +154,9 @@ open class GenerateJavaTask @Inject constructor(
     var generateCustomAnnotations = false
 
     @Input
+    var trackInputFieldSet = false
+
+    @Input
     var includeImports = mutableMapOf<String, String>()
 
     @Input
@@ -220,7 +223,8 @@ open class GenerateJavaTask @Inject constructor(
             includeEnumImports = includeEnumImports,
             includeClassImports = includeClassImports,
             generateCustomAnnotations = generateCustomAnnotations,
-            javaGenerateAllConstructor = javaGenerateAllConstructor
+            javaGenerateAllConstructor = javaGenerateAllConstructor,
+            trackInputFieldSet = trackInputFieldSet
         )
 
         logger.info("Codegen config: {}", config)
