@@ -30,15 +30,16 @@ import java.util.Locale
 class DateRangeScalar : Coercing<DateRange, String> {
     private val defaultFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
-    fun serializeImpl(dataFetcherResult: Any, formatter: DateTimeFormatter = defaultFormatter): String {
+    fun serializeImpl(
+        dataFetcherResult: Any,
+        formatter: DateTimeFormatter = defaultFormatter,
+    ): String {
         val range: DateRange = dataFetcherResult as DateRange
         return range.from.format(formatter) + "-" + range.to.format(formatter)
     }
 
     @Throws(CoercingSerializeException::class)
-    override fun serialize(dataFetcherResult: Any): String {
-        return serializeImpl(dataFetcherResult)
-    }
+    override fun serialize(dataFetcherResult: Any): String = serializeImpl(dataFetcherResult)
 
     @Throws(CoercingParseValueException::class)
     override fun parseValue(input: Any): DateRange {
@@ -56,9 +57,14 @@ class DateRangeScalar : Coercing<DateRange, String> {
         return DateRange(from, to)
     }
 
-    override fun valueToLiteral(input: Any, graphQLContext: GraphQLContext, locale: Locale): Value<*> {
-        return StringValue.of(serializeImpl(input, graphQLContext.getOrDefault("formatter", defaultFormatter)))
-    }
+    override fun valueToLiteral(
+        input: Any,
+        graphQLContext: GraphQLContext,
+        locale: Locale,
+    ): Value<*> = StringValue.of(serializeImpl(input, graphQLContext.getOrDefault("formatter", defaultFormatter)))
 }
 
-class DateRange(val from: LocalDate, val to: LocalDate)
+class DateRange(
+    val from: LocalDate,
+    val to: LocalDate,
+)

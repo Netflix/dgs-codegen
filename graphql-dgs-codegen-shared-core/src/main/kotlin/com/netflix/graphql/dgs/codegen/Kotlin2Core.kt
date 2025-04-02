@@ -34,31 +34,30 @@ import graphql.language.TypeName
 annotation class QueryProjectionMarker
 
 object DefaultTracker {
-
     // set of what defaults have been used
     val defaults: ThreadLocal<MutableMap<String, MutableSet<String>>> = ThreadLocal.withInitial { mutableMapOf() }
 
     // add a default value
-    fun add(type: String, arg: String) {
-        defaults.get()
+    fun add(
+        type: String,
+        arg: String,
+    ) {
+        defaults
+            .get()
             .computeIfAbsent(type) { mutableSetOf() }
             .add(arg)
     }
 
     // consume the set defaults & reset them
-    fun getAndClear(type: String): Set<String> {
-        return defaults.get().remove(type) ?: emptySet()
-    }
+    fun getAndClear(type: String): Set<String> = defaults.get().remove(type) ?: emptySet()
 }
 
 @QueryProjectionMarker
 abstract class GraphQLProjection(
     protected val inputValueSerializer: InputValueSerializerInterface? = null,
-    defaultFields: Set<String> = setOf("__typename")
+    defaultFields: Set<String> = setOf("__typename"),
 ) {
-
     companion object {
-
         val defaultInputValueSerializer = InputValueSerializer()
 
         @JvmStatic
@@ -76,18 +75,20 @@ abstract class GraphQLProjection(
         fun <T : GraphQLProjection> asQuery(
             operation: OperationDefinition.Operation,
             projection: T,
-            projectionFields: T.() -> T
+            projectionFields: T.() -> T,
         ): String {
             projectionFields.invoke(projection)
 
-            val document = Document.newDocument()
-                .definition(
-                    OperationDefinition.newOperationDefinition()
-                        .operation(operation)
-                        .selectionSet(projection.builder.build())
-                        .build()
-                )
-                .build()
+            val document =
+                Document
+                    .newDocument()
+                    .definition(
+                        OperationDefinition
+                            .newOperationDefinition()
+                            .operation(operation)
+                            .selectionSet(projection.builder.build())
+                            .build(),
+                    ).build()
 
             return AstPrinter.printAst(document)
         }
@@ -102,28 +103,29 @@ abstract class GraphQLProjection(
 
     private fun arguments(
         args: List<Pair<String, Any?>>,
-        defaults: Set<String>
-    ): List<Argument> {
-        return args
+        defaults: Set<String>,
+    ): List<Argument> =
+        args
             .filter { (k, _) -> !defaults.contains(k) }
             .map { (arg, value) ->
-                Argument.newArgument()
+                Argument
+                    .newArgument()
                     .name(arg)
                     .value((inputValueSerializer ?: defaultInputValueSerializer).toValue(value))
                     .build()
             }
-    }
 
     protected fun field(
         name: String,
-        vararg args: Pair<String, Any?>
+        vararg args: Pair<String, Any?>,
     ) {
         val defaults = DefaultTracker.getAndClear(this::class.qualifiedName!!)
         builder.selection(
-            Field.newField()
+            Field
+                .newField()
                 .name(name)
                 .arguments(arguments(args.toList(), defaults))
-                .build()
+                .build(),
         )
     }
 
@@ -132,15 +134,17 @@ abstract class GraphQLProjection(
         name: String,
         projection: T,
         projectionFields: T.() -> T,
-        vararg args: Pair<String, Any?>
+        vararg args: Pair<String, Any?>,
     ) {
         val defaults = DefaultTracker.getAndClear(this::class.qualifiedName!!)
         projectionFields.invoke(projection)
 
-        val fieldBuilder = Field.newField()
-            .name(name)
-            .arguments(arguments(args.toList(), defaults))
-            .selectionSet(projection.builder.build())
+        val fieldBuilder =
+            Field
+                .newField()
+                .name(name)
+                .arguments(arguments(args.toList(), defaults))
+                .selectionSet(projection.builder.build())
 
         alias?.also { fieldBuilder.alias(it) }
 
@@ -150,22 +154,21 @@ abstract class GraphQLProjection(
     protected fun <T : GraphQLProjection> fragment(
         name: String,
         projection: T,
-        projectionFields: T.() -> T
+        projectionFields: T.() -> T,
     ) {
         projectionFields.invoke(projection)
         builder.selection(
-            InlineFragment.newInlineFragment()
+            InlineFragment
+                .newInlineFragment()
                 .typeCondition(TypeName(name))
                 .selectionSet(projection.builder.build())
-                .build()
+                .build(),
         )
     }
 }
 
 abstract class GraphQLInput : InputValue {
-
     companion object {
-
         @JvmStatic
         protected fun <T> default0(arg: String): T? {
             DefaultTracker.add(this::class.qualifiedName!!, arg)
@@ -173,7 +176,10 @@ abstract class GraphQLInput : InputValue {
         }
 
         @JvmStatic
-        protected inline fun <reified TClass, reified TValue> default(arg: String, defaultValue: TValue): TValue {
+        protected inline fun <reified TClass, reified TValue> default(
+            arg: String,
+            defaultValue: TValue,
+        ): TValue {
             DefaultTracker.add(TClass::class.qualifiedName!!, arg)
             return defaultValue
         }
@@ -183,7 +189,5 @@ abstract class GraphQLInput : InputValue {
 
     abstract fun fields(): List<Pair<String, Any?>>
 
-    override fun inputValues(): List<Pair<String, Any?>> {
-        return fields().filter { (k, _) -> !defaults.contains(k) }
-    }
+    override fun inputValues(): List<Pair<String, Any?>> = fields().filter { (k, _) -> !defaults.contains(k) }
 }

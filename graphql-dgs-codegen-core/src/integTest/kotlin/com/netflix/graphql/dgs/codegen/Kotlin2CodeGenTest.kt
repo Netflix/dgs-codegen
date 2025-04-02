@@ -32,7 +32,6 @@ import kotlin.io.path.listDirectoryEntries
 import kotlin.io.path.readText
 
 class Kotlin2CodeGenTest {
-
     // set this to true to update all expected outputs instead of running tests
     private val updateExpected = false
 
@@ -41,35 +40,43 @@ class Kotlin2CodeGenTest {
     fun testCodeGen(testName: String) {
         val schema = readResource("/$testName/schema.graphql")
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = "com.netflix.graphql.dgs.codegen.cases.$testName.expected",
-                language = Language.KOTLIN,
-                generateClientApi = true,
-                generateKotlinNullableClasses = true,
-                generateKotlinClosureProjections = true,
-                typeMapping = when (testName) {
-                    "dataClassWithMappedTypes" -> mapOf(
-                        "Long" to "kotlin.Long",
-                        "DateTime" to "java.time.OffsetDateTime",
-                        "PageInfo" to "graphql.relay.PageInfo",
-                        "EntityConnection" to "graphql.relay.SimpleListConnection<com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected.types.EntityEdge>"
-                    )
-                    "dataClassWithMappedInterfaces" -> mapOf(
-                        "Node" to "com.netflix.graphql.dgs.codegen.fixtures.Node"
-                    )
-                    "inputWithDefaultBigDecimal" -> mapOf(
-                        "Decimal" to "java.math.BigDecimal"
-                    )
-                    else -> emptyMap()
-                }
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = "com.netflix.graphql.dgs.codegen.cases.$testName.expected",
+                    language = Language.KOTLIN,
+                    generateClientApi = true,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                    typeMapping =
+                        when (testName) {
+                            "dataClassWithMappedTypes" ->
+                                mapOf(
+                                    "Long" to "kotlin.Long",
+                                    "DateTime" to "java.time.OffsetDateTime",
+                                    "PageInfo" to "graphql.relay.PageInfo",
+                                    "EntityConnection" to
+                                        "graphql.relay.SimpleListConnection<com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected.types.EntityEdge>",
+                                )
+                            "dataClassWithMappedInterfaces" ->
+                                mapOf(
+                                    "Node" to "com.netflix.graphql.dgs.codegen.fixtures.Node",
+                                )
+                            "inputWithDefaultBigDecimal" ->
+                                mapOf(
+                                    "Decimal" to "java.math.BigDecimal",
+                                )
+                            else -> emptyMap()
+                        },
+                ),
+            ).generate()
 
-        val fileNames = codeGenResult.kotlinSources()
-            .groupingBy { it.packageName.substringAfterLast('.') to it.name }
-            .eachCount()
+        val fileNames =
+            codeGenResult
+                .kotlinSources()
+                .groupingBy { it.packageName.substringAfterLast('.') to it.name }
+                .eachCount()
 
         // fail if any file was defined twice
         fileNames
@@ -81,8 +88,8 @@ class Kotlin2CodeGenTest {
         listAllFiles("/$testName/expected")
             .map {
                 it.getName(it.nameCount - 2).toString() to it.getName(it.nameCount - 1).toString().removeSuffix(".kt")
-            }
-            .toSet().subtract(fileNames.keys)
+            }.toSet()
+            .subtract(fileNames.keys)
             .forEach { fail("Missing expected file: ${it.first}.${it.second}") }
 
         codeGenResult.kotlinSources().forEach { spec ->
@@ -102,15 +109,13 @@ class Kotlin2CodeGenTest {
     }
 
     companion object {
-
         @Suppress("unused")
         @JvmStatic
-        fun listTestsToRun(): List<String> {
-            return getAbsolutePath("")
+        fun listTestsToRun(): List<String> =
+            getAbsolutePath("")
                 .listDirectoryEntries()
                 .map { it.getName(it.nameCount.dec()).toString() }
                 .sorted()
-        }
 
         private fun getAbsolutePath(suffix: String): Path {
             val projectDirAbsolutePath = Paths.get("").toAbsolutePath().toString()
@@ -120,16 +125,18 @@ class Kotlin2CodeGenTest {
         private fun listAllFiles(suffix: String): List<Path> {
             val path = getAbsolutePath(suffix)
             if (!path.exists()) return emptyList()
-            return Files.walk(path)
+            return Files
+                .walk(path)
                 .filter { Files.isRegularFile(it) }
                 .collect(Collectors.toList())
         }
 
-        private fun readResource(fileName: String): String {
-            return getAbsolutePath(fileName).readText()
-        }
+        private fun readResource(fileName: String): String = getAbsolutePath(fileName).readText()
 
-        private fun writeExpected(fileName: String, content: String) {
+        private fun writeExpected(
+            fileName: String,
+            content: String,
+        ) {
             val path = getAbsolutePath(fileName)
 
             if (!path.exists()) {

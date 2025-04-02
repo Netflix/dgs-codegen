@@ -29,7 +29,7 @@ import javax.annotation.processing.Filer
 import javax.tools.StandardLocation
 
 class DocFileSpec private constructor(
-    builder: DocFileSpec.Builder
+    builder: DocFileSpec.Builder,
 ) {
     private val extension = "md"
     private val packageName: String = builder.packageName
@@ -60,11 +60,12 @@ class DocFileSpec private constructor(
     /** Writes this to `filer`.  */
     @Throws(IOException::class)
     public fun writeTo(filer: Filer) {
-        val filerSourceFile = filer.createResource(
-            StandardLocation.SOURCE_OUTPUT,
-            packageName,
-            "$packageName.$extension"
-        )
+        val filerSourceFile =
+            filer.createResource(
+                StandardLocation.SOURCE_OUTPUT,
+                packageName,
+                "$packageName.$extension",
+            )
         try {
             filerSourceFile.openWriter().use { writer -> writeTo(writer) }
         } catch (e: Exception) {
@@ -78,22 +79,25 @@ class DocFileSpec private constructor(
 
     public class Builder internal constructor(
         public val packageName: String,
-        public var markdownText: String
+        public var markdownText: String,
     ) {
-        public fun setMarkdownText(markdownText: String): DocFileSpec.Builder = apply {
-            this.markdownText = markdownText
-        }
+        public fun setMarkdownText(markdownText: String): DocFileSpec.Builder =
+            apply {
+                this.markdownText = markdownText
+            }
 
-        public fun build(): DocFileSpec {
-            return DocFileSpec(this)
-        }
+        public fun build(): DocFileSpec = DocFileSpec(this)
     }
-    public companion object {
-        @JvmStatic public fun get(packageName: String, markdownText: String): DocFileSpec {
-            return builder(packageName, markdownText).build()
-        }
 
-        @JvmStatic public fun builder(packageName: String, markdownText: String): DocFileSpec.Builder =
-            DocFileSpec.Builder(packageName, markdownText)
+    public companion object {
+        @JvmStatic public fun get(
+            packageName: String,
+            markdownText: String,
+        ): DocFileSpec = builder(packageName, markdownText).build()
+
+        @JvmStatic public fun builder(
+            packageName: String,
+            markdownText: String,
+        ): DocFileSpec.Builder = DocFileSpec.Builder(packageName, markdownText)
     }
 }

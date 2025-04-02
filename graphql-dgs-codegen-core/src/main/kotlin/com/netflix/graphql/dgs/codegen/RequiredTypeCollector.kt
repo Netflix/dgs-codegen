@@ -34,7 +34,7 @@ import graphql.util.TraverserContext
 
 class RequiredTypeCollector(
     private val document: Document,
-    config: CodeGenConfig
+    config: CodeGenConfig,
 ) {
     val requiredTypes: Set<String> = LinkedHashSet()
 
@@ -61,7 +61,7 @@ class RequiredTypeCollector(
 
                 override fun visitObjectTypeDefinition(
                     node: ObjectTypeDefinition,
-                    context: TraverserContext<Node<*>>
+                    context: TraverserContext<Node<*>>,
                 ): TraversalControl {
                     node.fieldDefinitions
                         .flatMap { it.inputValueDefinitions }
@@ -80,7 +80,7 @@ class RequiredTypeCollector(
 
                 override fun visitUnionTypeDefinition(
                     node: UnionTypeDefinition,
-                    context: TraverserContext<Node<*>>
+                    context: TraverserContext<Node<*>>,
                 ): TraversalControl {
                     node.memberTypes.forEach {
                         it.findTypeDefinition(document)?.accept(context, this)
@@ -90,7 +90,7 @@ class RequiredTypeCollector(
 
                 override fun visitTypeName(
                     node: TypeName,
-                    context: TraverserContext<Node<*>>
+                    context: TraverserContext<Node<*>>,
                 ): TraversalControl {
                     node.findTypeDefinition(document)?.accept(context, this)
                     return TraversalControl.CONTINUE
@@ -98,7 +98,7 @@ class RequiredTypeCollector(
 
                 override fun visitInputObjectTypeDefinition(
                     node: InputObjectTypeDefinition,
-                    context: TraverserContext<Node<Node<*>>>
+                    context: TraverserContext<Node<Node<*>>>,
                 ): TraversalControl {
                     required += node.name
 
@@ -113,7 +113,7 @@ class RequiredTypeCollector(
 
                 override fun visitEnumTypeDefinition(
                     node: EnumTypeDefinition,
-                    context: TraverserContext<Node<Node<*>>>
+                    context: TraverserContext<Node<Node<*>>>,
                 ): TraversalControl {
                     required += node.name
                     return TraversalControl.CONTINUE
@@ -121,13 +121,13 @@ class RequiredTypeCollector(
 
                 override fun visitInputValueDefinition(
                     node: InputValueDefinition,
-                    context: TraverserContext<Node<Node<*>>>
+                    context: TraverserContext<Node<Node<*>>>,
                 ): TraversalControl {
                     node.type.findTypeDefinition(document)?.accept(context, this)
                     return TraversalControl.CONTINUE
                 }
             },
-            fieldDefinitions
+            fieldDefinitions,
         )
     }
 }

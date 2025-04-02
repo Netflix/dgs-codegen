@@ -18,17 +18,18 @@
 
 package com.netflix.graphql.dgs.codegen.clientapi
 
+import com.netflix.graphql.dgs.codegen.BASE_PACKAGE_NAME
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
-import com.netflix.graphql.dgs.codegen.basePackageName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
 class ClientApiGenMutationTest {
     @Test
     fun generateMutationType() {
-        val schema = """
+        val schema =
+            """
             type Mutation {
                 updateMovie(movieId: ID, title: String): Movie
             }
@@ -37,15 +38,16 @@ class ClientApiGenMutationTest {
                 movieId: ID
                 title: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
@@ -55,7 +57,8 @@ class ClientApiGenMutationTest {
 
     @Test
     fun generateMutationWithInputType() {
-        val schema = """
+        val schema =
+            """
             type Mutation {
                 updateMovie(movie: MovieDescription): Movie
             }
@@ -70,27 +73,29 @@ class ClientApiGenMutationTest {
                 movieId: ID
                 lastname: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
         )
     }
 
     @Test
     fun generateMutationWithInputDescription() {
-        val schema = """
+        val schema =
+            """
             type Mutation {
                 updateMovie(
                 ""${'"'}
@@ -109,27 +114,35 @@ class ClientApiGenMutationTest {
                 movieId: ID
                 lastname: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].javadoc.toString()).isEqualTo("Some movie description")
+        assertThat(
+            codeGenResult.javaQueryTypes[0]
+                .typeSpec.typeSpecs[0]
+                .methodSpecs[1]
+                .javadoc
+                .toString(),
+        ).isEqualTo("Some movie description")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
         )
     }
 
     @Test
     fun generateMutationAddsNullChecksDuringInit() {
-        val schema = """
+        val schema =
+            """
             type Mutation {
                 updateMovie(movie: MovieDescription, reviews: [String], uuid: UUID): Movie
             }
@@ -146,20 +159,26 @@ class ClientApiGenMutationTest {
             }
             
             scalar UUID @javaType(name : "java.util.UUID")
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
-        val initMethod = codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs
-            .find { it.name == "<init>" }?.code.toString()
+        val initMethod =
+            codeGenResult.javaQueryTypes[0]
+                .typeSpec.methodSpecs
+                .find { it.name == "<init>" }
+                ?.code
+                .toString()
 
-        val expected = """
+        val expected =
+            """
             |super("mutation", queryName);
             |if (movie != null || fieldsSet.contains("movie")) {
             |    getInput().put("movie", movie);
@@ -168,17 +187,18 @@ class ClientApiGenMutationTest {
             |}if (uuid != null || fieldsSet.contains("uuid")) {
             |    getInput().put("uuid", uuid);
             |}
-        """.trimMargin()
+            """.trimMargin()
 
         assert(initMethod.contains(expected))
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
         )
     }
 
     @Test
     fun generateMutationDoesNotAddNullChecksForPrimitiveTypesDuringInit() {
-        val schema = """
+        val schema =
+            """
             type Mutation {
                 updateMovie(movieId: Int!): Movie
             }
@@ -187,30 +207,35 @@ class ClientApiGenMutationTest {
                 movieId: Int
                 lastname: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assert(
-            codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs
-                .find { it.name == "<init>" }?.code.toString()
-                .contains("super(\"mutation\", queryName);\ngetInput().put(\"movieId\", movieId);")
+            codeGenResult.javaQueryTypes[0]
+                .typeSpec.methodSpecs
+                .find { it.name == "<init>" }
+                ?.code
+                .toString()
+                .contains("super(\"mutation\", queryName);\ngetInput().put(\"movieId\", movieId);"),
         )
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
         )
     }
 
     @Test
     fun generateOnlyRequiredDataTypesForMutation() {
-        val schema = """
+        val schema =
+            """
             type Mutation {
                 shows(showFilter: ShowFilter): [Show]
                 people(personFilter: PersonFilter): [Person]
@@ -247,52 +272,63 @@ class ClientApiGenMutationTest {
             }
                  
             enum SourceType { FOO, BAR }
-           
+            
             type Person {
                 name: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true,
-                includeMutations = setOf("shows"),
-                generateDataTypes = false,
-                writeToFiles = false
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                    includeMutations = setOf("shows"),
+                    generateDataTypes = false,
+                    writeToFiles = false,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaDataTypes)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowFilter", "SimilarityInput", "CountryFilter")
+            .extracting("typeSpec")
+            .extracting("name")
+            .containsExactly("ShowFilter", "SimilarityInput", "CountryFilter")
         assertThat(codeGenResult.javaEnumTypes)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowType", "SourceType")
+            .extracting("typeSpec")
+            .extracting("name")
+            .containsExactly("ShowType", "SourceType")
         assertThat(codeGenResult.javaQueryTypes)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowsGraphQLQuery")
+            .extracting("typeSpec")
+            .extracting("name")
+            .containsExactly("ShowsGraphQLQuery")
         assertThat(codeGenResult.clientProjections)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowsProjectionRoot", "BooleanProjection")
+            .extracting("typeSpec")
+            .extracting("name")
+            .containsExactly("ShowsProjectionRoot", "BooleanProjection")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
     }
 
     @Test
     fun includeMutationConfig() {
-        val schema = """
+        val schema =
+            """
             type Mutation {
                 updateMovieTitle: String
                 addActorName: Boolean
             }           
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true,
-                includeMutations = setOf("updateMovieTitle")
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                    includeMutations = setOf("updateMovieTitle"),
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieTitleGraphQLQuery")

@@ -58,13 +58,13 @@ import java.lang.IllegalArgumentException
  *   property = "__typename")
  * ```
  */
-fun jsonTypeInfoAnnotation(): AnnotationSpec {
-    return AnnotationSpec.builder(JsonTypeInfo::class)
+fun jsonTypeInfoAnnotation(): AnnotationSpec =
+    AnnotationSpec
+        .builder(JsonTypeInfo::class)
         .addMember("use = %T.%L", JsonTypeInfo.Id::class, JsonTypeInfo.Id.NAME.name)
         .addMember("include = %T.%L", JsonTypeInfo.As::class, JsonTypeInfo.As.PROPERTY.name)
         .addMember("property = %S", Introspection.TypeNameMetaFieldDef.name)
         .build()
-}
 
 /**
  * Generate a [JsonTypeInfo] annotation, to explicitly disable
@@ -79,11 +79,11 @@ fun jsonTypeInfoAnnotation(): AnnotationSpec {
  * @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
  * ```
  */
-fun disableJsonTypeInfoAnnotation(): AnnotationSpec {
-    return AnnotationSpec.builder(JsonTypeInfo::class)
+fun disableJsonTypeInfoAnnotation(): AnnotationSpec =
+    AnnotationSpec
+        .builder(JsonTypeInfo::class)
         .addMember("use = %T.%L", JsonTypeInfo.Id::class, JsonTypeInfo.Id.NONE.name)
         .build()
-}
 
 /**
  * Generate a [JsonSubTypes] annotation for the supplied class names.
@@ -98,20 +98,24 @@ fun disableJsonTypeInfoAnnotation(): AnnotationSpec {
  *  ```
  */
 fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
-    val subTypeAnnotations = subTypes.map { type ->
-        AnnotationSpec.builder(JsonSubTypes.Type::class)
-            .addMember("value = %T::class", type)
-            .addMember("name = %S", type.simpleName)
-            .build()
-    }
+    val subTypeAnnotations =
+        subTypes.map { type ->
+            AnnotationSpec
+                .builder(JsonSubTypes.Type::class)
+                .addMember("value = %T::class", type)
+                .addMember("name = %S", type.simpleName)
+                .build()
+        }
 
-    val formatString = subTypes.joinToString(
-        separator = ",\n",
-        prefix = "value = [\n⇥",
-        postfix = "⇤\n]"
-    ) { "%L" }
+    val formatString =
+        subTypes.joinToString(
+            separator = ",\n",
+            prefix = "value = [\n⇥",
+            postfix = "⇤\n]",
+        ) { "%L" }
 
-    return AnnotationSpec.builder(JsonSubTypes::class)
+    return AnnotationSpec
+        .builder(JsonSubTypes::class)
         .addMember(formatString, *subTypeAnnotations.toTypedArray())
         .build()
 }
@@ -124,11 +128,11 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
  * @JsonDeserialize(builder = Movie.Builder::class)
  * ```
  */
-fun jsonDeserializeAnnotation(builderType: ClassName): AnnotationSpec {
-    return AnnotationSpec.builder(JsonDeserialize::class)
+fun jsonDeserializeAnnotation(builderType: ClassName): AnnotationSpec =
+    AnnotationSpec
+        .builder(JsonDeserialize::class)
         .addMember("builder = %T::class", builderType)
         .build()
-}
 
 /**
  * Generate a [JsonPOJOBuilder] annotation for the builder class.
@@ -138,10 +142,10 @@ fun jsonDeserializeAnnotation(builderType: ClassName): AnnotationSpec {
  * @JsonPOJOBuilder
  * ```
  */
-fun jsonBuilderAnnotation(): AnnotationSpec {
-    return AnnotationSpec.builder(JsonPOJOBuilder::class)
+fun jsonBuilderAnnotation(): AnnotationSpec =
+    AnnotationSpec
+        .builder(JsonPOJOBuilder::class)
         .build()
-}
 
 /**
  * Generate a [JvmName] annotation for a kotlin property.
@@ -151,12 +155,12 @@ fun jsonBuilderAnnotation(): AnnotationSpec {
  * @JvmName("getIsRequired")
  * ```
  */
-fun jvmNameAnnotation(name: String): AnnotationSpec {
-    return AnnotationSpec.builder(JvmName::class)
+fun jvmNameAnnotation(name: String): AnnotationSpec =
+    AnnotationSpec
+        .builder(JvmName::class)
         .useSiteTarget(AnnotationSpec.UseSiteTarget.GET)
         .addMember("%S", "get${name.capitalized()}")
         .build()
-}
 
 /**
  * Generate a [Suppress] annotation for a kotlin property.
@@ -167,26 +171,29 @@ fun jvmNameAnnotation(name: String): AnnotationSpec {
  * @Suppress("INAPPLICABLE_JVM_NAME")
  * ```
  */
-fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec {
-    return AnnotationSpec.builder(Suppress::class)
+fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec =
+    AnnotationSpec
+        .builder(Suppress::class)
         .addMember("%S", "INAPPLICABLE_JVM_NAME")
         .build()
-}
 
 private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
-    val graphqlGenerated = AnnotationSpec
-        .builder(ClassName(packageName, "Generated"))
-        .build()
+    val graphqlGenerated =
+        AnnotationSpec
+            .builder(ClassName(packageName, "Generated"))
+            .build()
 
     return if (generatedAnnotationClassName == null) {
         listOf(graphqlGenerated)
     } else {
         val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
 
-        val javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
-            .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
-            .addMember("date = %S", generatedDate)
-            .build()
+        val javaxGenerated =
+            AnnotationSpec
+                .builder(generatedAnnotation)
+                .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
+                .addMember("date = %S", generatedDate)
+                .build()
 
         listOf(javaxGenerated, graphqlGenerated)
     }
@@ -201,19 +208,30 @@ private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
  * @JsonProperty("fieldName")
  * ```
  */
-fun jsonPropertyAnnotation(name: String): AnnotationSpec {
-    return AnnotationSpec.builder(JsonProperty::class)
+fun jsonPropertyAnnotation(name: String): AnnotationSpec =
+    AnnotationSpec
+        .builder(JsonProperty::class)
         .addMember("%S", name)
         .build()
-}
 
 fun deprecatedAnnotation(reason: String): AnnotationSpec {
     // TODO support for level
     val replace = reason.substringAfter(ParserConstants.REPLACE_WITH_STR, "")
-    val builder: AnnotationSpec.Builder = AnnotationSpec.builder(Deprecated::class)
-        .addMember("${ParserConstants.MESSAGE}${ParserConstants.ASSIGNMENT_OPERATOR}%S", reason.substringBefore(ParserConstants.REPLACE_WITH_STR))
+    val builder: AnnotationSpec.Builder =
+        AnnotationSpec
+            .builder(Deprecated::class)
+            .addMember(
+                "${ParserConstants.MESSAGE}${ParserConstants.ASSIGNMENT_OPERATOR}%S",
+                reason.substringBefore(ParserConstants.REPLACE_WITH_STR),
+            )
     if (replace.isNotEmpty()) {
-        builder.addMember(CodeBlock.of("${ParserConstants.REPLACE_WITH}${ParserConstants.ASSIGNMENT_OPERATOR}%M(%S)", MemberName("kotlin", ParserConstants.REPLACE_WITH_CLASS), reason.substringAfter(ParserConstants.REPLACE_WITH_STR)))
+        builder.addMember(
+            CodeBlock.of(
+                "${ParserConstants.REPLACE_WITH}${ParserConstants.ASSIGNMENT_OPERATOR}%M(%S)",
+                MemberName("kotlin", ParserConstants.REPLACE_WITH_CLASS),
+                reason.substringAfter(ParserConstants.REPLACE_WITH_STR),
+            ),
+        )
     }
     return builder.build()
 }
@@ -227,15 +245,13 @@ fun deprecatedAnnotation(reason: String): AnnotationSpec {
  * @JsonIgnoreProperties("__typename")
  * ```
  */
-fun jsonIgnorePropertiesAnnotation(name: String): AnnotationSpec {
-    return AnnotationSpec.builder(JsonIgnoreProperties::class)
+fun jsonIgnorePropertiesAnnotation(name: String): AnnotationSpec =
+    AnnotationSpec
+        .builder(JsonIgnoreProperties::class)
         .addMember("%S", name)
         .build()
-}
 
-fun Description.sanitizeKdoc(): String {
-    return this.content.lineSequence().joinToString("\n")
-}
+fun Description.sanitizeKdoc(): String = this.content.lineSequence().joinToString("\n")
 
 fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
@@ -251,8 +267,8 @@ fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
     }
 }
 
-private fun ktTypeClassBestGuess(name: String): ClassName {
-    return when (name) {
+private fun ktTypeClassBestGuess(name: String): ClassName =
+    when (name) {
         STRING.simpleName -> STRING
         INT.simpleName -> INT
         LONG.simpleName -> LONG
@@ -280,7 +296,6 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
         DOUBLE_ARRAY.simpleName -> DOUBLE_ARRAY
         else -> ClassName.bestGuess(name)
     }
-}
 
 /**
  * Creates custom annotation from arguments
@@ -289,22 +304,43 @@ private fun ktTypeClassBestGuess(name: String): ClassName {
  * inputs -> These are the input parameters needed for the annotation. If empty no inputs will be present for the annotation
  * target -> The site target where the annotation should be applied. If no site target is present annotation will not contain any site targets
  */
-fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>, config: CodeGenConfig): AnnotationSpec {
-    if (annotationArgumentMap.isEmpty() || !annotationArgumentMap.containsKey(ParserConstants.NAME) || annotationArgumentMap[ParserConstants.NAME] is NullValue || (annotationArgumentMap[ParserConstants.NAME] as StringValue).value.isEmpty()) {
+fun customAnnotation(
+    annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
+    config: CodeGenConfig,
+): AnnotationSpec {
+    if (annotationArgumentMap.isEmpty() ||
+        !annotationArgumentMap.containsKey(ParserConstants.NAME) ||
+        annotationArgumentMap[ParserConstants.NAME] is NullValue ||
+        (annotationArgumentMap[ParserConstants.NAME] as StringValue).value.isEmpty()
+    ) {
         throw IllegalArgumentException("Invalid annotate directive")
     }
-    val (packageName, simpleName) = PackageParserUtil.getAnnotationPackage(
-        config,
-        (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
-        if (annotationArgumentMap.containsKey(ParserConstants.TYPE) && annotationArgumentMap[ParserConstants.TYPE] !is NullValue) (annotationArgumentMap[ParserConstants.TYPE] as StringValue).value else null
-    )
+    val (packageName, simpleName) =
+        PackageParserUtil.getAnnotationPackage(
+            config,
+            (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
+            if (annotationArgumentMap.containsKey(ParserConstants.TYPE) &&
+                annotationArgumentMap[ParserConstants.TYPE] !is NullValue
+            ) {
+                (annotationArgumentMap[ParserConstants.TYPE] as StringValue).value
+            } else {
+                null
+            },
+        )
     val className = ClassName(packageName = packageName, simpleNames = listOf(simpleName))
     val annotation: AnnotationSpec.Builder = AnnotationSpec.builder(className)
     if (annotationArgumentMap.containsKey(ParserConstants.SITE_TARGET)) {
-        annotation.useSiteTarget(AnnotationSpec.UseSiteTarget.valueOf((annotationArgumentMap[ParserConstants.SITE_TARGET] as StringValue).value.uppercase()))
+        annotation.useSiteTarget(
+            AnnotationSpec.UseSiteTarget.valueOf((annotationArgumentMap[ParserConstants.SITE_TARGET] as StringValue).value.uppercase()),
+        )
     }
     if (annotationArgumentMap.containsKey(ParserConstants.INPUTS)) {
-        val codeBlocks: List<CodeBlock> = parseInputs(config, annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue, (annotationArgumentMap[ParserConstants.NAME] as StringValue).value)
+        val codeBlocks: List<CodeBlock> =
+            parseInputs(
+                config,
+                annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue,
+                (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
+            )
         codeBlocks.forEach { codeBlock ->
             annotation.addMember(codeBlock)
         }
@@ -315,7 +351,13 @@ fun customAnnotation(annotationArgumentMap: MutableMap<String, Value<Value<*>>>,
 /**
  * Generates the code block containing the parameters of an annotation in the format key = value
  */
-private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotationName: String, prefix: String = "", type: String = ""): CodeBlock =
+private fun generateCode(
+    config: CodeGenConfig,
+    value: Value<Value<*>>,
+    annotationName: String,
+    prefix: String = "",
+    type: String = "",
+): CodeBlock =
     when (value) {
         is BooleanValue -> CodeBlock.of("$prefix%L", (value as BooleanValue).isValue)
         is IntValue -> CodeBlock.of("$prefix%L", (value as IntValue).value)
@@ -326,31 +368,61 @@ private fun generateCode(config: CodeGenConfig, value: Value<Value<*>>, annotati
                 val className = string.dropLast(ParserConstants.CLASS_LENGTH)
                 // Use annotationName and className in the PackagerParserUtil to get Class Package name.
                 val classPackage = PackageParserUtil.getClassPackage(config, annotationName, className)
-                if (classPackage.isNotEmpty()) CodeBlock.of("$prefix%T::class", ClassName(classPackage, className))
-                else CodeBlock.of("$prefix%S", string)
-            } else CodeBlock.of("$prefix%S", string)
+                if (classPackage.isNotEmpty()) {
+                    CodeBlock.of("$prefix%T::class", ClassName(classPackage, className))
+                } else {
+                    CodeBlock.of("$prefix%S", string)
+                }
+            } else {
+                CodeBlock.of("$prefix%S", string)
+            }
         }
         is FloatValue -> CodeBlock.of("$prefix%L", (value as FloatValue).value)
         // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
-        is EnumValue -> CodeBlock.of(
-            "$prefix%M",
-            MemberName(
-                // Use annotationName in the PackagerParserUtil to get Enum Package name.
-                if (prefix.isNotEmpty()) PackageParserUtil.getEnumPackage(config, annotationName, prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR))
-                else PackageParserUtil.getEnumPackage(config, annotationName, type.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR)),
-                (value as EnumValue).name
+        is EnumValue ->
+            CodeBlock.of(
+                "$prefix%M",
+                MemberName(
+                    // Use annotationName in the PackagerParserUtil to get Enum Package name.
+                    if (prefix.isNotEmpty()) {
+                        PackageParserUtil.getEnumPackage(
+                            config,
+                            annotationName,
+                            prefix.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR),
+                        )
+                    } else {
+                        PackageParserUtil.getEnumPackage(config, annotationName, type.substringBefore(ParserConstants.ASSIGNMENT_OPERATOR))
+                    },
+                    (value as EnumValue).name,
+                ),
             )
-        )
         is ArrayValue ->
-            if ((value as ArrayValue).values.isEmpty()) CodeBlock.of("[]")
-            else CodeBlock.of("$prefix[%L]", (value as ArrayValue).values.joinToString { v -> generateCode(config = config, value = v, annotationName = annotationName, type = if (v is EnumValue) prefix else "").toString() })
+            if ((value as ArrayValue).values.isEmpty()) {
+                CodeBlock.of("[]")
+            } else {
+                CodeBlock.of(
+                    "$prefix[%L]",
+                    (value as ArrayValue).values.joinToString { v ->
+                        generateCode(
+                            config = config,
+                            value = v,
+                            annotationName = annotationName,
+                            type = if (v is EnumValue) prefix else "",
+                        ).toString()
+                    },
+                )
+            }
         else -> CodeBlock.of("$prefix%L", value)
     }
 
 /**
  * Parses the inputs argument in the directive to get the input parameters of the annotation
  */
-private fun parseInputs(config: CodeGenConfig, inputs: ObjectValue, annotationName: String): List<CodeBlock> {
+private fun parseInputs(
+    config: CodeGenConfig,
+    inputs: ObjectValue,
+    annotationName: String,
+): List<CodeBlock> {
     val objectFields: List<ObjectField> = inputs.objectFields
     return objectFields.fold(mutableListOf()) { codeBlocks, objectField ->
         codeBlocks.add(generateCode(config, objectField.value, annotationName, objectField.name + ParserConstants.ASSIGNMENT_OPERATOR))
@@ -361,7 +433,7 @@ private fun parseInputs(config: CodeGenConfig, inputs: ObjectValue, annotationNa
 fun FunSpec.Builder.addControlFlow(
     controlFlow: String,
     vararg args: Any,
-    builder: FunSpec.Builder.() -> Unit
+    builder: FunSpec.Builder.() -> Unit,
 ): FunSpec.Builder {
     this.beginControlFlow(controlFlow, *args)
     builder.invoke(this)
@@ -369,9 +441,10 @@ fun FunSpec.Builder.addControlFlow(
     return this
 }
 
-fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.Builder = apply {
-    enumSpecs.map { addEnumConstant(it.name!!, it) }
-}
+fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.Builder =
+    apply {
+        enumSpecs.map { addEnumConstant(it.name!!, it) }
+    }
 
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {

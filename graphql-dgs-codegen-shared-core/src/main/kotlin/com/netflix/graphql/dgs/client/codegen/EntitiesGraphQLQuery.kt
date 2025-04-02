@@ -23,36 +23,37 @@ import graphql.language.TypeName
 import graphql.language.VariableDefinition
 import graphql.language.VariableReference
 
-class EntitiesGraphQLQuery(representations: List<Any>) : GraphQLQuery() {
-
+class EntitiesGraphQLQuery(
+    representations: List<Any>,
+) : GraphQLQuery() {
     val variables: Map<String, Any> = mapOf(REPRESENTATIONS_NAME to representations)
 
     init {
-        variableDefinitions += VariableDefinition.newVariableDefinition()
-            .name(REPRESENTATIONS_NAME)
-            .type(
-                NonNullType.newNonNullType(
-                    ListType.newListType(
-                        NonNullType.newNonNullType(
-                            TypeName.newTypeName("_Any").build()
-                        ).build()
-                    ).build()
+        variableDefinitions +=
+            VariableDefinition
+                .newVariableDefinition()
+                .name(REPRESENTATIONS_NAME)
+                .type(
+                    NonNullType
+                        .newNonNullType(
+                            ListType
+                                .newListType(
+                                    NonNullType
+                                        .newNonNullType(
+                                            TypeName.newTypeName("_Any").build(),
+                                        ).build(),
+                                ).build(),
+                        ).build(),
                 ).build()
-            )
-            .build()
         input[REPRESENTATIONS_NAME] = VariableReference.newVariableReference().name(REPRESENTATIONS_NAME).build()
     }
 
-    override fun getOperationName(): String {
-        return "_entities"
-    }
+    override fun getOperationName(): String = "_entities"
 
     class Builder {
         private val representations = mutableListOf<Any>()
 
-        fun build(): EntitiesGraphQLQuery {
-            return EntitiesGraphQLQuery(representations)
-        }
+        fun build(): EntitiesGraphQLQuery = EntitiesGraphQLQuery(representations)
 
         fun addRepresentationAsVariable(representation: Any): Builder {
             representations += mapper.convertValue(representation, HashMap::class.java)
@@ -64,8 +65,6 @@ class EntitiesGraphQLQuery(representations: List<Any>) : GraphQLQuery() {
         private val mapper = ObjectMapper()
         private const val REPRESENTATIONS_NAME = "representations"
 
-        fun newRequest(): Builder {
-            return Builder()
-        }
+        fun newRequest(): Builder = Builder()
     }
 }

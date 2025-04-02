@@ -24,41 +24,50 @@ import java.time.LocalDateTime
 import java.util.UUID
 
 class InputValueSerializerTest {
-
     @Test
     fun `Serialize a complex object`() {
-        val movieInput = MovieInput(
-            1,
-            "Some movie",
-            MovieInput.Genre.ACTION,
-            MovieInput.Director("The Director"),
-            listOf(
-                MovieInput.Actor("Actor 1", "Role 1"),
-                MovieInput.Actor("Actor 2", "Role 2")
-            ),
-            DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 1, 1))
-        )
+        val movieInput =
+            MovieInput(
+                1,
+                "Some movie",
+                MovieInput.Genre.ACTION,
+                MovieInput.Director("The Director"),
+                listOf(
+                    MovieInput.Actor("Actor 1", "Role 1"),
+                    MovieInput.Actor("Actor 2", "Role 2"),
+                ),
+                DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 1, 1)),
+            )
 
         val serialize = InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(movieInput)
-        assertThat(serialize).isEqualTo("""{movieId : 1, title : "Some movie", genre : ACTION, director : {name : "The Director"}, actor : [{name : "Actor 1", roleName : "Role 1"}, {name : "Actor 2", roleName : "Role 2"}], releaseWindow : "01/01/2020-01/01/2021"}""")
+        assertThat(
+            serialize,
+        ).isEqualTo(
+            """{movieId : 1, title : "Some movie", genre : ACTION, director : {name : "The Director"}, actor : [{name : "Actor 1", roleName : "Role 1"}, {name : "Actor 2", roleName : "Role 2"}], releaseWindow : "01/01/2020-01/01/2021"}""",
+        )
     }
 
     @Test
     fun `List of a complex object`() {
-        val movieInput = MovieInput(
-            1,
-            "Some movie",
-            MovieInput.Genre.ACTION,
-            MovieInput.Director("The Director"),
-            listOf(
-                MovieInput.Actor("Actor 1", "Role 1"),
-                MovieInput.Actor("Actor 2", "Role 2")
-            ),
-            DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 1, 1))
-        )
+        val movieInput =
+            MovieInput(
+                1,
+                "Some movie",
+                MovieInput.Genre.ACTION,
+                MovieInput.Director("The Director"),
+                listOf(
+                    MovieInput.Actor("Actor 1", "Role 1"),
+                    MovieInput.Actor("Actor 2", "Role 2"),
+                ),
+                DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 1, 1)),
+            )
 
         val serialize = InputValueSerializer(mapOf(DateRange::class.java to DateRangeScalar())).serialize(listOf(movieInput))
-        assertThat(serialize).isEqualTo("""[{movieId : 1, title : "Some movie", genre : ACTION, director : {name : "The Director"}, actor : [{name : "Actor 1", roleName : "Role 1"}, {name : "Actor 2", roleName : "Role 2"}], releaseWindow : "01/01/2020-01/01/2021"}]""")
+        assertThat(
+            serialize,
+        ).isEqualTo(
+            """[{movieId : 1, title : "Some movie", genre : ACTION, director : {name : "The Director"}, actor : [{name : "Actor 1", roleName : "Role 1"}, {name : "Actor 2", roleName : "Role 2"}], releaseWindow : "01/01/2020-01/01/2021"}]""",
+        )
     }
 
     @Test
@@ -82,7 +91,9 @@ class InputValueSerializerTest {
 
         assertThat(NullableInputValueSerializer(mapOf()).serialize(null)).isEqualTo("null")
         assertThat(NullableInputValueSerializer(mapOf()).serialize(mapOf("hello" to null))).isEqualTo("{hello : null}")
-        assertThat(NullableInputValueSerializer(mapOf()).serialize(ExamplePojo())).isEqualTo("{movieId : null, movieTitle : \"Bojack Horseman\"}")
+        assertThat(
+            NullableInputValueSerializer(mapOf()).serialize(ExamplePojo()),
+        ).isEqualTo("{movieId : null, movieTitle : \"Bojack Horseman\"}")
     }
 
     @Test
@@ -156,9 +167,10 @@ class InputValueSerializerTest {
     @Test
     fun `UUID value`() {
         val expected = UUID.randomUUID()
-        val actual = InputValueSerializer(
-            mapOf(UUID::class.java to UUIDScalar.INSTANCE.coercing)
-        ).serialize(expected)
+        val actual =
+            InputValueSerializer(
+                mapOf(UUID::class.java to UUIDScalar.INSTANCE.coercing),
+            ).serialize(expected)
         assertThat(actual).isEqualTo(""""$expected"""")
     }
 
@@ -168,14 +180,19 @@ class InputValueSerializerTest {
             val baseField: Boolean = true
             open val field: String = "default"
         }
-        class QueryInput(override val field: String) : Base()
+
+        class QueryInput(
+            override val field: String,
+        ) : Base()
         val serialized = InputValueSerializer().serialize(QueryInput("hello"))
         assertThat(serialized).isEqualTo("""{field : "hello", baseField : true}""")
     }
 
     @Test
     fun `properties annotated with @Transient should not be included`() {
-        data class QueryInput(val visible: String) {
+        data class QueryInput(
+            val visible: String,
+        ) {
             @Transient
             val notVisible = "do not serialize"
         }
@@ -184,18 +201,28 @@ class InputValueSerializerTest {
     }
 
     enum class EvilGenre {
-        ACTION;
-        override fun toString(): String {
-            return "Genre[$name]"
-        }
+        ACTION,
+        ;
+
+        override fun toString(): String = "Genre[$name]"
     }
-    data class MyDataWithCompanion(val title: String) {
+
+    data class MyDataWithCompanion(
+        val title: String,
+    ) {
         companion object
     }
 
-    open class MyBaseClass(private val name: String)
+    open class MyBaseClass(
+        private val name: String,
+    )
 
-    class MySubClass(name: String, val stars: Int) : MyBaseClass(name)
+    class MySubClass(
+        name: String,
+        val stars: Int,
+    ) : MyBaseClass(name)
 
-    class WithLocalDateTime(val date: LocalDateTime)
+    class WithLocalDateTime(
+        val date: LocalDateTime,
+    )
 }

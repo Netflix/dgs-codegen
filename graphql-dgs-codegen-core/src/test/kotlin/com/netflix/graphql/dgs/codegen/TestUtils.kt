@@ -46,28 +46,35 @@ import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
 fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
-    val files = buildList {
-        addAll(codeGenResult.clientProjections)
-        addAll(codeGenResult.javaQueryTypes)
-        addAll(codeGenResult.javaEnumTypes)
-        addAll(codeGenResult.javaDataTypes)
-        addAll(codeGenResult.javaInterfaces)
-    }
+    val files =
+        buildList {
+            addAll(codeGenResult.clientProjections)
+            addAll(codeGenResult.javaQueryTypes)
+            addAll(codeGenResult.javaEnumTypes)
+            addAll(codeGenResult.javaDataTypes)
+            addAll(codeGenResult.javaInterfaces)
+        }
     return assertCompilesJava(files)
 }
 
 fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
-    val result = javac()
-        .withOptions("-parameters")
-        .compile(javaFiles.map(JavaFile::toJavaFileObject))
+    val result =
+        javac()
+            .withOptions("-parameters")
+            .compile(javaFiles.map(JavaFile::toJavaFileObject))
     CompilationSubject.assertThat(result).succeededWithoutWarnings()
     return result
 }
 
-fun assertCompilesKotlin(codeGenResult: CodeGenResult, tests: Map<String, String> = emptyMap()) =
-    assertCompilesKotlin(codeGenResult.kotlinSources(), tests)
+fun assertCompilesKotlin(
+    codeGenResult: CodeGenResult,
+    tests: Map<String, String> = emptyMap(),
+) = assertCompilesKotlin(codeGenResult.kotlinSources(), tests)
 
-fun assertCompilesKotlin(files: Collection<FileSpec>, tests: Map<String, String> = emptyMap()): Path {
+fun assertCompilesKotlin(
+    files: Collection<FileSpec>,
+    tests: Map<String, String> = emptyMap(),
+): Path {
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")
     files.forEach { it.writeTo(srcDir) }
@@ -78,63 +85,70 @@ fun assertCompilesKotlin(files: Collection<FileSpec>, tests: Map<String, String>
     }
 
     K2JVMCompiler().run {
-        val exitCode = execImpl(
-            PrintingMessageCollector(
-                System.out,
-                MessageRenderer.WITHOUT_PATHS,
-                false
-            ),
-            Services.EMPTY,
-            K2JVMCompilerArguments().apply {
-                freeArgs = listOf(srcDir.toAbsolutePath().toString())
-                destination = buildDir.toAbsolutePath().toString()
-                classpath = classpath()
-                noStdlib = true
-                noReflect = true
-                jvmTarget = JvmTarget.JVM_17.description
-            }
-        )
+        val exitCode =
+            execImpl(
+                PrintingMessageCollector(
+                    System.out,
+                    MessageRenderer.WITHOUT_PATHS,
+                    false,
+                ),
+                Services.EMPTY,
+                K2JVMCompilerArguments().apply {
+                    freeArgs = listOf(srcDir.toAbsolutePath().toString())
+                    destination = buildDir.toAbsolutePath().toString()
+                    classpath = classpath()
+                    noStdlib = true
+                    noReflect = true
+                    jvmTarget = JvmTarget.JVM_17.description
+                },
+            )
         assertThat(exitCode).isEqualTo(ExitCode.OK)
     }
 
     return buildDir
 }
 
-fun classpath(): String {
-    return System.getProperty("java.class.path")
+fun classpath(): String =
+    System
+        .getProperty("java.class.path")
         .split(System.getProperty("path.separator"))
         .filter {
             File(it).exists() && File(it).canRead()
         }.joinToString(":")
-}
 
-fun codegenTestClassLoader(compilation: Compilation, parent: ClassLoader? = null): ClassLoader {
-    return CodegenTestClassLoader(compilation, parent)
-}
+fun codegenTestClassLoader(
+    compilation: Compilation,
+    parent: ClassLoader? = null,
+): ClassLoader = CodegenTestClassLoader(compilation, parent)
 
-fun Compilation.toClassLoader(): ClassLoader {
-    return codegenTestClassLoader(this, javaClass.classLoader)
-}
+fun Compilation.toClassLoader(): ClassLoader = codegenTestClassLoader(this, javaClass.classLoader)
 
 @Suppress("UNCHECKED_CAST")
-fun <T> invokeMethod(method: Method, target: Any, vararg args: Any): T {
+fun <T> invokeMethod(
+    method: Method,
+    target: Any,
+    vararg args: Any,
+): T {
     val result = ReflectionUtils.invokeMethod(method, target, *args)
     return result as T
 }
 
-fun List<FileSpec>.assertKotlinGeneratedAnnotation() = onEach {
-    it.members
-        .filterIsInstance(KTypeSpec::class.java)
-        .forEach { typeSpec -> typeSpec.assertKotlinGeneratedAnnotation(it) }
-}
+fun List<FileSpec>.assertKotlinGeneratedAnnotation() =
+    onEach {
+        it.members
+            .filterIsInstance(KTypeSpec::class.java)
+            .forEach { typeSpec -> typeSpec.assertKotlinGeneratedAnnotation(it) }
+    }
 
-fun List<JavaFile>.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) = onEach {
-    it.typeSpec.assertJavaGeneratedAnnotation(shouldHaveDate)
-}
+fun List<JavaFile>.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) =
+    onEach {
+        it.typeSpec.assertJavaGeneratedAnnotation(shouldHaveDate)
+    }
 
 fun KTypeSpec.assertKotlinGeneratedAnnotation(fileSpec: FileSpec) {
-    val generatedSpec = annotations
-        .firstOrNull { it.canonicalName() == "$basePackageName.Generated" }
+    val generatedSpec =
+        annotations
+            .firstOrNull { it.canonicalName() == "$BASE_PACKAGE_NAME.Generated" }
     assertThat(generatedSpec)
         .`as`("@Generated annotation exists in %s at %s", this, fileSpec)
         .isNotNull
@@ -149,8 +163,9 @@ fun KTypeSpec.assertKotlinGeneratedAnnotation(fileSpec: FileSpec) {
 }
 
 fun TypeSpec.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) {
-    val generatedSpec = annotations
-        .firstOrNull { it.canonicalName() == "$basePackageName.Generated" }
+    val generatedSpec =
+        annotations
+            .firstOrNull { it.canonicalName() == "$BASE_PACKAGE_NAME.Generated" }
     assertThat(generatedSpec)
         .`as`("@Generated annotation exists in %s", this)
         .isNotNull
@@ -171,8 +186,9 @@ fun TypeSpec.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) {
 }
 
 fun AnnotationSpec.canonicalName(): String = (type as ClassName).canonicalName()
+
 fun KAnnotationSpec.canonicalName() = (typeName as KClassName).canonicalName
 
-const val basePackageName = "com.netflix.graphql.dgs.codegen.tests.generated"
-const val typesPackageName = "$basePackageName.types"
-const val dataFetcherPackageName = "$basePackageName.datafetchers"
+const val BASE_PACKAGE_NAME = "com.netflix.graphql.dgs.codegen.tests.generated"
+const val TYPES_PACKAGE_NAME = "$BASE_PACKAGE_NAME.types"
+const val DATA_FETCHER_PACKAGE_NAME = "$BASE_PACKAGE_NAME.datafetchers"

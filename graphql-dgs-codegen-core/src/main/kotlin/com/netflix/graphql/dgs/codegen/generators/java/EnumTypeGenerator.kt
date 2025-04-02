@@ -30,12 +30,17 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.lang.model.element.Modifier
 
-class EnumTypeGenerator(private val config: CodeGenConfig) {
+class EnumTypeGenerator(
+    private val config: CodeGenConfig,
+) {
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
     }
 
-    fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
+    fun generate(
+        definition: EnumTypeDefinition,
+        extensions: List<EnumTypeDefinition>,
+    ): CodeGenResult {
         if (definition.shouldSkip(config)) {
             return CodeGenResult.EMPTY
         }
@@ -79,7 +84,5 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
         return CodeGenResult(javaEnumTypes = listOf(javaFile))
     }
 
-    private fun getPackageName(): String {
-        return config.packageNameTypes
-    }
+    private fun getPackageName(): String = config.packageNameTypes
 }

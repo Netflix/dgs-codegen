@@ -45,7 +45,7 @@ object ClientUtilsConventions {
     fun apply(
         project: Project,
         optionalCodeUtilsVersion: Optional<String> = Optional.empty(),
-        optionalCodeClientDependencyScope: Optional<String> = Optional.empty()
+        optionalCodeClientDependencyScope: Optional<String> = Optional.empty(),
     ) {
         clientCoreArtifact(optionalCodeUtilsVersion).ifPresent { dependencyString ->
             val dependencyLockString = getDependencyString()
@@ -65,16 +65,18 @@ object ClientUtilsConventions {
         }
     }
 
-    private val pluginProperties: Optional<Properties> = try {
-        val props = Properties()
-        val inputStream = this.javaClass.classLoader.getResourceAsStream("META-INF/graphql-dgs-codegen-core.properties")
-            ?: throw FileNotFoundException("property file not found in the classpath")
-        inputStream.use { props.load(it) }
-        Optional.of(props)
-    } catch (e: Exception) {
-        logger.error("Unable to resolve the graphql-dgs-codegen-gradle.properties properties.")
-        Optional.empty()
-    }
+    private val pluginProperties: Optional<Properties> =
+        try {
+            val props = Properties()
+            val inputStream =
+                this.javaClass.classLoader.getResourceAsStream("META-INF/graphql-dgs-codegen-core.properties")
+                    ?: throw FileNotFoundException("property file not found in the classpath")
+            inputStream.use { props.load(it) }
+            Optional.of(props)
+        } catch (e: Exception) {
+            logger.error("Unable to resolve the graphql-dgs-codegen-gradle.properties properties.")
+            Optional.empty()
+        }
 
     internal val pluginMetaInfVersion: Optional<String> =
         pluginProperties.flatMap { Optional.ofNullable(it.getProperty("Implementation-Version")) }

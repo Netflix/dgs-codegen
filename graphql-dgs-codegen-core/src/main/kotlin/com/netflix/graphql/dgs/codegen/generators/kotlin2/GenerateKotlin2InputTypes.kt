@@ -38,15 +38,16 @@ import graphql.language.*
 fun generateKotlin2InputTypes(
     config: CodeGenConfig,
     document: Document,
-    requiredTypes: Set<String>
+    requiredTypes: Set<String>,
 ): List<FileSpec> {
     val typeLookup = Kotlin2TypeLookup(config, document)
 
-    val typeUtils = KotlinTypeUtils(
-        packageName = config.packageName,
-        config = config,
-        document = document
-    )
+    val typeUtils =
+        KotlinTypeUtils(
+            packageName = config.packageName,
+            config = config,
+            document = document,
+        )
 
     return document
         .getDefinitionsOfType(InputObjectTypeDefinition::class.java)
@@ -61,88 +62,101 @@ fun generateKotlin2InputTypes(
             val extensionTypes = findInputExtensions(inputDefinition.name, document.definitions)
 
             // get all fields defined on the type itself or any extension types
-            val fields = listOf(inputDefinition)
-                .plus(extensionTypes)
-                .flatMap { it.inputValueDefinitions }
-                .filter(ReservedKeywordFilter.filterInvalidNames)
+            val fields =
+                listOf(inputDefinition)
+                    .plus(extensionTypes)
+                    .flatMap { it.inputValueDefinitions }
+                    .filter(ReservedKeywordFilter.filterInvalidNames)
 
             fun type(field: InputValueDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
 
             val typeName = ClassName(config.packageNameTypes, inputDefinition.name)
 
             // create the input class
-            val typeSpec = TypeSpec.classBuilder(typeName)
-                .addOptionalGeneratedAnnotation(config)
-                // add docs if available
-                .apply {
-                    if (inputDefinition.description != null) {
-                        addKdoc("%L", inputDefinition.description.sanitizeKdoc())
-                    }
-                }
-                .superclass(GraphQLInput::class)
-                // add a constructor with a parameter for every field
-                .primaryConstructor(
-                    FunSpec.constructorBuilder()
-                        .addAnnotation(JsonCreator::class)
-                        .addParameters(
-                            fields.map { field ->
-                                val type = type(field)
-                                ParameterSpec.builder(
-                                    name = field.name,
-                                    type = type
-                                ).addAnnotation(AnnotationSpec.builder(JsonProperty::class).addMember("%S", field.name).build())
-                                    .apply {
-                                        if (field.defaultValue != null || type.isNullable) {
-                                            val value = field.defaultValue?.let {
-                                                generateKotlinCode(
-                                                    it,
-                                                    type,
-                                                    document
-                                                        .getDefinitionsOfType(InputObjectTypeDefinition::class.java),
-                                                    config,
-                                                    typeUtils
-                                                )
+            val typeSpec =
+                TypeSpec
+                    .classBuilder(typeName)
+                    .addOptionalGeneratedAnnotation(config)
+                    // add docs if available
+                    .apply {
+                        if (inputDefinition.description != null) {
+                            addKdoc("%L", inputDefinition.description.sanitizeKdoc())
+                        }
+                    }.superclass(GraphQLInput::class)
+                    // add a constructor with a parameter for every field
+                    .primaryConstructor(
+                        FunSpec
+                            .constructorBuilder()
+                            .addAnnotation(JsonCreator::class)
+                            .addParameters(
+                                fields.map { field ->
+                                    val type = type(field)
+                                    ParameterSpec
+                                        .builder(
+                                            name = field.name,
+                                            type = type,
+                                        ).addAnnotation(AnnotationSpec.builder(JsonProperty::class).addMember("%S", field.name).build())
+                                        .apply {
+                                            if (field.defaultValue != null || type.isNullable) {
+                                                val value =
+                                                    field.defaultValue?.let {
+                                                        generateKotlinCode(
+                                                            it,
+                                                            type,
+                                                            document
+                                                                .getDefinitionsOfType(InputObjectTypeDefinition::class.java),
+                                                            config,
+                                                            typeUtils,
+                                                        )
+                                                    }
+                                                defaultValue("default<%T, %T>(%S, $value)", typeName, type, field.name)
                                             }
-                                            defaultValue("default<%T, %T>(%S, $value)", typeName, type, field.name)
-                                        }
+                                        }.build()
+                                },
+                            ).build(),
+                    )
+                    // add a backing property for each field
+                    .addProperties(
+                        fields.map { field ->
+                            PropertySpec
+                                .builder(
+                                    name = field.name,
+                                    type = type(field),
+                                ).initializer(field.name)
+                                .build()
+                        },
+                    ).addFunction(
+                        FunSpec
+                            .builder("fields")
+                            .addModifiers(KModifier.OVERRIDE)
+                            .returns(
+                                List::class.asClassName().parameterizedBy(
+                                    Pair::class.asClassName().parameterizedBy(
+                                        String::class.asClassName(),
+                                        Any::class.asClassName().copy(nullable = true),
+                                    ),
+                                ),
+                            ).addCode(
+                                fields.let { fs ->
+                                    val builder = CodeBlock.builder().add("return listOf(")
+                                    fs.forEachIndexed { i, f ->
+                                        builder.add(
+                                            "%S to %N%L",
+                                            f.name,
+                                            f.name,
+                                            if (i <
+                                                fs.size.dec()
+                                            ) {
+                                                ", "
+                                            } else {
+                                                ""
+                                            },
+                                        )
                                     }
-                                    .build()
-                            }
-                        )
-                        .build()
-                )
-                // add a backing property for each field
-                .addProperties(
-                    fields.map { field ->
-                        PropertySpec.builder(
-                            name = field.name,
-                            type = type(field)
-                        )
-                            .initializer(field.name)
-                            .build()
-                    }
-                )
-                .addFunction(
-                    FunSpec.builder("fields")
-                        .addModifiers(KModifier.OVERRIDE)
-                        .returns(
-                            List::class.asClassName().parameterizedBy(
-                                Pair::class.asClassName().parameterizedBy(
-                                    String::class.asClassName(),
-                                    Any::class.asClassName().copy(nullable = true)
-                                )
-                            )
-                        )
-                        .addCode(
-                            fields.let { fs ->
-                                val builder = CodeBlock.builder().add("return listOf(")
-                                fs.forEachIndexed { i, f -> builder.add("%S to %N%L", f.name, f.name, if (i < fs.size.dec()) ", " else "") }
-                                builder.add(")").build()
-                            }
-                        )
-                        .build()
-                )
-                .build()
+                                    builder.add(")").build()
+                                },
+                            ).build(),
+                    ).build()
 
             // return a file per type
             FileSpec.get(config.packageNameTypes, typeSpec)

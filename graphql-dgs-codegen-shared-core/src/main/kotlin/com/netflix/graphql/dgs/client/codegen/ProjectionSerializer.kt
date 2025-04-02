@@ -23,19 +23,22 @@ import graphql.language.InlineFragment
 import graphql.language.SelectionSet
 import graphql.language.TypeName
 
-class ProjectionSerializer(private val inputValueSerializer: InputValueSerializerInterface) {
-
+class ProjectionSerializer(
+    private val inputValueSerializer: InputValueSerializerInterface,
+) {
     fun toSelectionSet(projection: BaseProjectionNode): SelectionSet {
         val selectionSet = SelectionSet.newSelectionSet()
 
         for ((fieldName, value) in projection.fields) {
-            val fieldSelection = Field.newField()
-                .name(fieldName)
-                .arguments(
-                    projection.inputArguments[fieldName].orEmpty().map { (argName, values) ->
-                        Argument(argName, inputValueSerializer.toValue(values))
-                    }
-                )
+            val fieldSelection =
+                Field
+                    .newField()
+                    .name(fieldName)
+                    .arguments(
+                        projection.inputArguments[fieldName].orEmpty().map { (argName, values) ->
+                            Argument(argName, inputValueSerializer.toValue(values))
+                        },
+                    )
             if (value is BaseProjectionNode) {
                 val fieldSelectionSet = toSelectionSet(value)
                 if (fieldSelectionSet.selections.isNotEmpty()) {
@@ -43,36 +46,40 @@ class ProjectionSerializer(private val inputValueSerializer: InputValueSerialize
                 }
             } else if (value != null) {
                 fieldSelection.selectionSet(
-                    SelectionSet.newSelectionSet()
+                    SelectionSet
+                        .newSelectionSet()
                         .selection(Field.newField(value.toString()).build())
-                        .build()
+                        .build(),
                 )
             }
             selectionSet.selection(fieldSelection.build())
         }
 
         for (fragment in projection.fragments) {
-            val typeCondition = fragment.schemaType.map { TypeName(it) }
-                .orElseGet {
-                    val className = fragment::class.simpleName
-                        ?: throw AssertionError("Unable to determine class name for projection: $fragment")
-                    TypeName(
-                        className.substringAfterLast("_")
-                            .substringBefore("Projection")
-                    )
-                }
+            val typeCondition =
+                fragment.schemaType
+                    .map { TypeName(it) }
+                    .orElseGet {
+                        val className =
+                            fragment::class.simpleName
+                                ?: throw AssertionError("Unable to determine class name for projection: $fragment")
+                        TypeName(
+                            className
+                                .substringAfterLast("_")
+                                .substringBefore("Projection"),
+                        )
+                    }
 
             selectionSet.selection(
-                InlineFragment.newInlineFragment()
+                InlineFragment
+                    .newInlineFragment()
                     .typeCondition(typeCondition)
                     .selectionSet(toSelectionSet(fragment))
-                    .build()
+                    .build(),
             )
         }
         return selectionSet.build()
     }
 
-    fun serialize(projection: BaseProjectionNode): String {
-        return AstPrinter.printAst(toSelectionSet(projection))
-    }
+    fun serialize(projection: BaseProjectionNode): String = AstPrinter.printAst(toSelectionSet(projection))
 }

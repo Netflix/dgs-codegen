@@ -25,84 +25,102 @@ import graphql.language.SelectionSet
 import graphql.language.VariableReference
 import graphql.schema.Coercing
 
-class GraphQLQueryRequest @JvmOverloads constructor(
-    val query: GraphQLQuery,
-    val projection: BaseProjectionNode? = null,
-    options: GraphQLQueryRequestOptions? = null
-) {
-
-    private var selectionSet: SelectionSet? = null
-    constructor(query: GraphQLQuery, projection: BaseProjectionNode, scalars: Map<Class<*>, Coercing<*, *>>) : this(query = query, projection = projection, options = GraphQLQueryRequestOptions(scalars = scalars))
-    constructor(query: GraphQLQuery, selectionSet: SelectionSet, scalars: Map<Class<*>, Coercing<*, *>>? = null) : this(query = query, projection = null, options = GraphQLQueryRequestOptions(scalars = scalars ?: emptyMap())) {
-        this.selectionSet = selectionSet
-    }
-    class GraphQLQueryRequestOptions(val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(), val graphQLContext: GraphQLContext = GraphQLContext.getDefault()) {
-        // When enabled, input values that are derived from properties
-        // whose values are null will be serialized in the query request
-        var allowNullablePropertyInputValues = false
-    }
-
-    val inputValueSerializer =
-        if (options?.allowNullablePropertyInputValues == true) {
-            NullableInputValueSerializer(options.scalars)
-        } else {
-            InputValueSerializer(options?.scalars ?: emptyMap(), options?.graphQLContext ?: GraphQLContext.getDefault())
+class GraphQLQueryRequest
+    @JvmOverloads
+    constructor(
+        val query: GraphQLQuery,
+        val projection: BaseProjectionNode? = null,
+        options: GraphQLQueryRequestOptions? = null,
+    ) {
+        private var selectionSet: SelectionSet? = null
+        constructor(
+            query: GraphQLQuery,
+            projection: BaseProjectionNode,
+            scalars: Map<Class<*>, Coercing<*, *>>,
+        ) : this(query = query, projection = projection, options = GraphQLQueryRequestOptions(scalars = scalars))
+        constructor(
+            query: GraphQLQuery,
+            selectionSet: SelectionSet,
+            scalars: Map<Class<*>, Coercing<*, *>>? = null,
+        ) : this(
+            query = query,
+            projection = null,
+            options =
+                GraphQLQueryRequestOptions(
+                    scalars =
+                        scalars ?: emptyMap(),
+                ),
+        ) {
+            this.selectionSet = selectionSet
         }
 
-    val projectionSerializer = ProjectionSerializer(inputValueSerializer)
-
-    fun serialize(): String {
-        return serialize(false)
-    }
-
-    fun serializeCompact(): String {
-        return serialize(true)
-    }
-
-    private fun serialize(compact: Boolean): String {
-        val operationDef = OperationDefinition.newOperationDefinition()
-
-        query.name?.let { operationDef.name(it) }
-        query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
-
-        if (query.variableDefinitions.isNotEmpty()) {
-            operationDef.variableDefinitions(query.variableDefinitions)
+        class GraphQLQueryRequestOptions(
+            val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
+            val graphQLContext: GraphQLContext = GraphQLContext.getDefault(),
+        ) {
+            // When enabled, input values that are derived from properties
+            // whose values are null will be serialized in the query request
+            var allowNullablePropertyInputValues = false
         }
 
-        val selection = Field.newField(query.getOperationName())
-        if (query.input.isNotEmpty()) {
-            selection.arguments(
-                query.input.map { (name, value) ->
-                    if (query.variableReferences.containsKey(name)) {
-                        Argument(name, VariableReference.of(query.variableReferences[name]))
-                    } else {
-                        Argument(name, inputValueSerializer.toValue(value))
-                    }
-                }
-            )
-        }
-
-        if (projection != null) {
-            val selectionSetFromProjection = if (projection is BaseSubProjectionNode<*, *> && projection.root() != null) {
-                projectionSerializer.toSelectionSet(projection.root() as BaseProjectionNode)
+        val inputValueSerializer =
+            if (options?.allowNullablePropertyInputValues == true) {
+                NullableInputValueSerializer(options.scalars)
             } else {
-                projectionSerializer.toSelectionSet(projection)
+                InputValueSerializer(options?.scalars ?: emptyMap(), options?.graphQLContext ?: GraphQLContext.getDefault())
             }
-            if (selectionSetFromProjection.selections.isNotEmpty()) {
-                selection.selectionSet(selectionSetFromProjection)
+
+        val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+
+        fun serialize(): String = serialize(false)
+
+        fun serializeCompact(): String = serialize(true)
+
+        private fun serialize(compact: Boolean): String {
+            val operationDef = OperationDefinition.newOperationDefinition()
+
+            query.name?.let { operationDef.name(it) }
+            query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
+
+            if (query.variableDefinitions.isNotEmpty()) {
+                operationDef.variableDefinitions(query.variableDefinitions)
             }
-        }
 
-        if (selectionSet != null) {
-            selection.selectionSet(selectionSet)
-        }
+            val selection = Field.newField(query.getOperationName())
+            if (query.input.isNotEmpty()) {
+                selection.arguments(
+                    query.input.map { (name, value) ->
+                        if (query.variableReferences.containsKey(name)) {
+                            Argument(name, VariableReference.of(query.variableReferences[name]))
+                        } else {
+                            Argument(name, inputValueSerializer.toValue(value))
+                        }
+                    },
+                )
+            }
 
-        operationDef.selectionSet(SelectionSet.newSelectionSet().selection(selection.build()).build())
+            if (projection != null) {
+                val selectionSetFromProjection =
+                    if (projection is BaseSubProjectionNode<*, *> && projection.root() != null) {
+                        projectionSerializer.toSelectionSet(projection.root() as BaseProjectionNode)
+                    } else {
+                        projectionSerializer.toSelectionSet(projection)
+                    }
+                if (selectionSetFromProjection.selections.isNotEmpty()) {
+                    selection.selectionSet(selectionSetFromProjection)
+                }
+            }
 
-        return if (compact) {
-            AstPrinter.printAstCompact(operationDef.build())
-        } else {
-            AstPrinter.printAst(operationDef.build())
+            if (selectionSet != null) {
+                selection.selectionSet(selectionSet)
+            }
+
+            operationDef.selectionSet(SelectionSet.newSelectionSet().selection(selection.build()).build())
+
+            return if (compact) {
+                AstPrinter.printAstCompact(operationDef.build())
+            } else {
+                AstPrinter.printAst(operationDef.build())
+            }
         }
     }
-}
