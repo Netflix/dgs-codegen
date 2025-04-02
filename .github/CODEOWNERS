@@ -1,0 +1,11 @@
+*  @paulbakker @srinivasankavitha @asibross @iuliiasobolevska @iparadiso @jjacobs44 @kilink @kzwang
+
+# Do not tag humans for review when only dependencies are updated
+**/dependencies.lock
+**/gradle.lockfile
+gradle/**
+gradlew
+gradlew.bat
+
+# Do not tag humans for review for automated change log updates
+CHANGELOG.md
