@@ -177,7 +177,10 @@ fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec =
         .addMember("%S", "INAPPLICABLE_JVM_NAME")
         .build()
 
-private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
+private fun generatedAnnotation(
+    packageName: String,
+    generateDate: Boolean,
+): List<AnnotationSpec> {
     val graphqlGenerated =
         AnnotationSpec
             .builder(ClassName(packageName, "Generated"))
@@ -192,10 +195,12 @@ private fun generatedAnnotation(packageName: String): List<AnnotationSpec> {
             AnnotationSpec
                 .builder(generatedAnnotation)
                 .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
-                .addMember("date = %S", generatedDate)
-                .build()
 
-        listOf(javaxGenerated, graphqlGenerated)
+        if (generateDate) {
+            javaxGenerated.addMember("date = %S", generatedDate)
+        }
+
+        listOf(javaxGenerated.build(), graphqlGenerated)
     }
 }
 
@@ -425,7 +430,14 @@ private fun parseInputs(
 ): List<CodeBlock> {
     val objectFields: List<ObjectField> = inputs.objectFields
     return objectFields.fold(mutableListOf()) { codeBlocks, objectField ->
-        codeBlocks.add(generateCode(config, objectField.value, annotationName, objectField.name + ParserConstants.ASSIGNMENT_OPERATOR))
+        codeBlocks.add(
+            generateCode(
+                config,
+                objectField.value,
+                annotationName,
+                objectField.name + ParserConstants.ASSIGNMENT_OPERATOR,
+            ),
+        )
         codeBlocks
     }
 }
@@ -449,6 +461,8 @@ fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.B
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
-            generatedAnnotation(config.packageName).forEach { addAnnotation(it) }
+            generatedAnnotation(config.packageName, !config.disableDatesInGeneratedAnnotation).forEach {
+                addAnnotation(it)
+            }
         }
     }
