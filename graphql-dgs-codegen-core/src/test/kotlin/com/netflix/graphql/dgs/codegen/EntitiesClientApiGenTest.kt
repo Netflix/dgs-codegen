@@ -20,10 +20,8 @@ package com.netflix.graphql.dgs.codegen
 
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
-import org.junit.Ignore
 import org.junit.jupiter.api.Test
 
-@Ignore
 class EntitiesClientApiGenTest {
     @Test
     fun `We can have federated entities`() {
