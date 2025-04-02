@@ -3184,15 +3184,15 @@ class KotlinCodeGenTest {
     }
 
     @Test
-    fun deprecateAnnotationWithNoMesssage() {
+    fun deprecateAnnotationWithNoReason() {
         val schema =
             """
-            input Person @deprecated(message: "This is going bye bye") {
+            input Person @deprecated {
                 name: String @deprecated
             }
             """.trimIndent()
 
-        assertThrows<IllegalArgumentException> {
+        val dataTypes =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -3200,8 +3200,29 @@ class KotlinCodeGenTest {
                     language = Language.KOTLIN,
                     addDeprecatedAnnotation = true,
                 ),
-            ).generate()
-        }
+            ).generate().kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+        assertThat(dataTypes[0].name).isEqualTo("Person")
+
+        val annotationSpec = (dataTypes[0].members[0] as TypeSpec).annotations[0]
+        assertThat((annotationSpec.typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
+        assertThat(annotationSpec.members).hasSize(1)
+        assertThat(
+            annotationSpec.members[0],
+        ).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("Deprecated in the GraphQL schema."))
+
+        val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
+        assertThat(parameterSpec.name).isEqualTo("name")
+        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(
+            (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
+        ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
+        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
+        assertThat(parameterSpec.annotations[1].members).hasSize(1)
+        assertThat(
+            parameterSpec.annotations[1].members[0],
+        ).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("Deprecated in the GraphQL schema."))
     }
 
     @Test

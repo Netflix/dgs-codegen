@@ -25,6 +25,7 @@ object ParserConstants {
     const val REASON = "reason"
     const val CUSTOM_ANNOTATION = "annotate"
     const val DEPRECATED = "deprecated"
+    const val DEPRECATED_IN_THE_GRAPHQL_SCHEMA = "Deprecated in the GraphQL schema."
     const val INPUTS = "inputs"
     const val REPLACE_WITH_STR = ", replace with "
     const val MESSAGE = "message"

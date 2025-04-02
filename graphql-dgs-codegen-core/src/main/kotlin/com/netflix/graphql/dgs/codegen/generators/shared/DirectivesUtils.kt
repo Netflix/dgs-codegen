@@ -49,7 +49,7 @@ fun applyDirectivesKotlin(
             if (argumentMap.containsKey(ParserConstants.REASON)) {
                 annotations.add(deprecatedAnnotation((argumentMap[ParserConstants.REASON] as StringValue).value))
             } else {
-                throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
+                annotations.add(deprecatedAnnotation(ParserConstants.DEPRECATED_IN_THE_GRAPHQL_SCHEMA))
             }
         }
 
@@ -107,7 +107,7 @@ fun applyDirectivesJava(
                         commentFormat = "@deprecated ${reason.substringBefore(ParserConstants.REPLACE_WITH_STR)}. Replaced by $replace"
                     }
                 } else {
-                    throw IllegalArgumentException("Deprecated requires an argument `${ParserConstants.REASON}`")
+                    commentFormat = ParserConstants.DEPRECATED_IN_THE_GRAPHQL_SCHEMA
                 }
             }
             annotations
