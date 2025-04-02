@@ -23,14 +23,13 @@ import com.netflix.graphql.dgs.codegen.CodeGenResult
 import graphql.language.*
 
 object EntitiesRepresentationTypeGeneratorUtils {
-
     fun interface RepresentationGenerator {
         fun generate(
             definitionName: String,
             representationName: String,
             fields: List<FieldDefinition>,
             generatedRepresentations: MutableMap<String, Any>,
-            keyFields: Map<String, Any>
+            keyFields: Map<String, Any>,
         ): CodeGenResult
     }
 
@@ -38,14 +37,14 @@ object EntitiesRepresentationTypeGeneratorUtils {
         config: CodeGenConfig,
         definition: ObjectTypeDefinition,
         generatedRepresentations: MutableMap<String, Any>,
-        representationGenerator: RepresentationGenerator
+        representationGenerator: RepresentationGenerator,
     ): CodeGenResult {
         if (config.skipEntityQueries) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
         val representationName = toRepresentationName(definition)
         if (representationName in generatedRepresentations) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         val directiveArg =
@@ -61,38 +60,50 @@ object EntitiesRepresentationTypeGeneratorUtils {
             representationName,
             definition.fieldDefinitions,
             generatedRepresentations,
-            keyFields
+            keyFields,
         )
     }
 
-    fun findType(typeName: Type<*>, document: Document): TypeDefinition<*>? {
-        return when (typeName) {
+    fun findType(
+        typeName: Type<*>,
+        document: Document,
+    ): TypeDefinition<*>? =
+        when (typeName) {
             is NonNullType -> {
                 findType(typeName.type, document)
             }
             is ListType -> {
                 findType(typeName.type, document)
             }
-            else -> document.definitions.filterIsInstance<TypeDefinition<*>>()
-                .find { it.name == (typeName as TypeName).name }
+            else ->
+                document.definitions
+                    .filterIsInstance<TypeDefinition<*>>()
+                    .find { it.name == (typeName as TypeName).name }
         }
-    }
 
     fun parseKeyDirectiveValue(keyDirective: List<String>): Map<String, Any> {
-        data class Node(val key: String, val map: MutableMap<String, Any>, val parent: Node?)
+        data class Node(
+            val key: String,
+            val map: MutableMap<String, Any>,
+            val parent: Node?,
+        )
 
-        val keys = keyDirective.map { ds ->
-            ds.map { if (it == '{' || it == '}') " $it " else "$it" }
-                .joinToString("", "", "")
-                .split(" ")
-        }.flatten()
+        val keys =
+            keyDirective
+                .map { ds ->
+                    ds
+                        .map { if (it == '{' || it == '}') " $it " else "$it" }
+                        .joinToString("", "", "")
+                        .split(" ")
+                }.flatten()
 
         // handle simple keys and nested keys by constructing the path to each  key
         // e.g. type Movie @key(fields: "movieId") or type MovieCast @key(fields: movie { movieId } actors { name } }
         val mappedKeyTypes = mutableMapOf<String, Any>()
         var parent = Node("", mappedKeyTypes, null)
         var current = Node("", mappedKeyTypes, null)
-        keys.filter { it != " " && it != "" }
+        keys
+            .filter { it != " " && it != "" }
             .forEach {
                 when (it) {
                     "{" -> {

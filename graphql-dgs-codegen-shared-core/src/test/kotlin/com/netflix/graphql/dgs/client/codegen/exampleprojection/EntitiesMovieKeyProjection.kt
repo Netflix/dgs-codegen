@@ -22,13 +22,12 @@ import java.util.*
 class EntitiesMovieKeyProjection(
     parent: EntitiesProjectionRoot,
     root: EntitiesProjectionRoot,
-    schemaType: Optional<String>
+    schemaType: Optional<String>,
 ) : BaseSubProjectionNode<EntitiesProjectionRoot, EntitiesProjectionRoot>(
-    parent,
-    root,
-    schemaType = schemaType
-) {
-
+        parent,
+        root,
+        schemaType = schemaType,
+    ) {
     fun moveId(): EntitiesMovieKeyProjection {
         fields["moveId"] = null
         return this
@@ -44,7 +43,10 @@ class EntitiesMovieKeyProjection(
         return this
     }
 
-    fun reviews(username: String, score: Int): Movies_ReviewsProjection {
+    fun reviews(
+        username: String,
+        score: Int,
+    ): Movies_ReviewsProjection {
         val projection = Movies_ReviewsProjection(this, root)
         fields["reviews"] = projection
         inputArguments.computeIfAbsent("reviews") { mutableListOf() }

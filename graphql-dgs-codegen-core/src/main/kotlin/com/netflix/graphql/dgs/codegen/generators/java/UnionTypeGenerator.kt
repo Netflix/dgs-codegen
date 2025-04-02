@@ -30,27 +30,36 @@ import graphql.language.UnionTypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
 import javax.lang.model.element.Modifier
 
-class UnionTypeGenerator(private val config: CodeGenConfig, private val document: Document) {
-
+class UnionTypeGenerator(
+    private val config: CodeGenConfig,
+    private val document: Document,
+) {
     val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config, document)
 
-    fun generate(definition: UnionTypeDefinition, extensions: List<UnionTypeExtensionDefinition>): CodeGenResult {
+    fun generate(
+        definition: UnionTypeDefinition,
+        extensions: List<UnionTypeExtensionDefinition>,
+    ): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
-        val javaType = TypeSpec.interfaceBuilder(definition.name)
-            .addOptionalGeneratedAnnotation(config)
-            .addModifiers(Modifier.PUBLIC)
+        val javaType =
+            TypeSpec
+                .interfaceBuilder(definition.name)
+                .addOptionalGeneratedAnnotation(config)
+                .addModifiers(Modifier.PUBLIC)
 
-        val memberTypes = definition.memberTypes.plus(extensions.flatMap { it.memberTypes }).asSequence()
-            .filterIsInstance<TypeName>()
-            .map { member ->
-                typeUtils.findJavaInterfaceName(member.name, packageName)
-            }
-            .filterIsInstance<ClassName>()
-            .toList()
+        val memberTypes =
+            definition.memberTypes
+                .asSequence()
+                .plus(extensions.asSequence().flatMap { it.memberTypes })
+                .filterIsInstance<TypeName>()
+                .map { member ->
+                    typeUtils.findJavaInterfaceName(member.name, packageName)
+                }.filterIsInstance<ClassName>()
+                .toList()
 
         if (memberTypes.isNotEmpty()) {
             javaType.addAnnotation(jsonTypeInfoAnnotation())

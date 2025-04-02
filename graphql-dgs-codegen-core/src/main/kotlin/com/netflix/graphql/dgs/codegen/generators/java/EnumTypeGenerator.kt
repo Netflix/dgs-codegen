@@ -30,15 +30,22 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.lang.model.element.Modifier
 
-class EnumTypeGenerator(private val config: CodeGenConfig) {
-    private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
+class EnumTypeGenerator(
+    private val config: CodeGenConfig,
+) {
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
+    }
 
-    fun generate(definition: EnumTypeDefinition, extensions: List<EnumTypeDefinition>): CodeGenResult {
+    fun generate(
+        definition: EnumTypeDefinition,
+        extensions: List<EnumTypeDefinition>,
+    ): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
-        logger.info("Generating enum type ${definition.name}")
+        logger.info("Generating enum type {}", definition.name)
 
         val javaType =
             TypeSpec
@@ -47,13 +54,16 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
                 .addOptionalGeneratedAnnotation(config)
 
         if (definition.description != null) {
-            javaType.addJavadoc(definition.description.sanitizeJavaDoc())
+            javaType.addJavadoc("\$L", definition.description.content)
         }
 
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
 
         mergedEnumDefinitions.forEach {
-            var typeSpec = TypeSpec.anonymousClassBuilder("")
+            val typeSpec = TypeSpec.anonymousClassBuilder("")
+            if (it.description != null && it.description.content.isNotBlank()) {
+                typeSpec.addJavadoc("\$L", it.description.content)
+            }
             if (it.directives.isNotEmpty()) {
                 val (annotations, comments) = applyDirectivesJava(it.directives, config)
                 if (!comments.isNullOrBlank()) {
@@ -74,7 +84,5 @@ class EnumTypeGenerator(private val config: CodeGenConfig) {
         return CodeGenResult(javaEnumTypes = listOf(javaFile))
     }
 
-    private fun getPackageName(): String {
-        return config.packageNameTypes
-    }
+    private fun getPackageName(): String = config.packageNameTypes
 }

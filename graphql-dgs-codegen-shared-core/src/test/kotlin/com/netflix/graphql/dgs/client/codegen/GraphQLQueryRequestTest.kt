@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.client.codegen
 
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest.GraphQLQueryRequestOptions
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
+import graphql.GraphQLContext
 import graphql.language.OperationDefinition
 import graphql.language.StringValue
 import graphql.language.Value
@@ -30,15 +31,30 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 import java.util.*
 
 class GraphQLQueryRequestTest {
     @Test
+    fun testSerializeCompactListOfStringsAsInput() {
+        val query =
+            TestGraphQLQuery().apply {
+                input["actors"] = "actorA"
+                input["movies"] = listOf("movie1", "movie2")
+            }
+        val request = GraphQLQueryRequest(query)
+        val result = request.serializeCompact()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo("""{test(actors:"actorA",movies:["movie1","movie2"])}""")
+    }
+
+    @Test
     fun testSerializeListOfStringsAsInput() {
-        val query = TestGraphQLQuery().apply {
-            input["actors"] = "actorA"
-            input["movies"] = listOf("movie1", "movie2")
-        }
+        val query =
+            TestGraphQLQuery().apply {
+                input["actors"] = "actorA"
+                input["movies"] = listOf("movie1", "movie2")
+            }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
         assertValidQuery(result)
@@ -46,15 +62,16 @@ class GraphQLQueryRequestTest {
             """{
             |  test(actors: "actorA", movies: ["movie1", "movie2"])
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testSerializeListOfIntegersAsInput() {
-        val query = TestGraphQLQuery().apply {
-            input["movies"] = listOf(1234, 5678)
-        }
+        val query =
+            TestGraphQLQuery().apply {
+                input["movies"] = listOf(1234, 5678)
+            }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
         assertValidQuery(result)
@@ -62,16 +79,17 @@ class GraphQLQueryRequestTest {
             """{
             |  test(movies: [1234, 5678])
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testSerializeInputWithMultipleParameters() {
-        val query = TestGraphQLQuery().apply {
-            input["name"] = "noname"
-            input["age"] = 30
-        }
+        val query =
+            TestGraphQLQuery().apply {
+                input["name"] = "noname"
+                input["age"] = 30
+            }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
         assertValidQuery(result)
@@ -79,15 +97,16 @@ class GraphQLQueryRequestTest {
             """{
             |  test(name: "noname", age: 30)
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testSerializeInputClass() {
-        val query = TestGraphQLQuery().apply {
-            input["movie"] = Movie(1234, "testMovie")
-        }
+        val query =
+            TestGraphQLQuery().apply {
+                input["movie"] = Movie(1234, "testMovie")
+            }
         val request = GraphQLQueryRequest(query)
         val result = request.serialize()
         assertValidQuery(result)
@@ -95,15 +114,16 @@ class GraphQLQueryRequestTest {
             """{
             |  test(movie: {movieId : 1234, name : "testMovie"})
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testSerializeInputClassWithProjection() {
-        val query = TestGraphQLQuery().apply {
-            input["movie"] = Movie(1234, "testMovie")
-        }
+        val query =
+            TestGraphQLQuery().apply {
+                input["movie"] = Movie(1234, "testMovie")
+            }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
         assertValidQuery(result)
@@ -114,15 +134,16 @@ class GraphQLQueryRequestTest {
             |    movieId
             |  }
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testSerializeMutation() {
-        val query = TestGraphQLMutation().apply {
-            input["movie"] = Movie(1234, "testMovie")
-        }
+        val query =
+            TestGraphQLMutation().apply {
+                input["movie"] = Movie(1234, "testMovie")
+            }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
         assertValidQuery(result)
@@ -133,15 +154,16 @@ class GraphQLQueryRequestTest {
             |    movieId
             |  }
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun serializeWithName() {
-        val query = TestNamedGraphQLQuery().apply {
-            input["movie"] = Movie(123, "greatMovie")
-        }
+        val query =
+            TestNamedGraphQLQuery().apply {
+                input["movie"] = Movie(123, "greatMovie")
+            }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId())
         val result = request.serialize()
         assertValidQuery(result)
@@ -152,15 +174,16 @@ class GraphQLQueryRequestTest {
             |    movieId
             |  }
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun serializeWithSelectionSet() {
-        val query = TestNamedGraphQLQuery().apply {
-            input["movie"] = Movie(123, "greatMovie")
-        }
+        val query =
+            TestNamedGraphQLQuery().apply {
+                input["movie"] = Movie(123, "greatMovie")
+            }
         val inputValueSerializer = InputValueSerializer(emptyMap())
         val projectionSerializer = ProjectionSerializer(inputValueSerializer)
         val selectionSet = projectionSerializer.toSelectionSet(MovieProjection().name().movieId())
@@ -174,17 +197,18 @@ class GraphQLQueryRequestTest {
             |    movieId
             |  }
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun serializeWithSelectionSetAndScalars() {
-        val query = TestNamedGraphQLQuery().apply {
-            input["movie"] = Movie(123, "greatMovie")
-            input["dateRange"] = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))
-            input["zoneId"] = ZoneId.of("Europe/Berlin")
-        }
+        val query =
+            TestNamedGraphQLQuery().apply {
+                input["movie"] = Movie(123, "greatMovie")
+                input["dateRange"] = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))
+                input["zoneId"] = ZoneId.of("Europe/Berlin")
+            }
         val scalars = mapOf(DateRange::class.java to DateRangeScalar(), ZoneId::class.java to ZoneIdScalar())
         val inputValueSerializer = InputValueSerializer(scalars)
         val projectionSerializer = ProjectionSerializer(inputValueSerializer)
@@ -201,19 +225,27 @@ class GraphQLQueryRequestTest {
         |    movieId
         |  }
         |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun serializeWithScalar() {
-        val query = TestNamedGraphQLQuery().apply {
-            input["movie"] = Movie(123, "greatMovie")
-            input["dateRange"] = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))
-            input["zoneId"] = ZoneId.of("Europe/Berlin")
-        }
+        val query =
+            TestNamedGraphQLQuery().apply {
+                input["movie"] = Movie(123, "greatMovie")
+                input["dateRange"] = DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))
+                input["zoneId"] = ZoneId.of("Europe/Berlin")
+            }
         val request =
-            GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar(), ZoneId::class.java to ZoneIdScalar()))
+            GraphQLQueryRequest(
+                query,
+                MovieProjection(),
+                mapOf(
+                    DateRange::class.java to DateRangeScalar(),
+                    ZoneId::class.java to ZoneIdScalar(),
+                ),
+            )
 
         val result = request.serialize()
         assertValidQuery(result)
@@ -221,33 +253,48 @@ class GraphQLQueryRequestTest {
             """query TestNamedQuery {
             |  test(movie: {movieId : 123, name : "greatMovie"}, dateRange: "01/01/2020-05/11/2021", zoneId: "Europe/Berlin")
             |}
-            """.trimMargin()
+            """.trimMargin(),
+        )
+    }
+
+    @Test
+    fun serializeWithScalarAndContext() {
+        val query =
+            TestNamedGraphQLQuery().apply {
+                input["dateRange"] = DateRange(LocalDate.of(2022, 3, 31), LocalDate.of(2025, 12, 31))
+            }
+
+        val graphQLContext = GraphQLContext.getDefault().put("formatter", DateTimeFormatter.ofPattern("yyyy"))
+        val options = GraphQLQueryRequestOptions(mapOf(DateRange::class.java to DateRangeScalar()), graphQLContext)
+        val request = GraphQLQueryRequest(query, MovieProjection(), options)
+
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """query TestNamedQuery {
+            |  test(dateRange: "2022-2025")
+            |}
+            """.trimMargin(),
         )
     }
 
     @Test
     fun `serialize with UUID scalar - #416`() {
-        val uuidCoercing = object : Coercing<UUID, String> {
-            override fun serialize(uuid: Any): String {
-                return uuid.toString()
-            }
+        val uuidCoercing =
+            object : Coercing<UUID, String> {
+                override fun serialize(uuid: Any): String = uuid.toString()
 
-            override fun parseValue(input: Any): UUID {
-                return UUID.fromString(input.toString())
-            }
+                override fun parseValue(input: Any): UUID = UUID.fromString(input.toString())
 
-            override fun parseLiteral(input: Any): UUID {
-                return UUID.fromString(input.toString())
-            }
+                override fun parseLiteral(input: Any): UUID = UUID.fromString(input.toString())
 
-            override fun valueToLiteral(input: Any): Value<*> {
-                return StringValue.of(serialize(input))
+                override fun valueToLiteral(input: Any): Value<*> = StringValue.of(serialize(input))
             }
-        }
         val randomUUID = UUID.randomUUID()
-        val query = TestNamedGraphQLQuery().apply {
-            input["id"] = randomUUID
-        }
+        val query =
+            TestNamedGraphQLQuery().apply {
+                input["id"] = randomUUID
+            }
 
         val request = GraphQLQueryRequest(query, MovieProjection(), mapOf(UUID::class.java to uuidCoercing))
 
@@ -257,17 +304,23 @@ class GraphQLQueryRequestTest {
             """query TestNamedQuery {
             |  test(id: "$randomUUID")
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testQueryWithInlineFragment() {
         val query = TestNamedGraphQLQuery()
-        val projection = EntitiesProjectionRoot().onMovie(Optional.of("Movie"))
-            .moveId().title().releaseYear()
-            .reviews(username = "Foo", score = 10).username().score()
-            .root()
+        val projection =
+            EntitiesProjectionRoot()
+                .onMovie(Optional.of("Movie"))
+                .moveId()
+                .title()
+                .releaseYear()
+                .reviews(username = "Foo", score = 10)
+                .username()
+                .score()
+                .root()
         val request = GraphQLQueryRequest(query, projection)
 
         val serialized = request.serialize()
@@ -287,21 +340,25 @@ class GraphQLQueryRequestTest {
               |    }
               |  }
               |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testQueryFieldWithEmptyProjectionAndInputArguments() {
         val query = TestNamedGraphQLQuery()
-        data class TitleFormat(val uppercase: Boolean)
-        val projection = object : BaseProjectionNode() {
-            init {
-                fields["movieId"] = null
-                fields["title"] = object : BaseProjectionNode() {}
-                inputArguments["title"] = listOf(InputArgument(name = "format", value = TitleFormat(true)))
+
+        data class TitleFormat(
+            val uppercase: Boolean,
+        )
+        val projection =
+            object : BaseProjectionNode() {
+                init {
+                    fields["movieId"] = null
+                    fields["title"] = object : BaseProjectionNode() {}
+                    inputArguments["title"] = listOf(InputArgument(name = "format", value = TitleFormat(true)))
+                }
             }
-        }
         val request = GraphQLQueryRequest(query, projection)
 
         val serialized = request.serialize()
@@ -313,15 +370,17 @@ class GraphQLQueryRequestTest {
               |    title(format: {uppercase : true})
               |  }
               |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun serializeWithNestedScalar() {
-        val query = TestNamedGraphQLQuery().apply {
-            input["movie"] = Movie(123, "greatMovie", DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11)))
-        }
+        val query =
+            TestNamedGraphQLQuery().apply {
+                input["movie"] =
+                    Movie(123, "greatMovie", Optional.ofNullable(DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))))
+            }
         val request =
             GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
 
@@ -331,16 +390,17 @@ class GraphQLQueryRequestTest {
             """query TestNamedQuery {
             |  test(movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"})
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testSerializeMapAsInput() {
-        val query = TestGraphQLQuery().apply {
-            input["actors"] = mapOf("name" to "actorA", "movies" to listOf("movie1", "movie2"))
-            input["movie"] = Movie(123, "greatMovie", DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11)))
-        }
+        val query =
+            TestGraphQLQuery().apply {
+                input["actors"] = mapOf("name" to "actorA", "movies" to listOf("movie1", "movie2"))
+                input["movie"] = Movie(123, "greatMovie", Optional.of(DateRange(LocalDate.of(2020, 1, 1), LocalDate.of(2021, 5, 11))))
+            }
         val request = GraphQLQueryRequest(query, MovieProjection(), mapOf(DateRange::class.java to DateRangeScalar()))
         val result = request.serialize()
 
@@ -349,18 +409,24 @@ class GraphQLQueryRequestTest {
             """{
             |  test(actors: {name : "actorA", movies : ["movie1", "movie2"]}, movie: {movieId : 123, name : "greatMovie", window : "01/01/2020-05/11/2021"})
             |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
     fun testEntitiesQuery() {
-        val query = EntitiesGraphQLQuery.Builder()
-            .addRepresentationAsVariable(mapOf("__typename" to "Movie", "id" to 1234))
-            .build()
-        val projection = EntitiesProjectionRoot().onMovie(Optional.of("Movie"))
-            .moveId().title().releaseYear()
-            .root()
+        val query =
+            EntitiesGraphQLQuery
+                .Builder()
+                .addRepresentationAsVariable(mapOf("__typename" to "Movie", "id" to 1234))
+                .build()
+        val projection =
+            EntitiesProjectionRoot()
+                .onMovie(Optional.of("Movie"))
+                .moveId()
+                .title()
+                .releaseYear()
+                .root()
         val request = GraphQLQueryRequest(query, projection)
         val serialized = request.serialize()
 
@@ -376,18 +442,20 @@ class GraphQLQueryRequestTest {
               |    }
               |  }
               |}
-            """.trimMargin()
+            """.trimMargin(),
         )
     }
 
     @Test
-    fun serializeWithNullableInputValueSerializer() {
-        val query = TestGraphQLQuery().apply {
-            input["movie"] = Movie(1234, "name", null)
-        }
-        val options = GraphQLQueryRequestOptions().apply {
-            allowNullablePropertyInputValues = true
-        }
+    fun serializeWithNullableInputValueSerializerAndOptionalField() {
+        val query =
+            TestGraphQLQuery().apply {
+                input["movie"] = Movie(1234, "name", Optional.ofNullable(null))
+            }
+        val options =
+            GraphQLQueryRequestOptions().apply {
+                allowNullablePropertyInputValues = true
+            }
         val request = GraphQLQueryRequest(query, MovieProjection().name().movieId(), options)
         val result = request.serialize()
         assertValidQuery(result)
@@ -398,7 +466,31 @@ class GraphQLQueryRequestTest {
             |    movieId
             |  }
             |}
-            """.trimMargin()
+            """.trimMargin(),
+        )
+    }
+
+    @Test
+    fun serializeWithNullableInputValueSerializerAndNullField() {
+        val query =
+            TestGraphQLQuery().apply {
+                input["movie"] = Movie(1234, "name", null)
+            }
+        val options =
+            GraphQLQueryRequestOptions().apply {
+                allowNullablePropertyInputValues = true
+            }
+        val request = GraphQLQueryRequest(query, MovieProjection().name().movieId(), options)
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """{
+            |  test(movie: {movieId : 1234, name : "name"}) {
+            |    name
+            |    movieId
+            |  }
+            |}
+            """.trimMargin(),
         )
     }
 
@@ -407,36 +499,36 @@ class GraphQLQueryRequestTest {
      */
     companion object AssertValidQueryCompanion {
         fun assertValidQuery(query: String) {
-            val doc = try {
-                Parser().parseDocument(query)
-            } catch (exc: InvalidSyntaxException) {
-                throw AssertionError("The query failed to parse: ${exc.localizedMessage}")
-            }
-            doc.getFirstDefinitionOfType(OperationDefinition::class.java)
+            val doc =
+                try {
+                    Parser().parseDocument(query)
+                } catch (exc: InvalidSyntaxException) {
+                    throw AssertionError("The query failed to parse: ${exc.localizedMessage}")
+                }
+            doc
+                .getFirstDefinitionOfType(OperationDefinition::class.java)
                 .orElseThrow { AssertionError("No operation definition found in document") }
         }
     }
 }
 
 class TestGraphQLQuery : GraphQLQuery() {
-    override fun getOperationName(): String {
-        return "test"
-    }
+    override fun getOperationName(): String = "test"
 }
 
 class TestNamedGraphQLQuery : GraphQLQuery("query", "TestNamedQuery") {
-    override fun getOperationName(): String {
-        return "test"
-    }
+    override fun getOperationName(): String = "test"
 }
 
 class TestGraphQLMutation : GraphQLQuery("mutation") {
-    override fun getOperationName(): String {
-        return "testMutation"
-    }
+    override fun getOperationName(): String = "testMutation"
 }
 
-data class Movie(val movieId: Int, val name: String, val window: DateRange? = null)
+data class Movie(
+    val movieId: Int,
+    val name: String,
+    val window: Optional<DateRange>? = null,
+)
 
 class MovieProjection : BaseProjectionNode() {
     fun movieId(): MovieProjection {

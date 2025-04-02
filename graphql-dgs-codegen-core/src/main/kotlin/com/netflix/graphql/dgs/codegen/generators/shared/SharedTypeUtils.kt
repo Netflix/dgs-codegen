@@ -24,35 +24,50 @@ import graphql.language.ScalarTypeDefinition
 import graphql.language.StringValue
 import java.time.Instant
 
-internal sealed class GenericSymbol(open val index: Int) {
-    class OpenBracket(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf("<", startFrom))
-    class CloseBracket(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf(">", startFrom))
-    class Comma(str: String, startFrom: Int = 0) : GenericSymbol(str.indexOf(",", startFrom))
+internal sealed class GenericSymbol(
+    open val index: Int,
+) {
+    class OpenBracket(
+        str: String,
+        startFrom: Int = 0,
+    ) : GenericSymbol(str.indexOf("<", startFrom))
+
+    class CloseBracket(
+        str: String,
+        startFrom: Int = 0,
+    ) : GenericSymbol(str.indexOf(">", startFrom))
+
+    class Comma(
+        str: String,
+        startFrom: Int = 0,
+    ) : GenericSymbol(str.indexOf(",", startFrom))
 
     fun notFound(): Boolean = index == -1
 
     companion object {
-        fun findNext(mappedTypeArg: String, startFrom: Int = 0): GenericSymbolsAhead {
-            return GenericSymbolsAhead(
+        fun findNext(
+            mappedTypeArg: String,
+            startFrom: Int = 0,
+        ): GenericSymbolsAhead =
+            GenericSymbolsAhead(
                 openBracket = OpenBracket(mappedTypeArg, startFrom),
                 closeBracket = CloseBracket(mappedTypeArg, startFrom),
-                comma = Comma(mappedTypeArg, startFrom)
+                comma = Comma(mappedTypeArg, startFrom),
             )
-        }
     }
 }
 
 internal data class GenericSymbolsAhead(
     val openBracket: GenericSymbol.OpenBracket,
     val closeBracket: GenericSymbol.CloseBracket,
-    val comma: GenericSymbol.Comma
+    val comma: GenericSymbol.Comma,
 ) {
-    fun nextSymbol(): GenericSymbol? {
-        return listOf(openBracket, closeBracket, comma).filterNot { it.notFound() }.minByOrNull { it.index }
-    }
+    fun nextSymbol(): GenericSymbol? = listOf(openBracket, closeBracket, comma).filterNot { it.notFound() }.minByOrNull { it.index }
 }
 
-internal class GenericSymbolsAheadIterator(private val mappedTypeArg: String) : Iterator<GenericSymbolsAhead> {
+internal class GenericSymbolsAheadIterator(
+    private val mappedTypeArg: String,
+) : Iterator<GenericSymbolsAhead> {
     private var lastSymbolIndex = -1
     private var currentSymbolIndex = -1
 
@@ -68,9 +83,7 @@ internal class GenericSymbolsAheadIterator(private val mappedTypeArg: String) : 
         return next
     }
 
-    override fun hasNext(): Boolean {
-        return GenericSymbol.findNext(mappedTypeArg, getLastSymbolIndex() + 1).nextSymbol() != null
-    }
+    override fun hasNext(): Boolean = GenericSymbol.findNext(mappedTypeArg, getLastSymbolIndex() + 1).nextSymbol() != null
 
     fun getLastSymbolIndex(): Int = lastSymbolIndex
 }
@@ -81,7 +94,7 @@ internal fun <T> parseMappedType(
     mappedType: String,
     toTypeName: String.(isGenericParam: Boolean) -> T,
     parameterize: (current: Pair<T, MutableList<T>>) -> T,
-    onCloseBracketCallBack: ((current: Pair<T, MutableList<T>>, typeString: String) -> Unit)
+    onCloseBracketCallBack: ((current: Pair<T, MutableList<T>>, typeString: String) -> Unit),
 ): T {
     val stack = mutableListOf<Pair<T, MutableList<T>>>()
     val iterator = genericSymbolsAheadIterator(mappedType)
@@ -138,30 +151,34 @@ internal const val JAVA_TYPE_DIRECTIVE_NAME = "javaType"
  * That is, if a [ScalarTypeDefinition] exists with the same name as [typeName] and is annotated
  * with a @javaType directive, return the value from that directive; otherwise return null.
  */
-internal fun findSchemaTypeMapping(document: Document, typeName: String): String? {
+internal fun findSchemaTypeMapping(
+    document: Document,
+    typeName: String,
+): String? {
     for (definition in document.definitions) {
-        val scalarTypeDefinition = definition as? ScalarTypeDefinition
-            ?: continue
+        val scalarTypeDefinition =
+            definition as? ScalarTypeDefinition
+                ?: continue
         if (scalarTypeDefinition.name != typeName) {
             continue
         }
         if (!scalarTypeDefinition.hasDirective(JAVA_TYPE_DIRECTIVE_NAME)) {
             continue
         }
-        val directive = scalarTypeDefinition.getDirectives(JAVA_TYPE_DIRECTIVE_NAME).singleOrNull()
-            ?: throw IllegalArgumentException("multiple @$JAVA_TYPE_DIRECTIVE_NAME directives are defined")
-        val nameArgument = directive.getArgument("name")
-            ?: throw IllegalArgumentException("@$JAVA_TYPE_DIRECTIVE_NAME directive must contain 'name' argument")
+        val directive =
+            scalarTypeDefinition.getDirectives(JAVA_TYPE_DIRECTIVE_NAME).singleOrNull()
+                ?: throw IllegalArgumentException("multiple @$JAVA_TYPE_DIRECTIVE_NAME directives are defined")
+        val nameArgument =
+            directive.getArgument("name")
+                ?: throw IllegalArgumentException("@$JAVA_TYPE_DIRECTIVE_NAME directive must contain 'name' argument")
         return (nameArgument.value as StringValue).value
     }
     return null
 }
 
-internal val generatedAnnotationClassName: String? = runCatching {
-    Class.forName("javax.annotation.processing.Generated").canonicalName
-}.getOrElse {
+internal val generatedAnnotationClassName: String? =
     runCatching {
-        Class.forName("javax.annotation.Generated").canonicalName
+        Class.forName("jakarta.annotation.Generated").canonicalName
     }.getOrNull()
-}
+
 internal val generatedDate: String = Instant.now().toString()

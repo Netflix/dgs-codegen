@@ -21,9 +21,8 @@ package com.netflix.graphql.dgs.client.codegen
 import graphql.language.*
 
 class GraphQLMultiQueryRequest(
-    private val requests: List<GraphQLQueryRequest>
+    private val requests: List<GraphQLQueryRequest>,
 ) {
-
     fun serialize(): String {
         if (requests.isEmpty()) throw AssertionError("Request must have at least one query")
 
@@ -52,16 +51,17 @@ class GraphQLMultiQueryRequest(
                 selection.arguments(
                     query.input.map { (name, value) ->
                         Argument(name, request.inputValueSerializer.toValue(value))
-                    }
+                    },
                 )
             }
 
             if (request.projection != null) {
-                val selectionSet = if (request.projection is BaseSubProjectionNode<*, *> && request.projection.root() != null) {
-                    request.projectionSerializer.toSelectionSet(request.projection.root() as BaseProjectionNode)
-                } else {
-                    request.projectionSerializer.toSelectionSet(request.projection)
-                }
+                val selectionSet =
+                    if (request.projection is BaseSubProjectionNode<*, *> && request.projection.root() != null) {
+                        request.projectionSerializer.toSelectionSet(request.projection.root() as BaseProjectionNode)
+                    } else {
+                        request.projectionSerializer.toSelectionSet(request.projection)
+                    }
                 if (selectionSet.selections.isNotEmpty()) {
                     selection.selectionSet(selectionSet)
                 }

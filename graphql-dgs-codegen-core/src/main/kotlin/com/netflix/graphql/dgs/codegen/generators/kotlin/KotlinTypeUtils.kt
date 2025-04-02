@@ -32,63 +32,81 @@ import java.time.*
 import java.util.*
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
-class KotlinTypeUtils(private val packageName: String, private val config: CodeGenConfig, private val document: Document) {
+class KotlinTypeUtils(
+    private val packageName: String,
+    private val config: CodeGenConfig,
+    private val document: Document,
+) {
+    private val commonScalars =
+        mapOf(
+            "LocalTime" to LocalTime::class.asTypeName(),
+            "LocalDate" to LocalDate::class.asTypeName(),
+            "LocalDateTime" to LocalDateTime::class.asTypeName(),
+            "TimeZone" to STRING,
+            "Currency" to Currency::class.asTypeName(),
+            "Instant" to Instant::class.asTypeName(),
+            "Date" to LocalDate::class.asTypeName(),
+            "DateTime" to OffsetDateTime::class.asTypeName(),
+            "RelayPageInfo" to PageInfo::class.asTypeName(),
+            "PageInfo" to PageInfo::class.asTypeName(),
+            "PresignedUrlResponse" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse".toKtTypeName(),
+            "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName(),
+            "Upload" to "org.springframework.web.multipart.MultipartFile".toKtTypeName(),
+        )
 
-    private val commonScalars = mapOf(
-        "LocalTime" to LocalTime::class.asTypeName(),
-        "LocalDate" to LocalDate::class.asTypeName(),
-        "LocalDateTime" to LocalDateTime::class.asTypeName(),
-        "TimeZone" to STRING,
-        "Currency" to Currency::class.asTypeName(),
-        "Instant" to Instant::class.asTypeName(),
-        "Date" to LocalDate::class.asTypeName(),
-        "DateTime" to OffsetDateTime::class.asTypeName(),
-        "RelayPageInfo" to PageInfo::class.asTypeName(),
-        "PageInfo" to PageInfo::class.asTypeName(),
-        "PresignedUrlResponse" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse".toKtTypeName(),
-        "Header" to "com.netflix.graphql.types.core.resolvers.PresignedUrlResponse.Header".toKtTypeName(),
-        "Upload" to "org.springframework.web.multipart.MultipartFile".toKtTypeName()
-    )
-
-    fun qualifyName(name: String): String {
-        return "$packageName.$name"
-    }
+    fun qualifyName(name: String): String = "$packageName.$name"
 
     fun findReturnType(fieldType: Type<*>): KtTypeName {
-        val visitor = object : NodeVisitorStub() {
-            override fun visitTypeName(node: TypeName, context: TraverserContext<Node<Node<*>>>): TraversalControl {
-                context.setAccumulate(node.toKtTypeName().copy(nullable = true))
-                return TraversalControl.CONTINUE
+        val visitor =
+            object : NodeVisitorStub() {
+                override fun visitTypeName(
+                    node: TypeName,
+                    context: TraverserContext<Node<Node<*>>>,
+                ): TraversalControl {
+                    context.setAccumulate(node.toKtTypeName().copy(nullable = true))
+                    return TraversalControl.CONTINUE
+                }
+
+                override fun visitListType(
+                    node: ListType,
+                    context: TraverserContext<Node<Node<*>>>,
+                ): TraversalControl {
+                    val typeName = context.getCurrentAccumulate<KtTypeName>()
+                    context.setAccumulate(LIST.parameterizedBy(typeName).copy(nullable = true))
+                    return TraversalControl.CONTINUE
+                }
+
+                override fun visitNonNullType(
+                    node: NonNullType,
+                    context: TraverserContext<Node<Node<*>>>,
+                ): TraversalControl {
+                    val typeName = context.getCurrentAccumulate<KtTypeName>()
+                    context.setAccumulate(typeName.copy(nullable = false))
+                    return TraversalControl.CONTINUE
+                }
+
+                override fun visitNode(
+                    node: Node<*>,
+                    context: TraverserContext<Node<Node<*>>>,
+                ): TraversalControl = throw AssertionError("Unknown field type: $node")
             }
-            override fun visitListType(node: ListType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
-                val typeName = context.getCurrentAccumulate<KtTypeName>()
-                context.setAccumulate(LIST.parameterizedBy(typeName).copy(nullable = true))
-                return TraversalControl.CONTINUE
-            }
-            override fun visitNonNullType(node: NonNullType, context: TraverserContext<Node<Node<*>>>): TraversalControl {
-                val typeName = context.getCurrentAccumulate<KtTypeName>()
-                context.setAccumulate(typeName.copy(nullable = false))
-                return TraversalControl.CONTINUE
-            }
-            override fun visitNode(node: Node<*>, context: TraverserContext<Node<Node<*>>>): TraversalControl {
-                throw AssertionError("Unknown field type: $node")
-            }
-        }
         return NodeTraverser().postOrder(visitor, fieldType) as KtTypeName
     }
 
-    fun isNullable(fieldType: Type<*>): Boolean {
-        return if (config.kotlinAllFieldsOptional) {
+    fun isNullable(fieldType: Type<*>): Boolean =
+        if (config.kotlinAllFieldsOptional) {
             true
         } else {
             fieldType !is NonNullType
         }
-    }
 
     /**
      * Takes a GQL interface type name and returns the appropriate kotlin type given all of the mappings defined in the schema and config
      */
-    fun findKtInterfaceName(interfaceName: String, packageName: String): KtTypeName {
+    fun findKtInterfaceName(
+        interfaceName: String,
+        packageName: String,
+    ): KtTypeName {
         // check config
         if (interfaceName in config.typeMapping) {
             val mappedType = config.typeMapping.getValue(interfaceName)
@@ -104,7 +122,7 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
                     } else {
                         current.second.add(typeString.toKtTypeName(true))
                     }
-                }
+                },
             )
         }
 
@@ -126,7 +144,7 @@ class KotlinTypeUtils(private val packageName: String, private val config: CodeG
                     } else {
                         current.second.add(typeString.toKtTypeName(true))
                     }
-                }
+                },
             )
         }
 

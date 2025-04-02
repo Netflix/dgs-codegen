@@ -23,9 +23,9 @@ import graphql.language.Value
 import graphql.schema.Coercing
 import kotlin.reflect.full.allSuperclasses
 
-class NullableInputValueSerializer(scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) :
-    InputValueSerializer(scalars) {
-
+class NullableInputValueSerializer(
+    scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
+) : InputValueSerializer(scalars) {
     override fun toValue(input: Any?): Value<*> {
         if (input == null) {
             return NullValue.newNullValue().build()
@@ -40,10 +40,13 @@ class NullableInputValueSerializer(scalars: Map<Class<*>, Coercing<*, *>> = empt
         val classes = (sequenceOf(input::class) + input::class.allSuperclasses.asSequence()) - Any::class
         val propertyValues = getPropertyValues(classes, input)
 
-        val objectFields = propertyValues.asSequence()
-            .map { (name, value) -> ObjectField(name, toValue(value)) }
-            .toList()
-        return ObjectValue.newObjectValue()
+        val objectFields =
+            propertyValues
+                .asSequence()
+                .map { (name, value) -> ObjectField(name, toValue(value)) }
+                .toList()
+        return ObjectValue
+            .newObjectValue()
             .objectFields(objectFields)
             .build()
     }

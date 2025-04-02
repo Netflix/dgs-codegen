@@ -16,6 +16,7 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import graphql.GraphQLContext
 import graphql.language.ArrayValue
 import graphql.language.AstPrinter
 import graphql.language.BooleanValue
@@ -37,30 +38,29 @@ import java.time.LocalTime
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.reflect.KClass
-import kotlin.reflect.full.allSuperclasses
-import kotlin.reflect.full.hasAnnotation
-import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.*
 import kotlin.reflect.jvm.isAccessible
 
-open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap()) :
-    InputValueSerializerInterface {
+open class InputValueSerializer(
+    private val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
+    private val graphQLContext: GraphQLContext = GraphQLContext.getDefault(),
+) : InputValueSerializerInterface {
     companion object {
-        private val toStringClasses = setOf(
-            String::class,
-            LocalDateTime::class,
-            LocalDate::class,
-            LocalTime::class,
-            TimeZone::class,
-            Date::class,
-            OffsetDateTime::class,
-            Currency::class,
-            Instant::class
-        )
+        private val toStringClasses =
+            setOf(
+                String::class,
+                LocalDateTime::class,
+                LocalDate::class,
+                LocalTime::class,
+                TimeZone::class,
+                Date::class,
+                OffsetDateTime::class,
+                Currency::class,
+                Instant::class,
+            )
     }
 
-    override fun serialize(input: Any?): String {
-        return AstPrinter.printAst(toValue(input))
-    }
+    override fun serialize(input: Any?): String = AstPrinter.printAst(toValue(input))
 
     override fun toValue(input: Any?): Value<*> {
         if (input == null) {
@@ -76,11 +76,14 @@ open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *
         val classes = (sequenceOf(input::class) + input::class.allSuperclasses.asSequence()) - Any::class
         val propertyValues = getPropertyValues(classes, input)
 
-        val objectFields = propertyValues.asSequence()
-            .filter { (_, value) -> value != null }
-            .map { (name, value) -> ObjectField(name, toValue(value)) }
-            .toList()
-        return ObjectValue.newObjectValue()
+        val objectFields =
+            propertyValues
+                .asSequence()
+                .filter { (_, value) -> value != null }
+                .map { (name, value) -> ObjectField(name, toValue(value)) }
+                .toList()
+        return ObjectValue
+            .newObjectValue()
             .objectFields(objectFields)
             .build()
     }
@@ -92,7 +95,7 @@ open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *
 
         for (scalar in scalars.keys) {
             if (input::class.java == scalar || scalar.isAssignableFrom(input::class.java)) {
-                return Optional.of(scalars[scalar]!!.valueToLiteral(input))
+                return Optional.of(scalars[scalar]!!.valueToLiteral(input, graphQLContext, Locale.getDefault()))
             }
         }
 
@@ -138,25 +141,28 @@ open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *
 
         if (input is Collection<*>) {
             return Optional.of(
-                ArrayValue.newArrayValue()
+                ArrayValue
+                    .newArrayValue()
                     .values(input.map { toValue(it) })
-                    .build()
+                    .build(),
             )
         }
 
         if (input is Map<*, *>) {
             return Optional.of(
-                ObjectValue.newObjectValue()
+                ObjectValue
+                    .newObjectValue()
                     .objectFields(input.map { (key, value) -> ObjectField(key.toString(), toValue(value)) })
-                    .build()
+                    .build(),
             )
         }
 
         if (input is InputValue) {
             return Optional.of(
-                ObjectValue.newObjectValue()
+                ObjectValue
+                    .newObjectValue()
                     .objectFields(input.inputValues().map { (name, value) -> ObjectField(name, toValue(value)) })
-                    .build()
+                    .build(),
             )
         }
 
@@ -165,7 +171,7 @@ open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *
 
     protected fun getPropertyValues(
         classes: Sequence<KClass<out Any>>,
-        input: Any?
+        input: Any?,
     ): MutableMap<String, Any?> {
         val propertyValues = mutableMapOf<String, Any?>()
 
@@ -174,9 +180,16 @@ open class InputValueSerializer(private val scalars: Map<Class<*>, Coercing<*, *
                 if (property.name in propertyValues || property.isAbstract || property.hasAnnotation<Transient>()) {
                     continue
                 }
-
                 property.isAccessible = true
-                propertyValues[property.name] = property.call(input)
+                if (property.returnType.classifier == Optional::class) {
+                    val value = property.call(input)
+                    if (value != null && value is Optional<*>) {
+                        propertyValues[property.name] = value.orElse(null)
+                    }
+                    // if value is null, don't include the field
+                } else {
+                    propertyValues[property.name] = property.call(input)
+                }
             }
         }
         return propertyValues

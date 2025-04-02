@@ -25,24 +25,28 @@ import org.junit.jupiter.params.provider.MethodSource
 import java.util.stream.Stream
 
 internal class CodeGeneratorUtilsTest {
-
     @ParameterizedTest(name = "{index} => {0}, expected {1}")
     @MethodSource("toSnakeCaseData")
-    fun toSnakeCase(input: String, output: String) {
+    fun toSnakeCase(
+        input: String,
+        output: String,
+    ) {
         assertThat(CodeGeneratorUtils.camelCaseToSnakeCase(input)).isEqualTo(output)
     }
 
     companion object {
         @JvmStatic
-        fun toSnakeCaseData(): Stream<Arguments> = Stream.of(
-            "abc" to "abc",
-            "ABC" to "abc",
-            "Abc" to "abc",
-            "1AB" to "1_ab",
-            "1Abc" to "1_abc",
-            "ABCefg" to "ab_cefg",
-            "A1BCefg" to "a_1_b_cefg",
-            "AbCeFg" to "ab_ce_fg"
-        ).map { Arguments.of(it.first, it.second) }
+        fun toSnakeCaseData(): Stream<Arguments> =
+            Stream
+                .of(
+                    "abc" to "abc",
+                    "ABC" to "abc",
+                    "Abc" to "abc",
+                    "1AB" to "1_ab",
+                    "1Abc" to "1_abc",
+                    "ABCefg" to "ab_cefg",
+                    "A1BCefg" to "a_1_b_cefg",
+                    "AbCeFg" to "ab_ce_fg",
+                ).map { Arguments.of(it.first, it.second) }
     }
 }

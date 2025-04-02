@@ -59,7 +59,7 @@ internal val logger: Logger = LoggerFactory.getLogger("com.netflix.graphql.dgs.c
 fun generateKotlin2DataTypes(
     config: CodeGenConfig,
     document: Document,
-    requiredTypes: Set<String>
+    requiredTypes: Set<String>,
 ): List<FileSpec> {
     val typeLookup = Kotlin2TypeLookup(config, document)
 
@@ -71,7 +71,6 @@ fun generateKotlin2DataTypes(
         .map { typeDefinition ->
 
             logger.info("Generating data type {}", typeDefinition.name)
-
             // get all interfaces this type implements
             val implementedInterfaces = typeLookup.implementedInterfaces(typeDefinition)
             val implementedUnionTypes = typeLookup.implementedUnionTypes(typeDefinition.name)
@@ -81,12 +80,13 @@ fun generateKotlin2DataTypes(
             val extensionTypes = findTypeExtensions(typeDefinition.name, document.definitions)
 
             // get all fields defined on the type itself or any extension types
-            val fields = sequenceOf(typeDefinition)
-                .plus(extensionTypes)
-                .flatMap { it.fieldDefinitions }
-                .filterSkipped()
-                .filter(ReservedKeywordFilter.filterInvalidNames)
-                .toList()
+            val fields =
+                sequenceOf(typeDefinition)
+                    .plus(extensionTypes)
+                    .flatMap { it.fieldDefinitions }
+                    .filterSkipped()
+                    .filter(ReservedKeywordFilter.filterInvalidNames)
+                    .toList()
 
             fun type(field: FieldDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
 
@@ -94,161 +94,165 @@ fun generateKotlin2DataTypes(
             val overrideFields = typeLookup.overrideFields(implementedInterfaces)
 
             // create a companion object to store defaults for each field
-            val companionObject = TypeSpec.companionObjectBuilder()
-                .addOptionalGeneratedAnnotation(config)
-                // add a default lambda for each field that throws if accessed
-                .addProperties(
-                    fields.map { field ->
-                        PropertySpec.builder(
-                            name = "${field.name}Default",
-                            type = LambdaTypeName.get(returnType = type(field))
-                        )
-                            .addModifiers(KModifier.PRIVATE)
-                            .initializer(
-                                buildCodeBlock {
-                                    addStatement(
-                                        "\n{ throw %T(%S) }",
-                                        IllegalStateException::class,
-                                        "Field `${field.name}` was not requested"
-                                    )
-                                }
-                            )
-                            .build()
-                    }
-                )
-                .build()
+            val companionObject =
+                TypeSpec
+                    .companionObjectBuilder()
+                    .addOptionalGeneratedAnnotation(config)
+                    // add a default lambda for each field that throws if accessed
+                    .addProperties(
+                        fields.map { field ->
+                            PropertySpec
+                                .builder(
+                                    name = "${field.name}Default",
+                                    type = LambdaTypeName.get(returnType = type(field)),
+                                ).addModifiers(KModifier.PRIVATE)
+                                .initializer(
+                                    buildCodeBlock {
+                                        addStatement(
+                                            "\n{ throw %T(%S) }",
+                                            IllegalStateException::class,
+                                            "Field `${field.name}` was not requested",
+                                        )
+                                    },
+                                ).build()
+                        },
+                    ).build()
 
             // create a builder for this class; default to lambda that throws if accessed
             val builderClassName = ClassName(config.packageNameTypes, typeDefinition.name, "Builder")
-            val builder = TypeSpec.classBuilder("Builder")
-                .addOptionalGeneratedAnnotation(config)
-                .addAnnotation(jsonBuilderAnnotation())
-                .addAnnotation(jsonIgnorePropertiesAnnotation("__typename"))
-                // add a backing property for each field
-                .addProperties(
-                    fields.map { field ->
-                        PropertySpec.builder(
-                            name = field.name,
-                            type = LambdaTypeName.get(returnType = type(field))
-                        )
-                            .addModifiers(KModifier.PRIVATE)
-                            .mutable()
-                            .initializer("${field.name}Default")
-                            .build()
-                    }
-                )
-                // add a method to set the field
-                .addFunctions(
-                    fields.map { field ->
-                        FunSpec.builder("with${field.name.capitalized()}")
-                            .addAnnotation(jsonPropertyAnnotation(field.name))
-                            .addParameter(field.name, type(field))
-                            .addControlFlow("return this.apply") {
-                                addStatement("this.%N = { %N }", field.name, field.name)
-                            }
-                            .returns(builderClassName)
-                            .build()
-                    }
-                )
-                // add a build method to return the constructed class
-                .addFunction(
-                    FunSpec.builder("build")
-                        .returns(typeDefinition.name.toKtTypeName())
-                        .addCode(
-                            fields.let { fs ->
-                                val builder = CodeBlock.builder().add("return %T(\n", ClassName(config.packageNameTypes, typeDefinition.name))
-                                fs.forEach { f -> builder.add("  %N = %N,\n", f.name, f.name) }
-                                builder.add(")").build()
-                            }
-                        )
-                        .build()
-                )
-                .build()
+            val builder =
+                TypeSpec
+                    .classBuilder("Builder")
+                    .addOptionalGeneratedAnnotation(config)
+                    .addAnnotation(jsonBuilderAnnotation())
+                    .addAnnotation(jsonIgnorePropertiesAnnotation("__typename"))
+                    // add a backing property for each field
+                    .addProperties(
+                        fields.map { field ->
+                            PropertySpec
+                                .builder(
+                                    name = field.name,
+                                    type = LambdaTypeName.get(returnType = type(field)),
+                                ).addModifiers(KModifier.PRIVATE)
+                                .mutable()
+                                .initializer("${field.name}Default")
+                                .build()
+                        },
+                    )
+                    // add a method to set the field
+                    .addFunctions(
+                        fields.map { field ->
+                            FunSpec
+                                .builder("with${field.name.capitalized()}")
+                                .addAnnotation(jsonPropertyAnnotation(field.name))
+                                .addParameter(field.name, type(field))
+                                .addControlFlow("return this.apply") {
+                                    addStatement("this.%N = { %N }", field.name, field.name)
+                                }.returns(builderClassName)
+                                .build()
+                        },
+                    )
+                    // add a build method to return the constructed class
+                    .addFunction(
+                        FunSpec
+                            .builder("build")
+                            .returns(typeDefinition.name.toKtTypeName())
+                            .addCode(
+                                fields.let { fs ->
+                                    val builder =
+                                        CodeBlock.builder().add(
+                                            "return %T(\n",
+                                            ClassName(config.packageNameTypes, typeDefinition.name),
+                                        )
+                                    fs.forEach { f -> builder.add("  %N = %N,\n", f.name, f.name) }
+                                    builder.add(")").build()
+                                },
+                            ).build(),
+                    ).build()
 
             // create the data class
-            val typeSpec = TypeSpec.classBuilder(typeDefinition.name)
-                .addOptionalGeneratedAnnotation(config)
-                // add docs if available
-                .apply {
-                    if (typeDefinition.description != null) {
-                        addKdoc("%L", typeDefinition.description.sanitizeKdoc())
+            val typeSpec =
+                TypeSpec
+                    .classBuilder(typeDefinition.name)
+                    .addOptionalGeneratedAnnotation(config)
+                    // add docs if available
+                    .apply {
+                        if (typeDefinition.description != null) {
+                            addKdoc("%L", typeDefinition.description.sanitizeKdoc())
+                        }
                     }
-                }
-                // add jackson annotations
-                .addAnnotation(disableJsonTypeInfoAnnotation())
-                .addAnnotation(
-                    jsonDeserializeAnnotation(
-                        builderClassName
+                    // add jackson annotations
+                    .addAnnotation(disableJsonTypeInfoAnnotation())
+                    .addAnnotation(
+                        jsonDeserializeAnnotation(
+                            builderClassName,
+                        ),
                     )
-                )
-                // add nested classes
-                .addType(companionObject)
-                .addType(builder)
-                // add interfaces to implement
-                .addSuperinterfaces(
-                    superInterfaces.map { typeLookup.findKtInterfaceName(it, config.packageNameTypes) }
-                )
-                // add Serializable interface if requested
-                .apply {
-                    if (config.implementSerializable) {
-                        addSuperinterface(Serializable::class.asClassName())
+                    // add nested classes
+                    .addType(companionObject)
+                    .addType(builder)
+                    // add interfaces to implement
+                    .addSuperinterfaces(
+                        superInterfaces.map { typeLookup.findKtInterfaceName(it, config.packageNameTypes) },
+                    )
+                    // add Serializable interface if requested
+                    .apply {
+                        if (config.implementSerializable) {
+                            addSuperinterface(Serializable::class.asClassName())
+                        }
                     }
-                }
-                // add a constructor with a supplier for every field
-                .primaryConstructor(
-                    FunSpec.constructorBuilder()
-                        .addParameters(
-                            fields.map { field ->
-                                ParameterSpec.builder(
+                    // add a constructor with a supplier for every field
+                    .primaryConstructor(
+                        FunSpec
+                            .constructorBuilder()
+                            .addParameters(
+                                fields.map { field ->
+                                    ParameterSpec
+                                        .builder(
+                                            name = field.name,
+                                            type = LambdaTypeName.get(returnType = type(field)),
+                                        ).defaultValue("${field.name}Default")
+                                        .build()
+                                },
+                            ).build(),
+                    )
+                    // add a backing property for each field
+                    .addProperties(
+                        fields.map { field ->
+                            PropertySpec
+                                .builder(
+                                    name = "__${field.name}",
+                                    type = LambdaTypeName.get(returnType = type(field)),
+                                ).addModifiers(KModifier.PRIVATE)
+                                .initializer("%N", field.name)
+                                .build()
+                        },
+                    )
+                    // add a getter for each field
+                    .addProperties(
+                        fields.map { field ->
+                            PropertySpec
+                                .builder(
                                     name = field.name,
-                                    type = LambdaTypeName.get(returnType = type(field))
-                                )
-                                    .defaultValue("${field.name}Default")
-                                    .build()
-                            }
-                        )
-                        .build()
-                )
-                // add a backing property for each field
-                .addProperties(
-                    fields.map { field ->
-                        PropertySpec.builder(
-                            name = "__${field.name}",
-                            type = LambdaTypeName.get(returnType = type(field))
-                        )
-                            .addModifiers(KModifier.PRIVATE)
-                            .initializer("%N", field.name)
-                            .build()
-                    }
-                )
-                // add a getter for each field
-                .addProperties(
-                    fields.map { field ->
-                        PropertySpec.builder(
-                            name = field.name,
-                            type = type(field)
-                        )
-                            .apply {
-                                if (field.description != null) {
-                                    addKdoc("%L", field.description.sanitizeKdoc())
-                                }
-                            }
-                            .apply {
-                                if (field.name in overrideFields) {
-                                    addModifiers(KModifier.OVERRIDE)
-                                    addAnnotation(suppressInapplicableJvmNameAnnotation())
-                                }
-                            }
-                            .addAnnotation(jvmNameAnnotation(field.name))
-                            .getter(
-                                FunSpec.getterBuilder()
-                                    .addStatement("return __${field.name}.invoke()")
-                                    .build()
-                            )
-                            .build()
-                    }
-                )
-                .build()
+                                    type = type(field),
+                                ).apply {
+                                    if (field.description != null) {
+                                        addKdoc("%L", field.description.sanitizeKdoc())
+                                    }
+                                }.apply {
+                                    if (field.name in overrideFields) {
+                                        addModifiers(KModifier.OVERRIDE)
+                                        addAnnotation(suppressInapplicableJvmNameAnnotation())
+                                    }
+                                }.addAnnotation(jvmNameAnnotation(field.name))
+                                .getter(
+                                    FunSpec
+                                        .getterBuilder()
+                                        .addStatement("return __${field.name}.invoke()")
+                                        .build(),
+                                ).build()
+                        },
+                    ).build()
 
             // return a file per type
             FileSpec.get(config.packageNameTypes, typeSpec)

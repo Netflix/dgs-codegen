@@ -22,7 +22,6 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 class CodegenGradlePluginEntitySmokeTest {
-
     @TempDir
     lateinit var projectDir: File
 
@@ -34,7 +33,10 @@ class CodegenGradlePluginEntitySmokeTest {
         writeProjectFile("src/main/resources/schema/schema.graphql", content)
     }
 
-    private fun writeProjectFile(relativePath: String, content: String) {
+    private fun writeProjectFile(
+        relativePath: String,
+        content: String,
+    ) {
         val file = File(projectDir, relativePath)
         file.parentFile.mkdirs()
         file.writeText(content)

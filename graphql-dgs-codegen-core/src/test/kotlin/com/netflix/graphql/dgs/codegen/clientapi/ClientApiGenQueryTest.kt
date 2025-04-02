@@ -20,14 +20,14 @@ package com.netflix.graphql.dgs.codegen.clientapi
 
 import com.netflix.graphql.dgs.codegen.*
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.Ignore
+import org.assertj.core.api.InstanceOfAssertFactories
 import org.junit.jupiter.api.Test
 
-@Ignore
 class ClientApiGenQueryTest {
     @Test
     fun generateQueryType() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 people: [Person]
             }
@@ -36,27 +36,34 @@ class ClientApiGenQueryTest {
                 firstname: String
                 lastname: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PeopleGraphQLQuery")
-        codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs.find { it -> it.isConstructor && it.parameters.isEmpty() }
-        codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs.find { it -> it.isConstructor && (it.parameters.find { param -> param.name == "queryName" } != null) }
+        codeGenResult.javaQueryTypes[0]
+            .typeSpec.methodSpecs
+            .find { it -> it.isConstructor && it.parameters.isEmpty() }
+        codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs.find { it ->
+            it.isConstructor &&
+                (it.parameters.find { param -> param.name == "queryName" } != null)
+        }
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
 
     @Test
     fun generateQueryTypeWithComments() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 ""${'"'}
                 All the people
@@ -68,22 +75,27 @@ class ClientApiGenQueryTest {
                 firstname: String
                 lastname: String
             }           
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PeopleGraphQLQuery")
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.javadoc.toString()).isEqualTo(
+        assertThat(
+            codeGenResult.javaQueryTypes[0]
+                .typeSpec.javadoc
+                .toString(),
+        ).isEqualTo(
             """
             All the people
-            """.trimIndent()
+            """.trimIndent(),
         )
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
@@ -91,41 +103,43 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateQueryTypesWithTypeExtensions() {
-        val schema = """
-            extend type Person {
-                preferences: Preferences
+        val schema =
+            """
+             extend type Person {
+                 preferences: Preferences
+             }
+             
+             type Preferences {
+                 userId: ID!
+             }
+             
+             type Query @extends {
+                 getPerson: Person
+             }
+            
+             type Person {
+                 personId: ID!
+                 linkedIdentities: LinkedIdentities
+             }
+            
+            type LinkedIdentities {
+                employee: Employee
             }
             
-            type Preferences {
-                userId: ID!
-            }
-            
-            type Query @extends {
-                getPerson: Person
-            }
-        
-            type Person {
-                personId: ID!
-                linkedIdentities: LinkedIdentities
-            }
-           
-           type LinkedIdentities {
-               employee: Employee
-           }
-           
-           type Employee {
-                id: ID!
-                person: Person!
-            }
-        """.trimIndent()
+            type Employee {
+                 id: ID!
+                 person: Person!
+             }
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("GetPersonGraphQLQuery")
@@ -135,7 +149,8 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateOnlyRequiredDataTypesForQuery() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 shows(showFilter: ShowFilter): [Video]
                 people(personFilter: PersonFilter): [Person]
@@ -184,36 +199,45 @@ class ClientApiGenQueryTest {
             }
                  
             enum SourceType { FOO, BAR }
-           
+            
             type Person {
                 name: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true,
-                includeQueries = setOf("shows"),
-                generateDataTypes = false,
-                writeToFiles = false
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                    includeQueries = setOf("shows"),
+                    generateDataTypes = false,
+                    writeToFiles = false,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaDataTypes)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowFilter", "SimilarityInput", "CountryFilter")
+            .extracting("typeSpec")
+            .extracting("name")
+            .containsExactly("ShowFilter", "SimilarityInput", "CountryFilter")
         assertThat(codeGenResult.javaEnumTypes)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowType", "SourceType")
+            .extracting("typeSpec")
+            .extracting("name")
+            .containsExactly("ShowType", "SourceType")
         assertThat(codeGenResult.javaQueryTypes)
-            .extracting("typeSpec").extracting("name").containsExactly("ShowsGraphQLQuery")
+            .extracting("typeSpec")
+            .extracting("name")
+            .containsExactly("ShowsGraphQLQuery")
         assertThat(codeGenResult.clientProjections)
-            .extracting("typeSpec").extracting("name").containsExactly(
+            .extracting("typeSpec")
+            .extracting("name")
+            .containsExactly(
                 "ShowsProjectionRoot",
                 "ShowFragmentProjection",
                 "MovieFragmentProjection",
                 "RelatedProjection",
-                "VideoProjection"
+                "VideoProjection",
             )
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
@@ -221,7 +245,8 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateRecursiveInputTypes() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 movies(filter: MovieQuery): [String]
             }
@@ -235,17 +260,18 @@ class ClientApiGenQueryTest {
                 first: MovieQuery!
                 second: MovieQuery!
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateDataTypes = false,
-                generateClientApiv2 = true,
-                includeQueries = setOf("movies")
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateDataTypes = false,
+                    generateClientApiv2 = true,
+                    includeQueries = setOf("movies"),
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(2)
         assertThat(codeGenResult.javaDataTypes[0].typeSpec.name).isEqualTo("MovieQuery")
@@ -256,7 +282,8 @@ class ClientApiGenQueryTest {
 
     @Test
     fun generateArgumentsForSimpleTypes() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 personSearch(lastname: String): [Person]
             }
@@ -266,23 +293,30 @@ class ClientApiGenQueryTest {
                 lastname: String
             }
 
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("lastname")
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
+        assertThat(
+            codeGenResult.javaQueryTypes[0]
+                .typeSpec.typeSpecs[0]
+                .methodSpecs[1]
+                .name,
+        ).isEqualTo("lastname")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
 
     @Test
     fun generateArgumentsForEnum() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 personSearch(index: SearchIndex): [Person]
             }
@@ -296,26 +330,33 @@ class ClientApiGenQueryTest {
                 TEST, PROD
             }
             
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("index")
+        assertThat(
+            codeGenResult.javaQueryTypes[0]
+                .typeSpec.typeSpecs[0]
+                .methodSpecs[1]
+                .name,
+        ).isEqualTo("index")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes,
         )
     }
 
     @Test
     fun generateArgumentsForObjectType() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 personSearch(index: SearchIndex): [Person]
             }
@@ -329,41 +370,49 @@ class ClientApiGenQueryTest {
                 name: String
             }
             
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PersonSearchGraphQLQuery")
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.typeSpecs[0].methodSpecs[1].name).isEqualTo("index")
+        assertThat(
+            codeGenResult.javaQueryTypes[0]
+                .typeSpec.typeSpecs[0]
+                .methodSpecs[1]
+                .name,
+        ).isEqualTo("index")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes,
         )
     }
 
     @Test
     fun includeQueryConfig() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 movieTitles: [String]
                 actorNames: [String]
             }           
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true,
-                includeQueries = setOf("movieTitles")
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                    includeQueries = setOf("movieTitles"),
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieTitlesGraphQLQuery")
@@ -373,7 +422,8 @@ class ClientApiGenQueryTest {
 
     @Test
     fun skipCodegen() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 persons: [Person]
                 personSearch(index: SearchIndex): [Person] @skipcodegen
@@ -388,27 +438,29 @@ class ClientApiGenQueryTest {
                 name: String
             }
             
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PersonsGraphQLQuery")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes,
         )
     }
 
     @Test
     fun interfaceReturnTypes() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 search(title: String): [Show]
             }
@@ -427,34 +479,49 @@ class ClientApiGenQueryTest {
                 episodes: Int
             }
             
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("SearchGraphQLQuery")
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs[2].name).isEqualTo("title")
+        assertThat(
+            codeGenResult.clientProjections[0]
+                .typeSpec.methodSpecs[2]
+                .name,
+        ).isEqualTo("title")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs[3].name).isEqualTo("duration")
+        assertThat(
+            codeGenResult.clientProjections[1]
+                .typeSpec.methodSpecs[3]
+                .name,
+        ).isEqualTo("duration")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SeriesFragmentProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs[3].name).isEqualTo("episodes")
+        assertThat(
+            codeGenResult.clientProjections[2]
+                .typeSpec.methodSpecs[3]
+                .name,
+        ).isEqualTo("episodes")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
+                codeGenResult.javaInterfaces,
         )
     }
 
     @Test
     fun interfaceWithKeywords() {
-        val schema = """
+        val schema =
+            """
             type Query {
               queryRoot: QueryRoot
             }
@@ -471,15 +538,16 @@ class ClientApiGenQueryTest {
                 public: String
                 private: Boolean
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("QueryRootGraphQLQuery")
@@ -488,20 +556,37 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.javaInterfaces[0].typeSpec.name).isEqualTo("HasDefaultField")
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs.size).isEqualTo(4)
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].name).isEqualTo("name")
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[1].name).isEqualTo("_default")
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[2].name).isEqualTo("_public")
+        assertThat(
+            codeGenResult.javaDataTypes[0]
+                .typeSpec.fieldSpecs.size,
+        ).isEqualTo(4)
+        assertThat(
+            codeGenResult.javaDataTypes[0]
+                .typeSpec.fieldSpecs[0]
+                .name,
+        ).isEqualTo("name")
+        assertThat(
+            codeGenResult.javaDataTypes[0]
+                .typeSpec.fieldSpecs[1]
+                .name,
+        ).isEqualTo("_default")
+        assertThat(
+            codeGenResult.javaDataTypes[0]
+                .typeSpec.fieldSpecs[2]
+                .name,
+        ).isEqualTo("_public")
 
         assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes + codeGenResult.javaInterfaces
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
+                codeGenResult.javaInterfaces,
         )
     }
 
     @Test
     fun `The Query API should support sub-projects on fields with Basic Types`() {
         // given
-        val schema = """
+        val schema =
+            """
             type Query {
                 someField: Foo
             }
@@ -516,23 +601,24 @@ class ClientApiGenQueryTest {
                 floatField(arg: Boolean): Float
                 floatArrayField(arg: Boolean): [Float]
             }
-        """.trimIndent()
+            """.trimIndent()
         // when
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true,
-                writeToFiles = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                    writeToFiles = true,
+                ),
+            ).generate()
         // then
         val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
         // assert Type classes
-        assertThat(testClassLoader.loadClass("$basePackageName.types.Foo")).isNotNull
+        assertThat(testClassLoader.loadClass("$BASE_PACKAGE_NAME.types.Foo")).isNotNull
         // assert root projection classes
         val rootProjectionClass =
-            testClassLoader.loadClass("$basePackageName.client.SomeFieldProjectionRoot")
+            testClassLoader.loadClass("$BASE_PACKAGE_NAME.client.SomeFieldProjectionRoot")
         assertThat(rootProjectionClass).isNotNull
         assertThat(rootProjectionClass).hasPublicMethods(
             "stringField",
@@ -542,237 +628,241 @@ class ClientApiGenQueryTest {
             "booleanField",
             "booleanArrayField",
             "floatField",
-            "floatArrayField"
+            "floatArrayField",
         )
         // fields projections
         assertThat(rootProjectionClass).isNotNull
         // stringField
         assertThat(
-            rootProjectionClass.getMethod("stringField")
+            rootProjectionClass.getMethod("stringField"),
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
             rootProjectionClass.getMethod(
                 "stringField",
-                java.lang.Boolean::class.java
-            )
+                java.lang.Boolean::class.java,
+            ),
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
         // stringArrayField
         assertThat(
-            rootProjectionClass.getMethod("stringArrayField")
+            rootProjectionClass.getMethod("stringArrayField"),
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
             rootProjectionClass.getMethod(
                 "stringArrayField",
-                java.lang.Boolean::class.java
-            )
+                java.lang.Boolean::class.java,
+            ),
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
 
         // booleanField
         assertThat(
-            rootProjectionClass.getMethod("booleanField")
+            rootProjectionClass.getMethod("booleanField"),
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
             rootProjectionClass.getMethod(
                 "booleanField",
-                java.lang.Boolean::class.java
-            )
+                java.lang.Boolean::class.java,
+            ),
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
 
         // booleanArrayField
         assertThat(
-            rootProjectionClass.getMethod("booleanArrayField")
+            rootProjectionClass.getMethod("booleanArrayField"),
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
             rootProjectionClass.getMethod(
                 "booleanArrayField",
-                java.lang.Boolean::class.java
-            )
+                java.lang.Boolean::class.java,
+            ),
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
 
         // floatField
         assertThat(
-            rootProjectionClass.getMethod("floatField")
+            rootProjectionClass.getMethod("floatField"),
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
             rootProjectionClass.getMethod(
                 "floatField",
-                java.lang.Boolean::class.java
-            )
+                java.lang.Boolean::class.java,
+            ),
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
 
         // booleanArrayField
         assertThat(
-            rootProjectionClass.getMethod("floatArrayField")
+            rootProjectionClass.getMethod("floatArrayField"),
         ).isNotNull
             .returns(rootProjectionClass) { it.returnType }
 
         assertThat(
             rootProjectionClass.getMethod(
                 "floatArrayField",
-                java.lang.Boolean::class.java
-            )
+                java.lang.Boolean::class.java,
+            ),
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
     }
 
     @Test
     fun `The Query API should support sub-projects on fields with Scalars`() {
-        val schema = """
-          type Query {
-              someField: Foo
-          }
-          
-          type Foo {
-            ping(arg: Boolean): Long
-          }
-          
-          scalar Long
-        """.trimIndent()
+        val schema =
+            """
+            type Query {
+                someField: Foo
+            }
+            
+            type Foo {
+              ping(arg: Boolean): Long
+            }
+            
+            scalar Long
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true,
-                typeMapping = mapOf("Long" to "java.lang.Long")
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                    typeMapping = mapOf("Long" to "java.lang.Long"),
+                ),
+            ).generate()
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(2)
 
         val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
         // assert Type classes
-        assertThat(testClassLoader.loadClass("$basePackageName.types.Foo")).isNotNull
+        assertThat(testClassLoader.loadClass("$BASE_PACKAGE_NAME.types.Foo")).isNotNull
         // assert root projection classes
         val rootProjectionClass =
-            testClassLoader.loadClass("$basePackageName.client.SomeFieldProjectionRoot")
+            testClassLoader.loadClass("$BASE_PACKAGE_NAME.client.SomeFieldProjectionRoot")
         assertThat(rootProjectionClass).isNotNull
         assertThat(rootProjectionClass).hasPublicMethods("ping")
         // scalar field
         assertThat(rootProjectionClass.getMethod("ping")).isNotNull.returns(rootProjectionClass) { it.returnType }
 
         assertThat(
-            rootProjectionClass.getMethod("ping", java.lang.Boolean::class.java)
+            rootProjectionClass.getMethod("ping", java.lang.Boolean::class.java),
         ).isNotNull
             .extracting { m -> m.parameters.mapIndexed { index, parameter -> index to parameter.name } }
-            .asList()
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
             .containsExactly(0 to "arg")
     }
 
     @Test
     fun `Should be able to generate a valid client when java keywords are used as field names`() {
-        val schema = """
-          type Query {
-              someField: Foo
-          }
-          
-          type Foo {
-            ping(arg: Boolean): Long
-            # ---
-            parent: Boolean
-            root: Boolean
-            # --- 
-            abstract: Boolean 
-            assert: Boolean   
-            boolean: Boolean  
-            break: Boolean    
-            byte: Boolean     
-            case: Boolean     
-            catch: Boolean    
-            char: Boolean     
-            # class: Boolean -- not supported
-            const: Boolean    
-            continue: Boolean     
-            default: Boolean      
-            do: Boolean           
-            double: Boolean       
-            else: Boolean         
-            enum: Boolean         
-            extends: Boolean      
-            final: Boolean        
-            finally: Boolean      
-            float: Boolean        
-            for: Boolean          
-            goto: Boolean         
-            if: Boolean           
-            implements: Boolean   
-            import: Boolean       
-            instanceof: Boolean   
-            int: Boolean          
-            interface: Boolean    
-            long: Boolean         
-            native: Boolean      
-            new: Boolean          
-            package: Boolean      
-            private: Boolean      
-            protected: Boolean    
-            public: Boolean       
-            return: Boolean       
-            short: Boolean        
-            static: Boolean       
-            strictfp: Boolean     
-            super: Boolean        
-            switch: Boolean
-            synchronized: Boolean   
-            this: Boolean           
-            throw: Boolean          
-            throws: Boolean         
-            transient: Boolean      
-            try: Boolean            
-            void: Boolean           
-            volatile: Boolean       
-            while: Boolean         
-            class: Int
-          }
-          
-          scalar Long
-        """.trimIndent()
+        val schema =
+            """
+            type Query {
+                someField: Foo
+            }
+            
+            type Foo {
+              ping(arg: Boolean): Long
+              # ---
+              parent: Boolean
+              root: Boolean
+              # --- 
+              abstract: Boolean 
+              assert: Boolean   
+              boolean: Boolean  
+              break: Boolean    
+              byte: Boolean     
+              case: Boolean     
+              catch: Boolean    
+              char: Boolean     
+              # class: Boolean -- not supported
+              const: Boolean    
+              continue: Boolean     
+              default: Boolean      
+              do: Boolean           
+              double: Boolean       
+              else: Boolean         
+              enum: Boolean         
+              extends: Boolean      
+              final: Boolean        
+              finally: Boolean      
+              float: Boolean        
+              for: Boolean          
+              goto: Boolean         
+              if: Boolean           
+              implements: Boolean   
+              import: Boolean       
+              instanceof: Boolean   
+              int: Boolean          
+              interface: Boolean    
+              long: Boolean         
+              native: Boolean      
+              new: Boolean          
+              package: Boolean      
+              private: Boolean      
+              protected: Boolean    
+              public: Boolean       
+              return: Boolean       
+              short: Boolean        
+              static: Boolean       
+              strictfp: Boolean     
+              super: Boolean        
+              switch: Boolean
+              synchronized: Boolean   
+              this: Boolean           
+              throw: Boolean          
+              throws: Boolean         
+              transient: Boolean      
+              try: Boolean            
+              void: Boolean           
+              volatile: Boolean       
+              while: Boolean         
+              class: Int
+            }
+            
+            scalar Long
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateDataTypes = true,
-                generateClientApiv2 = true,
-                typeMapping = mapOf("Long" to "java.lang.Long")
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateDataTypes = true,
+                    generateClientApiv2 = true,
+                    typeMapping = mapOf("Long" to "java.lang.Long"),
+                ),
+            ).generate()
         val projections = codeGenResult.clientProjections
         assertThat(projections.size).isEqualTo(2)
 
         val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
         // assert Type classes
-        assertThat(testClassLoader.loadClass("$basePackageName.types.Foo")).isNotNull
+        assertThat(testClassLoader.loadClass("$BASE_PACKAGE_NAME.types.Foo")).isNotNull
         // assert root projection classes
         val rootProjectionClass =
-            testClassLoader.loadClass("$basePackageName.client.SomeFieldProjectionRoot")
+            testClassLoader.loadClass("$BASE_PACKAGE_NAME.client.SomeFieldProjectionRoot")
         assertThat(rootProjectionClass).isNotNull
         assertThat(rootProjectionClass).hasPublicMethods("ping")
         assertThat(rootProjectionClass).hasPublicMethods(
@@ -828,13 +918,14 @@ class ClientApiGenQueryTest {
             "_void",
             "_volatile",
             "_while",
-            "_class"
+            "_class",
         )
     }
 
     @Test
     fun `Should be able to generate successfully when java keywords and default value are used as input types`() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 foo(fooInput: FooInput): Baz
                 bar(barInput: BarInput): Baz
@@ -851,33 +942,49 @@ class ClientApiGenQueryTest {
             type Baz {
                 public: Boolean
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateDataTypes = false,
-                generateClientApiv2 = true,
-                includeQueries = setOf("foo", "bar")
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateDataTypes = false,
+                    generateClientApiv2 = true,
+                    includeQueries = setOf("foo", "bar"),
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(2)
 
         assertThat(codeGenResult.javaDataTypes[0].typeSpec.name).isEqualTo("FooInput")
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].name).isEqualTo("_public")
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("true")
+        assertThat(
+            codeGenResult.javaDataTypes[0]
+                .typeSpec.fieldSpecs[0]
+                .name,
+        ).isEqualTo("_public")
+        assertThat(
+            codeGenResult.javaDataTypes[0]
+                .typeSpec.fieldSpecs[0]
+                .initializer
+                .toString(),
+        ).isEqualTo("true")
 
         assertThat(codeGenResult.javaDataTypes[1].typeSpec.name).isEqualTo("BarInput")
-        assertThat(codeGenResult.javaDataTypes[1].typeSpec.fieldSpecs[0].initializer.toString()).isEqualTo("")
+        assertThat(
+            codeGenResult.javaDataTypes[1]
+                .typeSpec.fieldSpecs[0]
+                .initializer
+                .toString(),
+        ).isEqualTo("")
 
         assertCompilesJava(codeGenResult.javaDataTypes)
     }
 
     @Test
     fun `generate client code for both query and subscription with same definitions`() {
-        val schema = """
+        val schema =
+            """
             type Subscription {
                 shows: [Show]
                 movie(id: ID!): Movie
@@ -905,15 +1012,16 @@ class ClientApiGenQueryTest {
                 duration: Int
                 related: Related
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateClientApiv2 = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(9)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("ShowsGraphQLQuery")
@@ -933,7 +1041,8 @@ class ClientApiGenQueryTest {
 
     @Test
     fun `Should be able to generate successfully when java keywords are used as types`() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 bar: Bar
             }
@@ -946,17 +1055,18 @@ class ClientApiGenQueryTest {
                 object: Int
                 class: Int
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                generateDataTypes = true,
-                generateClientApiv2 = true,
-                includeQueries = setOf("bar")
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateDataTypes = true,
+                    generateClientApiv2 = true,
+                    includeQueries = setOf("bar"),
+                ),
+            ).generate()
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
 

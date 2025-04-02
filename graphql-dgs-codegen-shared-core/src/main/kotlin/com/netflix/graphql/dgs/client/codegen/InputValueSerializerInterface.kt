@@ -28,6 +28,7 @@ internal annotation class Transient
 
 interface InputValueSerializerInterface {
     fun serialize(input: Any?): String
+
     fun toValue(input: Any?): Value<*>
 }
 

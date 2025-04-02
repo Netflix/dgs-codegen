@@ -26,7 +26,6 @@ import org.junit.jupiter.api.io.TempDir
 import java.io.File
 
 class CodegenGradlePluginClientUtilsConventionsTest {
-
     @TempDir
     lateinit var projectDir: File
 
@@ -46,15 +45,17 @@ repositories { mavenCentral() }
 dependencies { }
 
 codegen.clientCoreConventionsEnabled = false
-            """.trimMargin()
+            """.trimMargin(),
         )
 
-        val runner = GradleRunner.create()
-            .withProjectDir(projectDir)
-            .withPluginClasspath()
-            .withPluginClasspath(emptyList())
-            .withDebug(true)
-            .withArguments("--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
+        val runner =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withPluginClasspath(emptyList())
+                .withDebug(true)
+                .withArguments("--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
 
         val result = runner.build()
 
@@ -76,20 +77,24 @@ repositories { mavenCentral() }
 
 dependencies { }
 
-            """.trimMargin()
+            """.trimMargin(),
         )
         // when the build is executed
-        val runner = GradleRunner.create()
-            .withProjectDir(projectDir)
-            .withPluginClasspath()
-            .withPluginClasspath(emptyList())
-            .withDebug(true)
-            .withArguments("--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
+        val runner =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withPluginClasspath(emptyList())
+                .withDebug(true)
+                .withArguments("--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
 
         val result = runner.build()
         // then we assert that the dependency was resolved to the proper version
         assertThat(result.output)
-            .contains("DGS CodeGen added dependency [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()}")
+            .contains(
+                "DGS CodeGen added dependency [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()}",
+            )
         assertThat(result.output)
             .contains("- com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()}")
     }
@@ -113,20 +118,24 @@ dependencies { }
             codegen {
                 clientCoreScope = "$configuration"
             }
-            """.trimMargin()
+            """.trimMargin(),
         )
         // when the build is executed
-        val runner = GradleRunner.create()
-            .withProjectDir(projectDir)
-            .withPluginClasspath()
-            .withPluginClasspath(emptyList())
-            .withDebug(true)
-            .withArguments("-q", "--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
+        val runner =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withPluginClasspath(emptyList())
+                .withDebug(true)
+                .withArguments("-q", "--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
 
         val result = runner.build()
         // then we assert that the dependency was resolved to the higher version.
         assertThat(result.output)
-            .contains("DGS CodeGen added dependency [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()}] to $configuration.")
+            .contains(
+                "DGS CodeGen added dependency [com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:${inferredVersion.get()}] to $configuration.",
+            )
     }
 
     @Test
@@ -148,15 +157,17 @@ dependencies { }
 codegen {
     clientCoreVersion = "$higherVersion"
 }
-            """.trimMargin()
+            """.trimMargin(),
         )
         // when the build is executed
-        val runner = GradleRunner.create()
-            .withProjectDir(projectDir)
-            .withPluginClasspath()
-            .withPluginClasspath(emptyList())
-            .withDebug(true)
-            .withArguments("--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
+        val runner =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withPluginClasspath(emptyList())
+                .withDebug(true)
+                .withArguments("--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
 
         val result = runner.build()
         // then we assert that the dependency was resolved to the higher version.
@@ -183,15 +194,17 @@ repositories { mavenCentral() }
 dependencies { 
     implementation 'com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core:$higherVersion'
 }
-            """.trimMargin()
+            """.trimMargin(),
         )
         // when the build is executed
-        val runner = GradleRunner.create()
-            .withProjectDir(projectDir)
-            .withPluginClasspath()
-            .withPluginClasspath(emptyList())
-            .withDebug(true)
-            .withArguments("--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
+        val runner =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withPluginClasspath(emptyList())
+                .withDebug(true)
+                .withArguments("--info", "--stacktrace", "dependencies", "--configuration=compileClasspath")
 
         val result = runner.build()
         // then we assert that the dependency was resolved to the higher version.
@@ -205,7 +218,10 @@ dependencies {
         writeProjectFile("build.gradle", content)
     }
 
-    private fun writeProjectFile(relativePath: String, content: String) {
+    private fun writeProjectFile(
+        relativePath: String,
+        content: String,
+    ) {
         val file = File(projectDir, relativePath)
         file.parentFile.mkdirs()
         file.writeText(content)

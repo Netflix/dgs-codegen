@@ -28,40 +28,41 @@ import kotlinx.serialization.json.*
 import java.math.BigDecimal
 import java.math.BigInteger
 
-@Suppress("FoldInitializerAndIfToElvis")
-class DocGenerator(private val config: CodeGenConfig, private val document: Document) {
+class DocGenerator(
+    private val config: CodeGenConfig,
+    private val document: Document,
+) {
     private val gqlParser = Parser()
-    private val packageName = config.packageNameDocs
-    fun generate(
-        definition: Definition<*>
-    ): CodeGenResult {
+
+    fun generate(definition: Definition<*>): CodeGenResult {
         if (definition !is ObjectTypeDefinition) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
         val docFiles: MutableList<DocFileSpec> = mutableListOf()
 
-        if (definition.name.equals("Query")) {
+        if (definition.name == "Query") {
             definition.fieldDefinitions.forEach {
-                val markdownText: String? = getFieldDefinitionMarkdown(it, definition)
-                if (markdownText != null) {
-                    docFiles.add(DocFileSpec.get("${definition.name}.${it.name}", markdownText))
-                }
+                val markdownText = getFieldDefinitionMarkdown(it, definition)
+                docFiles += DocFileSpec.get("${definition.name}.${it.name}", markdownText)
             }
         }
 
         if (definition.directivesByName["key"] != null) {
             val entitiesMarkdown: String? = getEntitiesMarkdown(definition)
             if (entitiesMarkdown != null) {
-                docFiles.add(DocFileSpec.get("Entities.${definition.name}", entitiesMarkdown))
+                docFiles += DocFileSpec.get("Entities.${definition.name}", entitiesMarkdown)
             }
         }
 
         return CodeGenResult(docFiles = docFiles)
     }
 
-    private fun getFieldDefinitionMarkdown(field: FieldDefinition, definition: ObjectTypeDefinition): String? {
-        return """
+    private fun getFieldDefinitionMarkdown(
+        field: FieldDefinition,
+        definition: ObjectTypeDefinition,
+    ): String =
+        """
             |# ${definition.name}.${field.name}: ${AstPrinter.printAst(field.type)}
             ${if (field.inputValueDefinitions.size > 0) {
             """     
@@ -70,17 +71,21 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
             || :--- | :---------- | :------: | :--: |
             ${field.inputValueDefinitions.map {
                 """
-            || ${it.name} | ${it.description?.getContent()?.replace("|", "\\|") ?: ""} | ${if (it.type is NonNullType) "✅" else "Optional"} | ${AstPrinter.printAst(it.type)} |
+                || ${it.name} | ${it.description?.getContent()?.replace(
+                    "|",
+                    "\\|",
+                ) ?: ""} | ${if (it.type is NonNullType) "✅" else "Optional"} | ${AstPrinter.printAst(it.type)} |
                 """.trimIndent()
             }.joinToString("\n")}
             """
-        }else ""}
+        }else {
+            ""
+        }}
             |## Example
             |```graphql
             |${getExampleQuery(field)?.split("\n")?.joinToString("\n|")}
             |```
         """.trimMargin()
-    }
 
     private fun getEntitiesMarkdown(definition: Definition<*>): String? {
         if (definition is ObjectTypeDefinition) {
@@ -95,7 +100,7 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
                 |```json
                 |${getExampleEntitiesQueryVariables(definition)?.split("\n")?.joinToString("\n|")}
                 |```
-            """.trimMargin()
+                """.trimMargin()
         }
 
         return null
@@ -103,39 +108,56 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
 
     private fun getExampleQuery(definition: FieldDefinition): String? {
         val selectionSet: List<String> = getSelectionSet(definition.type.findTypeDefinition(document))
-        val gql: String = """
+        val gql: String =
+            """
             {
-                ${definition.name}${if (definition.inputValueDefinitions.size > 0) "(${definition.inputValueDefinitions.map{ "${it.name}: ${getMockGQLValueAsAST(it.type)}"}.joinToString(", ")})" else ""} ${if (selectionSet.size > 0) "{${selectionSet.joinToString("\n")}}" else ""}
+                ${definition.name}${if (definition.inputValueDefinitions.size > 0) {
+                "(${definition.inputValueDefinitions.map{
+                    "${it.name}: ${getMockGQLValueAsAST(
+                        it.type,
+                    )}"
+                }.joinToString(", ")})"
+            } else {
+                ""
+            }} ${if (selectionSet.size > 0) "{${selectionSet.joinToString("\n")}}" else ""}
             }
-        """.trimIndent()
+            """.trimIndent()
         return AstPrinter.printAst(gqlParser.parseDocument(gql))
     }
 
     private fun getExampleEntitiesQuery(definition: ObjectTypeDefinition): String? {
-        val gql: String = """
+        val gql: String =
+            """
             query(${'$'}representations: [_Any!]!) {
                 entities(representations: ${'$'}representations) { 
                     ... on ${definition.name} {
                         ${definition.fieldDefinitions.map {
-            val selectionSet : List<String> = getSelectionSet(it.type.findTypeDefinition(document))
-            """
-                            ${it.name}${if (it.inputValueDefinitions.size > 0) "(${it.inputValueDefinitions.map{ "${it.name}: ${getMockGQLValueAsAST(it.type)}"}.joinToString(", ")})" else ""} ${if (selectionSet.size > 0) "{${selectionSet.joinToString("\n")}}" else ""}
+                val selectionSet: List<String> = getSelectionSet(it.type.findTypeDefinition(document))
+                """
+                            ${it.name}${if (it.inputValueDefinitions.size > 0) {
+                    "(${it.inputValueDefinitions.map{
+                        "${it.name}: ${getMockGQLValueAsAST(
+                            it.type,
+                        )}"
+                    }.joinToString(", ")})"
+                } else {
+                    ""
+                }} ${if (selectionSet.size > 0) "{${selectionSet.joinToString("\n")}}" else ""}
                         """
-        }.joinToString("\n")}
+            }.joinToString("\n")}
                     }
                 }
             }
-        """.trimIndent()
+            """.trimIndent()
         return AstPrinter.printAst(gqlParser.parseDocument(gql))
     }
 
     private fun getExampleEntitiesQueryVariables(definition: ObjectTypeDefinition): String? {
         val representations: MutableList<JsonElement> = mutableListOf()
 
-        val fieldsArgument: Argument? = definition.getDirectives("key")?.get(0)?.getArgument("fields")
-        if (fieldsArgument == null) {
-            return null
-        }
+        val fieldsArgument: Argument =
+            definition.getDirectives("key")?.get(0)?.getArgument("fields")
+                ?: return null
 
         if (fieldsArgument.value is StringValue) {
             val strValue: StringValue = fieldsArgument.value as StringValue
@@ -155,37 +177,50 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
         return null
     }
 
-    private fun getEntitiesSelectionSet(field: Field, definition: Node<*>?): JsonObject {
+    private fun getEntitiesSelectionSet(
+        field: Field,
+        definition: Node<*>?,
+    ): JsonObject {
         // Handle sub-selections recursively
         if (field.selectionSet != null) {
-            val map = mapOf(
-                field.name to JsonArray(
-                    field.selectionSet.selections.filterIsInstance<Field>().map {
-                        val nextDef: Node<*>? = if (definition is ObjectTypeDefinition) definition.fieldDefinitions.first { it.name.equals(field.name) } as Node<*> else definition
-                        getEntitiesSelectionSet(it, nextDef)
-                    }
+            val map =
+                mapOf(
+                    field.name to
+                        JsonArray(
+                            field.selectionSet.selections.filterIsInstance<Field>().map {
+                                val nextDef: Node<*>? =
+                                    if (definition is ObjectTypeDefinition) {
+                                        definition.fieldDefinitions.first {
+                                            it.name.equals(field.name)
+                                        } as Node<*>
+                                    } else {
+                                        definition
+                                    }
+                                getEntitiesSelectionSet(it, nextDef)
+                            },
+                        ),
                 )
-            )
             return JsonObject(map)
         }
 
-        var fieldValue: MutableMap<String, JsonElement>?
+        val fieldValue: Map<String, JsonElement>?
 
         if (definition is ObjectTypeDefinition) {
             val gqlValue: Value<*> = getMockGQLValue(definition.fieldDefinitions.first { it.name.equals(field.name) }?.type)
             val mockedValue: JsonElement = toJsonPrimitive(gqlValue)
-            fieldValue = mutableMapOf(field.name to mockedValue)
-            fieldValue.put("__typename", JsonPrimitive(definition.name))
+            fieldValue =
+                mapOf(
+                    field.name to mockedValue,
+                    "__typename" to JsonPrimitive(definition.name),
+                )
         } else {
-            fieldValue = mutableMapOf(field.name to JsonPrimitive("foo"))
+            fieldValue = mapOf(field.name to JsonPrimitive("foo"))
         }
 
         return JsonObject(fieldValue)
     }
 
-    private fun getMockGQLValueAsAST(type: Type<*>?): String {
-        return AstPrinter.printAst(getMockGQLValue(type))
-    }
+    private fun getMockGQLValueAsAST(type: Type<*>?): String = AstPrinter.printAst(getMockGQLValue(type))
 
     private fun getMockGQLValue(type: Type<*>?): Value<*> {
         if (TypeUtil.isWrapped(type)) {
@@ -209,13 +244,14 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
     }
 
     private fun getSchemaTypeMockValue(type: TypeName): Value<*> {
-        val typeDef: Definition<*>? = document.definitions?.firstOrNull {
-            when (it) {
-                is EnumTypeDefinition -> it.name.equals(type.name)
-                is InputObjectTypeDefinition -> it.name.equals(type.name)
-                else -> false
+        val typeDef: Definition<*>? =
+            document.definitions?.firstOrNull {
+                when (it) {
+                    is EnumTypeDefinition -> it.name.equals(type.name)
+                    is InputObjectTypeDefinition -> it.name.equals(type.name)
+                    else -> false
+                }
             }
-        }
 
         if (typeDef == null) {
             return NullValue.of()
@@ -232,7 +268,15 @@ class DocGenerator(private val config: CodeGenConfig, private val document: Docu
 
     private fun getSelectionSet(typeDef: TypeDefinition<*>?): List<String> {
         if (typeDef is ObjectTypeDefinition) {
-            return typeDef.fieldDefinitions.map { if (it.inputValueDefinitions.size > 0) "${it.name}(${it.inputValueDefinitions.map{ "${it.name}: ${getMockGQLValueAsAST(it.type)}"}.joinToString(", ")})" else it.name }
+            return typeDef.fieldDefinitions.map {
+                if (it.inputValueDefinitions.size >
+                    0
+                ) {
+                    "${it.name}(${it.inputValueDefinitions.map{ "${it.name}: ${getMockGQLValueAsAST(it.type)}"}.joinToString(", ")})"
+                } else {
+                    it.name
+                }
+            }
         } else {
             return listOf()
         }

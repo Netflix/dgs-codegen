@@ -32,28 +32,35 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.lang.model.element.Modifier
 
-class InterfaceGenerator(private val config: CodeGenConfig, private val document: Document) {
+class InterfaceGenerator(
+    private val config: CodeGenConfig,
+    private val document: Document,
+) {
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(InterfaceGenerator::class.java)
+    }
 
     private val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config, document)
     private val useInterfaceType = config.generateInterfaces
-    private val logger: Logger = LoggerFactory.getLogger(InterfaceGenerator::class.java)
 
     fun generate(
         definition: InterfaceTypeDefinition,
-        extensions: List<InterfaceTypeExtensionDefinition>
+        extensions: List<InterfaceTypeExtensionDefinition>,
     ): CodeGenResult {
         if (definition.shouldSkip(config)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
 
-        logger.info("Generating type ${definition.name}")
-        val javaType = TypeSpec.interfaceBuilder(definition.name)
-            .addOptionalGeneratedAnnotation(config)
-            .addModifiers(Modifier.PUBLIC)
+        logger.info("Generating type {}", definition.name)
+        val javaType =
+            TypeSpec
+                .interfaceBuilder(definition.name)
+                .addOptionalGeneratedAnnotation(config)
+                .addModifiers(Modifier.PUBLIC)
 
         if (definition.description != null) {
-            javaType.addJavadoc(definition.description.sanitizeJavaDoc())
+            javaType.addJavadoc("\$L", definition.description.content)
         }
 
         definition.implements
@@ -86,13 +93,15 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
             }
         }
 
-        val implementations = document.getDefinitionsOfType(ObjectTypeDefinition::class.java).asSequence()
-            .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
-            .map { node ->
-                typeUtils.findJavaInterfaceName(node.name, packageName)
-            }
-            .filterIsInstance<ClassName>()
-            .toList()
+        val implementations =
+            document
+                .getDefinitionsOfType(ObjectTypeDefinition::class.java)
+                .asSequence()
+                .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
+                .map { node ->
+                    typeUtils.findJavaInterfaceName(node.name, packageName)
+                }.filterIsInstance<ClassName>()
+                .toList()
 
         // Add JsonSubType annotations only if there are no generated concrete types that implement the interface
         if (implementations.isNotEmpty() && config.generateDataTypes) {
@@ -105,31 +114,50 @@ class InterfaceGenerator(private val config: CodeGenConfig, private val document
         return CodeGenResult(javaInterfaces = listOf(javaFile))
     }
 
-    private fun isFieldAnInterface(fieldDefinition: FieldDefinition): Boolean {
-        return document.getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+    private fun isFieldAnInterface(fieldDefinition: FieldDefinition): Boolean =
+        document
+            .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
             .any { node -> node.name == typeUtils.findInnerType(fieldDefinition.type).name }
-    }
 
-    private fun addInterfaceMethod(fieldDefinition: FieldDefinition, javaType: TypeSpec.Builder) {
+    private fun addInterfaceMethod(
+        fieldDefinition: FieldDefinition,
+        javaType: TypeSpec.Builder,
+    ) {
         val returnType = typeUtils.findReturnType(fieldDefinition.type, useInterfaceType, true)
 
         val fieldName = fieldDefinition.name
-        val getterPrefix = if (returnType == com.squareup.javapoet.TypeName.BOOLEAN && config.generateIsGetterForPrimitiveBooleanFields) "is" else "get"
-        val getterBuilder = MethodSpec.methodBuilder(typeUtils.transformIfDefaultClassMethodExists("${getterPrefix}${fieldName.capitalized()}", TypeUtils.Companion.getClass))
-            .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-            .returns(returnType)
+        val getterPrefix =
+            if (returnType == com.squareup.javapoet.TypeName.BOOLEAN &&
+                config.generateIsGetterForPrimitiveBooleanFields
+            ) {
+                "is"
+            } else {
+                "get"
+            }
+        val getterBuilder =
+            MethodSpec
+                .methodBuilder(
+                    typeUtils.transformIfDefaultClassMethodExists(
+                        "${getterPrefix}${fieldName.capitalized()}",
+                        TypeUtils.Companion.GET_CLASS,
+                    ),
+                ).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                .returns(returnType)
         if (fieldDefinition.description != null) {
-            getterBuilder.addJavadoc(fieldDefinition.description.sanitizeJavaDoc())
+            getterBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
         javaType.addMethod(getterBuilder.build())
 
         if (config.generateInterfaceSetters) {
-            val setterBuilder = MethodSpec.methodBuilder(typeUtils.transformIfDefaultClassMethodExists("set${fieldName.capitalized()}", TypeUtils.Companion.setClass))
-                .addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                .addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldName))
+            val setterBuilder =
+                MethodSpec
+                    .methodBuilder(
+                        typeUtils.transformIfDefaultClassMethodExists("set${fieldName.capitalized()}", TypeUtils.Companion.SET_CLASS),
+                    ).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
+                    .addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldName))
 
             if (fieldDefinition.description != null) {
-                setterBuilder.addJavadoc(fieldDefinition.description.content.lines().joinToString("\n"))
+                setterBuilder.addJavadoc("\$L", fieldDefinition.description.content)
             }
             javaType.addMethod(setterBuilder.build())
         }

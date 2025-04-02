@@ -28,21 +28,23 @@ import java.util.stream.Stream
 class ClassnameShortenerTest {
     @ParameterizedTest
     @MethodSource("inputAndExpectedProvider")
-    fun shorten(input: String, expected: String) {
+    fun shorten(
+        input: String,
+        expected: String,
+    ) {
         val shortened = ClassnameShortener.shorten(input)
         assertThat(shortened).isEqualTo(expected)
     }
 
     companion object {
         @JvmStatic
-        fun inputAndExpectedProvider(): Stream<Arguments> {
-            return Stream.of(
+        fun inputAndExpectedProvider(): Stream<Arguments> =
+            Stream.of(
                 Arguments.arguments("This_Is_A_Test", "Th_Is_A_Te"),
                 Arguments.arguments("T", "T"),
                 Arguments.arguments("lowercase", "lo"),
                 Arguments.arguments("lowercase_And_Uppercase", "lo_An_Up"),
-                Arguments.arguments("Movies_SupplementalData", "Mo_SuDa")
+                Arguments.arguments("Movies_SupplementalData", "Mo_SuDa"),
             )
-        }
     }
 }

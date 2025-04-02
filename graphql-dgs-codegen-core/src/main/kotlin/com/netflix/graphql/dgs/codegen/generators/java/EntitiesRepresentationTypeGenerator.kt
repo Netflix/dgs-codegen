@@ -31,37 +31,36 @@ import graphql.language.EnumTypeDefinition
 import graphql.language.FieldDefinition
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.ObjectTypeDefinition
+import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Suppress("UNCHECKED_CAST")
 class EntitiesRepresentationTypeGenerator(
     config: CodeGenConfig,
-    document: Document
+    document: Document,
 ) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
-
     fun generate(
         definition: ObjectTypeDefinition,
-        generatedRepresentations: MutableMap<String, Any>
-    ): CodeGenResult {
-        return EntitiesRepresentationTypeGeneratorUtils.generate(
+        generatedRepresentations: MutableMap<String, Any>,
+    ): CodeGenResult =
+        EntitiesRepresentationTypeGeneratorUtils.generate(
             config,
             definition,
             generatedRepresentations,
-            this::generateRepresentations
+            this::generateRepresentations,
         )
-    }
 
     private fun generateRepresentations(
         definitionName: String,
         representationName: String,
         fields: List<FieldDefinition>,
         generatedRepresentations: MutableMap<String, Any>,
-        keyFields: Map<String, Any>
+        keyFields: Map<String, Any>,
     ): CodeGenResult {
         if (generatedRepresentations.containsKey(representationName)) {
-            return CodeGenResult()
+            return CodeGenResult.EMPTY
         }
-        var fieldsCodeGenAccumulator = CodeGenResult()
+        var fieldsCodeGenAccumulator = CodeGenResult.EMPTY
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", ClassName.get(String::class.java), CodeBlock.of("\$S", definitionName))
         val fieldDefinitions =
@@ -74,7 +73,7 @@ class EntitiesRepresentationTypeGenerator(
                             type is ObjectTypeDefinition ||
                                 type is InterfaceTypeDefinition ||
                                 type is EnumTypeDefinition
-                            )
+                        )
                     ) {
                         val fieldTypeRepresentationName = toRepresentationName(type)
                         val fieldRepresentationType =
@@ -84,16 +83,17 @@ class EntitiesRepresentationTypeGenerator(
                                 .replace(type.name, fieldTypeRepresentationName)
 
                         if (generatedRepresentations.containsKey(fieldTypeRepresentationName)) {
-                            logger.trace("Representation fo $fieldTypeRepresentationName was already generated.")
+                            logger.trace("Representation for {} was already generated.", fieldTypeRepresentationName)
                         } else {
                             logger.debug("Generating entity representation {} ...", fieldTypeRepresentationName)
-                            val fieldTypeRepresentation = generateRepresentations(
-                                type.name,
-                                fieldTypeRepresentationName,
-                                type.fieldDefinitions(),
-                                generatedRepresentations,
-                                keyFields[it.name] as Map<String, Any>
-                            )
+                            val fieldTypeRepresentation =
+                                generateRepresentations(
+                                    type.name,
+                                    fieldTypeRepresentationName,
+                                    type.fieldDefinitions(),
+                                    generatedRepresentations,
+                                    keyFields[it.name] as Map<String, Any>,
+                                )
                             fieldsCodeGenAccumulator = fieldsCodeGenAccumulator.merge(fieldTypeRepresentation)
                             generatedRepresentations[fieldTypeRepresentationName] = fieldRepresentationType
                         }
@@ -103,20 +103,20 @@ class EntitiesRepresentationTypeGenerator(
                     }
                 }
         // Generate base type representation...
-        val parentRepresentationCodeGen = super.generate(
-            name = representationName,
-            interfaces = emptyList(),
-            fields = fieldDefinitions.plus(typeName),
-            description = null,
-            directives = emptyList()
-        )
+        val parentRepresentationCodeGen =
+            super.generate(
+                name = representationName,
+                interfaces = emptyList(),
+                fields = fieldDefinitions + typeName,
+                description = null,
+                directives = emptyList(),
+            )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
         // Merge all results.
         return parentRepresentationCodeGen.merge(fieldsCodeGenAccumulator)
     }
 
     companion object {
-        private val logger: org.slf4j.Logger =
-            LoggerFactory.getLogger(EntitiesRepresentationTypeGenerator::class.java)
+        private val logger: Logger = LoggerFactory.getLogger(EntitiesRepresentationTypeGenerator::class.java)
     }
 }

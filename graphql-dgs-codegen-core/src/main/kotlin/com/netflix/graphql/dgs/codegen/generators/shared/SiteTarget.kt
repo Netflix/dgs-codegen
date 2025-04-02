@@ -29,5 +29,5 @@ enum class SiteTarget {
     RECEIVER,
     PARAM,
     SETPARAM,
-    DELEGATE;
+    DELEGATE,
 }

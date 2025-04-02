@@ -82,17 +82,18 @@ Working on the code base
 
 IDE setup
 -----
-The DGS codebases are Kotlin based. We strongly recommend using Intellij because of the excellent support for Kotlin and
-Gradle. You can use the free [Intellij Community Edition](https://www.jetbrains.com/idea/download/).
+The DGS codebases are Kotlin based.
+We strongly recommend using IntelliJ because of the excellent support for Kotlin and Gradle.
+You can use the free [IntelliJ Community Edition](https://www.jetbrains.com/idea/download/).
 
-Clone and open the project using the "project from version control feature" and let Gradle import all dependencies. Note
-that we build on Java 8, so a Java 8 JDK is required. If you don't have a JDK, you can use [sdkman](https://sdkman.io/)
-or [Intellij](https://www.jetbrains.com/help/idea/sdk.html) to install one. Because almost all the code is Kotlin, we
-don't miss any language features of newer Java releases while supporting a broad range of older releases.
+Clone and open the project using the "project from version control feature" and let Gradle import all dependencies.
+Note that we build on Java 17, so a Java 17 JDK is required.
+If you don't have a JDK, you can use [sdkman](https://sdkman.io/) or [IntelliJ](https://www.jetbrains.com/help/idea/sdk.html) to install one.
+Because almost all the code is Kotlin, we don't miss any language features of newer Java releases while supporting a broad range of older releases.
 
 Code conventions
 -----
-We use the standard Kotlin coding conventions. Intellij should select the correct style automatically because we checked
+We use the standard Kotlin coding conventions. IntelliJ should select the correct style automatically because we checked
 in the `.idea/codeStyle` folder. Furthermore, we're also using [Ktlint](https://ktlint.github.io/). You can run
 formatting manually using Gradle:
 
@@ -106,3 +107,41 @@ Pull Request builds
 ----
 Pushing to a branch automatically kicks off a build. The build will be linked in the Pull Request, and under
 the [CI action](https://github.com/Netflix/dgs-framework/actions/workflows/ci.yml) on GitHub.
+
+Testing a local snapshot
+----
+To test codegen changes in an application, follow these steps:
+
+1. **Publish a local snapshot**
+   ```
+   ./gradlew publishToMavenLocal
+   ```
+   A successful output should print the snapshot version, i.e. `7.1.0-SNAPSHOT`
+
+2. **Update your application build files**
+   
+   - Add the following to `settings.gradle`
+
+      ```
+      pluginManagement {
+          repositories {
+              gradlePluginPortal()
+              mavenLocal()
+          }
+
+          resolutionStrategy {
+              eachPlugin {
+                  if (requested.id.namespace == "com.netflix.dgs") {
+                      useModule("com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:7.1.0-SNAPSHOT")
+                  }
+              }
+          }
+      }
+      ```
+   - Add maven local to `build.gradle`
+
+      ```
+      repositories {
+          mavenLocal()
+      }
+      ```

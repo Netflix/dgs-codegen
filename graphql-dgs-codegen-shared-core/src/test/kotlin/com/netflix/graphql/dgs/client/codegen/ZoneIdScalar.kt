@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.client.codegen
 
 import com.netflix.graphql.dgs.DgsScalar
+import graphql.GraphQLContext
 import graphql.language.StringValue
 import graphql.language.Value
 import graphql.schema.Coercing
@@ -28,22 +29,22 @@ import graphql.schema.CoercingSerializeException
 import java.time.ZoneId
 import java.time.format.DateTimeParseException
 import java.time.zone.ZoneRulesException
+import java.util.Locale
 
 @DgsScalar(name = "ZoneId")
 class ZoneIdScalar : Coercing<ZoneId, String> {
     @Throws(CoercingSerializeException::class)
-    override fun serialize(dataFetcherResult: Any): String {
-        return dataFetcherResult as? String
+    override fun serialize(dataFetcherResult: Any): String =
+        dataFetcherResult as? String
             ?: if (dataFetcherResult is ZoneId) {
                 dataFetcherResult.id
             } else {
                 throw CoercingSerializeException("Expected type 'ZoneId', but was " + dataFetcherResult.javaClass.name)
             }
-    }
 
     @Throws(CoercingParseValueException::class)
-    override fun parseValue(input: Any): ZoneId {
-        return try {
+    override fun parseValue(input: Any): ZoneId =
+        try {
             if (input is String) {
                 ZoneId.of(input)
             } else {
@@ -53,50 +54,50 @@ class ZoneIdScalar : Coercing<ZoneId, String> {
             throw CoercingParseValueException(
                 String.format(
                     "A valid ZoneId must be provided. I.e. 'Europe/Berlin' or 'UTC'. Was: '%s'.",
-                    input
+                    input,
                 ),
-                e
+                e,
             )
         } catch (e: ZoneRulesException) {
             throw CoercingParseValueException(
                 String.format(
                     "A valid ZoneId must be provided. I.e. 'Europe/Berlin' or 'UTC'. Was: '%s'.",
-                    input
+                    input,
                 ),
-                e
+                e,
             )
         }
-    }
 
     @Throws(CoercingParseLiteralException::class)
-    override fun parseLiteral(input: Any): ZoneId {
-        return if (input is StringValue) {
+    override fun parseLiteral(input: Any): ZoneId =
+        if (input is StringValue) {
             try {
                 ZoneId.of(input.getValue())
             } catch (e: DateTimeParseException) {
                 throw CoercingParseValueException(
                     String.format(
                         "A valid ZoneId must be provided. I.e. 'Europe/Berlin' or 'UTC'. Was: '%s'.",
-                        input
+                        input,
                     ),
-                    e
+                    e,
                 )
             } catch (e: ZoneRulesException) {
                 throw CoercingParseValueException(
                     String.format(
                         "A valid ZoneId must be provided. I.e. 'Europe/Berlin' or 'UTC'. Was: '%s'.",
-                        input
+                        input,
                     ),
-                    e
+                    e,
                 )
             }
         } else {
             throw CoercingParseLiteralException("Expected a StringValue.")
         }
-    }
 
     @Throws(CoercingParseLiteralException::class)
-    override fun valueToLiteral(input: Any): Value<out Value<*>> {
-        return StringValue.of(input.toString())
-    }
+    override fun valueToLiteral(
+        input: Any,
+        graphQLContext: GraphQLContext,
+        locale: Locale,
+    ): Value<*> = StringValue.of(input.toString())
 }

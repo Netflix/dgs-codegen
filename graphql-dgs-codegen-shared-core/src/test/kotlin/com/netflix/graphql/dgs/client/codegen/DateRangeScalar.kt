@@ -16,6 +16,7 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
+import graphql.GraphQLContext
 import graphql.language.StringValue
 import graphql.language.Value
 import graphql.schema.Coercing
@@ -24,35 +25,46 @@ import graphql.schema.CoercingParseValueException
 import graphql.schema.CoercingSerializeException
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class DateRangeScalar : Coercing<DateRange, String> {
-    private val formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
+    private val defaultFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy")
 
-    @Throws(CoercingSerializeException::class)
-    override fun serialize(dataFetcherResult: Any): String {
+    fun serializeImpl(
+        dataFetcherResult: Any,
+        formatter: DateTimeFormatter = defaultFormatter,
+    ): String {
         val range: DateRange = dataFetcherResult as DateRange
         return range.from.format(formatter) + "-" + range.to.format(formatter)
     }
 
+    @Throws(CoercingSerializeException::class)
+    override fun serialize(dataFetcherResult: Any): String = serializeImpl(dataFetcherResult)
+
     @Throws(CoercingParseValueException::class)
     override fun parseValue(input: Any): DateRange {
         val split = (input as String).split("-").toTypedArray()
-        val from = LocalDate.parse(split[0], formatter)
-        val to = LocalDate.parse(split[1], formatter)
+        val from = LocalDate.parse(split[0], defaultFormatter)
+        val to = LocalDate.parse(split[1], defaultFormatter)
         return DateRange(from, to)
     }
 
     @Throws(CoercingParseLiteralException::class)
     override fun parseLiteral(input: Any): DateRange {
         val split = (input as StringValue).value.split("-").toTypedArray()
-        val from = LocalDate.parse(split[0], formatter)
-        val to = LocalDate.parse(split[1], formatter)
+        val from = LocalDate.parse(split[0], defaultFormatter)
+        val to = LocalDate.parse(split[1], defaultFormatter)
         return DateRange(from, to)
     }
 
-    override fun valueToLiteral(input: Any): Value<*> {
-        return StringValue.of(serialize(input))
-    }
+    override fun valueToLiteral(
+        input: Any,
+        graphQLContext: GraphQLContext,
+        locale: Locale,
+    ): Value<*> = StringValue.of(serializeImpl(input, graphQLContext.getOrDefault("formatter", defaultFormatter)))
 }
 
-class DateRange(val from: LocalDate, val to: LocalDate)
+class DateRange(
+    val from: LocalDate,
+    val to: LocalDate,
+)

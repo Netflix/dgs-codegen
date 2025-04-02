@@ -13,10 +13,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'zulu'
-          java-version: 8
+          java-version: 17
 
       - name: Set up Python 3.8
-        uses: actions/setup-python@v5.1.0
+        uses: actions/setup-python@v5.5.0
         with:
           python-version: 3.8
 
@@ -25,7 +25,7 @@ jobs:
           python -m pip install --upgrade pip
           if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi
 
-      - uses: actions/cache@v4.0.2
+      - uses: actions/cache@v4.2.3
         id: gradle-wrapper-cache
         with:
           path: ~/.gradle/wrapper
@@ -33,14 +33,14 @@ jobs:
           restore-keys: ${{ runner.os }}-gradlewrapper-
 
       - name: Cache Gradle packages
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
 
       - name: Maven cache
-        uses: actions/cache@v4.0.2
+        uses: actions/cache@v4.2.3
         with:
           path: ~/.m2
           key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
@@ -56,14 +56,14 @@ jobs:
       - name: Clone dgs-examples-java
         uses: actions/checkout@v4
         with:
-          repository: Netflix/dgs-examples-java-2.7
-          path: build/examples/dgs-examples-java-2.7
+          repository: Netflix/dgs-examples-java
+          path: build/examples/dgs-examples-java
 
       - name: Clone dgs-examples-kotlin
         uses: actions/checkout@v4
         with:
-          repository: Netflix/dgs-examples-kotlin-2.7
-          path: build/examples/dgs-examples-kotlin-2.7
+          repository: Netflix/dgs-examples-kotlin
+          path: build/examples/dgs-examples-kotlin
 
       - name: Build Examples
         run: |
