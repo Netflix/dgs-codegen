@@ -3210,7 +3210,9 @@ class KotlinCodeGenTest {
         assertThat(annotationSpec.members).hasSize(1)
         assertThat(
             annotationSpec.members[0],
-        ).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("Deprecated in the GraphQL schema."))
+        ).extracting("formatParts", "args")
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
+            .contains(listOf("message = ", "%S"), listOf("Deprecated in the GraphQL schema."))
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
@@ -3222,7 +3224,9 @@ class KotlinCodeGenTest {
         assertThat(parameterSpec.annotations[1].members).hasSize(1)
         assertThat(
             parameterSpec.annotations[1].members[0],
-        ).extracting("formatParts", "args").asList().contains(listOf("message = ", "%S"), listOf("Deprecated in the GraphQL schema."))
+        ).extracting("formatParts", "args")
+            .asInstanceOf(InstanceOfAssertFactories.LIST)
+            .contains(listOf("message = ", "%S"), listOf("Deprecated in the GraphQL schema."))
     }
 
     @Test
@@ -4170,7 +4174,8 @@ It takes a title and such.
 
     @Test
     fun generateSourceWithGeneratedAnnotationWithoutDate() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 employees(filter:EmployeeFilterInput) : [Person]
             }
@@ -4194,21 +4199,24 @@ It takes a title and such.
             input EmployeeFilterInput {
                 rank: String
             }
-        """.trimIndent()
+            """.trimIndent()
 
-        val codeGenResult = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                packageName = basePackageName,
-                language = Language.KOTLIN,
-                addGeneratedAnnotation = true,
-                disableDatesInGeneratedAnnotation = true,
-                generateClientApi = true
-            )
-        ).generate()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    addGeneratedAnnotation = true,
+                    disableDatesInGeneratedAnnotation = true,
+                    generateClientApi = true,
+                ),
+            ).generate()
 
-        val (generatedAnnotationFile, allKotlinSources) = codeGenResult.kotlinSources()
-            .partition { it.name == "Generated" }
+        val (generatedAnnotationFile, allKotlinSources) =
+            codeGenResult
+                .kotlinSources()
+                .partition { it.name == "Generated" }
 
         allKotlinSources.assertKotlinGeneratedAnnotation(shouldHaveDate = false)
         codeGenResult.javaSources().assertJavaGeneratedAnnotation(shouldHaveDate = false)

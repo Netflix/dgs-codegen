@@ -133,10 +133,11 @@ fun <T> invokeMethod(
     return result as T
 }
 
-fun List<FileSpec>.assertKotlinGeneratedAnnotation(shouldHaveDate: Boolean) = onEach {
+fun List<FileSpec>.assertKotlinGeneratedAnnotation(shouldHaveDate: Boolean) =
+    onEach {
         it.members
             .filterIsInstance(KTypeSpec::class.java)
-        .forEach { typeSpec -> typeSpec.assertKotlinGeneratedAnnotation(it, shouldHaveDate) }
+            .forEach { typeSpec -> typeSpec.assertKotlinGeneratedAnnotation(it, shouldHaveDate) }
     }
 
 fun List<JavaFile>.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) =
@@ -144,9 +145,13 @@ fun List<JavaFile>.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) =
         it.typeSpec.assertJavaGeneratedAnnotation(shouldHaveDate)
     }
 
-fun KTypeSpec.assertKotlinGeneratedAnnotation(fileSpec: FileSpec, shouldHaveDate: Boolean) {
-    val generatedSpec = annotations
-        .firstOrNull { it.canonicalName() == "$BASE_PACKAGE_NAME.Generated" }
+fun KTypeSpec.assertKotlinGeneratedAnnotation(
+    fileSpec: FileSpec,
+    shouldHaveDate: Boolean,
+) {
+    val generatedSpec =
+        annotations
+            .firstOrNull { it.canonicalName() == "$BASE_PACKAGE_NAME.Generated" }
     assertThat(generatedSpec)
         .`as`("@Generated annotation exists in %s at %s", this, fileSpec)
         .isNotNull

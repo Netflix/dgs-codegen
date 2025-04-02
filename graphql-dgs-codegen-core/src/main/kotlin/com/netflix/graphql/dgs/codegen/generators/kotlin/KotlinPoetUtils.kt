@@ -177,8 +177,12 @@ fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec =
         .addMember("%S", "INAPPLICABLE_JVM_NAME")
         .build()
 
-private fun generatedAnnotation(packageName: String, generateDate: Boolean): List<AnnotationSpec> {
-    val graphqlGenerated = AnnotationSpec
+private fun generatedAnnotation(
+    packageName: String,
+    generateDate: Boolean,
+): List<AnnotationSpec> {
+    val graphqlGenerated =
+        AnnotationSpec
             .builder(ClassName(packageName, "Generated"))
             .build()
 
@@ -187,7 +191,9 @@ private fun generatedAnnotation(packageName: String, generateDate: Boolean): Lis
     } else {
         val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
 
-        var javaxGenerated = AnnotationSpec.builder(generatedAnnotation)
+        val javaxGenerated =
+            AnnotationSpec
+                .builder(generatedAnnotation)
                 .addMember("value = [%S]", CodeGen::class.qualifiedName!!)
 
         if (generateDate) {
@@ -216,18 +222,20 @@ fun jsonPropertyAnnotation(name: String): AnnotationSpec =
 fun deprecatedAnnotation(reason: String): AnnotationSpec {
     // TODO support for level
     val replace = reason.substringAfter(ParserConstants.REPLACE_WITH_STR, "")
-    val builder: AnnotationSpec.Builder = AnnotationSpec.builder(Deprecated::class)
-        .addMember(
-            "${ParserConstants.MESSAGE}${ParserConstants.ASSIGNMENT_OPERATOR}%S",
-            reason.substringBefore(ParserConstants.REPLACE_WITH_STR)
-        )
+    val builder: AnnotationSpec.Builder =
+        AnnotationSpec
+            .builder(Deprecated::class)
+            .addMember(
+                "${ParserConstants.MESSAGE}${ParserConstants.ASSIGNMENT_OPERATOR}%S",
+                reason.substringBefore(ParserConstants.REPLACE_WITH_STR),
+            )
     if (replace.isNotEmpty()) {
         builder.addMember(
             CodeBlock.of(
                 "${ParserConstants.REPLACE_WITH}${ParserConstants.ASSIGNMENT_OPERATOR}%M(%S)",
                 MemberName("kotlin", ParserConstants.REPLACE_WITH_CLASS),
-                reason.substringAfter(ParserConstants.REPLACE_WITH_STR)
-            )
+                reason.substringAfter(ParserConstants.REPLACE_WITH_STR),
+            ),
         )
     }
     return builder.build()
@@ -332,11 +340,12 @@ fun customAnnotation(
         )
     }
     if (annotationArgumentMap.containsKey(ParserConstants.INPUTS)) {
-        val codeBlocks: List<CodeBlock> = parseInputs(
-            config,
-            annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue,
-            (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
-        )
+        val codeBlocks: List<CodeBlock> =
+            parseInputs(
+                config,
+                annotationArgumentMap[ParserConstants.INPUTS] as ObjectValue,
+                (annotationArgumentMap[ParserConstants.NAME] as StringValue).value,
+            )
         codeBlocks.forEach { codeBlock ->
             annotation.addMember(codeBlock)
         }
@@ -373,7 +382,6 @@ private fun generateCode(
                 CodeBlock.of("$prefix%S", string)
             }
         }
-
         is FloatValue -> CodeBlock.of("$prefix%L", (value as FloatValue).value)
         // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
         is EnumValue ->
@@ -393,7 +401,6 @@ private fun generateCode(
                     (value as EnumValue).name,
                 ),
             )
-
         is ArrayValue ->
             if ((value as ArrayValue).values.isEmpty()) {
                 CodeBlock.of("[]")
@@ -428,8 +435,8 @@ private fun parseInputs(
                 config,
                 objectField.value,
                 annotationName,
-                objectField.name + ParserConstants.ASSIGNMENT_OPERATOR
-            )
+                objectField.name + ParserConstants.ASSIGNMENT_OPERATOR,
+            ),
         )
         codeBlocks
     }
