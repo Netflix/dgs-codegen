@@ -70,7 +70,7 @@ class GraphQLQueryRequest
                 InputValueSerializer(options?.scalars ?: emptyMap(), options?.graphQLContext ?: GraphQLContext.getDefault())
             }
 
-        val projectionSerializer = ProjectionSerializer(inputValueSerializer)
+        val projectionSerializer = ProjectionSerializer(inputValueSerializer, query)
 
         fun serialize(): String = serialize(false)
 
@@ -81,10 +81,6 @@ class GraphQLQueryRequest
 
             query.name?.let { operationDef.name(it) }
             query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
-
-            if (query.variableDefinitions.isNotEmpty()) {
-                operationDef.variableDefinitions(query.variableDefinitions)
-            }
 
             val selection = Field.newField(query.getOperationName())
             if (query.input.isNotEmpty()) {
@@ -109,6 +105,10 @@ class GraphQLQueryRequest
                 if (selectionSetFromProjection.selections.isNotEmpty()) {
                     selection.selectionSet(selectionSetFromProjection)
                 }
+            }
+
+            if (query.variableDefinitions.isNotEmpty()) {
+                operationDef.variableDefinitions(query.variableDefinitions)
             }
 
             if (selectionSet != null) {

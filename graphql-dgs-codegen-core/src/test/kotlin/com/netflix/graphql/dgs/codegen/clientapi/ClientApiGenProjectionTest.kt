@@ -760,12 +760,85 @@ class ClientApiGenProjectionTest {
             ).generate()
 
         val methodSpecs = codeGenResult.clientProjections[0].typeSpec.methodSpecs
-        assertThat(methodSpecs.size).isEqualTo(4)
+        assertThat(methodSpecs.size).isEqualTo(5)
         val methodWithArgs =
             methodSpecs.find { it.parameters.size > 0 && it.name == "actors" }
                 ?: fail("Expected method not found")
         assertThat(methodWithArgs.parameters[0].name).isEqualTo("leadCharactersOnly")
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
+    }
+
+    @Test
+    fun `Input arguments on root projections should have a second method to use variable references`() {
+        val schema =
+            """
+            type Query {
+                movies: [Movie]
+            }
+            
+            type Movie {
+                actors(leadCharactersOnly: Boolean): [Actor]
+            }
+            
+            type Actor {
+                name: String
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
+
+        val methodSpecs = codeGenResult.clientProjections[0].typeSpec.methodSpecs
+        val methodWithArgs =
+            methodSpecs.find { it.name == "actorsWithVariableReferences" }
+                ?: fail("Expected method not found")
+        assertThat(methodWithArgs.parameters[0].name).isEqualTo("leadCharactersOnlyReference")
+        assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.String")
+    }
+
+    @Test
+    fun `Input arguments on root projections should have a second method to use variable references supporting multiple arguments`() {
+        val schema =
+            """
+            type Query {
+                movies: [Movie]
+            }
+            
+            type Movie {
+                actors(leadCharactersOnly: Boolean, filterByName: String): [Actor]
+            }
+            
+            type Actor {
+                name: String
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
+
+        val methodSpecs = codeGenResult.clientProjections[0].typeSpec.methodSpecs
+        val methodWithArgs =
+            methodSpecs.find { it.name == "actorsWithVariableReferences" }
+                ?: fail("Expected method not found")
+
+        assertThat(methodWithArgs.parameters).hasSize(2)
+        assertThat(methodWithArgs.parameters[0].name).isEqualTo("leadCharactersOnlyReference")
+        assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.String")
+
+        assertThat(methodWithArgs.parameters[1].name).isEqualTo("filterByNameReference")
+        assertThat(methodWithArgs.parameters[1].type.toString()).isEqualTo("java.lang.String")
     }
 
     @Test
@@ -809,5 +882,48 @@ class ClientApiGenProjectionTest {
             .isEqualTo("AwardProjection<ActorProjection<PARENT, ROOT>, ROOT>")
         assertThat(methodWithArgs.parameters[0].name).isEqualTo("oscarsOnly")
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.Boolean")
+    }
+
+    @Test
+    fun `Input arguments on sub projections with variable references should be support in the query API`() {
+        val schema =
+            """
+            type Query {
+                movies: [Movie]
+            }
+
+            type Movie {
+                actors: [Actor]
+                awards(oscarsOnly: Boolean): [Award!]
+            }
+
+            type Actor {
+                awards(oscarsOnly: Boolean): [Award!]
+            }
+
+            type Award {
+                name: String
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                    writeToFiles = true,
+                ),
+            ).generate()
+
+        val methodSpecs = codeGenResult.clientProjections[1].typeSpec.methodSpecs
+        val methodWithArgs =
+            methodSpecs.find { !it.isConstructor && it.parameters.size > 0 && it.name == "awardsWithVariableReferences" }
+                ?: fail("Method not found")
+        assertThat(methodWithArgs.returnType)
+            .extracting { (it as TypeVariableName).name }
+            .isEqualTo("AwardProjection<ActorProjection<PARENT, ROOT>, ROOT>")
+        assertThat(methodWithArgs.parameters[0].name).isEqualTo("oscarsOnlyReference")
+        assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.String")
     }
 }

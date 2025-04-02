@@ -38,5 +38,13 @@ abstract class BaseProjectionNode(
     data class InputArgument(
         val name: String,
         val value: Any?,
-    )
+        val isVariableReference: Boolean = false,
+        val type: graphql.language.Type<*>? = null,
+    ) {
+        constructor(
+            name: String,
+            value: Any?,
+        ) :
+            this(name, value, false, null)
+    }
 }
