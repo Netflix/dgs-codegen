@@ -550,7 +550,7 @@ class ClientApiGenerator(
                 ).addModifiers(Modifier.PUBLIC)
 
         fieldDefinition.inputValueDefinitions.forEach { input ->
-            methodBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build())
+            methodBuilder.addParameter(ParameterSpec.builder(typeUtils.findReturnType(input.type), ReservedKeywordSanitizer.sanitize(input.name)).build())
         }
         return javaType.addMethod(methodBuilder.build())
     }

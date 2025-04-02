@@ -5968,4 +5968,45 @@ It takes a title and such.
             ).generate()
         }.hasMessage("java.util.Currency cannot be created from IntValue{value=1}, expected String value")
     }
+
+    @Test
+    fun `addFieldSelectionMethodWithArguments should use sanitized name for arguments`() {
+        val schema = """
+            type Query {
+                vulnerabilities(
+                    package: Package
+                ): VulnerabilityConnection!
+            }
+            
+            type VulnerabilityConnection {
+              nodes: [Vulnerability]
+              totalCount: Int!
+            }
+            
+            type Vulnerability {
+                package: Package
+                
+                vulnerabilities(
+                    package: String
+                ): VulnerabilityConnection!
+            }
+                        
+            type Package {
+                packageName: String
+            }
+        """.trimIndent()
+        val result = CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                generateClientApiv2 = true
+            )
+        ).generate()
+        assertThat(
+            result.clientProjections.first {
+                it.typeSpec.name == "VulnerabilityProjection"
+            }.typeSpec.methodSpecs.filter {
+                it.parameters.firstOrNull()?.name == "_package"
+            }.size == 1
+        )
+    }
 }
