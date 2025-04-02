@@ -5914,4 +5914,58 @@ It takes a title and such.
 
         assertCompilesJava(dataTypes)
     }
+
+    @Test
+    fun `The default value for Currency should be overridden and wrapped`() {
+        val schema =
+            """
+            scalar Currency
+            
+            input MyInput {
+                  currency: Currency! = "USD"
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                    typeMapping = mapOf("Decimal" to "java.math.BigDecimal"),
+                ),
+            ).generate()
+
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(
+            dataTypes[0]
+                .typeSpec.fieldSpecs[0]
+                .initializer
+                .toString(),
+        ).isEqualTo("java.util.Currency.getInstance(\"USD\")")
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `Codegen should fail with nice message given unsupported default value provided for Currency`() {
+        val schema =
+            """
+             scalar Currency
+            
+            input MyInput {
+                  currency: Currency! = 1
+            }
+            """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                    typeMapping = mapOf("Currency" to "java.util.Currency"),
+                ),
+            ).generate()
+        }.hasMessage("java.util.Currency cannot be created from IntValue{value=1}, expected String value")
+    }
 }

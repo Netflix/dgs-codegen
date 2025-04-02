@@ -53,7 +53,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
 import java.math.BigDecimal
-import java.util.*
+import java.util.Arrays
+import java.util.Collections
+import java.util.Currency
+import java.util.Locale
+import java.util.Objects
+import java.util.Optional
 import javax.lang.model.element.Modifier
 import com.squareup.javapoet.TypeName as JavaTypeName
 
@@ -170,8 +175,9 @@ class InputTypeGenerator(
 ) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
-        private val LOCALE: ClassName = ClassName.get(Locale::class.java)
         private val BIG_DECIMAL: ClassName = ClassName.get(BigDecimal::class.java)
+        private val CURRENCY: ClassName = ClassName.get(Currency::class.java)
+        private val LOCALE: ClassName = ClassName.get(Locale::class.java)
     }
 
     fun generate(
@@ -213,14 +219,20 @@ class InputTypeGenerator(
         value: Value<out Value<*>>,
         type: JavaTypeName,
         inputTypeDefinitions: List<InputObjectTypeDefinition>,
-    ): CodeBlock {
-        if (type == LOCALE) {
-            return localeCodeBlock(value, type)
-        } else if (type == ClassName.LONG.box()) {
-            return longCodeBlock(value, type)
-        } else if (type == BIG_DECIMAL) {
-            return bigDecimalCodeBlock(value, type)
+    ): CodeBlock =
+        when (type) {
+            BIG_DECIMAL -> bigDecimalCodeBlock(value, type)
+            CURRENCY -> currencyCodeBlock(value, type)
+            LOCALE -> localeCodeBlock(value, type)
+            ClassName.LONG.box() -> longCodeBlock(value, type)
+            else -> defaultCodeBlock(value, type, inputTypeDefinitions)
         }
+
+    private fun defaultCodeBlock(
+        value: Value<out Value<*>>,
+        type: JavaTypeName,
+        inputTypeDefinitions: List<InputObjectTypeDefinition>,
+    ): CodeBlock {
         return when (value) {
             is BooleanValue -> CodeBlock.of("\$L", value.isValue)
             is IntValue -> CodeBlock.of("\$L", value.value)
@@ -273,6 +285,26 @@ class InputTypeGenerator(
         }
     }
 
+    private fun bigDecimalCodeBlock(
+        value: Value<out Value<*>>,
+        type: JavaTypeName,
+    ): CodeBlock =
+        when (value) {
+            is StringValue -> CodeBlock.of("new \$T(\$S)", BIG_DECIMAL, value.value)
+            is IntValue -> CodeBlock.of("new \$T(\$L)", BIG_DECIMAL, value.value)
+            is FloatValue -> CodeBlock.of("new \$T(\$L)", BIG_DECIMAL, value.value)
+            else -> error("$type cannot be created from $value, expected String, Int or Float value")
+        }
+
+    private fun currencyCodeBlock(
+        value: Value<out Value<*>>,
+        type: JavaTypeName,
+    ): CodeBlock =
+        when (value) {
+            is StringValue -> CodeBlock.of("\$T.getInstance(\$S)", CURRENCY, value.value)
+            else -> error("$type cannot be created from $value, expected String value")
+        }
+
     private fun localeCodeBlock(
         value: Value<out Value<*>>,
         type: JavaTypeName,
@@ -288,17 +320,6 @@ class InputTypeGenerator(
         check(value is IntValue) { "$type cannot be created from $value, expected Int value" }
         return CodeBlock.of("\$LL", value.value)
     }
-
-    private fun bigDecimalCodeBlock(
-        value: Value<out Value<*>>,
-        type: JavaTypeName,
-    ): CodeBlock =
-        when (value) {
-            is StringValue -> CodeBlock.of("new \$T(\$S)", BIG_DECIMAL, value.value)
-            is IntValue -> CodeBlock.of("new \$T(\$L)", BIG_DECIMAL, value.value)
-            is FloatValue -> CodeBlock.of("new \$T(\$L)", BIG_DECIMAL, value.value)
-            else -> error("$type cannot be created from $value, expected String, Int or Float value")
-        }
 
     private val JavaTypeName.className: ClassName
         get() =
