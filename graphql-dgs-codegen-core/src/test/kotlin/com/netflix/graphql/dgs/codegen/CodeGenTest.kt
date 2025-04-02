@@ -5971,7 +5971,8 @@ It takes a title and such.
 
     @Test
     fun `addFieldSelectionMethodWithArguments should use sanitized name for arguments`() {
-        val schema = """
+        val schema =
+            """
             type Query {
                 vulnerabilities(
                     package: Package
@@ -5994,19 +5995,22 @@ It takes a title and such.
             type Package {
                 packageName: String
             }
-        """.trimIndent()
-        val result = CodeGen(
-            CodeGenConfig(
-                schemas = setOf(schema),
-                generateClientApiv2 = true
-            )
-        ).generate()
+            """.trimIndent()
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
         assertThat(
-            result.clientProjections.first {
-                it.typeSpec.name == "VulnerabilityProjection"
-            }.typeSpec.methodSpecs.filter {
-                it.parameters.firstOrNull()?.name == "_package"
-            }.size == 1
+            result.clientProjections
+                .first {
+                    it.typeSpec.name == "VulnerabilityProjection"
+                }.typeSpec.methodSpecs
+                .filter {
+                    it.parameters.firstOrNull()?.name == "_package"
+                }.size == 1,
         )
     }
 }
