@@ -9,7 +9,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class OrderFilter @JsonCreator constructor(
+public data class OrderFilter @JsonCreator constructor(
   @JsonProperty("min")
   public val min: BigDecimal = default<OrderFilter, BigDecimal>("min", java.math.BigDecimal("1.1")),
   @JsonProperty("avg")
