@@ -9,7 +9,7 @@ import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
-public class OrderFilter @JsonCreator constructor(
+public data class OrderFilter @JsonCreator constructor(
   @JsonProperty("value")
   public val `value`: Currency = default<OrderFilter, Currency>("value",
       java.util.Currency.getInstance("USD")),
