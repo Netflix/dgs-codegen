@@ -88,3 +88,7 @@ project.plugins.withId('nebula.release') {
         }
     }
 }
+
+signing {
+    setRequired(false)
+}
