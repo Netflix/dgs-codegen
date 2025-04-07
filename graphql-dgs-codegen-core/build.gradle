@@ -47,7 +47,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'com.netflix.graphql.dgs.codegen.CodeGenCliKt'
+    mainClass.set('com.netflix.graphql.dgs.codegen.CodeGenCliKt')
 }
 
 tasks.named("lintKotlinIntegTest") {

@@ -41,7 +41,7 @@ class ProjectionSerializer(
                         projection.inputArguments[fieldName].orEmpty().map { (argName, values, isReference, type) ->
                             if (isReference) {
                                 query.variableDefinitions.add(VariableDefinition(values as String, type))
-                                Argument(argName, VariableReference(values as String))
+                                Argument(argName, VariableReference(values))
                             } else {
                                 Argument(argName, inputValueSerializer.toValue(values))
                             }

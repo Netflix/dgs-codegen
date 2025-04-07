@@ -90,6 +90,7 @@ class KotlinEntitiesRepresentationTypeGenerator(
                             logger.trace("Representation for {} was already generated.", fieldTypeRepresentationName)
                         } else {
                             logger.debug("Generating entity representation {} ...", fieldTypeRepresentationName)
+                            @Suppress("UNCHECKED_CAST")
                             val fieldTypeRepresentation =
                                 generateRepresentations(
                                     type.name,

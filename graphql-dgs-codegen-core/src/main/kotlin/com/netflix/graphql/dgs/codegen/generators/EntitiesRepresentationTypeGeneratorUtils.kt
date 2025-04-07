@@ -110,6 +110,7 @@ object EntitiesRepresentationTypeGeneratorUtils {
                         // push a new map for the next level
                         val previous = parent
                         parent = current
+                        @Suppress("UNCHECKED_CAST")
                         current = Node("", current.map[current.key] as MutableMap<String, Any>, previous)
                     }
                     "}" -> {

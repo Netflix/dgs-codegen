@@ -461,11 +461,14 @@ class ClientApiGenerator(
                 }.map { (fieldDef, typeDef) ->
                     val projectionName = "${typeDef.name.capitalized()}Projection"
                     if (typeDef !is ScalarTypeDefinition) {
-                        val typeVariable = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>>")
+                        val projectionTypeVariable =
+                            TypeVariableName.get(
+                                "$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>>",
+                            )
                         val noArgMethodBuilder =
                             MethodSpec
                                 .methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDef.name))
-                                .returns(typeVariable)
+                                .returns(projectionTypeVariable)
                                 .addCode(
                                     """
                             |$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>> projection = new $projectionName<>(this, this);    
@@ -486,7 +489,6 @@ class ClientApiGenerator(
                     createSubProjection(
                         typeDef,
                         javaType.build(),
-                        javaType.build(),
                         typeDef.name.capitalized(),
                         processedEdges,
                         1,
@@ -496,11 +498,10 @@ class ClientApiGenerator(
         fieldDefinitions.filterSkipped().forEach {
             val objectTypeDefinition = it.type.findTypeDefinition(document)
             if (objectTypeDefinition == null) {
-                val typeVariable = TypeVariableName.get("$clazzName<PARENT, ROOT>")
                 javaType.addMethod(
                     MethodSpec
                         .methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
-                        .returns(typeVariable)
+                        .returns(TypeVariableName.get("$clazzName<PARENT, ROOT>"))
                         .addCode(
                             """
                             |getFields().put("${it.name}", null);
@@ -512,8 +513,8 @@ class ClientApiGenerator(
             }
         }
 
-        val concreteTypesResult = createConcreteTypes(type, javaType.build(), javaType, prefix, mutableSetOf(), 0)
-        val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), prefix, mutableSetOf(), 0)
+        val concreteTypesResult = createConcreteTypes(type, javaType.build(), javaType, mutableSetOf(), 0)
+        val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), mutableSetOf(), 0)
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
@@ -650,7 +651,6 @@ class ClientApiGenerator(
                     createFragment(
                         objTypeDef,
                         javaType.build(),
-                        javaType.build(),
                         "Entities${objTypeDef.name.capitalized()}Key",
                         processedEdges,
                         0,
@@ -665,7 +665,6 @@ class ClientApiGenerator(
         type: TypeDefinition<*>,
         root: TypeSpec,
         javaType: TypeSpec.Builder,
-        prefix: String,
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
     ): CodeGenResult =
@@ -676,7 +675,7 @@ class ClientApiGenerator(
                 }
             concreteTypes
                 .map {
-                    addFragmentProjectionMethod(javaType, root, prefix, it, processedEdges, queryDepth)
+                    addFragmentProjectionMethod(javaType, root, it, processedEdges, queryDepth)
                 }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
         } else {
             CodeGenResult.EMPTY
@@ -686,7 +685,6 @@ class ClientApiGenerator(
         type: TypeDefinition<*>,
         javaType: TypeSpec.Builder,
         rootType: TypeSpec,
-        prefix: String,
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
     ): CodeGenResult =
@@ -694,7 +692,7 @@ class ClientApiGenerator(
             val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document, true) }.toList()
             memberTypes
                 .map {
-                    addFragmentProjectionMethod(javaType, rootType, prefix, it, processedEdges, queryDepth)
+                    addFragmentProjectionMethod(javaType, rootType, it, processedEdges, queryDepth)
                 }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
         } else {
             CodeGenResult.EMPTY
@@ -703,7 +701,6 @@ class ClientApiGenerator(
     private fun addFragmentProjectionMethod(
         javaType: TypeSpec.Builder,
         rootType: TypeSpec,
-        prefix: String,
         it: TypeDefinition<*>,
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
@@ -728,19 +725,18 @@ class ClientApiGenerator(
                 ).build(),
         )
 
-        return createFragment(it as ObjectTypeDefinition, javaType.build(), rootType, projectionName, processedEdges, queryDepth)
+        return createFragment(it as ObjectTypeDefinition, rootType, projectionName, processedEdges, queryDepth)
     }
 
     private fun createFragment(
         type: ObjectTypeDefinition,
-        parent: TypeSpec,
         root: TypeSpec,
         prefix: String,
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
     ): CodeGenResult {
         val subProjection =
-            createSubProjectionType(type, parent, root, prefix, processedEdges, queryDepth)
+            createSubProjectionType(type, root, prefix, processedEdges, queryDepth)
                 ?: return CodeGenResult.EMPTY
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
@@ -785,14 +781,13 @@ class ClientApiGenerator(
 
     private fun createSubProjection(
         type: TypeDefinition<*>,
-        parent: TypeSpec,
         root: TypeSpec,
         prefix: String,
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
     ): CodeGenResult {
         val subProjection =
-            createSubProjectionType(type, parent, root, prefix, processedEdges, queryDepth)
+            createSubProjectionType(type, root, prefix, processedEdges, queryDepth)
                 ?: return CodeGenResult.EMPTY
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
@@ -803,7 +798,6 @@ class ClientApiGenerator(
 
     private fun createSubProjectionType(
         type: TypeDefinition<*>,
-        parent: TypeSpec,
         root: TypeSpec,
         prefix: String,
         processedEdges: Set<Pair<String, String>>,
@@ -872,11 +866,11 @@ class ClientApiGenerator(
                 }.map { (fieldDef, typeDef) ->
                     val projectionName = "${typeDef.name.capitalized()}Projection"
                     val methodName = ReservedKeywordSanitizer.sanitize(fieldDef.name)
-                    val typeVariable = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, ROOT>")
+                    val projectionTypeVariable = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, ROOT>")
                     javaType.addMethod(
                         MethodSpec
                             .methodBuilder(methodName)
-                            .returns(typeVariable)
+                            .returns(projectionTypeVariable)
                             .addCode(
                                 """
                                     | $projectionName<$clazzName<PARENT, ROOT>, ROOT> projection = new $projectionName<>(this, getRoot());
@@ -896,7 +890,6 @@ class ClientApiGenerator(
                     updatedProcessedEdges.add(typeDef.name to type.name)
                     createSubProjection(
                         typeDef,
-                        javaType.build(),
                         root,
                         typeDef.name.capitalized(),
                         updatedProcessedEdges,
@@ -909,11 +902,10 @@ class ClientApiGenerator(
             .forEach {
                 val objectTypeDefinition = it.type.findTypeDefinition(document)
                 if (objectTypeDefinition == null) {
-                    val typeVariable = TypeVariableName.get("$clazzName<PARENT, ROOT>")
                     javaType.addMethod(
                         MethodSpec
                             .methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
-                            .returns(typeVariable)
+                            .returns(TypeVariableName.get("$clazzName<PARENT, ROOT>"))
                             .addCode(
                                 """
                                 |getFields().put("${it.name}", null);
@@ -955,8 +947,8 @@ class ClientApiGenerator(
                 }
             }
 
-        val concreteTypesResult = createConcreteTypes(type, root, javaType, prefix, processedEdges, queryDepth)
-        val unionTypesResult = createUnionTypes(type, javaType, root, prefix, processedEdges, queryDepth)
+        val concreteTypesResult = createConcreteTypes(type, root, javaType, processedEdges, queryDepth)
+        val unionTypesResult = createUnionTypes(type, javaType, root, processedEdges, queryDepth)
 
         return javaType to codeGenResult.merge(concreteTypesResult).merge(unionTypesResult)
     }

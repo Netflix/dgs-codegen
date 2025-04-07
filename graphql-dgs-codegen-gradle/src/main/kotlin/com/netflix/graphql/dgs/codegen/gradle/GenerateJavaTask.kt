@@ -37,7 +37,10 @@ open class GenerateJavaTask
         objectFactory: ObjectFactory,
     ) : DefaultTask() {
         @Input
-        var generatedSourcesDir: String = project.buildDir.absolutePath
+        var generatedSourcesDir: String =
+            project.layout.buildDirectory
+                .get()
+                .asFile.absolutePath
 
         @InputFiles
         var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")

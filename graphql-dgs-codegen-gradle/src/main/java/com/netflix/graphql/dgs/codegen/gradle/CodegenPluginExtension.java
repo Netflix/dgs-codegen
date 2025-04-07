@@ -20,19 +20,31 @@ package com.netflix.graphql.dgs.codegen.gradle;
 
 import org.gradle.api.provider.Property;
 
+/**
+ * Configuration for adding the client core dependency.
+ */
 public abstract class CodegenPluginExtension {
 
+    /**
+     * Enabled by default
+     */
     public CodegenPluginExtension() {
         getClientCoreConventionsEnabled().convention(true);
     }
 
+    /**
+     * @return Enable adding client core dependency
+     */
     public abstract Property<Boolean> getClientCoreConventionsEnabled();
 
+    /**
+     * @return Version of the client core library to add
+     */
     public abstract Property<String> getClientCoreVersion();
 
     /**
      * Describes the configuration/scope that the client-core library is going to be added to.
-     * It defaults to {@link ClientUtilsConventions#GRADLE_CLASSPATH_CONFIGURATION}
+     * @return Scope of the added dependency. Defaults to {@link ClientUtilsConventions#GRADLE_CLASSPATH_CONFIGURATION}
      */
     public abstract Property<String> getClientCoreScope();
 }
