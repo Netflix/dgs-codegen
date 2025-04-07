@@ -56,12 +56,12 @@ gradle.taskGraph.whenReady { graph ->
 }
 
 project.afterEvaluate {
-    tasks.named("generateMetadataFileForNebulaPublication") {
-        it.dependsOn("publishPluginJar")
-    }
-    tasks.named("generateMetadataFileForPluginMavenPublication") {
-        it.dependsOn("publishPluginJar")
-    }
+//    tasks.named("generateMetadataFileForNebulaPublication") {
+//        it.dependsOn("publishPluginJar")
+//    }
+//    tasks.named("generateMetadataFileForPluginMavenPublication") {
+//        it.dependsOn("publishPluginJar")
+//    }
 
     //Disable marker tasks
     project.tasks.findAll {
