@@ -57,10 +57,8 @@ object ClientUtilsConventions {
 
             project.plugins.withId(CLIENT_UTILS_NEBULA_LOCK_ID) {
                 val extension = project.extensions.getByType(DependencyLockExtension::class.java)
-                if (extension != null) {
-                    extension.skippedDependencies.add(dependencyLockString)
-                    logger.info("DGS CodeGen added skipped dependency [{}].", dependencyLockString)
-                }
+                extension.skippedDependencies.add(dependencyLockString)
+                logger.info("DGS CodeGen added skipped dependency [{}].", dependencyLockString)
             }
         }
     }

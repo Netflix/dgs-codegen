@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.client.codegen
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest.GraphQLQueryRequestOptions
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
 import graphql.GraphQLContext
+import graphql.execution.CoercedVariables
 import graphql.language.OperationDefinition
 import graphql.language.StringValue
 import graphql.language.Value
@@ -282,13 +283,30 @@ class GraphQLQueryRequestTest {
     fun `serialize with UUID scalar - #416`() {
         val uuidCoercing =
             object : Coercing<UUID, String> {
-                override fun serialize(uuid: Any): String = uuid.toString()
+                override fun serialize(
+                    uuid: Any,
+                    context: GraphQLContext,
+                    locale: Locale,
+                ): String = uuid.toString()
 
-                override fun parseValue(input: Any): UUID = UUID.fromString(input.toString())
+                override fun parseValue(
+                    input: Any,
+                    context: GraphQLContext,
+                    locale: Locale,
+                ): UUID = UUID.fromString(input.toString())
 
-                override fun parseLiteral(input: Any): UUID = UUID.fromString(input.toString())
+                override fun parseLiteral(
+                    input: Value<*>,
+                    variables: CoercedVariables,
+                    graphQLContext: GraphQLContext,
+                    locale: Locale,
+                ): UUID = UUID.fromString(input.toString())
 
-                override fun valueToLiteral(input: Any): Value<*> = StringValue.of(serialize(input))
+                override fun valueToLiteral(
+                    input: Any,
+                    context: GraphQLContext,
+                    locale: Locale,
+                ): Value<*> = StringValue.of(serialize(input, context, locale))
             }
         val randomUUID = UUID.randomUUID()
         val query =

@@ -22,11 +22,10 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.logging.Logging
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.plugins.JavaPluginConvention
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.tasks.SourceSet
 import org.gradle.util.GradleVersion
-import java.util.Optional
+import java.util.*
 
 class CodegenPlugin : Plugin<Project> {
     companion object {
@@ -42,7 +41,6 @@ class CodegenPlugin : Plugin<Project> {
         val generateJavaTaskProvider = project.tasks.register("generateJava", GenerateJavaTask::class.java)
         generateJavaTaskProvider.configure { it.group = GRADLE_GROUP }
 
-        val javaConvention = project.convention.getPlugin(JavaPluginConvention::class.java)
         val javaExtension = project.extensions.getByType(JavaPluginExtension::class.java)
 
         val sourceSets =
@@ -51,7 +49,7 @@ class CodegenPlugin : Plugin<Project> {
             ) {
                 javaExtension.sourceSets
             } else {
-                javaConvention.sourceSets
+                throw RuntimeException("Gradle versions < 7.1 are no longer supported by DGS Codegen. Please upgrade your Gradle version.")
             }
         val mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
         val outputDir = generateJavaTaskProvider.map(GenerateJavaTask::getOutputDir)

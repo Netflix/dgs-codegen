@@ -46,7 +46,7 @@ class RequiredTypeCollector(
                 "Mutation" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeMutations }
                 "Subscription" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeSubscriptions }
                 else -> {
-                    if (config?.generateClientApiv2 == true || config?.generateClientApi == true) {
+                    if (config.generateClientApiv2 == true || config.generateClientApi == true) {
                         fieldDefinitions.addAll(definition.fieldDefinitions)
                     }
                 }
