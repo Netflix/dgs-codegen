@@ -30,7 +30,7 @@ dependencies {
 
     implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
     implementation 'com.graphql-java:graphql-java'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.17.2'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.2'
     implementation 'org.slf4j:slf4j-api'
 
