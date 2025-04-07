@@ -20,7 +20,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
  */
 
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version "1.9.25" apply false
+    id 'org.jetbrains.kotlin.jvm' version "2.1.20" apply false
     id 'com.netflix.nebula.netflixoss' version '11.4.0'
     id "org.jmailen.kotlinter" version "5.0.1"
 }
@@ -31,18 +31,12 @@ allprojects {
 
     ext {
         Versions = [
-                KOTLIN_VERSION: '1.9.25'
+                KOTLIN_VERSION: '2.1.20'
         ]
     }
 
     repositories {
         mavenCentral()
-    }
-
-    configurations.all {
-        resolutionStrategy.force 'org.jetbrains.kotlin:kotlin-stdlib:1.9.25'
-        resolutionStrategy.force 'org.jetbrains.kotlinx:kotlinx-serialization-json-jvm:1.7.3'
-
     }
 
     apply plugin: 'com.netflix.nebula.netflixoss'

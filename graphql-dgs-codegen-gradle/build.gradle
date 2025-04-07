@@ -28,7 +28,7 @@ dependencies {
     compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin"
 
     testApi gradleTestKit()
-    testImplementation("com.google.guava:guava:32.1.+")
+    testImplementation("com.google.guava:guava:33.4.+")
 }
 
 description = 'Netflix GraphQL DGS Code Generation Plugin'

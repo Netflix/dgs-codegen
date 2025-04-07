@@ -86,7 +86,7 @@ fun assertCompilesKotlin(
 
     K2JVMCompiler().run {
         val exitCode =
-            execImpl(
+            exec(
                 PrintingMessageCollector(
                     System.out,
                     MessageRenderer.WITHOUT_PATHS,
