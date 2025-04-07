@@ -30,6 +30,7 @@ generateJava {
     schemaPaths = ["${projectDir}/src/main/resources/schema"]
     packageName = 'com.netflix.testproject.graphql'
     typeMapping = [Date:"java.time.LocalDateTime"]
+    javaGenerateAllConstructor = false
     // no generated sources dir specified
 }
 
