@@ -206,6 +206,12 @@ class ClientApiGenerator(
                 .addModifiers(Modifier.PUBLIC)
         constructorBuilder.addStatement("super(\$S, queryName)", operation.lowercase())
 
+        val legacyConstructorBuilder =
+            MethodSpec
+                .constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+        legacyConstructorBuilder.addStatement("super(\$S, queryName)", operation.lowercase())
+
         it.inputValueDefinitions.forEach { inputValue ->
             val findReturnType = TypeUtils(getDatatypesPackageName(), config, document).findReturnType(inputValue.type)
 
@@ -252,21 +258,24 @@ class ClientApiGenerator(
             builderClass.addMethod(referenceMethodBuilder.build())
 
             constructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
+            legacyConstructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
 
             if (findReturnType.isPrimitive) {
-                constructorBuilder.addCode(
+                val code =
                     """
                     |getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});                   
-                    """.trimMargin(),
-                )
+                    """.trimMargin()
+                constructorBuilder.addCode(code)
+                legacyConstructorBuilder.addCode(code)
             } else {
-                constructorBuilder.addCode(
+                val code =
                     """
                     |if (${ReservedKeywordSanitizer.sanitize(inputValue.name)} != null || fieldsSet.contains("${inputValue.name}")) {
                     |    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
                     |}
-                    """.trimMargin(),
-                )
+                    """.trimMargin()
+                constructorBuilder.addCode(code)
+                legacyConstructorBuilder.addCode(code)
             }
         }
 
@@ -303,11 +312,16 @@ class ClientApiGenerator(
             .addMethod(nameMethodBuilder.build())
 
         constructorBuilder.addParameter(String::class.java, "queryName")
+        legacyConstructorBuilder.addParameter(String::class.java, "queryName")
 
-        if (it.inputValueDefinitions.size > 0) {
+        if (it.inputValueDefinitions.isNotEmpty()) {
             constructorBuilder.addParameter(setOfStringType, "fieldsSet")
+            legacyConstructorBuilder.addParameter(setOfStringType, "fieldsSet")
             constructorBuilder.addParameter(mapOfStringsType, "variableReferences")
             constructorBuilder.addParameter(listOfVariablesType, "variableDefinitions")
+
+            // We only need this backward compatible constructor if we added the new fields to the main constructor.
+            javaType.addMethod(legacyConstructorBuilder.build())
         }
 
         javaType.addMethod(constructorBuilder.build())
