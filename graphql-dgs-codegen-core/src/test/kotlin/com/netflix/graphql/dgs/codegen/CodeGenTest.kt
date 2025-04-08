@@ -268,18 +268,20 @@ class CodeGenTest {
 
     @Test
     fun generateDataClassWithoutAllConstructor() {
-        val schema = """
-        type Person {
-            name: String!
-            age: Int!
-        }
-    """.trimIndent()
+        val schema =
+            """
+            type Person {
+                name: String!
+                age: Int!
+            }
+            """.trimIndent()
 
-        val codeGenConfig = CodeGenConfig(
-            schemas = setOf(schema),
-            packageName = "com.example",
-            javaGenerateAllConstructor = false
-        )
+        val codeGenConfig =
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = "com.example",
+                javaGenerateAllConstructor = false,
+            )
 
         val (dataTypes) = CodeGen(codeGenConfig).generate()
 
