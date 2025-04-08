@@ -5814,12 +5814,28 @@ It takes a title and such.
 
         assertCompilesJava(result)
         assertThat(result.javaQueryTypes).hasSize(1)
-        val parameters =
+        val constructors =
             result.javaQueryTypes[0]
                 .typeSpec.methodSpecs
-                .filter { it.isConstructor && !it.parameters.isEmpty() }
-                .get(0)
-                .parameters
+                .filter { it.isConstructor }
+        assertThat(constructors).hasSize(3).withFailMessage {
+            "There should be a no-arg constructor, a legacy constructor without variable references, and one with variable references"
+        }
+
+        val noArg = constructors.find { it.parameters.isEmpty() }
+        assertThat(noArg).isNotNull.withFailMessage { "Missing no-arg constructor" }
+
+        val legacy = constructors.find { it.parameters.isNotEmpty() && it.parameters.none { p -> p.name == "variableReferences" } }
+        assertThat(legacy).isNotNull.withFailMessage { "Missing legacy constructor without variableReferences" }
+
+        val withVariableReferences =
+            constructors.find {
+                it.parameters.isNotEmpty() &&
+                    it.parameters.any { p -> p.name == "variableReferences" }
+            }
+        assertThat(withVariableReferences).isNotNull.withFailMessage { "Missing constructor with variableReferences" }
+
+        val parameters = withVariableReferences!!.parameters
         assertThat(parameters).extracting("name").contains("variableReferences", "variableDefinitions")
         assertThat(
             parameters
@@ -5853,6 +5869,35 @@ It takes a title and such.
         ).isEqualTo(
             "variableRef",
         )
+    }
+
+    @Test
+    fun `Generated queries should not contain conflicting constructors when no input arguments exist`() {
+        val schema =
+            """
+            type Query {
+               findPeople: [String]
+            }      
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = "com.netflix.test",
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        assertCompilesJava(result)
+        assertThat(result.javaQueryTypes).hasSize(1)
+        val constructors =
+            result.javaQueryTypes[0]
+                .typeSpec.methodSpecs
+                .filter { it.isConstructor }
+        assertThat(
+            constructors,
+        ).hasSize(2).withFailMessage { "There should be a no-arg constructor and a constructor without variable references" }
     }
 
     @Test
