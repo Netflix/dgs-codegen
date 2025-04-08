@@ -34,7 +34,6 @@ generateJava {
     generateClient = true
     generateDataTypes = true
     generateDocs = true
-    javaGenerateAllConstructor = false
 }
 
 codegen.clientCoreConventionsEnabled = false

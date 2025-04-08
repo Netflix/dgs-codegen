@@ -32,7 +32,6 @@ generateJava {
     generatedSourcesDir = "${projectDir}/build/graphql"
     typeMapping = [Date:"java.time.LocalDateTime"]
     generateDocs = true
-    javaGenerateAllConstructor = false
 }
 
 codegen.clientCoreConventionsEnabled = false
