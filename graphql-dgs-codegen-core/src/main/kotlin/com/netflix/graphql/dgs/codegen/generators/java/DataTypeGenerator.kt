@@ -393,7 +393,7 @@ abstract class BaseDataTypeGenerator(
 
         addDefaultConstructor(javaType)
 
-        if (config.javaGenerateAllConstructor && fields.isNotEmpty()) {
+        if (config.javaGenerateAllConstructor && fields.isNotEmpty() && fields.size < 256) {
             addParameterizedConstructor(fields, javaType)
         }
 
