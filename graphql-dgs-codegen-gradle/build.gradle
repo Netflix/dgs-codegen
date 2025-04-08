@@ -44,6 +44,7 @@ gradlePlugin {
             implementationClass = 'com.netflix.graphql.dgs.codegen.gradle.CodegenPlugin'
             displayName = 'DGS Code Generation Plugin'
             description = 'Gradle plugin for generating Java and Kotlin classes from GraphQL Schema'
+            tags = ['Codegen']
         }
     }
 }
