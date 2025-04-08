@@ -267,6 +267,37 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateDataClassWithoutAllConstructor() {
+        val schema =
+            """
+            type Person {
+                name: String!
+                age: Int!
+            }
+            """.trimIndent()
+
+        val codeGenConfig =
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = "com.example",
+                javaGenerateAllConstructor = false,
+            )
+
+        val (dataTypes) = CodeGen(codeGenConfig).generate()
+
+        assertThat(dataTypes).hasSize(1)
+        val personType = dataTypes[0].typeSpec
+        assertThat(personType.name).isEqualTo("Person")
+
+        // Verify that there is no constructor with all fields
+        val constructors = personType.methodSpecs.filter { it.isConstructor }
+        assertThat(constructors).hasSize(1)
+        assertThat(constructors[0].parameters).isEmpty()
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
     fun generateDataClassWithToString() {
         val schema =
             """
