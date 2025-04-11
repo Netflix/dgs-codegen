@@ -3255,6 +3255,31 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun skipCodegenOnInterfaceFields() {
+        val schema =
+            """
+            interface Person {
+                name: String
+                email: String @skipcodegen
+            }
+            """.trimIndent()
+
+        val dataTypes =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                ),
+            ).generate().kotlinInterfaces
+        assertThat(dataTypes).extracting("name").containsExactly("Person")
+        val type = dataTypes[0].members[0] as TypeSpec
+        assertThat(type.propertySpecs).extracting("name").containsExactly("name")
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
     fun generateWithCustomSubPackageName() {
         val schema =
             """

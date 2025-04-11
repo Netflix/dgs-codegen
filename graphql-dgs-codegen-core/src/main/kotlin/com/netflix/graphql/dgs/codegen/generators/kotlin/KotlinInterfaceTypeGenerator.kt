@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
 import graphql.language.*
@@ -63,7 +64,7 @@ class KotlinInterfaceTypeGenerator(
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
-        mergedFieldDefinitions.forEach { field ->
+        mergedFieldDefinitions.filterSkipped().forEach { field ->
             val returnType = typeUtils.findReturnType(field.type)
             val nullableType = if (typeUtils.isNullable(field.type)) returnType.copy(nullable = true) else returnType
             val propertySpec = PropertySpec.builder(field.name, nullableType)
