@@ -4904,4 +4904,74 @@ It takes a title and such.
         assertThat(maxField?.type.toString()).isEqualTo("kotlin.Double?")
         assertThat(maxField?.defaultValue.toString()).isEqualTo("null")
     }
+
+    @Test
+    fun `Should generate data class for lowercase type name`() {
+        val schema =
+            """
+            type Query {
+                people: [person]
+            }
+            
+            type person {
+                firstname: String
+                lastname: String
+            }
+            """.trimIndent()
+
+        val dataTypes =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                ),
+            ).generate().kotlinDataTypes
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].name).isEqualTo("person")
+        assertThat(dataTypes[0].packageName).isEqualTo(TYPES_PACKAGE_NAME)
+        val type = dataTypes[0].members[0] as TypeSpec
+
+        assertThat(type.modifiers).contains(KModifier.DATA)
+        assertThat(type.propertySpecs.size).isEqualTo(2)
+        assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname")
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
+    fun `Should generate data class for type name starting with an underscore`() {
+        val schema =
+            """
+            type Query {
+                people: [_person]
+            }
+            
+            type _person {
+                firstname: String
+                lastname: String
+            }
+            """.trimIndent()
+
+        val dataTypes =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                ),
+            ).generate().kotlinDataTypes
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        assertThat(dataTypes[0].name).isEqualTo("_person")
+        assertThat(dataTypes[0].packageName).isEqualTo(TYPES_PACKAGE_NAME)
+        val type = dataTypes[0].members[0] as TypeSpec
+
+        assertThat(type.modifiers).contains(KModifier.DATA)
+        assertThat(type.propertySpecs.size).isEqualTo(2)
+        assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname")
+
+        assertCompilesKotlin(dataTypes)
+    }
 }

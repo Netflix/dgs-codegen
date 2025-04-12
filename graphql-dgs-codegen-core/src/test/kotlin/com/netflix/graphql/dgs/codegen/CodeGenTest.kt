@@ -6102,4 +6102,72 @@ It takes a title and such.
                 }.size == 1,
         )
     }
+
+    @Test
+    fun `Should generate data class for lowercase type name`() {
+        val schema =
+            """
+            type Query {
+                people: [person]
+            }
+            
+            type person {
+                firstname: String
+                lastname: String
+            }
+            """.trimIndent()
+
+        val (dataTypes) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                ),
+            ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("person")
+        assertThat(dataTypes[0].packageName).isEqualTo(TYPES_PACKAGE_NAME)
+
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname")
+        assertThat(typeSpec.methodSpecs).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
+        dataTypes[0].writeTo(System.out)
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `Should generate data class for type name starting with an underscore`() {
+        val schema =
+            """
+            type Query {
+                people: [_person]
+            }
+            
+            type _person {
+                firstname: String
+                lastname: String
+            }
+            """.trimIndent()
+
+        val (dataTypes) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                ),
+            ).generate()
+
+        assertThat(dataTypes.size).isEqualTo(1)
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.name).isEqualTo("_person")
+        assertThat(dataTypes[0].packageName).isEqualTo(TYPES_PACKAGE_NAME)
+
+        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs).extracting("name").contains("firstname", "lastname")
+        assertThat(typeSpec.methodSpecs).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
+        dataTypes[0].writeTo(System.out)
+        assertCompilesJava(dataTypes)
+    }
 }
