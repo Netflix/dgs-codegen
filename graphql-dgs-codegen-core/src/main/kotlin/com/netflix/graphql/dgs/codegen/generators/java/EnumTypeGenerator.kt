@@ -33,6 +33,8 @@ import javax.lang.model.element.Modifier
 class EnumTypeGenerator(
     private val config: CodeGenConfig,
 ) {
+    private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
     }
@@ -76,7 +78,7 @@ class EnumTypeGenerator(
                     }
                 }
             }
-            javaType.addEnumConstant(ReservedKeywordSanitizer.sanitize(it.name), typeSpec.build())
+            javaType.addEnumConstant(javaReservedKeywordSanitizer.sanitize(it.name), typeSpec.build())
         }
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()

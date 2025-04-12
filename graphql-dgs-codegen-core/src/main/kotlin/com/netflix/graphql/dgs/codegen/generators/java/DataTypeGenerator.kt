@@ -347,6 +347,7 @@ abstract class BaseDataTypeGenerator(
     internal val document: Document,
 ) {
     internal val typeUtils = TypeUtils(packageName, config, document)
+    private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
 
     internal fun generate(
         name: String,
@@ -505,7 +506,7 @@ abstract class BaseDataTypeGenerator(
             if (fieldDef.directives.any { it.name == "sensitive" }) {
                 toStringBody.add("\$L='*****'", fieldDef.name)
             } else {
-                toStringBody.add("\$L='\" + \$L + \"'", fieldDef.name, ReservedKeywordSanitizer.sanitize(fieldDef.name))
+                toStringBody.add("\$L='\" + \$L + \"'", fieldDef.name, javaReservedKeywordSanitizer.sanitize(fieldDef.name))
             }
             if (idx != fieldDefinitions.lastIndex) {
                 toStringBody.add(", ")
@@ -523,7 +524,7 @@ abstract class BaseDataTypeGenerator(
     ) {
         val constructorBuilder = MethodSpec.constructorBuilder()
         for (fieldDefinition in fieldDefinitions) {
-            val sanitizedName = ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
+            val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             val parameterBuilder = ParameterSpec.builder(fieldDefinition.type, sanitizedName)
             if (fieldDefinition.directives.isNotEmpty()) {
                 val (annotations, _) = applyDirectivesJava(fieldDefinition.directives, config)
@@ -584,7 +585,7 @@ abstract class BaseDataTypeGenerator(
 
         val fieldBuilder =
             FieldSpec
-                .builder(fieldType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                .builder(fieldType, javaReservedKeywordSanitizer.sanitize(fieldDefinition.name))
                 .addModifiers(Modifier.PRIVATE)
         if (fieldDefinition.initialValue != null) {
             if (fieldDefinition.trackFieldSet) {
@@ -613,7 +614,7 @@ abstract class BaseDataTypeGenerator(
             )
 
         val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType)
-        val sanitizedName = ReservedKeywordSanitizer.sanitize(fieldDefinition.name)
+        val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
         if (fieldDefinition.trackFieldSet) {
             getterMethodBuilder.addStatement("return \$N == null ? null : \$N.orElse(null)", sanitizedName, sanitizedName)
         } else {
@@ -632,7 +633,7 @@ abstract class BaseDataTypeGenerator(
                 "set${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}",
                 TypeUtils.SET_CLASS,
             )
-        val parameterBuilder = ParameterSpec.builder(returnType, ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+        val parameterBuilder = ParameterSpec.builder(returnType, javaReservedKeywordSanitizer.sanitize(fieldDefinition.name))
         val setterMethodBuilder =
             MethodSpec
                 .methodBuilder(setterName)

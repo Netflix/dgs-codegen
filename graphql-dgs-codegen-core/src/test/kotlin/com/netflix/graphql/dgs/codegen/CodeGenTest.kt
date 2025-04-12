@@ -1072,6 +1072,7 @@ class CodeGenTest {
                 default
                 root
                 new
+                name
             }
             """.trimIndent()
 
@@ -1086,11 +1087,7 @@ class CodeGenTest {
         // Check generated enum type
         assertThat(codeGenResult.javaEnumTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaEnumTypes[0].typeSpec.name).isEqualTo("EmployeeTypes")
-        assertThat(
-            codeGenResult.javaEnumTypes[0]
-                .typeSpec.enumConstants.size,
-        ).isEqualTo(3)
-        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.enumConstants).containsKeys("_default", "_root", "_new")
+        assertThat(codeGenResult.javaEnumTypes[0].typeSpec.enumConstants).containsOnlyKeys("_default", "_root", "_new", "name")
 
         assertCompilesJava(codeGenResult.javaEnumTypes)
     }

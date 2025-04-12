@@ -21,7 +21,6 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.generators.java.EnumTypeGenerator
-import com.netflix.graphql.dgs.codegen.generators.java.ReservedKeywordSanitizer
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.FileSpec
@@ -34,6 +33,7 @@ import org.slf4j.LoggerFactory
 class KotlinEnumTypeGenerator(
     private val config: CodeGenConfig,
 ) {
+    private val kotlinReservedKeywordSanitizer = KotlinReservedKeywordSanitizer()
     private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
 
     fun generate(
@@ -68,7 +68,7 @@ class KotlinEnumTypeGenerator(
                         applyDirectivesKotlin(it.directives, config),
                     )
             }
-            kotlinType.addEnumConstant(ReservedKeywordSanitizer.sanitize(it.name), typeSpec.build())
+            kotlinType.addEnumConstant(kotlinReservedKeywordSanitizer.sanitize(it.name), typeSpec.build())
         }
 
         kotlinType.addType(TypeSpec.companionObjectBuilder().addOptionalGeneratedAnnotation(config).build())

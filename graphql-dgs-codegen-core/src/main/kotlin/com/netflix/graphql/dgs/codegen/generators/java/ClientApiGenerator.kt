@@ -69,6 +69,7 @@ class ClientApiGenerator(
 ) {
     private val generatedClasses = mutableSetOf<String>()
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, document)
+    private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
 
     fun generate(
         definition: ObjectTypeDefinition,
@@ -127,7 +128,7 @@ class ClientApiGenerator(
 
         val deprecatedClassDirective = getDeprecateDirective(it)
         if (deprecatedClassDirective != null) {
-            javaType.addAnnotation(java.lang.Deprecated::class.java)
+            javaType.addAnnotation(Deprecated::class.java)
             val deprecationReason = getDeprecatedReason(deprecatedClassDirective)
             if (deprecationReason != null) {
                 javaType.addJavadoc("@deprecated \$L", deprecationReason)
@@ -160,7 +161,7 @@ class ClientApiGenerator(
                             |return new $methodName(${it.inputValueDefinitions.joinToString(
                                     ", ",
                                 ) {
-                                    ReservedKeywordSanitizer.sanitize(
+                                    javaReservedKeywordSanitizer.sanitize(
                                         it.name,
                                     )
                                 }}, queryName, fieldsSet, variableReferences, variableDefinitions);
@@ -220,13 +221,15 @@ class ClientApiGenerator(
 
             val methodBuilder =
                 MethodSpec
-                    .methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name))
-                    .addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
+                    .methodBuilder(javaReservedKeywordSanitizer.sanitize(inputValue.name))
+                    .addParameter(findReturnType, javaReservedKeywordSanitizer.sanitize(inputValue.name))
                     .returns(ClassName.get("", "Builder"))
                     .addModifiers(Modifier.PUBLIC)
                     .addCode(
                         """
-                    |this.${ReservedKeywordSanitizer.sanitize(inputValue.name)} = ${ReservedKeywordSanitizer.sanitize(inputValue.name)};
+                    |this.${javaReservedKeywordSanitizer.sanitize(
+                            inputValue.name,
+                        )} = ${javaReservedKeywordSanitizer.sanitize(inputValue.name)};
                     |this.fieldsSet.add("${inputValue.name}");
                     |return this;
                         """.trimMargin(),
@@ -235,19 +238,19 @@ class ClientApiGenerator(
             addDeprecationWarnings(deprecatedDirective, methodBuilder, inputValue, deprecationReason)
             builderClass
                 .addMethod(methodBuilder.build())
-                .addField(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
+                .addField(findReturnType, javaReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
 
             val inputValueType = inputValue.type
             val typeForVariableDefinition = getVariableDefinitionType(inputValueType)
             val referenceMethodBuilder =
                 MethodSpec
-                    .methodBuilder(ReservedKeywordSanitizer.sanitize(inputValue.name) + "Reference")
+                    .methodBuilder(javaReservedKeywordSanitizer.sanitize(inputValue.name) + "Reference")
                     .addParameter(stringType, "variableRef")
                     .returns(ClassName.get("", "Builder"))
                     .addModifiers(Modifier.PUBLIC)
                     .addCode(
                         """
-                    |this.variableReferences.put("${ReservedKeywordSanitizer.sanitize(inputValue.name)}", variableRef);
+                    |this.variableReferences.put("${javaReservedKeywordSanitizer.sanitize(inputValue.name)}", variableRef);
                     |this.variableDefinitions.add(graphql.language.VariableDefinition.newVariableDefinition(variableRef, $typeForVariableDefinition).build());
                     |this.fieldsSet.add("${inputValue.name}");
                     |return this;
@@ -257,21 +260,21 @@ class ClientApiGenerator(
             addDeprecationWarnings(deprecatedDirective, referenceMethodBuilder, inputValue, deprecationReason)
             builderClass.addMethod(referenceMethodBuilder.build())
 
-            constructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
-            legacyConstructorBuilder.addParameter(findReturnType, ReservedKeywordSanitizer.sanitize(inputValue.name))
+            constructorBuilder.addParameter(findReturnType, javaReservedKeywordSanitizer.sanitize(inputValue.name))
+            legacyConstructorBuilder.addParameter(findReturnType, javaReservedKeywordSanitizer.sanitize(inputValue.name))
 
             if (findReturnType.isPrimitive) {
                 val code =
                     """
-                    |getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});                   
+                    |getInput().put("${inputValue.name}", ${javaReservedKeywordSanitizer.sanitize(inputValue.name)});                   
                     """.trimMargin()
                 constructorBuilder.addCode(code)
                 legacyConstructorBuilder.addCode(code)
             } else {
                 val code =
                     """
-                    |if (${ReservedKeywordSanitizer.sanitize(inputValue.name)} != null || fieldsSet.contains("${inputValue.name}")) {
-                    |    getInput().put("${inputValue.name}", ${ReservedKeywordSanitizer.sanitize(inputValue.name)});
+                    |if (${javaReservedKeywordSanitizer.sanitize(inputValue.name)} != null || fieldsSet.contains("${inputValue.name}")) {
+                    |    getInput().put("${inputValue.name}", ${javaReservedKeywordSanitizer.sanitize(inputValue.name)});
                     |}
                     """.trimMargin()
                 constructorBuilder.addCode(code)
@@ -481,7 +484,7 @@ class ClientApiGenerator(
                             )
                         val noArgMethodBuilder =
                             MethodSpec
-                                .methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDef.name))
+                                .methodBuilder(javaReservedKeywordSanitizer.sanitize(fieldDef.name))
                                 .returns(projectionTypeVariable)
                                 .addCode(
                                     """
@@ -514,7 +517,7 @@ class ClientApiGenerator(
             if (objectTypeDefinition == null) {
                 javaType.addMethod(
                     MethodSpec
-                        .methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
+                        .methodBuilder(javaReservedKeywordSanitizer.sanitize(it.name))
                         .returns(TypeVariableName.get("$clazzName<PARENT, ROOT>"))
                         .addCode(
                             """
@@ -545,7 +548,7 @@ class ClientApiGenerator(
         val returnTypeName = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName>")
         val methodBuilder =
             MethodSpec
-                .methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                .methodBuilder(javaReservedKeywordSanitizer.sanitize(fieldDefinition.name))
                 .returns(returnTypeName)
                 .addCode(
                     """
@@ -567,7 +570,7 @@ class ClientApiGenerator(
 
         fieldDefinition.inputValueDefinitions.forEach { input ->
             methodBuilder.addParameter(
-                ParameterSpec.builder(typeUtils.findReturnType(input.type), ReservedKeywordSanitizer.sanitize(input.name)).build(),
+                ParameterSpec.builder(typeUtils.findReturnType(input.type), javaReservedKeywordSanitizer.sanitize(input.name)).build(),
             )
         }
         return javaType.addMethod(methodBuilder.build())
@@ -584,7 +587,7 @@ class ClientApiGenerator(
         val returnTypeName = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName>")
         val methodBuilder =
             MethodSpec
-                .methodBuilder(ReservedKeywordSanitizer.sanitize(fieldDefinition.name + "WithVariableReferences"))
+                .methodBuilder(javaReservedKeywordSanitizer.sanitize(fieldDefinition.name + "WithVariableReferences"))
                 .returns(returnTypeName)
                 .addCode(
                     """
@@ -879,7 +882,7 @@ class ClientApiGenerator(
                     if (typeDefinition != null) it to typeDefinition else null
                 }.map { (fieldDef, typeDef) ->
                     val projectionName = "${typeDef.name.capitalized()}Projection"
-                    val methodName = ReservedKeywordSanitizer.sanitize(fieldDef.name)
+                    val methodName = javaReservedKeywordSanitizer.sanitize(fieldDef.name)
                     val projectionTypeVariable = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, ROOT>")
                     javaType.addMethod(
                         MethodSpec
@@ -918,7 +921,7 @@ class ClientApiGenerator(
                 if (objectTypeDefinition == null) {
                     javaType.addMethod(
                         MethodSpec
-                            .methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
+                            .methodBuilder(javaReservedKeywordSanitizer.sanitize(it.name))
                             .returns(TypeVariableName.get("$clazzName<PARENT, ROOT>"))
                             .addCode(
                                 """
@@ -932,7 +935,7 @@ class ClientApiGenerator(
                     if (it.inputValueDefinitions.isNotEmpty()) {
                         val methodWithInputArgumentsBuilder =
                             MethodSpec
-                                .methodBuilder(ReservedKeywordSanitizer.sanitize(it.name))
+                                .methodBuilder(javaReservedKeywordSanitizer.sanitize(it.name))
                                 .returns(ClassName.get(getPackageName(), javaType.build().name))
                                 .addCode(
                                     """
