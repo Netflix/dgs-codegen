@@ -27,7 +27,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-reflect"
     api 'com.graphql-java:graphql-java'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.17.2'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3'
 
     testImplementation 'com.netflix.graphql.dgs:graphql-dgs-extended-scalars'
 }
