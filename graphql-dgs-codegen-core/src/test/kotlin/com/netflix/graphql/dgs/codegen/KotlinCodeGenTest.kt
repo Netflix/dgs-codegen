@@ -1016,6 +1016,7 @@ class KotlinCodeGenTest {
                 default
                 root
                 new
+                name
             }
             """.trimIndent()
 
@@ -1031,8 +1032,7 @@ class KotlinCodeGenTest {
 
         // Check generated enum type
         assertThat(type.name).isEqualTo("EmployeeTypes")
-        assertThat(type.enumConstants.size).isEqualTo(3)
-        assertThat(type.enumConstants).containsKeys("_default", "_root", "_new")
+        assertThat(type.enumConstants).containsOnlyKeys("_default", "_root", "_new", "_name")
         assertThat(type.typeSpecs[0].isCompanion).isTrue
 
         assertCompilesKotlin(result.kotlinDataTypes + result.kotlinEnumTypes)

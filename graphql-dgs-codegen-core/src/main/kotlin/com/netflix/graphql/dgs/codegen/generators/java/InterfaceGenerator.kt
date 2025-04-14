@@ -40,6 +40,7 @@ class InterfaceGenerator(
         private val logger: Logger = LoggerFactory.getLogger(InterfaceGenerator::class.java)
     }
 
+    private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
     private val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config, document)
     private val useInterfaceType = config.generateInterfaces
@@ -154,7 +155,7 @@ class InterfaceGenerator(
                     .methodBuilder(
                         typeUtils.transformIfDefaultClassMethodExists("set${fieldName.capitalized()}", TypeUtils.Companion.SET_CLASS),
                     ).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                    .addParameter(returnType, ReservedKeywordSanitizer.sanitize(fieldName))
+                    .addParameter(returnType, javaReservedKeywordSanitizer.sanitize(fieldName))
 
             if (fieldDefinition.description != null) {
                 setterBuilder.addJavadoc("\$L", fieldDefinition.description.content)

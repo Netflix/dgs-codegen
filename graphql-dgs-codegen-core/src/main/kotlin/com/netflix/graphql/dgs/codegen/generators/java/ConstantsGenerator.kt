@@ -37,6 +37,8 @@ class ConstantsGenerator(
     private val config: CodeGenConfig,
     private val document: Document,
 ) {
+    private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
+
     fun generate(): CodeGenResult {
         val javaType =
             TypeSpec
@@ -217,7 +219,7 @@ class ConstantsGenerator(
         constantsType: TypeSpec.Builder,
         fieldName: String,
     ) {
-        val sanitizedFieldName = ReservedKeywordSanitizer.sanitize(fieldName.capitalized())
+        val sanitizedFieldName = javaReservedKeywordSanitizer.sanitize(fieldName.capitalized())
         if (!constantsType.fieldSpecs.any { it.name == sanitizedFieldName }) {
             constantsType.addField(
                 FieldSpec
