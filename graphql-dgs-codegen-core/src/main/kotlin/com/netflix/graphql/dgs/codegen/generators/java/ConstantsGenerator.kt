@@ -218,7 +218,7 @@ class ConstantsGenerator(
         fieldName: String,
     ) {
         val sanitizedFieldName = ReservedKeywordSanitizer.sanitize(fieldName.capitalized())
-        if (!constantsType.fieldSpecs.any { it.name == sanitizedFieldName }) {
+        if (!constantsType.fieldSpecs.any { it.name() == sanitizedFieldName }) {
             constantsType.addField(
                 FieldSpec
                     .builder(
@@ -237,7 +237,7 @@ class ConstantsGenerator(
     ) {
         val inputFields = field.inputValueDefinitions
         val name = getConstantTypeName(config, field.name + "_INPUT_ARGUMENT")
-        if (inputFields.isNotEmpty() && !constantsType.typeSpecs.any { it.name == name }) {
+        if (inputFields.isNotEmpty() && !constantsType.typeSpecs.any { it.name() == name }) {
             val inputConstantsType = createConstantTypeBuilder(config, name)
             inputFields.forEach { inputField ->
                 addFieldNameConstant(inputConstantsType, inputField.name)

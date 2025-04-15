@@ -18,9 +18,12 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
-import com.netflix.graphql.dgs.codegen.*
+import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
+import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.FieldSpec
@@ -335,7 +338,7 @@ internal data class Field(
     val type: JavaTypeName,
     val initialValue: CodeBlock? = null,
     val overrideGetter: Boolean = false,
-    val interfaceType: com.squareup.javapoet.TypeName? = null,
+    val interfaceType: JavaTypeName? = null,
     val description: Description? = null,
     val directives: List<Directive> = listOf(),
     val trackFieldSet: Boolean = false,
@@ -464,7 +467,7 @@ abstract class BaseDataTypeGenerator(
                 .addAnnotation(Override::class.java)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(JavaTypeName.BOOLEAN)
-                .addParameter(JavaTypeName.OBJECT, "o")
+                .addParameter(ClassName.get("java.lang", "Object"), "o")
 
         methodBuilder.addStatement("if (this == o) return true")
         methodBuilder.addStatement("if (o == null || getClass() != o.getClass()) return false")
@@ -599,7 +602,7 @@ abstract class BaseDataTypeGenerator(
         }
 
         val getterPrefix =
-            if (returnType == com.palantir.javapoet.TypeName.BOOLEAN &&
+            if (returnType == JavaTypeName.BOOLEAN &&
                 config.generateIsGetterForPrimitiveBooleanFields
             ) {
                 "is"
