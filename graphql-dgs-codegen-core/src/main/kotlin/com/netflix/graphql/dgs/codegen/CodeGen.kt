@@ -29,10 +29,10 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.f
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
-import com.squareup.javapoet.AnnotationSpec
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.AnnotationSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import graphql.language.*

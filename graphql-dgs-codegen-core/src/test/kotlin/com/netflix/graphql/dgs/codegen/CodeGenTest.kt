@@ -19,14 +19,14 @@
 package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
-import com.squareup.javapoet.AnnotationSpec
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.CodeBlock
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeSpec
-import com.squareup.javapoet.WildcardTypeName
+import com.palantir.javapoet.AnnotationSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.CodeBlock
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.MethodSpec
+import com.palantir.javapoet.ParameterizedTypeName
+import com.palantir.javapoet.TypeSpec
+import com.palantir.javapoet.WildcardTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Nested

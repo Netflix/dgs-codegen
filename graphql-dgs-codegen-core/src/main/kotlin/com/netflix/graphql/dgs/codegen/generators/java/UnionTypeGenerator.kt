@@ -21,9 +21,9 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.shouldSkip
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.TypeSpec
 import graphql.language.Document
 import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition

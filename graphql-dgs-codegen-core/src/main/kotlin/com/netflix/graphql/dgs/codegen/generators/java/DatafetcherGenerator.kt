@@ -23,11 +23,11 @@ import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
-import com.squareup.javapoet.AnnotationSpec
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterSpec
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.AnnotationSpec
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.MethodSpec
+import com.palantir.javapoet.ParameterSpec
+import com.palantir.javapoet.TypeSpec
 import graphql.language.Document
 import graphql.language.FieldDefinition
 import graphql.language.ObjectTypeDefinition

@@ -21,14 +21,14 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.*
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.CodeBlock
-import com.squareup.javapoet.FieldSpec
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterSpec
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.CodeBlock
+import com.palantir.javapoet.FieldSpec
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.MethodSpec
+import com.palantir.javapoet.ParameterSpec
+import com.palantir.javapoet.ParameterizedTypeName
+import com.palantir.javapoet.TypeSpec
 import graphql.language.ArrayValue
 import graphql.language.BooleanValue
 import graphql.language.Description
@@ -60,7 +60,7 @@ import java.util.Locale
 import java.util.Objects
 import java.util.Optional
 import javax.lang.model.element.Modifier
-import com.squareup.javapoet.TypeName as JavaTypeName
+import com.palantir.javapoet.TypeName as JavaTypeName
 
 class DataTypeGenerator(
     config: CodeGenConfig,
@@ -325,7 +325,7 @@ class InputTypeGenerator(
         get() =
             when (this) {
                 is ClassName -> this
-                is ParameterizedTypeName -> typeArguments.first().className
+                is ParameterizedTypeName -> typeArguments().first().className
                 else -> throw UnsupportedOperationException("Unknown type: ${this.javaClass}")
             }
 }
@@ -434,7 +434,7 @@ abstract class BaseDataTypeGenerator(
 
     private fun addHashcode(javaType: TypeSpec.Builder) {
         val builtType = javaType.build()
-        if (builtType.fieldSpecs.isEmpty()) {
+        if (builtType.fieldSpecs().isEmpty()) {
             return
         }
         val methodBuilder =
@@ -447,14 +447,14 @@ abstract class BaseDataTypeGenerator(
         methodBuilder.addStatement(
             "return \$T.hash(\$L)",
             Objects::class.java,
-            builtType.fieldSpecs.joinToString(", ") { it.name },
+            builtType.fieldSpecs().joinToString(", ") { it.name() },
         )
         javaType.addMethod(methodBuilder.build())
     }
 
     private fun addEquals(javaType: TypeSpec.Builder) {
         val builtType = javaType.build()
-        if (builtType.fieldSpecs.isEmpty()) {
+        if (builtType.fieldSpecs().isEmpty()) {
             return
         }
 
@@ -468,15 +468,15 @@ abstract class BaseDataTypeGenerator(
 
         methodBuilder.addStatement("if (this == o) return true")
         methodBuilder.addStatement("if (o == null || getClass() != o.getClass()) return false")
-        methodBuilder.addStatement("\$L that = (\$L) o", builtType.name, builtType.name)
+        methodBuilder.addStatement("\$L that = (\$L) o", builtType.name(), builtType.name())
         methodBuilder.addStatement(
             "return \$L",
             CodeBlock.join(
-                builtType.fieldSpecs.map { field ->
-                    if (field.type.isPrimitive) {
-                        CodeBlock.of("\$L == that.\$L", field.name, field.name)
+                builtType.fieldSpecs().map { field ->
+                    if (field.type().isPrimitive) {
+                        CodeBlock.of("\$L == that.\$L", field.name(), field.name())
                     } else {
-                        CodeBlock.of("\$T.equals(\$L, that.\$L)", Objects::class.java, field.name, field.name)
+                        CodeBlock.of("\$T.equals(\$L, that.\$L)", Objects::class.java, field.name(), field.name())
                     }
                 },
                 " &&\n",
@@ -500,7 +500,7 @@ abstract class BaseDataTypeGenerator(
         val toStringBody =
             CodeBlock
                 .builder()
-                .add("return \"\$L{", builtType.name)
+                .add("return \"\$L{", builtType.name())
         for ((idx, fieldDef) in fieldDefinitions.withIndex()) {
             if (fieldDef.directives.any { it.name == "sensitive" }) {
                 toStringBody.add("\$L='*****'", fieldDef.name)
@@ -599,7 +599,7 @@ abstract class BaseDataTypeGenerator(
         }
 
         val getterPrefix =
-            if (returnType == com.squareup.javapoet.TypeName.BOOLEAN &&
+            if (returnType == com.palantir.javapoet.TypeName.BOOLEAN &&
                 config.generateIsGetterForPrimitiveBooleanFields
             ) {
                 "is"
@@ -709,7 +709,7 @@ abstract class BaseDataTypeGenerator(
 
     private fun addBuilder(javaType: TypeSpec.Builder) {
         val builtType = javaType.build()
-        val name = builtType.name
+        val name = builtType.name()
         val className = ClassName.get(packageName, name)
 
         val buildMethod =
@@ -718,8 +718,8 @@ abstract class BaseDataTypeGenerator(
                 .addModifiers(Modifier.PUBLIC)
                 .returns(className)
                 .addStatement("\$T result = new \$T()", className, className)
-        for (fieldSpec in builtType.fieldSpecs) {
-            buildMethod.addStatement("result.\$N = this.\$N", fieldSpec.name, fieldSpec.name)
+        for (fieldSpec in builtType.fieldSpecs()) {
+            buildMethod.addStatement("result.\$N = this.\$N", fieldSpec.name(), fieldSpec.name())
         }
         buildMethod.addStatement("return result")
 
@@ -741,27 +741,27 @@ abstract class BaseDataTypeGenerator(
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
                 .addMethod(buildMethod.build())
 
-        builtType.fieldSpecs.forEach {
-            var originalType = it.type
+        builtType.fieldSpecs().forEach {
+            var originalType = it.type()
             var isOptional = false
-            if (originalType is ParameterizedTypeName && originalType.rawType == ClassName.get(Optional::class.java)) {
-                originalType = originalType.typeArguments.first()
+            if (originalType is ParameterizedTypeName && originalType.rawType() == ClassName.get(Optional::class.java)) {
+                originalType = originalType.typeArguments().first()
                 isOptional = true
             }
             builderType.addField(it)
             val methodBuilder =
                 MethodSpec
-                    .methodBuilder(it.name)
-                    .addJavadoc(it.javadoc)
+                    .methodBuilder(it.name())
+                    .addJavadoc(it.javadoc())
                     .returns(builderClassName)
             if (isOptional) {
-                methodBuilder.addStatement("this.\$N = Optional.ofNullable(\$N)", it.name, it.name)
+                methodBuilder.addStatement("this.\$N = Optional.ofNullable(\$N)", it.name(), it.name())
             } else {
-                methodBuilder.addStatement("this.\$N = \$N", it.name, it.name)
+                methodBuilder.addStatement("this.\$N = \$N", it.name(), it.name())
             }
             methodBuilder
                 .addStatement("return this")
-                .addParameter(ParameterSpec.builder(originalType, it.name).build())
+                .addParameter(ParameterSpec.builder(originalType, it.name()).build())
                 .addModifiers(Modifier.PUBLIC)
 
             builderType.addMethod(methodBuilder.build())

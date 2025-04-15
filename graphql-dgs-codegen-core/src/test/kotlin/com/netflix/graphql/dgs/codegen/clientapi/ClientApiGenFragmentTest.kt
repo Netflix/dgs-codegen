@@ -22,7 +22,7 @@ import com.netflix.graphql.dgs.codegen.BASE_PACKAGE_NAME
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
-import com.squareup.javapoet.JavaFile
+import com.palantir.javapoet.JavaFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 

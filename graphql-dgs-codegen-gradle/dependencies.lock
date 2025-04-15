@@ -947,7 +947,7 @@
     },
     "runtimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.17.2",
+            "locked": "2.18.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -956,14 +956,14 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.17.2",
+            "locked": "2.18.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.17.2",
+            "locked": "2.18.3",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
@@ -971,7 +971,7 @@
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.17.2",
+            "locked": "2.18.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -1058,8 +1058,8 @@
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
-        "com.squareup:javapoet": {
-            "locked": "1.13.0",
+        "com.palantir.javapoet:javapoet": {
+            "locked": "0.7.0",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ]
@@ -1206,7 +1206,7 @@
             ]
         },
         "com.google.guava:guava": {
-            "locked": "33.4.6-jre"
+            "locked": "33.4.8-jre"
         },
         "com.google.guava:listenablefuture": {
             "locked": "9999.0-empty-to-avoid-conflict-with-guava",
@@ -1224,7 +1224,7 @@
             "project": true
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.18",
+            "locked": "1.15.11",
             "transitive": [
                 "org.assertj:assertj-core"
             ]
@@ -1238,7 +1238,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3"
+            "locked": "3.27.3"
         },
         "org.jetbrains.intellij.deps:trove4j": {
             "locked": "1.0.20200330",
@@ -1379,7 +1379,7 @@
             ]
         },
         "com.google.guava:guava": {
-            "locked": "33.4.6-jre"
+            "locked": "33.4.8-jre"
         },
         "com.google.guava:listenablefuture": {
             "locked": "9999.0-empty-to-avoid-conflict-with-guava",
@@ -1397,7 +1397,7 @@
             "project": true
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.18",
+            "locked": "1.15.11",
             "transitive": [
                 "org.assertj:assertj-core"
             ]
@@ -1411,7 +1411,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3"
+            "locked": "3.27.3"
         },
         "org.jetbrains.intellij.deps:trove4j": {
             "locked": "1.0.20200330",
@@ -1537,7 +1537,7 @@
     },
     "testRuntimeClasspath": {
         "com.fasterxml.jackson.core:jackson-annotations": {
-            "locked": "2.17.2",
+            "locked": "2.18.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom",
@@ -1546,14 +1546,14 @@
             ]
         },
         "com.fasterxml.jackson.core:jackson-core": {
-            "locked": "2.17.2",
+            "locked": "2.18.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-databind",
                 "com.fasterxml.jackson:jackson-bom"
             ]
         },
         "com.fasterxml.jackson.core:jackson-databind": {
-            "locked": "2.17.2",
+            "locked": "2.18.3",
             "transitive": [
                 "com.fasterxml.jackson:jackson-bom",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
@@ -1561,7 +1561,7 @@
             ]
         },
         "com.fasterxml.jackson:jackson-bom": {
-            "locked": "2.17.2",
+            "locked": "2.18.3",
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
@@ -1617,7 +1617,7 @@
             ]
         },
         "com.google.guava:guava": {
-            "locked": "33.4.6-jre"
+            "locked": "33.4.8-jre"
         },
         "com.google.guava:listenablefuture": {
             "locked": "9999.0-empty-to-avoid-conflict-with-guava",
@@ -1675,8 +1675,8 @@
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
-        "com.squareup:javapoet": {
-            "locked": "1.13.0",
+        "com.palantir.javapoet:javapoet": {
+            "locked": "0.7.0",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
             ]
@@ -1706,7 +1706,7 @@
             ]
         },
         "net.bytebuddy:byte-buddy": {
-            "locked": "1.14.18",
+            "locked": "1.15.11",
             "transitive": [
                 "org.assertj:assertj-core"
             ]
@@ -1718,7 +1718,7 @@
             ]
         },
         "org.assertj:assertj-core": {
-            "locked": "3.26.3"
+            "locked": "3.27.3"
         },
         "org.jetbrains.intellij.deps:trove4j": {
             "locked": "1.0.20200330",

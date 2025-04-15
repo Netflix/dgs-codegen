@@ -22,7 +22,7 @@ import com.netflix.graphql.dgs.codegen.BASE_PACKAGE_NAME
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
-import com.squareup.javapoet.TypeVariableName
+import com.palantir.javapoet.TypeVariableName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -355,6 +355,46 @@ class ClientApiGenProjectionTest {
         assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("MoviesProjectionRoot")
         assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("ActorProjection")
         assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MovieProjection")
+
+        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+    }
+
+    @Test
+    fun generateSubProjectionsWithEnum() {
+        val schema =
+            """
+            type Query @extends {
+                exampleEntities: [ExampleEntity]
+            }
+
+            type ExampleEntity {
+                contextType: ContextType
+                namespace: Namespace
+            }
+            
+            enum ContextType {
+                TYPE1
+                TYPE2
+            }
+            
+            enum Namespace {
+                NAMESPACE1
+                NAMESPACE2
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
+        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("ExampleEntitiesProjectionRoot")
+        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("ContextTypeProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("NamespaceProjection")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
@@ -734,7 +774,7 @@ class ClientApiGenProjectionTest {
     }
 
     @Test
-    fun `Input arguments on root projections should be support in the query API`() {
+    fun `Input arguments on root projections should be supported in the query API`() {
         val schema =
             """
             type Query {
@@ -842,7 +882,7 @@ class ClientApiGenProjectionTest {
     }
 
     @Test
-    fun `Input arguments on sub projections should be support in the query API`() {
+    fun `Input arguments on sub projections should be supported in the query API`() {
         val schema =
             """
             type Query {
@@ -885,7 +925,7 @@ class ClientApiGenProjectionTest {
     }
 
     @Test
-    fun `Input arguments on sub projections with variable references should be support in the query API`() {
+    fun `Input arguments on sub projections with variable references should be supported in the query API`() {
         val schema =
             """
             type Query {

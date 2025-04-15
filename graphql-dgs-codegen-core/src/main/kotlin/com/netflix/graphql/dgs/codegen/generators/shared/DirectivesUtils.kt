@@ -25,7 +25,7 @@ import com.squareup.kotlinpoet.AnnotationSpec
 import graphql.language.Directive
 import graphql.language.StringValue
 import graphql.language.Value
-import com.squareup.javapoet.AnnotationSpec as JavaAnnotationSpec
+import com.palantir.javapoet.AnnotationSpec as JavaAnnotationSpec
 
 fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> =
     directive.arguments.fold(mutableMapOf()) { argMap, argument ->

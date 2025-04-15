@@ -22,10 +22,10 @@ import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
-import com.squareup.javapoet.AnnotationSpec
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.AnnotationSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.kotlin.cli.common.ExitCode
