@@ -24,9 +24,7 @@ plugins {
 
 
 dependencies {
-    implementation platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.0.4")
-
-    implementation(project(":graphql-dgs-codegen-shared-core"))
+    implementation(project(':graphql-dgs-codegen-shared-core'))
 
     implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
     implementation 'com.graphql-java:graphql-java'
