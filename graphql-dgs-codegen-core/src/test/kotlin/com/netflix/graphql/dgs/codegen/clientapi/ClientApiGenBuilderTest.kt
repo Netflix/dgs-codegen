@@ -40,7 +40,6 @@ class ClientApiGenBuilderTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateClientApiv2 = true,
-                    maxProjectionDepth = 2,
                 ),
             ).generate()
 
@@ -75,7 +74,6 @@ class ClientApiGenBuilderTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateClientApiv2 = true,
-                    maxProjectionDepth = 2,
                 ),
             ).generate()
 
@@ -107,7 +105,6 @@ class ClientApiGenBuilderTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateClientApiv2 = true,
-                    maxProjectionDepth = 2,
                 ),
             ).generate()
 
@@ -137,7 +134,6 @@ class ClientApiGenBuilderTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateClientApiv2 = true,
-                    maxProjectionDepth = 2,
                 ),
             ).generate()
 
@@ -176,7 +172,6 @@ class ClientApiGenBuilderTest {
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
                         generateClientApiv2 = true,
-                        maxProjectionDepth = 2,
                         addDeprecatedAnnotation = true,
                     ),
                 ).generate()
@@ -222,7 +217,6 @@ class ClientApiGenBuilderTest {
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
                         generateClientApiv2 = true,
-                        maxProjectionDepth = 2,
                         addDeprecatedAnnotation = true,
                     ),
                 ).generate()
@@ -274,7 +268,6 @@ class ClientApiGenBuilderTest {
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
                         generateClientApiv2 = true,
-                        maxProjectionDepth = 2,
                         addDeprecatedAnnotation = true,
                     ),
                 ).generate()
@@ -328,7 +321,6 @@ class ClientApiGenBuilderTest {
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
                         generateClientApiv2 = true,
-                        maxProjectionDepth = 2,
                         addDeprecatedAnnotation = true,
                     ),
                 ).generate()
@@ -384,7 +376,6 @@ class ClientApiGenBuilderTest {
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
                         generateClientApiv2 = true,
-                        maxProjectionDepth = 2,
                     ),
                 ).generate()
 
