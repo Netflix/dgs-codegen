@@ -1,7 +1,7 @@
 {
     "apiDependenciesMetadata": {
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         }
     },
     "compileClasspath": {
@@ -117,7 +117,7 @@
             "locked": "3.0.0"
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "2.1.20",
@@ -280,7 +280,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "2.1.20",
@@ -540,23 +540,23 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
@@ -571,15 +571,23 @@
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+        "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "2.1.20",
+            "transitive": [
+                "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+            ]
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -587,21 +595,22 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
-                "org.jetbrains.kotlin:kotlin-stdlib"
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-bom": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-bom"
@@ -642,10 +651,9 @@
             ]
         },
         "org.jetbrains:annotations": {
-            "locked": "23.0.0",
+            "locked": "13.0",
             "transitive": [
-                "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+                "org.jetbrains.kotlin:kotlin-stdlib"
             ]
         },
         "org.jspecify:jspecify": {
@@ -914,23 +922,23 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
@@ -945,36 +953,45 @@
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.squareup:kotlinpoet",
                 "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json",
                 "org.jetbrains:markdown"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+        "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "2.1.20",
+            "transitive": [
+                "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+            ]
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-compiler"
+                "org.jetbrains.kotlin:kotlin-compiler",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-bom": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-bom"
@@ -988,12 +1005,6 @@
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
             "locked": "1.8.1"
-        },
-        "org.jetbrains:annotations": {
-            "locked": "23.0.0",
-            "transitive": [
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
-            ]
         },
         "org.jetbrains:markdown": {
             "locked": "0.7.0",
@@ -1291,19 +1302,19 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.squareup:kotlinpoet-jvm",
@@ -1312,7 +1323,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
@@ -1328,16 +1339,24 @@
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-reflect",
+                "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
                 "org.jetbrains:markdown-jvm"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+        "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "2.1.20",
+            "transitive": [
+                "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+            ]
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -1345,21 +1364,22 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
-                "org.jetbrains.kotlin:kotlin-stdlib"
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-bom": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-bom"
@@ -1400,10 +1420,9 @@
             ]
         },
         "org.jetbrains:annotations": {
-            "locked": "23.0.0",
+            "locked": "13.0",
             "transitive": [
-                "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+                "org.jetbrains.kotlin:kotlin-stdlib"
             ]
         },
         "org.jetbrains:markdown": {
@@ -1520,36 +1539,42 @@
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
+        "org.jetbrains.kotlin:kotlin-build-common": {
+            "locked": "2.0.21",
+            "transitive": [
+                "org.jetbrains.kotlin:kotlin-compiler-runner"
+            ]
+        },
         "org.jetbrains.kotlin:kotlin-build-tools-api": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl"
             ]
         },
         "org.jetbrains.kotlin:kotlin-build-tools-impl": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl",
                 "org.jetbrains.kotlin:kotlin-compiler-runner"
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler-runner": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl"
             ]
         },
         "org.jetbrains.kotlin:kotlin-daemon-client": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-runner"
             ]
         },
         "org.jetbrains.kotlin:kotlin-daemon-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
@@ -1561,40 +1586,40 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable",
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-common": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable",
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl",
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-jvm": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-build-tools-impl",
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable",
@@ -1606,7 +1631,7 @@
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable",
                 "org.jetbrains.kotlin:kotlin-compiler-runner"
@@ -1627,10 +1652,10 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-daemon-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
@@ -1642,19 +1667,19 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
@@ -1668,35 +1693,35 @@
     },
     "kotlinCompilerPluginClasspathIntegTest": {
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-common": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable",
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-jvm": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-common",
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable",
@@ -1713,35 +1738,35 @@
     },
     "kotlinCompilerPluginClasspathMain": {
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-common": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable",
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-jvm": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-common",
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable",
@@ -1758,35 +1783,35 @@
     },
     "kotlinCompilerPluginClasspathTest": {
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-common": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable",
                 "org.jetbrains.kotlin:kotlin-scripting-jvm"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-scripting-jvm": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-impl-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-scripting-common",
                 "org.jetbrains.kotlin:kotlin-scripting-compiler-embeddable",
@@ -1809,19 +1834,19 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-daemon-embeddable": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
             "locked": "1.6.10",
@@ -1830,20 +1855,20 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable",
                 "org.jetbrains.kotlin:kotlin-klib-commonizer-embeddable"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler-embeddable"
             ]
@@ -1853,6 +1878,11 @@
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-stdlib"
             ]
+        }
+    },
+    "kotlinNativeBundleConfiguration": {
+        "org.jetbrains.kotlin:kotlin-native-prebuilt": {
+            "locked": "2.0.21"
         }
     },
     "ktlint": {
@@ -2387,13 +2417,13 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.squareup:kotlinpoet-jvm",
@@ -2696,23 +2726,23 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
@@ -2727,15 +2757,23 @@
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+        "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "2.1.20",
+            "transitive": [
+                "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+            ]
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -2743,21 +2781,22 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
-                "org.jetbrains.kotlin:kotlin-stdlib"
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-bom": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-bom"
@@ -2798,10 +2837,9 @@
             ]
         },
         "org.jetbrains:annotations": {
-            "locked": "23.0.0",
+            "locked": "13.0",
             "transitive": [
-                "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+                "org.jetbrains.kotlin:kotlin-stdlib"
             ]
         },
         "org.jspecify:jspecify": {
@@ -3070,23 +3108,23 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20"
+            "locked": "2.0.21"
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
@@ -3101,36 +3139,45 @@
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.squareup:kotlinpoet",
                 "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json",
                 "org.jetbrains:markdown"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+        "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "2.1.20",
+            "transitive": [
+                "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+            ]
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8"
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
-                "org.jetbrains.kotlin:kotlin-compiler"
+                "org.jetbrains.kotlin:kotlin-compiler",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-bom": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-bom"
@@ -3144,12 +3191,6 @@
         },
         "org.jetbrains.kotlinx:kotlinx-serialization-json": {
             "locked": "1.8.1"
-        },
-        "org.jetbrains:annotations": {
-            "locked": "23.0.0",
-            "transitive": [
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
-            ]
         },
         "org.jetbrains:markdown": {
             "locked": "0.7.0",
@@ -3447,19 +3488,19 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "org.jetbrains.kotlin:kotlin-compiler": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom"
             ]
         },
         "org.jetbrains.kotlin:kotlin-reflect": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.squareup:kotlinpoet-jvm",
@@ -3468,7 +3509,7 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-script-runtime": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler"
@@ -3484,16 +3525,24 @@
                 "com.squareup:kotlinpoet-jvm",
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-reflect",
+                "org.jetbrains.kotlin:kotlin-stdlib-common",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk7",
                 "org.jetbrains.kotlin:kotlin-stdlib-jdk8",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-core-jvm",
                 "org.jetbrains.kotlinx:kotlinx-serialization-json-jvm",
                 "org.jetbrains:markdown-jvm"
             ]
         },
-        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+        "org.jetbrains.kotlin:kotlin-stdlib-common": {
             "locked": "2.1.20",
+            "transitive": [
+                "org.jetbrains.kotlin:kotlin-bom",
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+            ]
+        },
+        "org.jetbrains.kotlin:kotlin-stdlib-jdk7": {
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-stdlib",
@@ -3501,21 +3550,22 @@
             ]
         },
         "org.jetbrains.kotlin:kotlin-stdlib-jdk8": {
-            "locked": "2.1.20",
+            "locked": "2.0.21",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-bom",
                 "org.jetbrains.kotlin:kotlin-compiler",
-                "org.jetbrains.kotlin:kotlin-stdlib"
+                "org.jetbrains.kotlin:kotlin-stdlib",
+                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-bom": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
             ]
         },
         "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm": {
-            "locked": "1.8.0",
+            "locked": "1.6.4",
             "transitive": [
                 "org.jetbrains.kotlin:kotlin-compiler",
                 "org.jetbrains.kotlinx:kotlinx-coroutines-bom"
@@ -3556,10 +3606,9 @@
             ]
         },
         "org.jetbrains:annotations": {
-            "locked": "23.0.0",
+            "locked": "13.0",
             "transitive": [
-                "org.jetbrains.kotlin:kotlin-stdlib",
-                "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm"
+                "org.jetbrains.kotlin:kotlin-stdlib"
             ]
         },
         "org.jetbrains:markdown": {
