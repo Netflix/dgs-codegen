@@ -1,5 +1,14 @@
 {
     "apiDependenciesMetadata": {
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4"
+        },
         "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "2.0.21"
         }
@@ -322,6 +331,11 @@
             "transitive": [
                 "com.graphql-java:java-dataloader"
             ]
+        }
+    },
+    "integTestApiDependenciesMetadata": {
+        "org.jetbrains.kotlin:kotlin-stdlib": {
+            "locked": "2.0.21"
         }
     },
     "integTestCompileClasspath": {

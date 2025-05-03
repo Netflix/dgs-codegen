@@ -21,9 +21,9 @@ plugins {
 }
 
 dependencies {
-    api platform('com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.0.4')
-    implementation 'org.jetbrains.kotlin:kotlin-reflect'
     api 'com.graphql-java:graphql-java'
+
+    implementation 'org.jetbrains.kotlin:kotlin-reflect'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3'
 

@@ -3,6 +3,18 @@
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
         },
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
+            ]
+        },
         "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "2.0.21",
             "transitive": [
@@ -13,6 +25,18 @@
     "compileClasspath": {
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
+            ]
         },
         "com.netflix.nebula:gradle-dependency-lock-plugin": {
             "locked": "15.2.0"
@@ -175,6 +199,18 @@
     "implementationDependenciesMetadata": {
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
+            ]
         },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "2.0.21"
@@ -972,7 +1008,6 @@
         "com.graphql-java:graphql-java": {
             "locked": "22.3",
             "transitive": [
-                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
@@ -1009,6 +1044,7 @@
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "locked": "10.0.4",
             "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
@@ -1176,6 +1212,18 @@
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
+            ]
         },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.15.11",
@@ -1357,6 +1405,18 @@
         },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core"
+            ]
         },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.15.11",
@@ -1599,7 +1659,6 @@
         "com.graphql-java:graphql-java": {
             "locked": "22.3",
             "transitive": [
-                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core",
                 "com.netflix.graphql.dgs:graphql-dgs-platform"
             ]
@@ -1636,6 +1695,7 @@
         "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
             "locked": "10.0.4",
             "transitive": [
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
                 "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
