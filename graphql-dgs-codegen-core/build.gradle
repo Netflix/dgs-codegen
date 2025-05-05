@@ -28,7 +28,7 @@ dependencies {
     implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
 
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.19.0'
     implementation 'org.slf4j:slf4j-api'
 
     implementation 'com.squareup:javapoet:1.13.+'
