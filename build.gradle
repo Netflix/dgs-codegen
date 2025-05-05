@@ -50,6 +50,7 @@ allprojects {
         api platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.0.4")
 
         implementation platform("org.jetbrains.kotlin:kotlin-bom:${Versions.KOTLIN_VERSION}")
+        implementation platform("com.fasterxml.jackson:jackson-bom:2.18.3")
 
         // Test dependencies
         testImplementation platform('org.junit:junit-bom:5.10.+')

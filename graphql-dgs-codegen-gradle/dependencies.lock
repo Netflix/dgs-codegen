@@ -23,6 +23,9 @@
         }
     },
     "compileClasspath": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
         },
@@ -197,6 +200,9 @@
         }
     },
     "implementationDependenciesMetadata": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core": {
             "project": true
         },
@@ -966,7 +972,9 @@
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
-                "com.fasterxml.jackson.core:jackson-databind"
+                "com.fasterxml.jackson.core:jackson-databind",
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.github.ajalt.clikt:clikt": {
@@ -1183,6 +1191,9 @@
         }
     },
     "testCompileClasspath": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.google.errorprone:error_prone_annotations": {
             "locked": "2.36.0",
             "transitive": [
@@ -1376,6 +1387,9 @@
         }
     },
     "testImplementationDependenciesMetadata": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.google.errorprone:error_prone_annotations": {
             "locked": "2.36.0",
             "transitive": [
@@ -1590,7 +1604,9 @@
             "transitive": [
                 "com.fasterxml.jackson.core:jackson-annotations",
                 "com.fasterxml.jackson.core:jackson-core",
-                "com.fasterxml.jackson.core:jackson-databind"
+                "com.fasterxml.jackson.core:jackson-databind",
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-core",
+                "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core"
             ]
         },
         "com.github.ajalt.clikt:clikt": {
