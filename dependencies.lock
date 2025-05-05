@@ -14,6 +14,9 @@
         }
     },
     "compileClasspath": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
             "locked": "10.0.4",
             "transitive": [
@@ -40,6 +43,9 @@
         }
     },
     "implementationDependenciesMetadata": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
             "locked": "10.0.4",
             "transitive": [
@@ -773,6 +779,9 @@
         }
     },
     "runtimeClasspath": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
             "locked": "10.0.4",
             "transitive": [
@@ -799,6 +808,9 @@
         }
     },
     "testCompileClasspath": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
             "locked": "10.0.4",
             "transitive": [
@@ -952,6 +964,9 @@
         }
     },
     "testImplementationDependenciesMetadata": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
             "locked": "10.0.4",
             "transitive": [
@@ -1097,6 +1112,9 @@
         }
     },
     "testRuntimeClasspath": {
+        "com.fasterxml.jackson:jackson-bom": {
+            "locked": "2.18.3"
+        },
         "com.netflix.graphql.dgs:graphql-dgs-platform": {
             "locked": "10.0.4",
             "transitive": [
