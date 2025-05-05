@@ -23,12 +23,12 @@ plugins {
 apply plugin: 'java-gradle-plugin'
 
 dependencies {
-    api project(":graphql-dgs-codegen-core")
-    compileOnly "com.netflix.nebula:gradle-dependency-lock-plugin:15.2.0"
-    compileOnly "org.jetbrains.kotlin:kotlin-gradle-plugin"
+    api project(':graphql-dgs-codegen-core')
+    compileOnly 'com.netflix.nebula:gradle-dependency-lock-plugin:15.2.0'
+    compileOnly 'org.jetbrains.kotlin:kotlin-gradle-plugin'
 
     testApi gradleTestKit()
-    testImplementation("com.google.guava:guava:33.4.+")
+    testImplementation('com.google.guava:guava:33.4.+')
 }
 
 description = 'Netflix GraphQL DGS Code Generation Plugin'

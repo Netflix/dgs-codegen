@@ -25,9 +25,8 @@ plugins {
 
 dependencies {
     implementation(project(':graphql-dgs-codegen-shared-core'))
-
     implementation('com.netflix.graphql.dgs:graphql-dgs') { transitive = false }
-    implementation 'com.graphql-java:graphql-java'
+
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.18.3'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.18.3'
     implementation 'org.slf4j:slf4j-api'
@@ -39,9 +38,9 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.8.+'
     implementation 'jakarta.annotation:jakarta.annotation-api:3.0.+'
 
-    testImplementation("com.google.guava:guava:33.4.+")
+    testImplementation 'com.google.guava:guava:33.4.+'
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
-    testImplementation "org.jetbrains.kotlin:kotlin-compiler"
+    testImplementation 'org.jetbrains.kotlin:kotlin-compiler'
 }
 
 application {

@@ -1,10 +1,28 @@
 {
     "apiDependenciesMetadata": {
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4"
+        },
         "org.jetbrains.kotlin:kotlin-stdlib": {
             "locked": "2.0.21"
         }
     },
     "compileClasspath": {
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4"
+        },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "2.0.21"
         },
@@ -22,6 +40,15 @@
         }
     },
     "implementationDependenciesMetadata": {
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4"
+        },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "2.0.21"
         },
@@ -746,6 +773,15 @@
         }
     },
     "runtimeClasspath": {
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4"
+        },
         "org.jetbrains.kotlin:kotlin-bom": {
             "locked": "2.0.21"
         },
@@ -763,6 +799,15 @@
         }
     },
     "testCompileClasspath": {
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4"
+        },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.15.11",
             "transitive": [
@@ -907,6 +952,15 @@
         }
     },
     "testImplementationDependenciesMetadata": {
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4"
+        },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.15.11",
             "transitive": [
@@ -1043,6 +1097,15 @@
         }
     },
     "testRuntimeClasspath": {
+        "com.netflix.graphql.dgs:graphql-dgs-platform": {
+            "locked": "10.0.4",
+            "transitive": [
+                "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies"
+            ]
+        },
+        "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies": {
+            "locked": "10.0.4"
+        },
         "net.bytebuddy:byte-buddy": {
             "locked": "1.15.11",
             "transitive": [

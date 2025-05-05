@@ -46,13 +46,18 @@ allprojects {
     group = 'com.netflix.graphql.dgs.codegen'
 
     dependencies {
-        implementation platform("org.jetbrains.kotlin:kotlin-bom:${Versions.KOTLIN_VERSION}")
-        testImplementation "org.jetbrains.kotlin:kotlin-compiler"
+        // Gradle Platforms applied to all modudles
+        api platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:10.0.4")
 
+        implementation platform("org.jetbrains.kotlin:kotlin-bom:${Versions.KOTLIN_VERSION}")
+
+        // Test dependencies
         testImplementation platform('org.junit:junit-bom:5.10.+')
+        testImplementation 'org.jetbrains.kotlin:kotlin-compiler'
         testImplementation 'org.assertj:assertj-core:3.27.+'
         testImplementation 'org.junit.jupiter:junit-jupiter'
         testImplementation 'org.junit.jupiter:junit-jupiter-params'
+
         testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 
     }
