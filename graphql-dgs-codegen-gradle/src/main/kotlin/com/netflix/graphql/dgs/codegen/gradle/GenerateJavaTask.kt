@@ -135,6 +135,9 @@ open class GenerateJavaTask
         var omitNullInputFields = false
 
         @Input
+        var maxProjectionDepth = 10
+
+        @Input
         var kotlinAllFieldsOptional = false
 
         @Input
@@ -213,6 +216,7 @@ open class GenerateJavaTask
                     shortProjectionNames = shortProjectionNames,
                     generateDataTypes = generateDataTypes,
                     omitNullInputFields = omitNullInputFields,
+                    maxProjectionDepth = maxProjectionDepth,
                     kotlinAllFieldsOptional = kotlinAllFieldsOptional,
                     snakeCaseConstantNames = snakeCaseConstantNames,
                     implementSerializable = implementSerializable,
