@@ -133,7 +133,7 @@ class CodeGen(
             val zipFile = ZipFile(file)
             for (entry in zipFile.entries()) {
                 if (!entry.isDirectory &&
-                    (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql"))
+                    (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql") || entry.name.endsWith(".gqls"))
                 ) {
                     logger.info("Generating schema from {}: {}", file.name, entry.name)
                     readerBuilder.reader(zipFile.getInputStream(entry).reader(), "codegen")
