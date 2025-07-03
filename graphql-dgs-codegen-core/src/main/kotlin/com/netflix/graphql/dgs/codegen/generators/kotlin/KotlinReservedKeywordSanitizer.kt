@@ -18,7 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
-import com.netflix.graphql.dgs.codegen.generators.shared.ReservedKeywordSanitizer
+import com.netflix.graphql.dgs.codegen.ReservedKeywordSanitizer
 
 class KotlinReservedKeywordSanitizer : ReservedKeywordSanitizer() {
     override val reservedKeywords =

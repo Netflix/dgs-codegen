@@ -1,6 +1,6 @@
 /*
  *
- *  Copyright 2020 Netflix, Inc.
+ *  Copyright 2025 Netflix, Inc.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,18 +16,17 @@
  *
  */
 
-package com.netflix.graphql.dgs.codegen.generators.shared
+package com.netflix.graphql.dgs.client.codegen
 
-import javax.lang.model.SourceVersion
+import com.netflix.graphql.dgs.codegen.ReservedKeywordSanitizer
 
-abstract class ReservedKeywordSanitizer {
-    protected abstract val reservedKeywords: Set<String>
-    private val prefix: String = "_"
-
-    fun sanitize(originalName: String): String =
-        if (originalName in reservedKeywords || SourceVersion.isKeyword(originalName)) {
-            "$prefix$originalName"
-        } else {
-            originalName
-        }
+class InputReservedKeywordSanitizer : ReservedKeywordSanitizer() {
+    override val reservedKeywords =
+        setOf(
+            "_",
+            "parent",
+            "protected",
+            "root",
+            "name",
+        )
 }

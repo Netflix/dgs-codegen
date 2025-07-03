@@ -512,6 +512,30 @@ class GraphQLQueryRequestTest {
         )
     }
 
+    @Test
+    fun testSerializeWithKeywordInputNeedingDesanitization() {
+        val query =
+            TestGraphQLQuery().apply {
+                input["movie"] = MovieHavingKeyword(true, 1234, "name")
+            }
+        val options =
+            GraphQLQueryRequestOptions().apply {
+                allowNullablePropertyInputValues = true
+            }
+        val request = GraphQLQueryRequest(query, MovieProjection().name().movieId(), options)
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """{
+            |  test(movie: {boolean : true, movieId : 1234, name : "name"}) {
+            |    name
+            |    movieId
+            |  }
+            |}
+            """.trimMargin(),
+        )
+    }
+
     /**
      * Assert that the GraphQL query is syntactically valid.
      */
@@ -546,6 +570,12 @@ data class Movie(
     val movieId: Int,
     val name: String,
     val window: Optional<DateRange>? = null,
+)
+
+data class MovieHavingKeyword(
+    val _boolean: Boolean,
+    val movieId: Int,
+    val name: String,
 )
 
 class MovieProjection : BaseProjectionNode() {

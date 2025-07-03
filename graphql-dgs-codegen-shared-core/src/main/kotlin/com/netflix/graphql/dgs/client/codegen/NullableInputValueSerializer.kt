@@ -43,7 +43,7 @@ class NullableInputValueSerializer(
         val objectFields =
             propertyValues
                 .asSequence()
-                .map { (name, value) -> ObjectField(name, toValue(value)) }
+                .map { (name, value) -> ObjectField(InputReservedKeywordSanitizer().desanitize(name), toValue(value)) }
                 .toList()
         return ObjectValue
             .newObjectValue()
