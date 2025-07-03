@@ -80,7 +80,7 @@ open class InputValueSerializer(
             propertyValues
                 .asSequence()
                 .filter { (_, value) -> value != null }
-                .map { (name, value) -> ObjectField(name, toValue(value)) }
+                .map { (name, value) -> ObjectField(InputReservedKeywordSanitizer().desanitize(name), toValue(value)) }
                 .toList()
         return ObjectValue
             .newObjectValue()
