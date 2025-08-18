@@ -113,6 +113,16 @@ fun jsonSubTypeAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
     return annotationSpec.build()
 }
 
+/**
+ * Generate a JSpecify `@NonNull` annotation.
+ */
+fun jspecifyNonNullAnnotation(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("org.jspecify.annotations", "NonNull")).build()
+
+/**
+ * Generate a JSpecify `@Nullable` annotation.
+ */
+fun jspecifyNullableAnnotation(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("org.jspecify.annotations", "Nullable")).build()
+
 fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
