@@ -153,6 +153,9 @@ open class GenerateJavaTask
         var generateCustomAnnotations = false
 
         @Input
+        var generateJSpecifyAnnotations = false
+
+        @Input
         var trackInputFieldSet = false
 
         @Input
@@ -225,6 +228,7 @@ open class GenerateJavaTask
                     generateCustomAnnotations = generateCustomAnnotations,
                     javaGenerateAllConstructor = javaGenerateAllConstructor,
                     trackInputFieldSet = trackInputFieldSet,
+                    generateJSpecifyAnnotations = generateJSpecifyAnnotations,
                 )
 
             logger.info("Codegen config: {}", config)

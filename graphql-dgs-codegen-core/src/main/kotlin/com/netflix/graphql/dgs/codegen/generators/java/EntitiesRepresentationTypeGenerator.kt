@@ -30,6 +30,7 @@ import graphql.language.Document
 import graphql.language.EnumTypeDefinition
 import graphql.language.FieldDefinition
 import graphql.language.InterfaceTypeDefinition
+import graphql.language.NonNullType
 import graphql.language.ObjectTypeDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -62,7 +63,7 @@ class EntitiesRepresentationTypeGenerator(
         }
         var fieldsCodeGenAccumulator = CodeGenResult.EMPTY
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
-        val typeName = Field("__typename", ClassName.get(String::class.java), CodeBlock.of("\$S", definitionName))
+        val typeName = Field("__typename", ClassName.get(String::class.java), false, CodeBlock.of("\$S", definitionName))
         val fieldDefinitions =
             fields
                 .filter { keyFields.containsKey(it.name) }
@@ -97,9 +98,9 @@ class EntitiesRepresentationTypeGenerator(
                             fieldsCodeGenAccumulator = fieldsCodeGenAccumulator.merge(fieldTypeRepresentation)
                             generatedRepresentations[fieldTypeRepresentationName] = fieldRepresentationType
                         }
-                        Field(it.name, ClassName.get("", fieldRepresentationType))
+                        Field(it.name, ClassName.get("", fieldRepresentationType), it.type !is NonNullType)
                     } else {
-                        Field(it.name, typeUtils.findReturnType(it.type))
+                        Field(it.name, typeUtils.findReturnType(it.type), it.type !is NonNullType)
                     }
                 }
         // Generate base type representation...

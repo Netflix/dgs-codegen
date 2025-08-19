@@ -25,10 +25,12 @@ import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
 import com.squareup.javapoet.ParameterizedTypeName
+import com.squareup.javapoet.TypeName
 import com.squareup.javapoet.TypeSpec
 import com.squareup.javapoet.WildcardTypeName
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -265,6 +267,144 @@ class CodeGenTest {
         assertThat(typeSpec.fieldSpecs[1].type.toString()).isEqualTo("java.util.List<java.lang.Boolean>")
         assertThat(typeSpec.fieldSpecs[2].type.toString()).isEqualTo("java.util.List<java.lang.Double>")
     }
+
+    @Test
+    fun `When generateJSpecifyAnnotations is enabled, primitive types should be annotated in fields, constructors, getters and setters`() {
+        val schema =
+            """
+            type MyType {
+                count: Int
+                truth: Boolean!
+            }
+            """.trimIndent()
+
+        val (dataTypes) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateBoxedTypes = true,
+                    generateJSpecifyAnnotations = true,
+                ),
+            ).generate()
+
+        val typeSpec = dataTypes[0].typeSpec
+        assertThat(typeSpec.fieldSpecs[0].annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(typeSpec.fieldSpecs[1].annotations).matches(hasJspecifyAnnotation(false))
+
+        val allArgsConstructor =
+            typeSpec.methodSpecs.find { it.isConstructor && it.parameters.isNotEmpty() }
+                ?: Assertions.fail("Unable to find all args constructor")
+        assertThat(allArgsConstructor.parameters[0].annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(allArgsConstructor.parameters[1].annotations).matches(hasJspecifyAnnotation(false))
+
+        val methodSpecs = typeSpec.methodSpecs.associateBy { it.name }
+        assertThat(methodSpecs["getCount"]!!.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(methodSpecs["getTruth"]!!.annotations).matches(hasJspecifyAnnotation(false))
+
+        assertThat(methodSpecs["setCount"]!!.parameters[0].annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(methodSpecs["setTruth"]!!.parameters[0].annotations).matches(hasJspecifyAnnotation(false))
+    }
+
+    @Test
+    fun `When generateJSpecifyAnnotations is enabled, list types should be annotated in fields, constructors, getters and setters`() {
+        val schema =
+            """
+            type MyType {
+                count: [Int]
+                truth: [Boolean!]
+                floaty: [Float!]!
+            }
+            """.trimIndent()
+
+        val (dataTypes) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateJSpecifyAnnotations = true,
+                ),
+            ).generate()
+
+        val typeSpec = dataTypes[0].typeSpec
+
+        val countField = typeSpec.fieldSpecs[0]
+        assertThat(countField.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(countField.type).matches(jspecifyAnnotatedListField("Integer", true))
+
+        val truthField = typeSpec.fieldSpecs[1]
+        assertThat(truthField.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(truthField.type).matches(jspecifyAnnotatedListField("Boolean", false))
+
+        val floatyField = typeSpec.fieldSpecs[2]
+        assertThat(floatyField.annotations).matches(hasJspecifyAnnotation(false))
+        assertThat(floatyField.type).matches(jspecifyAnnotatedListField("Double", false))
+
+        val allArgsConstructor =
+            typeSpec.methodSpecs.find { it.isConstructor && it.parameters.isNotEmpty() }
+                ?: Assertions.fail("Unable to find all args constructor")
+        val countConstructorParameter = allArgsConstructor.parameters[0]
+        assertThat(countConstructorParameter.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(countConstructorParameter.type).matches(jspecifyAnnotatedListField("Integer", true))
+
+        val truthConstructorParameter = allArgsConstructor.parameters[1]
+        assertThat(truthConstructorParameter.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(truthConstructorParameter.type).matches(jspecifyAnnotatedListField("Boolean", false))
+
+        val floatyConstructorParameter = allArgsConstructor.parameters[2]
+        assertThat(floatyConstructorParameter.annotations).matches(hasJspecifyAnnotation(false))
+        assertThat(floatyConstructorParameter.type).matches(jspecifyAnnotatedListField("Double", false))
+
+        val methodSpecs = typeSpec.methodSpecs.associateBy { it.name }
+        val getCountMethod = methodSpecs["getCount"]!!
+        assertThat(getCountMethod.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(getCountMethod.returnType).matches(jspecifyAnnotatedListField("Integer", true))
+
+        val getTruthMethod = methodSpecs["getTruth"]!!
+        assertThat(getTruthMethod.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(getTruthMethod.returnType).matches(jspecifyAnnotatedListField("Boolean", false))
+
+        val getFloatyMethod = methodSpecs["getFloaty"]!!
+        assertThat(getFloatyMethod.annotations).matches(hasJspecifyAnnotation(false))
+        assertThat(getFloatyMethod.returnType).matches(jspecifyAnnotatedListField("Double", false))
+
+        val setCountParameter = methodSpecs["setCount"]!!.parameters[0]
+        assertThat(setCountParameter.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(setCountParameter.type).matches(jspecifyAnnotatedListField("Integer", true))
+
+        val setTruthParameter = methodSpecs["setTruth"]!!.parameters[0]
+        assertThat(setTruthParameter.annotations).matches(hasJspecifyAnnotation(true))
+        assertThat(setTruthParameter.type).matches(jspecifyAnnotatedListField("Boolean", false))
+
+        val setFloatyParameter = methodSpecs["setFloaty"]!!.parameters[0]
+        assertThat(setFloatyParameter.annotations).matches(hasJspecifyAnnotation(false))
+        assertThat(setFloatyParameter.type).matches(jspecifyAnnotatedListField("Double", false))
+    }
+
+    private fun hasJspecifyAnnotation(nullable: Boolean): (List<AnnotationSpec>) -> Boolean =
+        { annotations ->
+            val annotation =
+                if (nullable) {
+                    "@org.jspecify.annotations.Nullable"
+                } else {
+                    "@org.jspecify.annotations.NonNull"
+                }
+            annotations.map { it.toString() }.contains(annotation)
+        }
+
+    private fun jspecifyAnnotatedListField(
+        boxedType: String,
+        nullable: Boolean,
+    ): (TypeName) -> Boolean =
+        { typeName ->
+            val annotation =
+                if (nullable) {
+                    "@org.jspecify.annotations.Nullable"
+                } else {
+                    "@org.jspecify.annotations.NonNull"
+                }
+            typeName.toString() == "java.util.List<java.lang. $annotation $boxedType>"
+        }
 
     @Test
     fun generateDataClassWithoutAllConstructor() {
