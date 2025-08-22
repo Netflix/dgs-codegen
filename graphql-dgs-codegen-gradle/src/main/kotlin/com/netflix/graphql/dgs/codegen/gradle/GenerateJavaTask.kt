@@ -132,9 +132,6 @@ open class GenerateJavaTask
         var shortProjectionNames = false
 
         @Input
-        var omitNullInputFields = false
-
-        @Input
         var kotlinAllFieldsOptional = false
 
         @Input
@@ -212,7 +209,6 @@ open class GenerateJavaTask
                     skipEntityQueries = skipEntityQueries,
                     shortProjectionNames = shortProjectionNames,
                     generateDataTypes = generateDataTypes,
-                    omitNullInputFields = omitNullInputFields,
                     kotlinAllFieldsOptional = kotlinAllFieldsOptional,
                     snakeCaseConstantNames = snakeCaseConstantNames,
                     implementSerializable = implementSerializable,
