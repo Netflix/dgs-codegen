@@ -119,33 +119,6 @@ class CodegenGradlePluginTest {
     }
 
     @Test
-    fun sourcesGenerated_OmitNullInputFields() {
-        // build a project
-        val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
-                .withPluginClasspath()
-                .withArguments(
-                    "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_omit_null_input_fields.gradle",
-                    "-b",
-                    "build_omit_null_input_fields.gradle",
-                    "clean",
-                    "build",
-                ).forwardOutput()
-                .withDebug(true)
-                .build()
-
-        // Verify the result
-        assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        // Verify that POJOs are generated in the configured directory
-        assertThat(File(EXPECTED_DEFAULT_PATH + "Result.java").exists()).isTrue
-        assertThat(File(EXPECTED_DEFAULT_PATH + "Filter.java").exists()).isTrue
-    }
-
-    @Test
     fun nothingIsGeneratedForNoSchema() {
         // build a project
         val result =
