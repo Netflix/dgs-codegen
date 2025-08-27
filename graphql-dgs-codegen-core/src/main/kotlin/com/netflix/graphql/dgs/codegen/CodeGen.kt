@@ -542,7 +542,6 @@ class CodeGenConfig(
     var skipEntityQueries: Boolean = false,
     var shortProjectionNames: Boolean = false,
     var generateDataTypes: Boolean = true,
-    var omitNullInputFields: Boolean = false,
     var kotlinAllFieldsOptional: Boolean = false,
     /** If enabled, the names of the classes available via the DgsConstant class will be snake cased.*/
     var snakeCaseConstantNames: Boolean = false,
