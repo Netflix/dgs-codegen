@@ -89,6 +89,7 @@ fun generateKotlin2DataTypes(
                     .toList()
 
             fun type(field: FieldDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
+            val typeName = config.typePrefix + typeDefinition.name + config.typeSuffix
 
             // get a list of fields to override
             val overrideFields = typeLookup.overrideFields(implementedInterfaces)
@@ -119,7 +120,7 @@ fun generateKotlin2DataTypes(
                     ).build()
 
             // create a builder for this class; default to lambda that throws if accessed
-            val builderClassName = ClassName(config.packageNameTypes, typeDefinition.name, "Builder")
+            val builderClassName = ClassName(config.packageNameTypes, typeName, "Builder")
             val builder =
                 TypeSpec
                     .classBuilder("Builder")
@@ -156,13 +157,13 @@ fun generateKotlin2DataTypes(
                     .addFunction(
                         FunSpec
                             .builder("build")
-                            .returns(typeDefinition.name.toKtTypeName())
+                            .returns(typeName.toKtTypeName())
                             .addCode(
                                 fields.let { fs ->
                                     val builder =
                                         CodeBlock.builder().add(
                                             "return %T(\n",
-                                            ClassName(config.packageNameTypes, typeDefinition.name),
+                                            ClassName(config.packageNameTypes, typeName),
                                         )
                                     fs.forEach { f -> builder.add("  %N = %N,\n", f.name, f.name) }
                                     builder.add(")").build()
@@ -173,7 +174,7 @@ fun generateKotlin2DataTypes(
             // create the data class
             val typeSpec =
                 TypeSpec
-                    .classBuilder(typeDefinition.name)
+                    .classBuilder(typeName)
                     .addOptionalGeneratedAnnotation(config)
                     // add docs if available
                     .apply {
