@@ -1,0 +1,68 @@
+/*
+ *
+ *  Copyright 2020 Netflix, Inc.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ *
+ */
+
+plugins {
+    id 'java'
+    id 'com.netflix.dgs.codegen'
+}
+
+configurations {
+    // injected by Gradle Runner through test configuration, see CodegenGradlePluginTest
+    CodeGenConfiguration.exclude group: "com.netflix.graphql.dgs.codegen", module: "graphql-dgs-codegen-core"
+}
+
+repositories {
+    mavenCentral()
+    flatDir {
+        dirs 'build/extra-libs'
+    }
+}
+dependencies {
+    implementation 'com.graphql-java:graphql-java:24.2'
+    implementation(":graphql-dgs-codegen-shared-core")
+}
+
+generateJava {
+    schemaPaths = ["${projectDir}/src/main/resources/schema"]
+    packageName = 'com.netflix.testproject.graphql'
+    typeMapping = [Date: "java.time.LocalDateTime"]
+    omitNullInputFields = true
+    generateDataTypes = true
+    generateDocs = true
+    generateClient = true
+}
+
+codegen.clientCoreConventionsEnabled = false
+
+tasks.named("compileJava") {
+    dependsOn("copySharedCore")
+}
+tasks.register("copySharedCore", Copy) {
+    def libsDir = "../graphql-dgs-codegen-shared-core/build/libs"
+    def jar = new File(libsDir).listFiles().find {
+        it.name.startsWith("graphql-dgs-codegen-shared-core")
+                && it.name.endsWith(".jar")
+                && !it.name.contains("-sources")
+                && !it.name.contains("-javadoc")
+    }
+    from jar.absolutePath
+    into "build/extra-libs"
+    rename { String fileName ->
+        "graphql-dgs-codegen-shared-core.jar"
+    }
+}
