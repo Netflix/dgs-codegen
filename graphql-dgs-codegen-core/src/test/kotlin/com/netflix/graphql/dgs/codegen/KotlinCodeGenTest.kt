@@ -2228,6 +2228,66 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `Dedupe type names in Constants to support multiple schema files`() {
+        val schema =
+            """
+            type Person {
+                q1: String
+            }
+            
+            type Person {
+                q2: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                ),
+            ).generate()
+        val type = result.kotlinConstants[0].members[0] as TypeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("PERSON")
+        assertThat(type.typeSpecs[0].propertySpecs)
+            .extracting("name")
+            .containsExactly("TYPE_NAME", "Q1", "Q2")
+
+        assertCompilesKotlin(result.kotlinDataTypes + result.kotlinConstants)
+    }
+
+    @Test
+    fun `Dedupe input type names in Constants to support multiple schema files`() {
+        val schema =
+            """
+            input QueryInput {
+                q1: String
+            }
+            
+            input QueryInput {
+                q2: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                ),
+            ).generate()
+        val type = result.kotlinConstants[0].members[0] as TypeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERYINPUT")
+        assertThat(type.typeSpecs[0].propertySpecs)
+            .extracting("name")
+            .containsExactly("TYPE_NAME", "Q1", "Q2")
+
+        assertCompilesKotlin(result.kotlinDataTypes + result.kotlinConstants)
+    }
+
+    @Test
     fun generateUnion() {
         val schema =
             """
