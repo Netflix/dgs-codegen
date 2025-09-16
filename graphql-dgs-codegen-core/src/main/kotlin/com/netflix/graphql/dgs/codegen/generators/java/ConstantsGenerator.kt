@@ -54,11 +54,7 @@ class ConstantsGenerator(
             .excludeSchemaTypeExtension()
             .forEach {
                 val constantsType =
-                    if (types.contains(it.name)) {
-                        types[it.name]!!
-                    } else {
-                        createConstantTypeBuilder(config, it.name)
-                    }
+                    getOrCreateConstantsType(types, it.name)
 
                 val extensions = findTypeExtensions(it.name, document.definitions)
                 val fields = it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions }
@@ -81,18 +77,13 @@ class ConstantsGenerator(
                 types[it.name] = constantsType
             }
 
-
         document.definitions
             .filterIsInstance<InputObjectTypeDefinition>()
             .asSequence()
             .excludeSchemaTypeExtension()
             .forEach {
                 val constantsType =
-                    if (types.contains(it.name)) {
-                        types[it.name]!!
-                    } else {
-                        createConstantTypeBuilder(config, it.name)
-                    }
+                    getOrCreateConstantsType(types, it.name)
 
                 if (!types.contains(it.name)) {
                     constantsType.addField(
@@ -116,10 +107,7 @@ class ConstantsGenerator(
                 }
 
                 types[it.name] = constantsType
-
             }
-
-
 
         document.definitions
             .filterIsInstance<InterfaceTypeDefinition>()
@@ -127,11 +115,7 @@ class ConstantsGenerator(
             .excludeSchemaTypeExtension()
             .forEach {
                 val constantsType =
-                    if (types.contains(it.name)) {
-                        types[it.name]!!
-                    } else {
-                        createConstantTypeBuilder(config, it.name)
-                    }
+                    getOrCreateConstantsType(types, it.name)
 
                 if (!types.contains(it.name)) {
                     constantsType.addField(
@@ -207,6 +191,16 @@ class ConstantsGenerator(
         val javaFile = JavaFile.builder(config.packageName, javaType.build()).build()
         return CodeGenResult(javaConstants = listOf(javaFile))
     }
+
+    private fun getOrCreateConstantsType(
+        types: MutableMap<String, TypeSpec.Builder>,
+        name: String,
+    ): TypeSpec.Builder =
+        if (types.contains(name)) {
+            types[name]!!
+        } else {
+            createConstantTypeBuilder(config, name)
+        }
 
     private fun createConstantTypeBuilder(
         conf: CodeGenConfig,
