@@ -2296,7 +2296,7 @@ class CodeGenTest {
     }
 
     @Test
-    fun `Dedupe type names in Constants to support multiple schema files`() {
+    fun `Dedupe Query in Constants to support multiple schema files`() {
         val schema =
             """
             type Query {
@@ -2317,6 +2317,87 @@ class CodeGenTest {
             ).generate()
         val type = result.javaConstants[0].typeSpec
         assertThat(type.typeSpecs).extracting("name").containsExactly("QUERY")
+        assertThat(type.typeSpecs[0].fieldSpecs)
+            .extracting("name")
+            .contains("Q1", "Q2")
+    }
+
+    @Test
+    fun `Dedupe type names in Constants to support multiple schema files`() {
+        val schema =
+            """
+            type Person {
+                q1: String
+            }
+            
+            type Person {
+                q2: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                ),
+            ).generate()
+        val type = result.javaConstants[0].typeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("PERSON")
+        assertThat(type.typeSpecs[0].fieldSpecs)
+            .extracting("name")
+            .contains("Q1", "Q2")
+    }
+
+    @Test
+    fun `Dedupe input type names in Constants to support multiple schema files`() {
+        val schema =
+            """
+            input QueryInput {
+                q1: String
+            }
+            
+            input QueryInput {
+                q2: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                ),
+            ).generate()
+        val type = result.javaConstants[0].typeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("QUERYINPUT")
+        assertThat(type.typeSpecs[0].fieldSpecs)
+            .extracting("name")
+            .contains("Q1", "Q2")
+    }
+
+    @Test
+    fun `Dedupe interface type names in Constants to support multiple schema files`() {
+        val schema =
+            """
+            interface SomeInterface {
+                q1: String
+            }
+            
+            interface SomeInterface {
+                q2: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                ),
+            ).generate()
+        val type = result.javaConstants[0].typeSpec
+        assertThat(type.typeSpecs).extracting("name").containsExactly("SOMEINTERFACE")
         assertThat(type.typeSpecs[0].fieldSpecs)
             .extracting("name")
             .contains("Q1", "Q2")

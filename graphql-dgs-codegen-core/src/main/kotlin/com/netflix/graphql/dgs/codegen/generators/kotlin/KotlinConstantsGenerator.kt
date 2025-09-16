@@ -42,68 +42,79 @@ class KotlinConstantsGenerator(
                 .objectBuilder("DgsConstants")
                 .addOptionalGeneratedAnnotation(config)
 
+        val types = mutableMapOf<String, TypeSpec.Builder>()
+
         document.definitions
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
             .forEach {
-                val constantsType = createConstantTypeBuilder(config, it.name)
+                val constantsType =
+                    getOrCreateConstantsType(types, it.name)
 
                 val extensions = findTypeExtensions(it.name, document.definitions)
                 val fields =
                     (it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions })
                         .distinctBy { def -> def.name }
 
-                constantsType.addProperty(
-                    PropertySpec
-                        .builder("TYPE_NAME", String::class)
-                        .addModifiers(KModifier.CONST)
-                        .initializer(""""${it.name}"""")
-                        .build(),
-                )
+                if (!types.contains(it.name)) {
+                    constantsType.addProperty(
+                        PropertySpec
+                            .builder("TYPE_NAME", String::class)
+                            .addModifiers(KModifier.CONST)
+                            .initializer(""""${it.name}"""")
+                            .build(),
+                    )
+                }
 
                 fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
                     addQueryInputArgument(constantsType, field)
                 }
 
-                baseConstantsType.addType(constantsType.build())
+                types[it.name] = constantsType
             }
 
         document.definitions
             .filterIsInstance<InputObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
             .forEach {
-                val constantsType = createConstantTypeBuilder(config, it.name)
+                val constantsType =
+                    getOrCreateConstantsType(types, it.name)
 
                 val extensions = findInputExtensions(it.name, document.definitions)
                 val fields = it.inputValueDefinitions + extensions.flatMap { ext -> ext.inputValueDefinitions }
-                constantsType.addProperty(
-                    PropertySpec
-                        .builder("TYPE_NAME", String::class)
-                        .addModifiers(KModifier.CONST)
-                        .initializer(""""${it.name}"""")
-                        .build(),
-                )
+                if (!types.contains(it.name)) {
+                    constantsType.addProperty(
+                        PropertySpec
+                            .builder("TYPE_NAME", String::class)
+                            .addModifiers(KModifier.CONST)
+                            .initializer(""""${it.name}"""")
+                            .build(),
+                    )
+                }
                 fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->
                     addFieldName(constantsType, field.name)
                 }
 
-                baseConstantsType.addType(constantsType.build())
+                types[it.name] = constantsType
             }
 
         document.definitions
             .filterIsInstance<InterfaceTypeDefinition>()
             .excludeSchemaTypeExtension()
             .forEach {
-                val constantsType = createConstantTypeBuilder(config, it.name)
+                val constantsType =
+                    getOrCreateConstantsType(types, it.name)
 
-                constantsType.addProperty(
-                    PropertySpec
-                        .builder("TYPE_NAME", String::class)
-                        .addModifiers(KModifier.CONST)
-                        .initializer(""""${it.name}"""")
-                        .build(),
-                )
+                if (!types.contains(it.name)) {
+                    constantsType.addProperty(
+                        PropertySpec
+                            .builder("TYPE_NAME", String::class)
+                            .addModifiers(KModifier.CONST)
+                            .initializer(""""${it.name}"""")
+                            .build(),
+                    )
+                }
 
                 val extensions = SchemaExtensionsUtils.findInterfaceExtensions(it.name, document.definitions)
                 val fields = it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions }
@@ -112,7 +123,7 @@ class KotlinConstantsGenerator(
                     addFieldName(constantsType, field.name)
                 }
 
-                baseConstantsType.addType(constantsType.build())
+                types[it.name] = constantsType
             }
 
         document.definitions
@@ -128,8 +139,13 @@ class KotlinConstantsGenerator(
                         .initializer(""""${it.name}"""")
                         .build(),
                 )
-                baseConstantsType.addType(constantsType.build())
+
+                types[it.name] = constantsType
             }
+
+        types.forEach {
+            baseConstantsType.addType(it.value.build())
+        }
 
         if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Query" }) {
             baseConstantsType.addProperty(
@@ -166,6 +182,16 @@ class KotlinConstantsGenerator(
         val fileSpec = FileSpec.builder(config.packageName, "DgsConstants").addType(baseConstantsType.build()).build()
         return CodeGenResult(kotlinConstants = listOf(fileSpec))
     }
+
+    private fun getOrCreateConstantsType(
+        types: MutableMap<String, TypeSpec.Builder>,
+        name: String,
+    ): TypeSpec.Builder =
+        if (types.contains(name)) {
+            types[name]!!
+        } else {
+            createConstantTypeBuilder(config, name)
+        }
 
     private fun createConstantTypeBuilder(
         conf: CodeGenConfig,
