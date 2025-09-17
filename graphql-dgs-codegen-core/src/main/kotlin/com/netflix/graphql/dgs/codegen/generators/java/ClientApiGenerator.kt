@@ -22,11 +22,11 @@ import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
-import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.netflix.graphql.dgs.codegen.filterIncludedInConfig
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.findTypeDefinition
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.collectAllFieldDefinitions
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.CodeBlock
 import com.squareup.javapoet.FieldSpec
@@ -47,7 +47,6 @@ import graphql.language.ListType
 import graphql.language.NamedNode
 import graphql.language.NonNullType
 import graphql.language.ObjectTypeDefinition
-import graphql.language.ObjectTypeExtensionDefinition
 import graphql.language.ScalarTypeDefinition
 import graphql.language.StringValue
 import graphql.language.Type
@@ -456,12 +455,7 @@ class ClientApiGenerator(
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult.EMPTY else generatedClasses.add(clazzName)
 
-        val fieldDefinitions =
-            type.fieldDefinitions() +
-                document.definitions
-                    .filterIsInstance<ObjectTypeExtensionDefinition>()
-                    .filter { it.name == type.name }
-                    .flatMap { it.fieldDefinitions }
+        val fieldDefinitions = collectAllFieldDefinitions(type, document.definitions)
 
         val codeGenResult =
             fieldDefinitions
@@ -867,12 +861,7 @@ class ClientApiGenerator(
                 .build(),
         )
 
-        val fieldDefinitions =
-            type.fieldDefinitions() +
-                document.definitions
-                    .filterIsInstance<ObjectTypeExtensionDefinition>()
-                    .filter { it.name == type.name }
-                    .flatMap { it.fieldDefinitions }
+        val fieldDefinitions = collectAllFieldDefinitions(type, document.definitions)
 
         val codeGenResult =
             fieldDefinitions

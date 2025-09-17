@@ -17,4 +17,10 @@ public class PersonProjection(
       field("lastname")
       return this
     }
+
+  public val age: PersonProjection
+    get() {
+      field("age")
+      return this
+    }
 }
