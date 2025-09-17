@@ -926,4 +926,43 @@ class ClientApiGenProjectionTest {
         assertThat(methodWithArgs.parameters[0].name).isEqualTo("oscarsOnlyReference")
         assertThat(methodWithArgs.parameters[0].type.toString()).isEqualTo("java.lang.String")
     }
+
+    @Test
+    fun `Dedupe type names in Projections to support multiple schema files`() {
+        val schema =
+            """
+            type Query {
+                people: [Person]
+            }
+
+            type Person {
+                q1: String
+            }
+
+            type Person {
+                q2: String
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
+
+        // Should have one root projection that combines fields from both Person definitions
+        val peopleProjectionRoot =
+            codeGenResult.clientProjections.find { it.typeSpec.name == "PeopleProjectionRoot" }
+                ?: fail("PeopleProjectionRoot not found")
+
+        // The root projection should have methods for both q1 and q2
+        assertThat(peopleProjectionRoot.typeSpec.methodSpecs)
+            .extracting("name")
+            .contains("q1", "q2")
+
+        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+    }
 }

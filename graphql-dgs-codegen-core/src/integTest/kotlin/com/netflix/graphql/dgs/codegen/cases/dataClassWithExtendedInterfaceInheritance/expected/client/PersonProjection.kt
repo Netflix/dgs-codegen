@@ -18,6 +18,12 @@ public class PersonProjection(
       return this
     }
 
+  public val age: PersonProjection
+    get() {
+      field("age")
+      return this
+    }
+
   public fun onEmployee(_projection: EmployeeProjection.() -> EmployeeProjection):
       PersonProjection {
     fragment("Employee", EmployeeProjection(), _projection)

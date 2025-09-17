@@ -18,12 +18,17 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
+import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import graphql.language.Definition
 import graphql.language.EnumTypeExtensionDefinition
+import graphql.language.FieldDefinition
 import graphql.language.InputObjectTypeExtensionDefinition
+import graphql.language.InterfaceTypeDefinition
 import graphql.language.InterfaceTypeExtensionDefinition
 import graphql.language.NamedNode
+import graphql.language.ObjectTypeDefinition
 import graphql.language.ObjectTypeExtensionDefinition
+import graphql.language.TypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
 
 object SchemaExtensionsUtils {
@@ -60,6 +65,40 @@ object SchemaExtensionsUtils {
         .filterIsInstance<R>()
         .filter { name == it.name }
         .toList()
+
+    /**
+     * Collects all field definitions for a given type, including fields from:
+     * - The type definition itself
+     * - Extension definitions (extend type/interface Foo)
+     * - Duplicate type definitions (multiple type/interface Foo blocks)
+     *
+     * Fields are deduplicated by name, with the first occurrence taking precedence.
+     */
+    fun collectAllFieldDefinitions(
+        type: TypeDefinition<*>,
+        definitions: Collection<Definition<*>>,
+    ): List<FieldDefinition> =
+        when (type) {
+            is ObjectTypeDefinition -> {
+                val extensionFields = findTypeExtensions(type.name, definitions).flatMap { it.fieldDefinitions }
+                val duplicateTypeFields =
+                    definitions
+                        .filterIsInstance<ObjectTypeDefinition>()
+                        .filter { it != type && it.name == type.name }
+                        .flatMap { it.fieldDefinitions }
+                (type.fieldDefinitions + extensionFields + duplicateTypeFields).distinctBy { it.name }
+            }
+            is InterfaceTypeDefinition -> {
+                val extensionFields = findInterfaceExtensions(type.name, definitions).flatMap { it.fieldDefinitions }
+                val duplicateTypeFields =
+                    definitions
+                        .filterIsInstance<InterfaceTypeDefinition>()
+                        .filter { it != type && it.name == type.name }
+                        .flatMap { it.fieldDefinitions }
+                (type.fieldDefinitions + extensionFields + duplicateTypeFields).distinctBy { it.name }
+            }
+            else -> type.fieldDefinitions()
+        }
 }
 
 fun <T> Collection<T>.excludeSchemaTypeExtension(): Collection<T> = this.filter { !isSchemaTypeExtension(it) }

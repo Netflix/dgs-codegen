@@ -25,6 +25,7 @@ import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
+import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.collectAllFieldDefinitions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
@@ -71,17 +72,12 @@ fun generateKotlin2ClientTypes(
             .filter { type -> type.directives.none { it.name == "skipcodegen" } && !typeLookup.isScalar(type.name) }
             .map { typeDefinition ->
 
-                // get any fields defined via schema extensions
-                val extensionTypes = SchemaExtensionsUtils.findTypeExtensions(typeDefinition.name, document.definitions)
-
                 // the name of the type is used in every parameter & return value
                 val typeName = ClassName(config.packageNameClient, "${typeDefinition.name}Projection")
 
-                // get all fields defined on the type itself or any extension types
+                // get all fields defined on the type itself, extension types, and duplicate types
                 val fields =
-                    listOf(typeDefinition)
-                        .plus(extensionTypes)
-                        .flatMap { it.fieldDefinitions }
+                    collectAllFieldDefinitions(typeDefinition, document.definitions)
                         .filterSkipped()
                         .filter(ReservedKeywordFilter.filterInvalidNames)
                         .map { field ->
