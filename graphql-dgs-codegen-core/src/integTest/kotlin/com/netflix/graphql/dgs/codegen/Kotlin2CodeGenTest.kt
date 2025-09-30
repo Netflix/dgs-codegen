@@ -118,6 +118,48 @@ class Kotlin2CodeGenTest {
         assertThat(updateExpected).isFalse()
     }
 
+    @Test
+    fun generateKotlin2TypesWithUnderscoreField() {
+        val schema =
+            """
+            interface MyInterface {
+                _: ID
+            }
+
+            type MyInterfaceImpl implements MyInterface {
+                _: ID
+            }
+
+            type Query {
+                impl: MyInterfaceImpl
+            }
+            """.trimIndent()
+
+        val packageName = "com.netflix.graphql.dgs.codegen.kotlin2.underscore"
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = packageName,
+                    language = Language.KOTLIN,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        val interfaceSpec = codeGenResult.kotlinInterfaces.first { it.name == "MyInterface" }
+        val interfaceType = interfaceSpec.members.filterIsInstance<com.squareup.kotlinpoet.TypeSpec>().first { it.name == "MyInterface" }
+        assertThat(interfaceType.propertySpecs.map { it.name }).contains("underscoreField_")
+
+        val dataSpec = codeGenResult.kotlinDataTypes.first { it.name == "MyInterfaceImpl" }
+        val dataType = dataSpec.members.filterIsInstance<com.squareup.kotlinpoet.TypeSpec>().first { it.name == "MyInterfaceImpl" }
+        assertThat(dataType.propertySpecs.map { it.name }).contains("underscoreField_")
+
+        assertCompilesKotlin(codeGenResult)
+    }
+
     companion object {
         @Suppress("unused")
         @JvmStatic

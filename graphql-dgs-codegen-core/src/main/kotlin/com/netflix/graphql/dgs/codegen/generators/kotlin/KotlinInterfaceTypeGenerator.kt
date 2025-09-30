@@ -64,10 +64,14 @@ class KotlinInterfaceTypeGenerator(
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
-        mergedFieldDefinitions.filterSkipped().forEach { field ->
+        mergedFieldDefinitions
+            .filterSkipped()
+            .filter(ReservedKeywordFilter.filterInvalidNames)
+            .forEach { field ->
             val returnType = typeUtils.findReturnType(field.type)
             val nullableType = if (typeUtils.isNullable(field.type)) returnType.copy(nullable = true) else returnType
-            val propertySpec = PropertySpec.builder(field.name, nullableType)
+            val kotlinName = sanitizeKotlinIdentifier(field.name)
+            val propertySpec = PropertySpec.builder(kotlinName, nullableType)
             if (field.description != null) {
                 propertySpec.addKdoc("%L", field.description.sanitizeKdoc())
             }

@@ -21,5 +21,5 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 import graphql.language.NamedNode
 
 object ReservedKeywordFilter {
-    val filterInvalidNames: (NamedNode<*>) -> Boolean = { it.name != "_" }
+    val filterInvalidNames: (NamedNode<*>) -> Boolean = { true }
 }
