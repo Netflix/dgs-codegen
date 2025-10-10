@@ -73,7 +73,9 @@ class InterfaceGenerator(
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
         mergedFieldDefinitions.filterSkipped().forEach {
-            // Only generate getters/setters for fields that are not interfaces.
+            // Generate getters/setters for fields that are not interfaces, and only getters for fields that are interfaces.
+            // Skip generating interface methods with list types where the inner type is an interface as Java does not
+            // support overriding them with more specific types (i.e. List<Dog> does not override List<Pet>).
             //
             // interface Pet {
             // 	 parent: Pet
@@ -89,7 +91,7 @@ class InterfaceGenerator(
             // implementation classes. This is not an issue if the overridden field has the same base type,
             // however.
             // Ref: https://github.com/graphql/graphql-js/issues/776
-            if (!isFieldAnInterface(it) || config.generateInterfaceMethodsForInterfaceFields) {
+            if (!isListOfInterface(it.type) || config.generateInterfaceMethodsForInterfaceFields) {
                 addInterfaceMethod(it, javaType)
             }
         }
@@ -120,6 +122,19 @@ class InterfaceGenerator(
             .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
             .any { node -> node.name == typeUtils.findInnerType(fieldDefinition.type).name }
 
+    // Returns true if the field is a list type (possibly nested or non-null) with an innermost type that is an interface
+    private fun isListOfInterface(fieldType: Type<*>): Boolean =
+        when (fieldType) {
+            is ListType -> {
+                val innerType = typeUtils.findInnerType(fieldType)
+                document
+                    .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+                    .any { node -> node.name == innerType.name }
+            }
+            is NonNullType -> isListOfInterface(fieldType.type)
+            else -> false
+        }
+
     private fun addInterfaceMethod(
         fieldDefinition: FieldDefinition,
         javaType: TypeSpec.Builder,
@@ -149,7 +164,10 @@ class InterfaceGenerator(
         }
         javaType.addMethod(getterBuilder.build())
 
-        if (config.generateInterfaceSetters) {
+        // Only generate setters for non-interface-typed fields unless generateInterfaceMethodsForInterfaceFields is true
+        if (config.generateInterfaceMethodsForInterfaceFields ||
+            (config.generateInterfaceSetters && !isFieldAnInterface(fieldDefinition))
+        ) {
             val setterBuilder =
                 MethodSpec
                     .methodBuilder(

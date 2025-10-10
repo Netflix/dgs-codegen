@@ -749,6 +749,10 @@ class CodeGenTest {
                 |  List<String> getAddress();
                 |
                 |  void setAddress(List<String> address);
+                |
+                |  Pet getMother();
+                |
+                |  Pet getFather();
                 |}
             |
             """.trimMargin(),
@@ -807,6 +811,8 @@ class CodeGenTest {
                 |  String getName();
                 |
                 |  void setName(String name);
+                |
+                |  Diet getDiet();
                 |}
             |
             """.trimMargin(),
