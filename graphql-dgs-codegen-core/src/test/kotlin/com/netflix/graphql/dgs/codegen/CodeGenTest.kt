@@ -690,6 +690,8 @@ class CodeGenTest {
             |   mother: Pet!
             |   father: Pet
             |   parents: [Pet]
+            |   friends: [[Pet]]
+            |   siblings: [Pet]!
             |}
             |
             |type Dog implements Pet {
@@ -699,6 +701,8 @@ class CodeGenTest {
             |    mother: Dog!
             |    father: Dog
             |    parents: [Dog]
+            |    friends: [[Dog]]
+            |    siblings: [Dog]!
             |}
             | 
             |type Bird implements Pet {
@@ -708,6 +712,8 @@ class CodeGenTest {
             |   mother: Bird!
             |   father: Bird
             |   parents: [Bird]
+            |   friends: [[Bird]]
+            |   siblings: [Bird]!
             |}
             """.trimMargin()
 
@@ -749,6 +755,10 @@ class CodeGenTest {
                 |  List<String> getAddress();
                 |
                 |  void setAddress(List<String> address);
+                |
+                |  Pet getMother();
+                |
+                |  Pet getFather();
                 |}
             |
             """.trimMargin(),
@@ -807,6 +817,8 @@ class CodeGenTest {
                 |  String getName();
                 |
                 |  void setName(String name);
+                |
+                |  Diet getDiet();
                 |}
             |
             """.trimMargin(),
@@ -2993,6 +3005,213 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInterfaceThatExtendsInterfaceWithInterfaceFields() {
+        val schema =
+            """
+            interface Person {
+                name: String
+                age: Int
+            }
+
+            interface Employee implements Person {
+                name: String
+                age: Int
+                boss: Employee
+                team: [Employee]
+            }
+
+            type Manager implements Employee {
+                name: String
+                age: Int
+                boss: Manager
+                team: [Contributor]
+            }
+            
+            type Contributor implements Employee {
+                name: String
+                age: Int
+                boss: Manager
+                team: [Contributor]
+            }
+            """.trimIndent()
+
+        val (dataTypes, interfaces) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                ),
+            ).generate()
+
+        assertThat(interfaces).hasSize(2)
+
+        val person = interfaces.find { it.typeSpec.name == "Person" }!!
+        assertThat(person.toString()).isEqualTo(
+            """
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            |
+            |import java.lang.Integer;
+            |import java.lang.String;
+            |
+            |public interface Person {
+            |  String getName();
+            |
+            |  void setName(String name);
+            |
+            |  Integer getAge();
+            |
+            |  void setAge(Integer age);
+            |}
+            |
+            """.trimMargin(),
+        )
+
+        val employee = interfaces.find { it.typeSpec.name == "Employee" }!!
+        assertThat(employee.toString()).isEqualTo(
+            """
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            |
+            |import com.fasterxml.jackson.annotation.JsonSubTypes;
+            |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+            |import java.lang.Integer;
+            |import java.lang.String;
+            |
+            |@JsonTypeInfo(
+            |    use = JsonTypeInfo.Id.NAME,
+            |    include = JsonTypeInfo.As.PROPERTY,
+            |    property = "__typename"
+            |)
+            |@JsonSubTypes({
+            |    @JsonSubTypes.Type(value = Manager.class, name = "Manager"),
+            |    @JsonSubTypes.Type(value = Contributor.class, name = "Contributor")
+            |})
+            |public interface Employee extends Person {
+            |  String getName();
+            |
+            |  void setName(String name);
+            |
+            |  Integer getAge();
+            |
+            |  void setAge(Integer age);
+            |
+            |  Employee getBoss();
+            |}
+            |
+            """.trimMargin(),
+        )
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateInterfaceSettersForInterfaceInheritance() {
+        val schema =
+            """
+            interface Person {
+                name: String
+                age: Int
+                parents: [Person]!
+                friend: Person
+            }
+
+            interface Employee implements Person {
+                name: String
+                age: Int
+                parents: [Person]!
+                friend: Person
+            }
+
+            type Manager implements Employee {
+                name: String
+                age: Int
+                parents: [Person]!
+                friend: Person
+            }
+            """.trimIndent()
+
+        val (dataTypes, interfaces) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateInterfaceMethodsForInterfaceFields = true,
+                ),
+            ).generate()
+
+        assertThat(interfaces).hasSize(2)
+
+        val person = interfaces.find { it.typeSpec.name == "Person" }!!
+        assertThat(person.toString()).isEqualTo(
+            """
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            |
+            |import java.lang.Integer;
+            |import java.lang.String;
+            |import java.util.List;
+            |
+            |public interface Person {
+            |  String getName();
+            |
+            |  void setName(String name);
+            |
+            |  Integer getAge();
+            |
+            |  void setAge(Integer age);
+            |
+            |  List<Person> getParents();
+            |
+            |  void setParents(List<Person> parents);
+            |
+            |  Person getFriend();
+            |
+            |  void setFriend(Person friend);
+            |}
+            |
+            """.trimMargin(),
+        )
+
+        val employee = interfaces.find { it.typeSpec.name == "Employee" }!!
+        assertThat(employee.toString()).isEqualTo(
+            """
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            |
+            |import com.fasterxml.jackson.annotation.JsonSubTypes;
+            |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+            |import java.lang.Integer;
+            |import java.lang.String;
+            |import java.util.List;
+            |
+            |@JsonTypeInfo(
+            |    use = JsonTypeInfo.Id.NAME,
+            |    include = JsonTypeInfo.As.PROPERTY,
+            |    property = "__typename"
+            |)
+            |@JsonSubTypes(@JsonSubTypes.Type(value = Manager.class, name = "Manager"))
+            |public interface Employee extends Person {
+            |  String getName();
+            |
+            |  void setName(String name);
+            |
+            |  Integer getAge();
+            |
+            |  void setAge(Integer age);
+            |
+            |  List<Person> getParents();
+            |
+            |  void setParents(List<Person> parents);
+            |
+            |  Person getFriend();
+            |
+            |  void setFriend(Person friend);
+            |}
+            |
+            """.trimMargin(),
+        )
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateInterfacesWithoutSetters() {
         val schema =
             """
@@ -3214,6 +3433,57 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInterfaceGettersWithoutSetters() {
+        val schema =
+            """
+            interface Pet {
+              name: String
+              parent: Pet
+            }
+            
+            type Dog implements Pet {
+              name: String
+              parent: Dog
+            }
+            """.trimIndent()
+
+        val (dataTypes, interfaces) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateInterfaceSetters = false,
+                ),
+            ).generate()
+
+        assertThat(interfaces).hasSize(1)
+
+        assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonSubTypes;
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import java.lang.String;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NAME,
+                |    include = JsonTypeInfo.As.PROPERTY,
+                |    property = "__typename"
+                |)
+                |@JsonSubTypes(@JsonSubTypes.Type(value = Dog.class, name = "Dog"))
+                |public interface Pet {
+                |  String getName();
+
+                |  Pet getParent();
+                |}
+            |
+            """.trimMargin(),
+            assertCompilesJava(dataTypes + interfaces),
+        )
+    }
+
+    @Test
     fun generateInterfaceMethodsForInterfaceFields() {
         val schema =
             """
@@ -3328,6 +3598,70 @@ class CodeGenTest {
         assertThat(category.typeSpec.methodSpecs[1].name).isEqualTo("setColor")
         assertThat(category.typeSpec.methodSpecs[2].name).isEqualTo("getFruit")
         assertThat(category.typeSpec.methodSpecs[3].name).isEqualTo("setFruit")
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
+    fun generateInterfaceMethodsForInterfaceFieldsGeneratesListMethods() {
+        // implementing class schemas contain fields that are lists of interfaces
+        val schema =
+            """
+            |interface Pet {
+            |   name: String
+            |   friends: [Pet]
+            |}
+            |
+            |type Dog implements Pet {
+            |   name: String
+            |   friends: [Pet]
+            |}
+            | 
+            |type Bird implements Pet {
+            |   name: String
+            |   friends: [Pet]
+            |}
+            """.trimMargin()
+
+        val (dataTypes, interfaces) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateInterfaceMethodsForInterfaceFields = true,
+                ),
+            ).generate()
+
+        assertThat(interfaces[0].toString()).isEqualTo(
+            """
+                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+                |
+                |import com.fasterxml.jackson.annotation.JsonSubTypes;
+                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import java.lang.String;
+                |import java.util.List;
+                |
+                |@JsonTypeInfo(
+                |    use = JsonTypeInfo.Id.NAME,
+                |    include = JsonTypeInfo.As.PROPERTY,
+                |    property = "__typename"
+                |)
+                |@JsonSubTypes({
+                |    @JsonSubTypes.Type(value = Dog.class, name = "Dog"),
+                |    @JsonSubTypes.Type(value = Bird.class, name = "Bird")
+                |})
+                |public interface Pet {
+                |  String getName();
+                |
+                |  void setName(String name);
+                |
+                |  List<Pet> getFriends();
+                |
+                |  void setFriends(List<Pet> friends);
+                |}
+            |
+            """.trimMargin(),
+        )
 
         assertCompilesJava(dataTypes + interfaces)
     }
