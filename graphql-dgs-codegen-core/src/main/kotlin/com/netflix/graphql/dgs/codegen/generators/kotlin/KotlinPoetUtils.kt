@@ -49,10 +49,9 @@ import java.lang.IllegalArgumentException
 private val kotlinReservedKeywordSanitizer = KotlinReservedKeywordSanitizer()
 
 fun sanitizeKotlinIdentifier(name: String): String =
-    if (name == "_") {
-        "underscoreField_"
-    } else {
-        name
+    when {
+        name == "_" -> "underscoreField_"
+        else -> kotlinReservedKeywordSanitizer.sanitize(name)
     }
 
 /**
