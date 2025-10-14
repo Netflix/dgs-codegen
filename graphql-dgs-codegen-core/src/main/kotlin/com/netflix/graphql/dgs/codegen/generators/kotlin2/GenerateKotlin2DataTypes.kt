@@ -29,8 +29,8 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonDeserializeAnnotati
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonIgnorePropertiesAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonPropertyAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
-import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
+import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
