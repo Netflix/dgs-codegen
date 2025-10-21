@@ -219,7 +219,7 @@ class InputTypeGenerator(
         value: Value<out Value<*>>,
         type: JavaTypeName,
         inputTypeDefinitions: List<InputObjectTypeDefinition>,
-    ): CodeBlock =
+    ): CodeBlock? =
         when (type) {
             BIG_DECIMAL -> bigDecimalCodeBlock(value, type)
             CURRENCY -> currencyCodeBlock(value, type)
@@ -232,11 +232,18 @@ class InputTypeGenerator(
         value: Value<out Value<*>>,
         type: JavaTypeName,
         inputTypeDefinitions: List<InputObjectTypeDefinition>,
-    ): CodeBlock {
+    ): CodeBlock? {
         return when (value) {
             is BooleanValue -> CodeBlock.of("\$L", value.isValue)
             is IntValue -> CodeBlock.of("\$L", value.value)
-            is StringValue -> CodeBlock.of("\$S", value.value)
+            is StringValue -> {
+                // Only generate string literal default values for string types to prevent invalid Java initialization
+                if (type is ClassName && type == ClassName.get(String::class.java)) {
+                    CodeBlock.of("\$S", value.value)
+                } else {
+                    null
+                }
+            }
             is FloatValue -> CodeBlock.of("\$L", value.value)
             is EnumValue -> CodeBlock.of("\$T.\$N", type, value.name)
             is ArrayValue ->
