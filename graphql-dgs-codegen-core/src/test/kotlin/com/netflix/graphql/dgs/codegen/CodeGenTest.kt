@@ -5778,7 +5778,7 @@ It takes a title and such.
 
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
-    fun `Codegen should skip default value when string literal is used for non-String scalar type`(trackInputFieldSet: Boolean) {
+    fun `Should skip default value when string literal is used for non-String scalar type`(trackInputFieldSet: Boolean) {
         val schema =
             """
             input Movie {
@@ -5829,6 +5829,46 @@ It takes a title and such.
             assertThat(uriField!!.type.toString()).isEqualTo("java.net.URI")
         }
         assertThat(uriField.initializer.toString()).isEmpty()
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `Should generate default value when String-serializable type is mapped to String`() {
+        val schema =
+            """
+            input Movie {
+                uri: Uri = "https://someurl.com"
+            }
+            """.trimIndent()
+
+        val dataTypes =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    typeMapping =
+                        mapOf(
+                            "Uri" to "java.lang.String",
+                        ),
+                ),
+            ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(TYPES_PACKAGE_NAME)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val uriField = fields[0]
+        assertThat(uriField).isNotNull
+        assertThat(uriField!!.type.toString()).isEqualTo("java.lang.String")
+        assertThat(uriField.initializer.toString()).isEqualTo("\"https://someurl.com\"")
 
         assertCompilesJava(dataTypes)
     }
