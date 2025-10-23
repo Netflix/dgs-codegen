@@ -5778,6 +5778,103 @@ It takes a title and such.
 
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
+    fun `Should skip default value when string literal is used for non-String scalar type`(trackInputFieldSet: Boolean) {
+        val schema =
+            """
+            input Movie {
+                rating: Int = 5
+                uri: Uri = "https://someurl.com"
+            }
+            """.trimIndent()
+
+        val dataTypes =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    typeMapping =
+                        mapOf(
+                            "Uri" to "java.net.URI",
+                        ),
+                    trackInputFieldSet = trackInputFieldSet,
+                ),
+            ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(TYPES_PACKAGE_NAME)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(2)
+
+        val idField = fields.find { it.name == "rating" }
+        assertThat(idField).isNotNull
+        if (trackInputFieldSet) {
+            assertThat(idField!!.type.toString()).isEqualTo("java.util.Optional<java.lang.Integer>")
+            assertThat(idField.initializer.toString()).isEqualTo("Optional.of(5)")
+        } else {
+            assertThat(idField!!.type.toString()).isEqualTo("java.lang.Integer")
+            assertThat(idField.initializer.toString()).isEqualTo("5")
+        }
+
+        val uriField = fields.find { it.name == "uri" }
+        assertThat(uriField).isNotNull
+        if (trackInputFieldSet) {
+            assertThat(uriField!!.type.toString()).isEqualTo("java.util.Optional<java.net.URI>")
+        } else {
+            assertThat(uriField!!.type.toString()).isEqualTo("java.net.URI")
+        }
+        assertThat(uriField.initializer.toString()).isEmpty()
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `Should generate default value when String-serializable type is mapped to String`() {
+        val schema =
+            """
+            input Movie {
+                uri: Uri = "https://someurl.com"
+            }
+            """.trimIndent()
+
+        val dataTypes =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    typeMapping =
+                        mapOf(
+                            "Uri" to "java.lang.String",
+                        ),
+                ),
+            ).generate().javaDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(TYPES_PACKAGE_NAME)
+
+        val type = data.typeSpec
+        assertThat(type.name).isEqualTo("Movie")
+
+        val fields = type.fieldSpecs
+        assertThat(fields).hasSize(1)
+
+        val uriField = fields[0]
+        assertThat(uriField).isNotNull
+        assertThat(uriField!!.type.toString()).isEqualTo("java.lang.String")
+        assertThat(uriField.initializer.toString()).isEqualTo("\"https://someurl.com\"")
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
     fun `The default empty object value should result in constructor call`(trackInputFieldSet: Boolean) {
         val schema =
             """
