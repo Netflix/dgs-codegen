@@ -84,6 +84,12 @@ class TypeUtils(
                 ): TraversalControl {
                     val typeName = context.getCurrentAccumulate<JavaTypeName>()
                     val boxed = boxType(typeName)
+                    val possiblyAnnotatedType =
+                        if (config.generateJSpecifyAnnotations && node.type !is NonNullType) {
+                            boxed.annotated(jspecifyNullableAnnotation())
+                        } else {
+                            boxed
+                        }
 
                     var canUseWildcardType = false
                     if (useWildcardType) {
@@ -106,10 +112,10 @@ class TypeUtils(
 
                     val parameterizedTypeName =
                         if (canUseWildcardType) {
-                            val wildcardTypeName: WildcardTypeName = WildcardTypeName.subtypeOf(boxed)
+                            val wildcardTypeName: WildcardTypeName = WildcardTypeName.subtypeOf(possiblyAnnotatedType)
                             ParameterizedTypeName.get(ClassName.get(List::class.java), wildcardTypeName)
                         } else {
-                            ParameterizedTypeName.get(ClassName.get(List::class.java), boxed)
+                            ParameterizedTypeName.get(ClassName.get(List::class.java), possiblyAnnotatedType)
                         }
                     context.setAccumulate(parameterizedTypeName)
                     return TraversalControl.CONTINUE

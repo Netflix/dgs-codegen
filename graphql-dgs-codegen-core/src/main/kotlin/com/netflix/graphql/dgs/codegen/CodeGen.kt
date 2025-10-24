@@ -559,6 +559,7 @@ class CodeGenConfig(
     var disableDatesInGeneratedAnnotation: Boolean = false,
     var addDeprecatedAnnotation: Boolean = false,
     var trackInputFieldSet: Boolean = false,
+    var generateJSpecifyAnnotations: Boolean = false,
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 

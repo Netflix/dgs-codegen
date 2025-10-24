@@ -121,13 +121,19 @@ class DataTypeGenerator(
                     .filterSkipped()
                     .filter { it.name !in fieldsFromSuperTypes }
                     .map {
-                        Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true))
+                        Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true), it.type !is NonNullType)
                     }.plus(
                         extensions
                             .asSequence()
                             .flatMap { it.fieldDefinitions }
                             .filterSkipped()
-                            .map { Field(it.name, typeUtils.findReturnType(it.type, useInterfaceType, true)) },
+                            .map {
+                                Field(
+                                    it.name,
+                                    typeUtils.findReturnType(it.type, useInterfaceType, true),
+                                    it.type !is NonNullType,
+                                )
+                            },
                     ).toList()
 
             val interfaceName = "I$name"
@@ -145,6 +151,7 @@ class DataTypeGenerator(
                         Field(
                             it.name,
                             typeUtils.findReturnType(it.type, useInterfaceType, true),
+                            it.type !is NonNullType,
                             overrideGetter = overrideGetter,
                             description = it.description,
                             directives = it.directives,
@@ -154,6 +161,7 @@ class DataTypeGenerator(
                             Field(
                                 it.name,
                                 typeUtils.findReturnType(it.type, useInterfaceType, true),
+                                it.type !is NonNullType,
                                 overrideGetter = overrideGetter,
                                 description = it.description,
                                 directives = it.directives,
@@ -204,13 +212,18 @@ class InputTypeGenerator(
                     Field(
                         name = it.name,
                         type = type,
+                        nullable = it.type !is NonNullType,
                         initialValue = defaultValue,
                         description = it.description,
                         directives = it.directives,
                         trackFieldSet = config.trackInputFieldSet && !type.isPrimitive && it.type !is NonNullType,
                     )
                 }.plus(
-                    extensions.asSequence().flatMap { it.inputValueDefinitions }.map { Field(it.name, typeUtils.findReturnType(it.type)) },
+                    extensions
+                        .asSequence()
+                        .flatMap {
+                            it.inputValueDefinitions
+                        }.map { Field(it.name, typeUtils.findReturnType(it.type), it.type !is NonNullType) },
                 ).toList()
         return generate(name, emptyList(), fieldDefinitions, definition.description, definition.directives)
     }
@@ -340,6 +353,7 @@ class InputTypeGenerator(
 internal data class Field(
     val name: String,
     val type: JavaTypeName,
+    val nullable: Boolean,
     val initialValue: CodeBlock? = null,
     val overrideGetter: Boolean = false,
     val interfaceType: com.squareup.javapoet.TypeName? = null,
@@ -353,6 +367,10 @@ abstract class BaseDataTypeGenerator(
     internal val config: CodeGenConfig,
     internal val document: Document,
 ) {
+    companion object {
+        private val logger: Logger = LoggerFactory.getLogger(BaseDataTypeGenerator::class.java)
+    }
+
     internal val typeUtils = TypeUtils(packageName, config, document)
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
 
@@ -363,6 +381,15 @@ abstract class BaseDataTypeGenerator(
         description: Description? = null,
         directives: List<Directive> = emptyList(),
     ): CodeGenResult {
+        // Log warning if JSpecify is enabled and some fields use trackFieldSet
+        if (config.generateJSpecifyAnnotations && fields.any { it.trackFieldSet }) {
+            logger.warn(
+                "Type '{}' has field tracking enabled (trackInputFieldSet=true). " +
+                    "JSpecify annotations are skipped on these fields (which are wrapped in Optional<T>) but are still applied to public API methods.",
+                name,
+            )
+        }
+
         val javaType =
             TypeSpec
                 .classBuilder(name)
@@ -371,6 +398,10 @@ abstract class BaseDataTypeGenerator(
 
         if (config.implementSerializable) {
             javaType.addSuperinterface(Serializable::class.java)
+        }
+
+        if (config.generateJSpecifyAnnotations) {
+            javaType.addAnnotation(jspecifyNullMarkedAnnotation())
         }
 
         if (description != null) {
@@ -396,10 +427,17 @@ abstract class BaseDataTypeGenerator(
         }
 
         fields.forEach {
-            addField(it, javaType)
+            addField(it, javaType, true)
+            addGetterAndSetter(it, javaType)
         }
 
-        addDefaultConstructor(javaType)
+        if (config.generateJSpecifyAnnotations) {
+            // Since JSpecify annotations are enabled, add a private no-arg constructor
+            // only for the Builder to access
+            addDefaultConstructor(javaType, false)
+        } else {
+            addDefaultConstructor(javaType, true)
+        }
 
         if (config.javaGenerateAllConstructor && fields.isNotEmpty() && fields.size < 256) {
             addParameterizedConstructor(fields, javaType)
@@ -409,7 +447,7 @@ abstract class BaseDataTypeGenerator(
 
         addEquals(javaType)
         addHashcode(javaType)
-        addBuilder(javaType)
+        addBuilder(name, fields, javaType)
 
         val javaFile = JavaFile.builder(packageName, javaType.build()).build()
 
@@ -533,6 +571,11 @@ abstract class BaseDataTypeGenerator(
         for (fieldDefinition in fieldDefinitions) {
             val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
             val parameterBuilder = ParameterSpec.builder(fieldDefinition.type, sanitizedName)
+
+            if (config.generateJSpecifyAnnotations && fieldDefinition.nullable) {
+                parameterBuilder.addAnnotation(jspecifyNullableAnnotation())
+            }
+
             if (fieldDefinition.directives.isNotEmpty()) {
                 val (annotations, _) = applyDirectivesJava(fieldDefinition.directives, config)
                 val parameterAnnotations = annotations[SiteTarget.PARAM.name]
@@ -552,8 +595,17 @@ abstract class BaseDataTypeGenerator(
         javaType.addMethod(constructorBuilder.build())
     }
 
-    private fun addDefaultConstructor(javaType: TypeSpec.Builder) {
-        javaType.addMethod(MethodSpec.constructorBuilder().addModifiers(Modifier.PUBLIC).build())
+    private fun addDefaultConstructor(
+        javaType: TypeSpec.Builder,
+        visible: Boolean,
+    ) {
+        val visbilityModifier =
+            if (visible) {
+                Modifier.PUBLIC
+            } else {
+                Modifier.PRIVATE
+            }
+        javaType.addMethod(MethodSpec.constructorBuilder().addModifiers(visbilityModifier).build())
     }
 
     private fun addInterface(
@@ -576,24 +628,27 @@ abstract class BaseDataTypeGenerator(
     private fun addField(
         fieldDefinition: Field,
         javaType: TypeSpec.Builder,
-    ) {
-        addFieldWithGetterAndSetter(fieldDefinition.type, fieldDefinition, javaType)
-    }
-
-    private fun addFieldWithGetterAndSetter(
-        returnType: JavaTypeName,
-        fieldDefinition: Field,
-        javaType: TypeSpec.Builder,
+        annotateField: Boolean,
     ) {
         var fieldType = fieldDefinition.type
         if (fieldDefinition.trackFieldSet) {
             fieldType = ParameterizedTypeName.get(ClassName.get(Optional::class.java), fieldType)
         }
 
+        val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
         val fieldBuilder =
             FieldSpec
-                .builder(fieldType, javaReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+                .builder(fieldType, sanitizedName)
                 .addModifiers(Modifier.PRIVATE)
+
+        // Skip JSpecify annotations on fields when trackFieldSet is true, as the field
+        // is wrapped in Optional<T> which makes nullability annotations semantically unclear.
+        // Public API (getters/setters/constructors) are still properly annotated.
+        // TODO: Consider alternative approaches if combining these features is needed.
+        if (annotateField && config.generateJSpecifyAnnotations && !fieldDefinition.trackFieldSet && fieldDefinition.nullable) {
+            fieldBuilder.addAnnotation(jspecifyNullableAnnotation())
+        }
+
         if (fieldDefinition.initialValue != null) {
             if (fieldDefinition.trackFieldSet) {
                 fieldBuilder.initializer("Optional.of(\$L)", fieldDefinition.initialValue)
@@ -606,6 +661,28 @@ abstract class BaseDataTypeGenerator(
             fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
 
+        if (fieldDefinition.directives.isNotEmpty()) {
+            val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
+            if (!comments.isNullOrBlank()) {
+                fieldBuilder.addJavadoc("\$L", comments)
+            }
+            for ((key, value) in annotations) {
+                when (SiteTarget.valueOf(key)) {
+                    SiteTarget.FIELD -> fieldBuilder.addAnnotations(value)
+                    SiteTarget.GET, SiteTarget.SET, SiteTarget.SETPARAM, SiteTarget.PARAM -> continue
+                    else -> fieldBuilder.addAnnotations(value)
+                }
+            }
+        }
+
+        javaType.addField(fieldBuilder.build())
+    }
+
+    private fun addGetterAndSetter(
+        fieldDefinition: Field,
+        javaType: TypeSpec.Builder,
+    ) {
+        val returnType = fieldDefinition.type
         val getterPrefix =
             if (returnType == com.squareup.javapoet.TypeName.BOOLEAN &&
                 config.generateIsGetterForPrimitiveBooleanFields
@@ -621,6 +698,11 @@ abstract class BaseDataTypeGenerator(
             )
 
         val getterMethodBuilder = MethodSpec.methodBuilder(getterName).addModifiers(Modifier.PUBLIC).returns(returnType)
+
+        if (config.generateJSpecifyAnnotations && fieldDefinition.nullable) {
+            getterMethodBuilder.addAnnotation(jspecifyNullableAnnotation())
+        }
+
         val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
         if (fieldDefinition.trackFieldSet) {
             getterMethodBuilder.addStatement("return \$N == null ? null : \$N.orElse(null)", sanitizedName, sanitizedName)
@@ -641,16 +723,30 @@ abstract class BaseDataTypeGenerator(
                 TypeUtils.SET_CLASS,
             )
         val parameterBuilder = ParameterSpec.builder(returnType, javaReservedKeywordSanitizer.sanitize(fieldDefinition.name))
+
+        if (config.generateJSpecifyAnnotations && fieldDefinition.nullable) {
+            parameterBuilder.addAnnotation(jspecifyNullableAnnotation())
+        }
+
         val setterMethodBuilder =
             MethodSpec
                 .methodBuilder(setterName)
                 .addModifiers(Modifier.PUBLIC)
+
         if (fieldDefinition.trackFieldSet) {
-            setterMethodBuilder.addStatement(
-                "this.\$N = Optional.ofNullable(\$N)",
-                sanitizedName,
-                sanitizedName,
-            )
+            if (fieldDefinition.nullable) {
+                setterMethodBuilder.addStatement(
+                    "this.\$N = Optional.ofNullable(\$N)",
+                    sanitizedName,
+                    sanitizedName,
+                )
+            } else {
+                setterMethodBuilder.addStatement(
+                    "this.\$N = Optional.of(\$N)",
+                    sanitizedName,
+                    sanitizedName,
+                )
+            }
         } else {
             setterMethodBuilder.addStatement(
                 "this.\$N = \$N",
@@ -660,24 +756,18 @@ abstract class BaseDataTypeGenerator(
         }
 
         if (fieldDefinition.directives.isNotEmpty()) {
-            val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
-            if (!comments.isNullOrBlank()) {
-                fieldBuilder.addJavadoc("\$L", comments)
-            }
+            val (annotations, _) = applyDirectivesJava(fieldDefinition.directives, config)
             for ((key, value) in annotations) {
                 when (SiteTarget.valueOf(key)) {
-                    SiteTarget.FIELD -> fieldBuilder.addAnnotations(value)
                     SiteTarget.GET -> getterMethodBuilder.addAnnotations(value)
                     SiteTarget.SET -> setterMethodBuilder.addAnnotations(value)
                     SiteTarget.SETPARAM -> parameterBuilder.addAnnotations(value)
-                    SiteTarget.PARAM -> continue
-                    else -> fieldBuilder.addAnnotations(value)
+                    else -> continue
                 }
             }
         }
         setterMethodBuilder.addParameter(parameterBuilder.build())
 
-        javaType.addField(fieldBuilder.build())
         javaType.addMethod(getterMethodBuilder.build())
         javaType.addMethod(setterMethodBuilder.build())
         if (fieldDefinition.trackFieldSet) {
@@ -706,18 +796,24 @@ abstract class BaseDataTypeGenerator(
     ) {
         val getterPrefix = if (returnType == JavaTypeName.BOOLEAN && config.generateIsGetterForPrimitiveBooleanFields) "is" else "get"
         val getterName = "${getterPrefix}${fieldDefinition.name[0].uppercase()}${fieldDefinition.name.substring(1)}"
-        javaType.addMethod(
+        val methodBuilder =
             MethodSpec
                 .methodBuilder(getterName)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(returnType)
-                .build(),
-        )
+
+        if (config.generateJSpecifyAnnotations && fieldDefinition.nullable) {
+            methodBuilder.addAnnotation(jspecifyNullableAnnotation())
+        }
+
+        javaType.addMethod(methodBuilder.build())
     }
 
-    private fun addBuilder(javaType: TypeSpec.Builder) {
-        val builtType = javaType.build()
-        val name = builtType.name
+    private fun addBuilder(
+        name: String,
+        fieldDefinitions: List<Field>,
+        javaType: TypeSpec.Builder,
+    ) {
         val className = ClassName.get(packageName, name)
 
         val buildMethod =
@@ -726,10 +822,6 @@ abstract class BaseDataTypeGenerator(
                 .addModifiers(Modifier.PUBLIC)
                 .returns(className)
                 .addStatement("\$T result = new \$T()", className, className)
-        for (fieldSpec in builtType.fieldSpecs) {
-            buildMethod.addStatement("result.\$N = this.\$N", fieldSpec.name, fieldSpec.name)
-        }
-        buildMethod.addStatement("return result")
 
         val builderClassName = className.nestedClass("Builder")
         val newBuilderMethod =
@@ -747,34 +839,75 @@ abstract class BaseDataTypeGenerator(
                 .classBuilder(builderClassName)
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                .addMethod(buildMethod.build())
 
-        builtType.fieldSpecs.forEach {
-            var originalType = it.type
-            var isOptional = false
-            if (originalType is ParameterizedTypeName && originalType.rawType == ClassName.get(Optional::class.java)) {
-                originalType = originalType.typeArguments.first()
-                isOptional = true
-            }
-            builderType.addField(it)
-            val methodBuilder =
-                MethodSpec
-                    .methodBuilder(it.name)
-                    .addJavadoc(it.javadoc)
-                    .returns(builderClassName)
-            if (isOptional) {
-                methodBuilder.addStatement("this.\$N = Optional.ofNullable(\$N)", it.name, it.name)
+        for (fieldDefinition in fieldDefinitions) {
+            val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
+
+            if (config.generateJSpecifyAnnotations && !fieldDefinition.nullable) {
+                // Wrap non-nullable field assignments in Objects.requireNonNull for runtime validation
+                buildMethod.addStatement(
+                    "result.\$N = \$T.requireNonNull(this.\$N, \$S)",
+                    sanitizedName,
+                    Objects::class.java,
+                    sanitizedName,
+                    "$sanitizedName cannot be null",
+                )
             } else {
-                methodBuilder.addStatement("this.\$N = \$N", it.name, it.name)
+                // Direct assignment for nullable fields or when JSpecify is disabled
+                buildMethod.addStatement("result.\$N = this.\$N", sanitizedName, sanitizedName)
             }
-            methodBuilder
-                .addStatement("return this")
-                .addParameter(ParameterSpec.builder(originalType, it.name).build())
-                .addModifiers(Modifier.PUBLIC)
+        }
 
-            builderType.addMethod(methodBuilder.build())
+        buildMethod.addStatement("return result")
+        builderType.addMethod(buildMethod.build())
+
+        for (fieldDefinition in fieldDefinitions) {
+            addField(fieldDefinition.copy(nullable = true), builderType, true)
+            addBuilderMethod(fieldDefinition, builderType, builderClassName)
         }
 
         javaType.addType(builderType.build())
+    }
+
+    private fun addBuilderMethod(
+        fieldDefinition: Field,
+        builderType: TypeSpec.Builder,
+        builderClassName: ClassName,
+    ) {
+        val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
+        val methodBuilder =
+            MethodSpec
+                .methodBuilder(sanitizedName)
+                .addModifiers(Modifier.PUBLIC)
+                .returns(builderClassName)
+
+        if (fieldDefinition.description != null) {
+            methodBuilder.addJavadoc("\$L", fieldDefinition.description.content)
+        }
+
+        if (fieldDefinition.trackFieldSet) {
+            methodBuilder.addStatement(
+                "this.\$N = Optional.ofNullable(\$N)",
+                sanitizedName,
+                sanitizedName,
+            )
+        } else {
+            methodBuilder.addStatement(
+                "this.\$N = \$N",
+                sanitizedName,
+                sanitizedName,
+            )
+        }
+
+        methodBuilder.addStatement("return this")
+
+        val parameterBuilder = ParameterSpec.builder(fieldDefinition.type, sanitizedName)
+        if (config.generateJSpecifyAnnotations && fieldDefinition.nullable) {
+            parameterBuilder.addAnnotation(jspecifyNullableAnnotation())
+        }
+
+        methodBuilder.addParameter(parameterBuilder.build())
+
+        builderType.addMethod(methodBuilder.build())
     }
 }
