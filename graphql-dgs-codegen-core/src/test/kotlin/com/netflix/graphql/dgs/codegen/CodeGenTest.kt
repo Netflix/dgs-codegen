@@ -5922,7 +5922,7 @@ It takes a title and such.
 
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
-    fun `Should skip default value when string literal is used for non-String scalar type`(trackInputFieldSet: Boolean) {
+    fun `The default value for URI should be overridden and wrapped`(trackInputFieldSet: Boolean) {
         val schema =
             """
             input Movie {
@@ -5969,10 +5969,11 @@ It takes a title and such.
         assertThat(uriField).isNotNull
         if (trackInputFieldSet) {
             assertThat(uriField!!.type.toString()).isEqualTo("java.util.Optional<java.net.URI>")
+            assertThat(uriField.initializer.toString()).isEqualTo("Optional.of(java.net.URI.create(\"https://someurl.com\"))")
         } else {
             assertThat(uriField!!.type.toString()).isEqualTo("java.net.URI")
+            assertThat(uriField.initializer.toString()).isEqualTo("java.net.URI.create(\"https://someurl.com\")")
         }
-        assertThat(uriField.initializer.toString()).isEmpty()
 
         assertCompilesJava(dataTypes)
     }
@@ -6015,6 +6016,31 @@ It takes a title and such.
         assertThat(uriField.initializer.toString()).isEqualTo("\"https://someurl.com\"")
 
         assertCompilesJava(dataTypes)
+    }
+
+    @Test
+    fun `Should throw error when default URI is not valid`() {
+        val schema =
+            """
+            input Movie {
+                uri: Uri = "https: //someurl.com"
+            }
+            """.trimIndent()
+
+        val exception =
+            assertThrows<IllegalStateException> {
+                CodeGen(
+                    CodeGenConfig(
+                        schemas = setOf(schema),
+                        packageName = BASE_PACKAGE_NAME,
+                        typeMapping =
+                            mapOf(
+                                "Uri" to "java.net.URI",
+                            ),
+                    ),
+                ).generate()
+            }
+        assertThat(exception.message).isEqualTo("java.net.URI cannot be created from invalid URI string: https: //someurl.com")
     }
 
     @ParameterizedTest
