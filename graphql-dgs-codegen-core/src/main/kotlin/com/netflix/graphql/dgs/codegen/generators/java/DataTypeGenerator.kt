@@ -53,6 +53,7 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import java.io.Serializable
 import java.math.BigDecimal
+import java.net.URI
 import java.util.Arrays
 import java.util.Collections
 import java.util.Currency
@@ -186,6 +187,7 @@ class InputTypeGenerator(
         private val BIG_DECIMAL: ClassName = ClassName.get(BigDecimal::class.java)
         private val CURRENCY: ClassName = ClassName.get(Currency::class.java)
         private val LOCALE: ClassName = ClassName.get(Locale::class.java)
+        private val JAVA_URI: ClassName = ClassName.get(URI::class.java)
     }
 
     fun generate(
@@ -237,6 +239,7 @@ class InputTypeGenerator(
             BIG_DECIMAL -> bigDecimalCodeBlock(value, type)
             CURRENCY -> currencyCodeBlock(value, type)
             LOCALE -> localeCodeBlock(value, type)
+            JAVA_URI -> uriCodeBlock(value, type)
             ClassName.LONG.box() -> longCodeBlock(value, type)
             else -> defaultCodeBlock(value, type, inputTypeDefinitions)
         }
@@ -331,6 +334,20 @@ class InputTypeGenerator(
     ): CodeBlock {
         check(value is StringValue) { "$type cannot be created from $value, expected String value" }
         return CodeBlock.of("\$T.forLanguageTag(\$S)", LOCALE, value.value)
+    }
+
+    private fun uriCodeBlock(
+        value: Value<out Value<*>>,
+        type: JavaTypeName,
+    ): CodeBlock {
+        check(value is StringValue) { "$type cannot be created from $value, expected String value" }
+        // Validate URI string
+        try {
+            URI.create(value.value)
+        } catch (e: IllegalArgumentException) {
+            error("$type cannot be created from invalid URI string: ${value.value}")
+        }
+        return CodeBlock.of("\$T.create(\$S)", JAVA_URI, value.value)
     }
 
     private fun longCodeBlock(
