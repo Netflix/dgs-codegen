@@ -64,32 +64,36 @@ class KotlinInterfaceTypeGenerator(
 
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
-        mergedFieldDefinitions.filterSkipped().forEach { field ->
-            val returnType = typeUtils.findReturnType(field.type)
-            val nullableType = if (typeUtils.isNullable(field.type)) returnType.copy(nullable = true) else returnType
-            val propertySpec = PropertySpec.builder(field.name, nullableType)
-            if (field.description != null) {
-                propertySpec.addKdoc("%L", field.description.sanitizeKdoc())
-            }
-
-            if (definition.implements.isNotEmpty()) {
-                val superInterfaceFields =
-                    document
-                        .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
-                        .filter {
-                            superInterfacesNames(definition).contains(it.name)
-                        }.asSequence()
-                        .flatMap { it.fieldDefinitions }
-                        .map { it.name }
-                        .toSet()
-
-                if (field.name in superInterfaceFields) {
-                    propertySpec.addModifiers(KModifier.OVERRIDE)
+        mergedFieldDefinitions
+            .filterSkipped()
+            .filter(ReservedKeywordFilter.filterInvalidNames)
+            .forEach { field ->
+                val returnType = typeUtils.findReturnType(field.type)
+                val nullableType = if (typeUtils.isNullable(field.type)) returnType.copy(nullable = true) else returnType
+                val kotlinName = sanitizeKotlinIdentifier(field.name)
+                val propertySpec = PropertySpec.builder(kotlinName, nullableType)
+                if (field.description != null) {
+                    propertySpec.addKdoc("%L", field.description.sanitizeKdoc())
                 }
-            }
 
-            interfaceBuilder.addProperty(propertySpec.build())
-        }
+                if (definition.implements.isNotEmpty()) {
+                    val superInterfaceFields =
+                        document
+                            .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+                            .filter {
+                                superInterfacesNames(definition).contains(it.name)
+                            }.asSequence()
+                            .flatMap { it.fieldDefinitions }
+                            .map { it.name }
+                            .toSet()
+
+                    if (field.name in superInterfaceFields) {
+                        propertySpec.addModifiers(KModifier.OVERRIDE)
+                    }
+                }
+
+                interfaceBuilder.addProperty(propertySpec.build())
+            }
 
         val implementations =
             document

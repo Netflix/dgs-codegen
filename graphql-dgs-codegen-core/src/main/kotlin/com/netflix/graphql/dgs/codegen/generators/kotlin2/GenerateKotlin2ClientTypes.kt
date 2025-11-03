@@ -24,6 +24,7 @@ import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
+import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.collectAllFieldDefinitions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
@@ -82,6 +83,8 @@ fun generateKotlin2ClientTypes(
                         .filter(ReservedKeywordFilter.filterInvalidNames)
                         .map { field ->
 
+                            val kotlinName = sanitizeKotlinIdentifier(field.name)
+
                             val isScalar = typeLookup.isScalar(field.type)
                             val hasArgs = field.inputValueDefinitions.isNotEmpty()
 
@@ -90,7 +93,7 @@ fun generateKotlin2ClientTypes(
                                 isScalar && !hasArgs -> {
                                     PropertySpec
                                         .builder(
-                                            name = field.name,
+                                            name = kotlinName,
                                             type = typeName,
                                         ).getter(
                                             FunSpec
@@ -104,13 +107,16 @@ fun generateKotlin2ClientTypes(
                                 // scalars with args are functions to take the args with no projection
                                 isScalar && hasArgs -> {
                                     FunSpec
-                                        .builder(field.name)
+                                        .builder(kotlinName)
                                         .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
                                         .returns(typeName)
                                         .addCode(
                                             field.inputValueDefinitions.let { iv ->
                                                 val builder = CodeBlock.builder().add("field(%S", field.name)
-                                                iv.forEach { d -> builder.add(", %S to %N", d.name, d.name) }
+                                                iv.forEach { d ->
+                                                    val argName = sanitizeKotlinIdentifier(d.name)
+                                                    builder.add(", %S to %N", d.name, argName)
+                                                }
                                                 builder.add(")\nreturn this").build()
                                             },
                                         ).build()
@@ -123,7 +129,7 @@ fun generateKotlin2ClientTypes(
                                     val (projectionType, projection) = projectionType(config.packageNameClient, projectionTypeName)
 
                                     FunSpec
-                                        .builder(field.name)
+                                        .builder(kotlinName)
                                         .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
                                         .addParameter(
                                             ParameterSpec
@@ -142,7 +148,10 @@ fun generateKotlin2ClientTypes(
                                                         field.name,
                                                         projectionType,
                                                     )
-                                                iv.forEach { d -> builder.add(", %S to %N", d.name, d.name) }
+                                                iv.forEach { d ->
+                                                    val argName = sanitizeKotlinIdentifier(d.name)
+                                                    builder.add(", %S to %N", d.name, argName)
+                                                }
                                                 builder.add(")\nreturn this").build()
                                             },
                                         ).build()
@@ -288,8 +297,9 @@ private fun FunSpec.Builder.addInputArgs(
         .addParameters(
             inputValueDefinitions.map {
                 val returnType = typeLookup.findReturnType(config.packageNameTypes, it.type)
+                val kotlinName = sanitizeKotlinIdentifier(it.name)
                 ParameterSpec
-                    .builder(it.name, returnType)
+                    .builder(kotlinName, returnType)
                     .apply {
                         if (returnType.isNullable) {
                             defaultValue("default<%T, %T>(%S)", typeName, returnType, it.name)

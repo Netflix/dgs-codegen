@@ -68,12 +68,13 @@ class KotlinDataTypeGenerator(
                 .filter(ReservedKeywordFilter.filterInvalidNames)
                 .map {
                     Field(
-                        it.name,
-                        typeUtils.findReturnType(it.type),
-                        typeUtils.isNullable(it.type),
-                        null,
-                        it.description,
-                        it.directives,
+                        graphQLName = it.name,
+                        kotlinName = sanitizeKotlinIdentifier(it.name),
+                        type = typeUtils.findReturnType(it.type),
+                        nullable = typeUtils.isNullable(it.type),
+                        default = null,
+                        description = it.description,
+                        directives = it.directives,
                     )
                 } +
                 extensions
@@ -81,12 +82,13 @@ class KotlinDataTypeGenerator(
                     .filterSkipped()
                     .map {
                         Field(
-                            it.name,
-                            typeUtils.findReturnType(it.type),
-                            typeUtils.isNullable(it.type),
-                            null,
-                            it.description,
-                            it.directives,
+                            graphQLName = it.name,
+                            kotlinName = sanitizeKotlinIdentifier(it.name),
+                            type = typeUtils.findReturnType(it.type),
+                            nullable = typeUtils.isNullable(it.type),
+                            default = null,
+                            description = it.description,
+                            directives = it.directives,
                         )
                     }
         val interfaces = definition.implements + extensions.flatMap { it.implements }
@@ -128,7 +130,8 @@ class KotlinInputTypeGenerator(
                             )
                         }
                     Field(
-                        name = it.name,
+                        graphQLName = it.name,
+                        kotlinName = sanitizeKotlinIdentifier(it.name),
                         type = typeUtils.findReturnType(it.type),
                         nullable = it.type !is NonNullType,
                         default = defaultValue,
@@ -138,7 +141,8 @@ class KotlinInputTypeGenerator(
                 }.plus(
                     extensions.flatMap { it.inputValueDefinitions }.map {
                         Field(
-                            name = it.name,
+                            graphQLName = it.name,
+                            kotlinName = sanitizeKotlinIdentifier(it.name),
                             type = typeUtils.findReturnType(it.type),
                             nullable = it.type !is NonNullType,
                             default = null,
@@ -153,7 +157,8 @@ class KotlinInputTypeGenerator(
 }
 
 internal data class Field(
-    val name: String,
+    val graphQLName: String,
+    val kotlinName: String,
     val type: KtTypeName,
     val nullable: Boolean,
     val default: CodeBlock? = null,
@@ -209,8 +214,8 @@ abstract class AbstractKotlinDataTypeGenerator(
 
             val parameterSpec =
                 ParameterSpec
-                    .builder(field.name, returnType)
-                    .addAnnotation(jsonPropertyAnnotation(field.name))
+                    .builder(field.kotlinName, returnType)
+                    .addAnnotation(jsonPropertyAnnotation(field.graphQLName))
 
             if (field.directives.isNotEmpty()) {
                 parameterSpec.addAnnotations(applyDirectivesKotlin(field.directives, config))
@@ -234,12 +239,12 @@ abstract class AbstractKotlinDataTypeGenerator(
 
         fields.forEach { field ->
             val returnType = if (field.nullable) field.type.copy(nullable = true) else field.type
-            val propertySpecBuilder = PropertySpec.builder(field.name, returnType)
+            val propertySpecBuilder = PropertySpec.builder(field.kotlinName, returnType)
 
             if (field.description != null) {
                 propertySpecBuilder.addKdoc("%L", field.description.sanitizeKdoc())
             }
-            propertySpecBuilder.initializer(field.name)
+            propertySpecBuilder.initializer(field.kotlinName)
 
             val interfaceNames =
                 interfaces
@@ -256,7 +261,7 @@ abstract class AbstractKotlinDataTypeGenerator(
                     .map { it.name }
                     .toSet()
 
-            if (field.name in interfaceFields) {
+            if (field.graphQLName in interfaceFields) {
                 // Properties are the syntactical element that will allow us to override things, they are the spec on
                 // which we should add the override modifier.
                 propertySpecBuilder.addModifiers(KModifier.OVERRIDE)

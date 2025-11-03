@@ -198,6 +198,55 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateTypesWithUnderscoreField() {
+        val schema =
+            """
+            interface MyInterface {
+                _: ID
+            }
+
+            type MyInterfaceImpl implements MyInterface {
+                _: ID
+            }
+
+            type Query {
+                impl: MyInterfaceImpl
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    generateDataTypes = true,
+                ),
+            ).generate()
+
+        val interfaceSpec = codeGenResult.kotlinInterfaces.first { it.name == "MyInterface" }
+        val interfaceType = interfaceSpec.members.filterIsInstance<TypeSpec>().first { it.name == "MyInterface" }
+        assertThat(interfaceType.propertySpecs.map { it.name }).contains("underscoreField_")
+
+        val dataSpec = codeGenResult.kotlinDataTypes.first { it.name == "MyInterfaceImpl" }
+        val dataType = dataSpec.members.filterIsInstance<TypeSpec>().first { it.name == "MyInterfaceImpl" }
+        assertThat(dataType.propertySpecs.map { it.name }).contains("underscoreField_")
+
+        val constructorParam = dataType.primaryConstructor?.parameters?.first { it.name == "underscoreField_" }
+        assertThat(constructorParam).isNotNull
+
+        val jsonPropertyAnnotation =
+            constructorParam!!.annotations.firstOrNull {
+                it.typeName == ClassName("com.fasterxml.jackson.annotation", "JsonProperty")
+            }
+        assertThat(jsonPropertyAnnotation).isNotNull
+        assertThat(jsonPropertyAnnotation!!.members).isNotEmpty
+        assertThat(jsonPropertyAnnotation.members[0].toString()).isEqualTo("\"_\"")
+
+        assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
     fun `non nullable primitive, but with kotlinAllFieldsOptional setting`() {
         val schema =
             """

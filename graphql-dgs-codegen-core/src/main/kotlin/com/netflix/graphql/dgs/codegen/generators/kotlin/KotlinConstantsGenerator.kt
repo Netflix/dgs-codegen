@@ -213,9 +213,10 @@ class KotlinConstantsGenerator(
         constantsType: TypeSpec.Builder,
         name: String,
     ) {
+        val kotlinName = sanitizeKotlinIdentifier(name)
         constantsType.addProperty(
             PropertySpec
-                .builder(name.capitalized(), String::class)
+                .builder(kotlinName.capitalized(), String::class)
                 .addModifiers(KModifier.CONST)
                 .initializer(""""$name"""")
                 .build(),

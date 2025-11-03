@@ -46,6 +46,14 @@ import graphql.language.StringValue
 import graphql.language.Value
 import java.lang.IllegalArgumentException
 
+private val kotlinReservedKeywordSanitizer = KotlinReservedKeywordSanitizer()
+
+fun sanitizeKotlinIdentifier(name: String): String =
+    when {
+        name == "_" -> "underscoreField_"
+        else -> kotlinReservedKeywordSanitizer.sanitize(name)
+    }
+
 /**
  * Generate a [JsonTypeInfo] annotation, which allows for Jackson
  * polymorphic type handling when deserializing from JSON.

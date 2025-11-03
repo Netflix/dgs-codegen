@@ -20,11 +20,13 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.filterSkipped
+import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonSubTypesAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonTypeInfoAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
+import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
@@ -80,6 +82,7 @@ fun generateKotlin2Interfaces(
                         .plus(extensionTypes)
                         .flatMap { it.fieldDefinitions }
                         .filterSkipped()
+                        .filter(ReservedKeywordFilter.filterInvalidNames)
 
                 // get a list of fields to override
                 val overrideFields = typeLookup.overrideFields(implementedInterfaces)
@@ -110,9 +113,10 @@ fun generateKotlin2Interfaces(
                         // add fields, overriding if needed
                         .addProperties(
                             fields.map { field ->
+                                val kotlinName = sanitizeKotlinIdentifier(field.name)
                                 PropertySpec
                                     .builder(
-                                        name = field.name,
+                                        name = kotlinName,
                                         type = typeLookup.findReturnType(config.packageNameTypes, field.type),
                                     ).apply {
                                         if (field.description != null) {
@@ -123,7 +127,7 @@ fun generateKotlin2Interfaces(
                                             addModifiers(KModifier.OVERRIDE)
                                         }
                                     }.addAnnotation(suppressInapplicableJvmNameAnnotation())
-                                    .addAnnotation(jvmNameAnnotation(field.name))
+                                    .addAnnotation(jvmNameAnnotation(kotlinName))
                                     .build()
                             },
                         ).build()
