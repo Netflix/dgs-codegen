@@ -77,11 +77,7 @@ class EntitiesRepresentationTypeGenerator(
                         )
                     ) {
                         val fieldTypeRepresentationName = toRepresentationName(type)
-                        val fieldRepresentationType =
-                            typeUtils
-                                .findReturnType(it.type)
-                                .toString()
-                                .replace(type.name, fieldTypeRepresentationName)
+                        val fieldRepresentationType = typeUtils.qualifyName(fieldTypeRepresentationName)
 
                         if (generatedRepresentations.containsKey(fieldTypeRepresentationName)) {
                             logger.trace("Representation for {} was already generated.", fieldTypeRepresentationName)
