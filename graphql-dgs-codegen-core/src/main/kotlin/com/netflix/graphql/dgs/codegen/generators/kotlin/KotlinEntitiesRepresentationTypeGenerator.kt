@@ -80,11 +80,7 @@ class KotlinEntitiesRepresentationTypeGenerator(
                     ) {
                         val fieldType = typeUtils.findReturnType(it.type)
                         val fieldTypeRepresentationName = toRepresentationName(type)
-                        val fieldRepresentationType =
-                            fieldType
-                                .toString()
-                                .replace(type.name, fieldTypeRepresentationName)
-                                .removeSuffix("?")
+                        val fieldRepresentationType = typeUtils.qualifyName(fieldTypeRepresentationName)
 
                         if (generatedRepresentations.containsKey(fieldTypeRepresentationName)) {
                             logger.trace("Representation for {} was already generated.", fieldTypeRepresentationName)

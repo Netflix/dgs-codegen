@@ -92,6 +92,7 @@ class DataTypeGenerator(
                         .map { it as TypeName }
                         .any { it.name == name }
                 }.map { it.name }
+                .distinct()
                 .toList()
 
         var implements =

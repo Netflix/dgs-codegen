@@ -191,6 +191,8 @@ class CodeGen(
      * the schema information for the parser.
      */
     private fun loadSchemaReaders(vararg readerBuilders: MultiSourceReader.Builder) {
+        validateNoOverlappingPaths(config.schemaFiles)
+
         readerBuilders.forEach { rb ->
             val schemaFiles =
                 config.schemaFiles
@@ -205,6 +207,28 @@ class CodeGen(
             }
             for (schema in config.schemas) {
                 rb.string(schema, null)
+            }
+        }
+    }
+
+    /**
+     * Validates that there are no overlapping paths in the schema files to prevent duplicate loading.
+     * Throws an [IllegalArgumentException] if any path is an ancestor of another.
+     */
+    private fun validateNoOverlappingPaths(schemaFiles: Set<File>) {
+        val canonicalPaths = schemaFiles.map { it.canonicalFile }
+
+        for (i in canonicalPaths.indices) {
+            for (j in i + 1 until canonicalPaths.size) {
+                val path1 = canonicalPaths[i]
+                val path2 = canonicalPaths[j]
+
+                if (path1.startsWith(path2) || path2.startsWith(path1)) {
+                    val (parent, child) = if (path1.startsWith(path2)) path2 to path1 else path1 to path2
+                    logger.warn(
+                        "Schema path '$child' is a descendant of '$parent'. Remove one of these paths from your configuration to avoid loading duplicate schema files.",
+                    )
+                }
             }
         }
     }

@@ -583,6 +583,46 @@ class EntitiesClientApiGenTest {
         }
     }
 
+    @Test
+    fun `Entity representation types should use client package not type-mapped package`() {
+        val schema =
+            """
+            type Channel @key(fields: "id type") {
+                id: ID! @external
+                type: ChatType @external
+                name: String
+            }
+
+            enum ChatType {
+                PUBLIC
+                PRIVATE
+                DM
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                    generateDataTypes = false,
+                    typeMapping = mapOf("ChatType" to "com.external.types.ChatType"),
+                ),
+            ).generate()
+
+        val representations = codeGenResult.javaDataTypes.filter { "Representation" in it.typeSpec.name }
+        assertThat(representations).hasSize(2)
+
+        val channelRepresentation = representations.find { it.typeSpec.name == "ChannelRepresentation" }
+        assertThat(channelRepresentation).isNotNull
+
+        val typeField = channelRepresentation!!.typeSpec.fieldSpecs.find { it.name == "type" }
+        assertThat(typeField).isNotNull
+        assertThat(typeField!!.type.toString())
+            .isEqualTo("$BASE_PACKAGE_NAME.client.ChatTypeRepresentation")
+    }
+
     companion object {
         fun codeGen(schema: String): CodeGenResult =
             CodeGen(
