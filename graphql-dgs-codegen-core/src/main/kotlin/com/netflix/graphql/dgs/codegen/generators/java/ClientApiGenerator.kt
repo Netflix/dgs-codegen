@@ -681,9 +681,11 @@ class ClientApiGenerator(
     ): CodeGenResult =
         if (type is InterfaceTypeDefinition) {
             val concreteTypes =
-                document.getDefinitionsOfType(ObjectTypeDefinition::class.java).filter {
-                    it.implements.filterIsInstance<NamedNode<*>>().any { iface -> iface.name == type.name }
-                }
+                document
+                    .getDefinitionsOfType(ObjectTypeDefinition::class.java)
+                    .filter {
+                        it.implements.filterIsInstance<NamedNode<*>>().any { iface -> iface.name == type.name }
+                    }.distinctBy { it.name }
             concreteTypes
                 .map {
                     addFragmentProjectionMethod(javaType, root, it, processedEdges, queryDepth)
