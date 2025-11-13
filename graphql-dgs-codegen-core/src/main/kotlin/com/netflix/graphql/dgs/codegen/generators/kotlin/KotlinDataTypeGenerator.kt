@@ -266,12 +266,14 @@ abstract class AbstractKotlinDataTypeGenerator(
         }
 
         val unionTypes =
-            document.getDefinitionsOfType(UnionTypeDefinition::class.java).filter { union ->
-                union.memberTypes
-                    .asSequence()
-                    .map { it as TypeName }
-                    .any { it.name == name }
-            }
+            document
+                .getDefinitionsOfType(UnionTypeDefinition::class.java)
+                .filter { union ->
+                    union.memberTypes
+                        .asSequence()
+                        .map { it as TypeName }
+                        .any { it.name == name }
+                }.distinctBy { it.name }
 
         val interfaceTypes = interfaces + unionTypes
         interfaceTypes.forEach {
