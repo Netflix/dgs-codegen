@@ -387,6 +387,77 @@ class CodeGenTest {
         assertThat(setFloatyParameter.type).matches(jspecifyAnnotatedListField("Double", false))
     }
 
+    @Test
+    fun `When generateJSpecifyAnnotations is enabled with generateInterfaces, interfaces should have proper annotations`() {
+        val schema =
+            """
+            type Query {
+                search: [Result]
+            }
+
+            interface Result {
+                id: ID!
+                name: String
+                score: Int
+            }
+
+            type Movie implements Result {
+                id: ID!
+                name: String
+                score: Int
+                director: String!
+                rating: Float
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateInterfaces = true,
+                    generateJSpecifyAnnotations = true,
+                ),
+            ).generate()
+
+        // Verify the GraphQL interface (Result) has @NullMarked
+        val resultInterface =
+            codeGenResult.javaInterfaces.find { it.typeSpec.name == "Result" }
+                ?: Assertions.fail("Unable to find Result interface")
+        val resultInterfaceSpec = resultInterface.typeSpec
+
+        // GraphQL interface should have @NullMarked
+        assertThat(resultInterfaceSpec.annotations).matches(hasJspecifyNullMarkedAnnotation())
+
+        // Methods should have @Nullable only for nullable returns (non-null is default with @NullMarked)
+        val resultInterfaceMethodSpecs = resultInterfaceSpec.methodSpecs.associateBy { it.name }
+        assertThat(resultInterfaceMethodSpecs["getId"]!!.annotations).isEmpty() // non-null by default
+        assertThat(resultInterfaceMethodSpecs["getName"]!!.annotations).matches(hasJspecifyNullableAnnotation())
+        assertThat(resultInterfaceMethodSpecs["getScore"]!!.annotations).matches(hasJspecifyNullableAnnotation())
+
+        // Verify the concrete type interface (IMovie) has @NullMarked
+        val movieInterface =
+            codeGenResult.javaInterfaces.find { it.typeSpec.name == "IMovie" }
+                ?: Assertions.fail("Unable to find IMovie interface")
+        val movieInterfaceSpec = movieInterface.typeSpec
+
+        // Concrete type interface should have @NullMarked
+        assertThat(movieInterfaceSpec.annotations).matches(hasJspecifyNullMarkedAnnotation())
+
+        // IMovie should only have methods for fields not inherited from Result
+        val movieInterfaceMethodSpecs = movieInterfaceSpec.methodSpecs.associateBy { it.name }
+        assertThat(movieInterfaceMethodSpecs["getDirector"]!!.annotations).isEmpty() // non-null by default
+        assertThat(movieInterfaceMethodSpecs["getRating"]!!.annotations).matches(hasJspecifyNullableAnnotation())
+
+        // Verify the implementing type also has @NullMarked
+        val movieType =
+            codeGenResult.javaDataTypes.find { it.typeSpec.name == "Movie" }
+                ?: Assertions.fail("Unable to find Movie data type")
+        assertThat(movieType.typeSpec.annotations).matches(hasJspecifyNullMarkedAnnotation())
+
+        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaInterfaces)
+    }
+
     private fun hasJspecifyNullMarkedAnnotation(): (List<AnnotationSpec>) -> Boolean = hasJspecifyAnnotation("NullMarked")
 
     private fun hasJspecifyNullableAnnotation(): (List<AnnotationSpec>) -> Boolean = hasJspecifyAnnotation("Nullable")

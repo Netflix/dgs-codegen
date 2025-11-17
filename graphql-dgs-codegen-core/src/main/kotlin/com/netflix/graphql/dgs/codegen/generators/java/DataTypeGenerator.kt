@@ -483,6 +483,10 @@ abstract class BaseDataTypeGenerator(
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC)
 
+        if (config.generateJSpecifyAnnotations) {
+            javaType.addAnnotation(jspecifyNullMarkedAnnotation())
+        }
+
         superInterfaces.forEach {
             javaType.addSuperinterface(typeUtils.findJavaInterfaceName((it as TypeName).name, packageName))
         }

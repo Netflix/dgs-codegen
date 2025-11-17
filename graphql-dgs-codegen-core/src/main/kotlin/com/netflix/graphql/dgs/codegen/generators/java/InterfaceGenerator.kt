@@ -26,6 +26,7 @@ import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.javapoet.ClassName
 import com.squareup.javapoet.JavaFile
 import com.squareup.javapoet.MethodSpec
+import com.squareup.javapoet.ParameterSpec
 import com.squareup.javapoet.TypeSpec
 import graphql.language.*
 import org.slf4j.Logger
@@ -59,6 +60,10 @@ class InterfaceGenerator(
                 .interfaceBuilder(definition.name)
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC)
+
+        if (config.generateJSpecifyAnnotations) {
+            javaType.addAnnotation(jspecifyNullMarkedAnnotation())
+        }
 
         if (definition.description != null) {
             javaType.addJavadoc("\$L", definition.description.content)
@@ -162,18 +167,33 @@ class InterfaceGenerator(
         if (fieldDefinition.description != null) {
             getterBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
+
+        // Add @Nullable annotation for nullable return types when JSpecify is enabled
+        if (config.generateJSpecifyAnnotations && fieldDefinition.type !is NonNullType) {
+            getterBuilder.addAnnotation(jspecifyNullableAnnotation())
+        }
+
         javaType.addMethod(getterBuilder.build())
 
         // Only generate setters for non-interface-typed fields unless generateInterfaceMethodsForInterfaceFields is true
         if (config.generateInterfaceMethodsForInterfaceFields ||
             (config.generateInterfaceSetters && !isFieldAnInterface(fieldDefinition))
         ) {
+            val parameterBuilder =
+                ParameterSpec
+                    .builder(returnType, javaReservedKeywordSanitizer.sanitize(fieldName))
+
+            // Add @Nullable annotation for nullable parameters when JSpecify is enabled
+            if (config.generateJSpecifyAnnotations && fieldDefinition.type !is NonNullType) {
+                parameterBuilder.addAnnotation(jspecifyNullableAnnotation())
+            }
+
             val setterBuilder =
                 MethodSpec
                     .methodBuilder(
                         typeUtils.transformIfDefaultClassMethodExists("set${fieldName.capitalized()}", TypeUtils.Companion.SET_CLASS),
                     ).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
-                    .addParameter(returnType, javaReservedKeywordSanitizer.sanitize(fieldName))
+                    .addParameter(parameterBuilder.build())
 
             if (fieldDefinition.description != null) {
                 setterBuilder.addJavadoc("\$L", fieldDefinition.description.content)
