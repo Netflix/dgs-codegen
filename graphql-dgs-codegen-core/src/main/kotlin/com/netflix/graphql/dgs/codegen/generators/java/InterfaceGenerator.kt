@@ -165,8 +165,7 @@ class InterfaceGenerator(
         javaType.addMethod(getterBuilder.build())
 
         // Only generate setters for non-interface-typed fields unless generateInterfaceMethodsForInterfaceFields is true
-        if (config.generateInterfaceMethodsForInterfaceFields ||
-            (config.generateInterfaceSetters && !isFieldAnInterface(fieldDefinition))
+        if (config.generateInterfaceSetters && (config.generateInterfaceMethodsForInterfaceFields || !isFieldAnInterface(fieldDefinition))
         ) {
             val setterBuilder =
                 MethodSpec
