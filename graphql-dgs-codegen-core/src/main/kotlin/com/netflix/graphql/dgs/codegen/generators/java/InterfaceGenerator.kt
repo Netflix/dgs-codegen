@@ -73,7 +73,8 @@ class InterfaceGenerator(
         val mergedFieldDefinitions = definition.fieldDefinitions + extensions.flatMap { it.fieldDefinitions }
 
         mergedFieldDefinitions.filterSkipped().forEach {
-            // Generate getters/setters for fields that are not interfaces, and only getters for fields that are interfaces.
+            // Generate getters/setters for fields that are not interfaces, and only getters for fields that are interfaces
+            // unless generateInterfaceMethodsForInterfaceFields && generateInterfaceSetters.
             // Skip generating interface methods with list types where the inner type is an interface as Java does not
             // support overriding them with more specific types (i.e. List<Dog> does not override List<Pet>).
             //
@@ -164,7 +165,6 @@ class InterfaceGenerator(
         }
         javaType.addMethod(getterBuilder.build())
 
-        // Only generate setters for non-interface-typed fields unless generateInterfaceMethodsForInterfaceFields is true
         if (config.generateInterfaceSetters && (config.generateInterfaceMethodsForInterfaceFields || !isFieldAnInterface(fieldDefinition))
         ) {
             val setterBuilder =
