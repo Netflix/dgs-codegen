@@ -3811,6 +3811,99 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInterfaceMethodsForInterfaceFieldsAndNoInterfaceSetters() {
+        val schema =
+            """
+            interface Person {
+                name: String
+                age: Int
+                parents: [Person]!
+                friend: Person
+            }
+
+            interface Employee implements Person {
+                name: String
+                age: Int
+                parents: [Person]!
+                friend: Person
+            }
+
+            type Manager implements Employee {
+                name: String
+                age: Int
+                parents: [Person]!
+                friend: Person
+            }
+            """.trimIndent()
+
+        val (dataTypes, interfaces) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateInterfaceMethodsForInterfaceFields = true,
+                    generateInterfaceSetters = false,
+                ),
+            ).generate()
+
+        assertThat(interfaces).hasSize(2)
+
+        val person = interfaces.find { it.typeSpec.name == "Person" }!!
+        assertThat(person.toString()).isEqualTo(
+            """
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            |
+            |import java.lang.Integer;
+            |import java.lang.String;
+            |import java.util.List;
+            |
+            |public interface Person {
+            |  String getName();
+            |
+            |  Integer getAge();
+            |
+            |  List<Person> getParents();
+            |
+            |  Person getFriend();
+            |}
+            |
+            """.trimMargin(),
+        )
+
+        val employee = interfaces.find { it.typeSpec.name == "Employee" }!!
+        assertThat(employee.toString()).isEqualTo(
+            """
+            |package com.netflix.graphql.dgs.codegen.tests.generated.types;
+            |
+            |import com.fasterxml.jackson.annotation.JsonSubTypes;
+            |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+            |import java.lang.Integer;
+            |import java.lang.String;
+            |import java.util.List;
+            |
+            |@JsonTypeInfo(
+            |    use = JsonTypeInfo.Id.NAME,
+            |    include = JsonTypeInfo.As.PROPERTY,
+            |    property = "__typename"
+            |)
+            |@JsonSubTypes(@JsonSubTypes.Type(value = Manager.class, name = "Manager"))
+            |public interface Employee extends Person {
+            |  String getName();
+            |
+            |  Integer getAge();
+            |
+            |  List<Person> getParents();
+            |
+            |  Person getFriend();
+            |}
+            |
+            """.trimMargin(),
+        )
+
+        assertCompilesJava(dataTypes + interfaces)
+    }
+
+    @Test
     fun generateObjectTypeInterfaceWithInterfaceInheritance() {
         val schema =
             """
