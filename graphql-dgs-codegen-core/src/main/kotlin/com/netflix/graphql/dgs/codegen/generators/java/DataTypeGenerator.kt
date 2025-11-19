@@ -659,11 +659,7 @@ abstract class BaseDataTypeGenerator(
                 .builder(fieldType, sanitizedName)
                 .addModifiers(Modifier.PRIVATE)
 
-        // Skip JSpecify annotations on fields when trackFieldSet is true, as the field
-        // is wrapped in Optional<T> which makes nullability annotations semantically unclear.
-        // Public API (getters/setters/constructors) are still properly annotated.
-        // TODO: Consider alternative approaches if combining these features is needed.
-        if (annotateField && config.generateJSpecifyAnnotations && !fieldDefinition.trackFieldSet && fieldDefinition.nullable) {
+        if (config.generateJSpecifyAnnotations && annotateField && fieldDefinition.nullable) {
             fieldBuilder.addAnnotation(jspecifyNullableAnnotation())
         }
 
