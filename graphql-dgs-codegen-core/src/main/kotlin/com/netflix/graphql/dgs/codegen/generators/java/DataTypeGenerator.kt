@@ -675,6 +675,7 @@ abstract class BaseDataTypeGenerator(
             }
         }
 
+        fieldBuilder.addAnnotation(jsonPropertyAnnotation(fieldDefinition.name))
         if (fieldDefinition.description != null) {
             fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
