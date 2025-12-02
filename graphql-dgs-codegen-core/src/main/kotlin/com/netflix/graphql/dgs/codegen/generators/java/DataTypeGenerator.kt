@@ -860,20 +860,7 @@ abstract class BaseDataTypeGenerator(
 
         for (fieldDefinition in fieldDefinitions) {
             val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
-
-            if (config.generateJSpecifyAnnotations && !fieldDefinition.nullable) {
-                // Wrap non-nullable field assignments in Objects.requireNonNull for runtime validation
-                buildMethod.addStatement(
-                    "result.\$N = \$T.requireNonNull(this.\$N, \$S)",
-                    sanitizedName,
-                    Objects::class.java,
-                    sanitizedName,
-                    "$sanitizedName cannot be null",
-                )
-            } else {
-                // Direct assignment for nullable fields or when JSpecify is disabled
-                buildMethod.addStatement("result.\$N = this.\$N", sanitizedName, sanitizedName)
-            }
+            buildMethod.addStatement("result.\$N = this.\$N", sanitizedName, sanitizedName)
         }
 
         buildMethod.addStatement("return result")
