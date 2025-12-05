@@ -30,6 +30,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonIgnorePropertiesAnn
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonPropertyAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
+import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
@@ -56,6 +57,13 @@ import java.io.Serializable
 
 internal val logger: Logger = LoggerFactory.getLogger("com.netflix.graphql.dgs.codegen.generators.kotlin2")
 
+private data class KotlinFieldInfo(
+    val definition: FieldDefinition,
+    val kotlinName: String = sanitizeKotlinIdentifier(definition.name),
+) {
+    val graphQLName: String = definition.name
+}
+
 fun generateKotlin2DataTypes(
     config: CodeGenConfig,
     document: Document,
@@ -80,7 +88,7 @@ fun generateKotlin2DataTypes(
             val extensionTypes = findTypeExtensions(typeDefinition.name, document.definitions)
 
             // get all fields defined on the type itself or any extension types
-            val fields =
+            val fieldDefinitions =
                 sequenceOf(typeDefinition)
                     .plus(extensionTypes)
                     .flatMap { it.fieldDefinitions }
@@ -88,7 +96,9 @@ fun generateKotlin2DataTypes(
                     .filter(ReservedKeywordFilter.filterInvalidNames)
                     .toList()
 
-            fun type(field: FieldDefinition) = typeLookup.findReturnType(config.packageNameTypes, field.type)
+            val fields = fieldDefinitions.map(::KotlinFieldInfo)
+
+            fun type(field: KotlinFieldInfo) = typeLookup.findReturnType(config.packageNameTypes, field.definition.type)
 
             // get a list of fields to override
             val overrideFields = typeLookup.overrideFields(implementedInterfaces)
@@ -103,7 +113,7 @@ fun generateKotlin2DataTypes(
                         fields.map { field ->
                             PropertySpec
                                 .builder(
-                                    name = "${field.name}Default",
+                                    name = "${field.kotlinName}Default",
                                     type = LambdaTypeName.get(returnType = type(field)),
                                 ).addModifiers(KModifier.PRIVATE)
                                 .initializer(
@@ -111,7 +121,7 @@ fun generateKotlin2DataTypes(
                                         addStatement(
                                             "\n{ throw %T(%S) }",
                                             IllegalStateException::class,
-                                            "Field `${field.name}` was not requested",
+                                            "Field `${field.graphQLName}` was not requested",
                                         )
                                     },
                                 ).build()
@@ -131,11 +141,11 @@ fun generateKotlin2DataTypes(
                         fields.map { field ->
                             PropertySpec
                                 .builder(
-                                    name = field.name,
+                                    name = field.kotlinName,
                                     type = LambdaTypeName.get(returnType = type(field)),
                                 ).addModifiers(KModifier.PRIVATE)
                                 .mutable()
-                                .initializer("${field.name}Default")
+                                .initializer("${field.kotlinName}Default")
                                 .build()
                         },
                     )
@@ -143,11 +153,11 @@ fun generateKotlin2DataTypes(
                     .addFunctions(
                         fields.map { field ->
                             FunSpec
-                                .builder("with${field.name.capitalized()}")
-                                .addAnnotation(jsonPropertyAnnotation(field.name))
-                                .addParameter(field.name, type(field))
+                                .builder("with${field.kotlinName.capitalized()}")
+                                .addAnnotation(jsonPropertyAnnotation(field.graphQLName))
+                                .addParameter(field.kotlinName, type(field))
                                 .addControlFlow("return this.apply") {
-                                    addStatement("this.%N = { %N }", field.name, field.name)
+                                    addStatement("this.%N = { %N }", field.kotlinName, field.kotlinName)
                                 }.returns(builderClassName)
                                 .build()
                         },
@@ -164,7 +174,7 @@ fun generateKotlin2DataTypes(
                                             "return %T(\n",
                                             ClassName(config.packageNameTypes, typeDefinition.name),
                                         )
-                                    fs.forEach { f -> builder.add("  %N = %N,\n", f.name, f.name) }
+                                    fs.forEach { f -> builder.add("  %N = %N,\n", f.kotlinName, f.kotlinName) }
                                     builder.add(")").build()
                                 },
                             ).build(),
@@ -209,9 +219,9 @@ fun generateKotlin2DataTypes(
                                 fields.map { field ->
                                     ParameterSpec
                                         .builder(
-                                            name = field.name,
+                                            name = field.kotlinName,
                                             type = LambdaTypeName.get(returnType = type(field)),
-                                        ).defaultValue("${field.name}Default")
+                                        ).defaultValue("${field.kotlinName}Default")
                                         .build()
                                 },
                             ).build(),
@@ -221,10 +231,10 @@ fun generateKotlin2DataTypes(
                         fields.map { field ->
                             PropertySpec
                                 .builder(
-                                    name = "__${field.name}",
+                                    name = "__${field.kotlinName}",
                                     type = LambdaTypeName.get(returnType = type(field)),
                                 ).addModifiers(KModifier.PRIVATE)
-                                .initializer("%N", field.name)
+                                .initializer("%N", field.kotlinName)
                                 .build()
                         },
                     )
@@ -233,22 +243,22 @@ fun generateKotlin2DataTypes(
                         fields.map { field ->
                             PropertySpec
                                 .builder(
-                                    name = field.name,
+                                    name = field.kotlinName,
                                     type = type(field),
                                 ).apply {
-                                    if (field.description != null) {
-                                        addKdoc("%L", field.description.sanitizeKdoc())
+                                    if (field.definition.description != null) {
+                                        addKdoc("%L", field.definition.description.sanitizeKdoc())
                                     }
                                 }.apply {
-                                    if (field.name in overrideFields) {
+                                    if (field.graphQLName in overrideFields) {
                                         addModifiers(KModifier.OVERRIDE)
                                         addAnnotation(suppressInapplicableJvmNameAnnotation())
                                     }
-                                }.addAnnotation(jvmNameAnnotation(field.name))
+                                }.addAnnotation(jvmNameAnnotation(field.kotlinName))
                                 .getter(
                                     FunSpec
                                         .getterBuilder()
-                                        .addStatement("return __${field.name}.invoke()")
+                                        .addStatement("return __${field.kotlinName}.invoke()")
                                         .build(),
                                 ).build()
                         },

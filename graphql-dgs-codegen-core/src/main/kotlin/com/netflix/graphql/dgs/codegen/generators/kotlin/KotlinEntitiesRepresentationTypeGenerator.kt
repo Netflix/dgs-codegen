@@ -65,7 +65,14 @@ class KotlinEntitiesRepresentationTypeGenerator(
         }
         var fieldsCodeGenAccumulator = CodeGenResult.EMPTY
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
-        val typeName = Field("__typename", STRING, false, CodeBlock.of("%S", definitionName))
+        val typeName =
+            Field(
+                graphQLName = "__typename",
+                kotlinName = sanitizeKotlinIdentifier("__typename"),
+                type = STRING,
+                nullable = false,
+                default = CodeBlock.of("%S", definitionName),
+            )
         val fieldDefinitions =
             fields
                 .filter { keyFields.containsKey(it.name) }
@@ -100,19 +107,26 @@ class KotlinEntitiesRepresentationTypeGenerator(
                         }
                         if (fieldType is ParameterizedTypeName && fieldType.rawType.simpleName == "List") {
                             Field(
-                                it.name,
-                                LIST.parameterizedBy(ClassName(getPackageName(), fieldTypeRepresentationName)),
-                                typeUtils.isNullable(it.type),
+                                graphQLName = it.name,
+                                kotlinName = sanitizeKotlinIdentifier(it.name),
+                                type = LIST.parameterizedBy(ClassName(getPackageName(), fieldTypeRepresentationName)),
+                                nullable = typeUtils.isNullable(it.type),
                             )
                         } else {
                             Field(
-                                it.name,
-                                ClassName(getPackageName(), fieldTypeRepresentationName),
-                                typeUtils.isNullable(it.type),
+                                graphQLName = it.name,
+                                kotlinName = sanitizeKotlinIdentifier(it.name),
+                                type = ClassName(getPackageName(), fieldTypeRepresentationName),
+                                nullable = typeUtils.isNullable(it.type),
                             )
                         }
                     } else {
-                        Field(it.name, typeUtils.findReturnType(it.type), typeUtils.isNullable(it.type))
+                        Field(
+                            graphQLName = it.name,
+                            kotlinName = sanitizeKotlinIdentifier(it.name),
+                            type = typeUtils.findReturnType(it.type),
+                            nullable = typeUtils.isNullable(it.type),
+                        )
                     }
                 }
         // Generate base type representation...

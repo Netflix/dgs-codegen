@@ -26,6 +26,7 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
+import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.generators.shared.generateKotlinCode
@@ -92,9 +93,10 @@ fun generateKotlin2InputTypes(
                             .addParameters(
                                 fields.map { field ->
                                     val type = type(field)
+                                    val kotlinName = sanitizeKotlinIdentifier(field.name)
                                     ParameterSpec
                                         .builder(
-                                            name = field.name,
+                                            name = kotlinName,
                                             type = type,
                                         ).addAnnotation(AnnotationSpec.builder(JsonProperty::class).addMember("%S", field.name).build())
                                         .apply {
@@ -119,11 +121,12 @@ fun generateKotlin2InputTypes(
                     // add a backing property for each field
                     .addProperties(
                         fields.map { field ->
+                            val kotlinName = sanitizeKotlinIdentifier(field.name)
                             PropertySpec
                                 .builder(
-                                    name = field.name,
+                                    name = kotlinName,
                                     type = type(field),
-                                ).initializer(field.name)
+                                ).initializer(kotlinName)
                                 .build()
                         },
                     ).addFunction(
@@ -141,10 +144,11 @@ fun generateKotlin2InputTypes(
                                 fields.let { fs ->
                                     val builder = CodeBlock.builder().add("return listOf(")
                                     fs.forEachIndexed { i, f ->
+                                        val kotlinName = sanitizeKotlinIdentifier(f.name)
                                         builder.add(
                                             "%S to %N%L",
                                             f.name,
-                                            f.name,
+                                            kotlinName,
                                             if (i <
                                                 fs.size.dec()
                                             ) {
