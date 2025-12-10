@@ -23,8 +23,8 @@ import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
 import com.netflix.graphql.dgs.codegen.shouldSkip
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.TypeSpec
 import graphql.language.EnumTypeDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory

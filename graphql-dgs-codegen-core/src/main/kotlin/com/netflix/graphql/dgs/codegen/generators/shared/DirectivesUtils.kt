@@ -25,7 +25,7 @@ import com.squareup.kotlinpoet.AnnotationSpec
 import graphql.language.Directive
 import graphql.language.StringValue
 import graphql.language.Value
-import com.squareup.javapoet.AnnotationSpec as JavaAnnotationSpec
+import com.palantir.javapoet.AnnotationSpec as JavaAnnotationSpec
 
 fun createArgumentMap(directive: Directive): MutableMap<String, Value<Value<*>>> =
     directive.arguments.fold(mutableMapOf()) { argMap, argument ->
@@ -82,7 +82,7 @@ fun applyDirectivesJava(
             if (directive.name == ParserConstants.CUSTOM_ANNOTATION && config.generateCustomAnnotations) {
                 annotations[siteTarget] =
                     if (annotations.containsKey(siteTarget)) {
-                        var annotationList: MutableList<JavaAnnotationSpec> = annotations[siteTarget]!!
+                        val annotationList: MutableList<JavaAnnotationSpec> = annotations[siteTarget]!!
                         annotationList.add(
                             com.netflix.graphql.dgs.codegen.generators.java.customAnnotation(
                                 argumentMap,

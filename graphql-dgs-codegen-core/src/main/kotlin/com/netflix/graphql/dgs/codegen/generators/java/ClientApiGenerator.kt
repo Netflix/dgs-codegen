@@ -27,15 +27,15 @@ import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.findTypeDefinition
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.collectAllFieldDefinitions
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.CodeBlock
-import com.squareup.javapoet.FieldSpec
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterSpec
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeSpec
-import com.squareup.javapoet.TypeVariableName
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.CodeBlock
+import com.palantir.javapoet.FieldSpec
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.MethodSpec
+import com.palantir.javapoet.ParameterSpec
+import com.palantir.javapoet.ParameterizedTypeName
+import com.palantir.javapoet.TypeSpec
+import com.palantir.javapoet.TypeVariableName
 import graphql.introspection.Introspection.TypeNameMetaFieldDef
 import graphql.language.Directive
 import graphql.language.DirectivesContainer
@@ -537,7 +537,7 @@ class ClientApiGenerator(
         javaType: TypeSpec.Builder,
         projectionRoot: String,
     ): TypeSpec.Builder? {
-        val clazzName = javaType.build().name
+        val clazzName = javaType.build().name()
         val rootTypeName = if (projectionRoot == "this") "$clazzName<PARENT, ROOT>" else "ROOT"
         val returnTypeName = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName>")
         val methodBuilder =
@@ -576,7 +576,7 @@ class ClientApiGenerator(
         javaType: TypeSpec.Builder,
         projectionRoot: String,
     ): TypeSpec.Builder? {
-        val clazzName = javaType.build().name
+        val clazzName = javaType.build().name()
         val rootTypeName = if (projectionRoot == "this") "$clazzName<PARENT, ROOT>" else "ROOT"
         val returnTypeName = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, $rootTypeName>")
         val methodBuilder =
@@ -718,9 +718,9 @@ class ClientApiGenerator(
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
     ): CodeGenResult {
-        val rootRef = if (javaType.build().name == rootType.name) "this" else "getRoot()"
-        val rootTypeName = if (javaType.build().name == rootType.name) "${rootType.name}<PARENT, ROOT>" else "ROOT"
-        val parentRef = javaType.build().name
+        val rootRef = if (javaType.build().name() == rootType.name()) "this" else "getRoot()"
+        val rootTypeName = if (javaType.build().name() == rootType.name()) "${rootType.name()}<PARENT, ROOT>" else "ROOT"
+        val parentRef = javaType.build().name()
         val projectionName = "${it.name.capitalized()}Fragment"
         val fullProjectionName = "${projectionName}Projection"
         val typeVariable = TypeVariableName.get("$fullProjectionName<$parentRef<PARENT, ROOT>, $rootTypeName>")
@@ -927,7 +927,7 @@ class ClientApiGenerator(
                         val methodWithInputArgumentsBuilder =
                             MethodSpec
                                 .methodBuilder(javaReservedKeywordSanitizer.sanitize(it.name))
-                                .returns(ClassName.get(getPackageName(), javaType.build().name))
+                                .returns(ClassName.get(getPackageName(), javaType.build().name()))
                                 .addCode(
                                     """
                                 |getFields().put("${it.name}", null);

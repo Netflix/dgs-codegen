@@ -24,8 +24,8 @@ import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils.findType
 import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils.toRepresentationName
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.CodeBlock
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.CodeBlock
 import graphql.language.Document
 import graphql.language.EnumTypeDefinition
 import graphql.language.FieldDefinition

@@ -26,10 +26,10 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.f
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInterfaceExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.FieldSpec
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.FieldSpec
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.TypeSpec
 import graphql.language.*
 import javax.lang.model.element.Modifier
 
@@ -39,6 +39,30 @@ class ConstantsGenerator(
 ) {
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
 
+    class TypeSpecBuilderWrapper(
+        private val builder: TypeSpec.Builder,
+    ) {
+        private val _fieldNames = mutableListOf<String>()
+        val fieldNames: List<String>
+            get() = _fieldNames
+
+        private val _typeNames = mutableListOf<String>()
+        val typeNames: List<String>
+            get() = _typeNames
+
+        fun addField(fieldSpec: FieldSpec) {
+            _fieldNames.add(fieldSpec.name())
+            builder.addField(fieldSpec)
+        }
+
+        fun addType(typeSpec: TypeSpec) {
+            _typeNames.add(typeSpec.name())
+            builder.addType(typeSpec)
+        }
+
+        fun build(): TypeSpec = builder.build()
+    }
+
     fun generate(): CodeGenResult {
         val javaType =
             TypeSpec
@@ -46,7 +70,7 @@ class ConstantsGenerator(
                 .addOptionalGeneratedAnnotation(config)
                 .addModifiers(Modifier.PUBLIC)
 
-        val types = mutableMapOf<String, TypeSpec.Builder>()
+        val types = mutableMapOf<String, TypeSpecBuilderWrapper>()
 
         document.definitions
             .filterIsInstance<ObjectTypeDefinition>()
@@ -193,9 +217,9 @@ class ConstantsGenerator(
     }
 
     private fun getOrCreateConstantsType(
-        types: MutableMap<String, TypeSpec.Builder>,
+        types: Map<String, TypeSpecBuilderWrapper>,
         name: String,
-    ): TypeSpec.Builder =
+    ): TypeSpecBuilderWrapper =
         if (types.contains(name)) {
             types[name]!!
         } else {
@@ -205,14 +229,17 @@ class ConstantsGenerator(
     private fun createConstantTypeBuilder(
         conf: CodeGenConfig,
         name: String,
-    ): TypeSpec.Builder {
+    ): TypeSpecBuilderWrapper {
         val className =
             getConstantTypeName(conf, name)
 
-        return TypeSpec
-            .classBuilder(className)
-            .addOptionalGeneratedAnnotation(config)
-            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+        return TypeSpecBuilderWrapper(
+            builder =
+                TypeSpec
+                    .classBuilder(className)
+                    .addOptionalGeneratedAnnotation(config)
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC),
+        )
     }
 
     private fun getConstantTypeName(
@@ -229,11 +256,11 @@ class ConstantsGenerator(
     }
 
     private fun addFieldNameConstant(
-        constantsType: TypeSpec.Builder,
+        constantsType: TypeSpecBuilderWrapper,
         fieldName: String,
     ) {
         val sanitizedFieldName = javaReservedKeywordSanitizer.sanitize(fieldName.capitalized())
-        if (!constantsType.fieldSpecs.any { it.name == sanitizedFieldName }) {
+        if (!constantsType.fieldNames.any { it == sanitizedFieldName }) {
             constantsType.addField(
                 FieldSpec
                     .builder(
@@ -247,12 +274,12 @@ class ConstantsGenerator(
     }
 
     private fun addQueryInputArgument(
-        constantsType: TypeSpec.Builder,
+        constantsType: TypeSpecBuilderWrapper,
         field: FieldDefinition,
     ) {
         val inputFields = field.inputValueDefinitions
         val name = getConstantTypeName(config, field.name + "_INPUT_ARGUMENT")
-        if (inputFields.isNotEmpty() && !constantsType.typeSpecs.any { it.name == name }) {
+        if (inputFields.isNotEmpty() && !constantsType.typeNames.any { it == name }) {
             val inputConstantsType = createConstantTypeBuilder(config, name)
             inputFields.forEach { inputField ->
                 addFieldNameConstant(inputConstantsType, inputField.name)

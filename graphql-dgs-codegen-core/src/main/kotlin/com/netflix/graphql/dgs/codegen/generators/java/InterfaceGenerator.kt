@@ -23,11 +23,11 @@ import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.shouldSkip
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterSpec
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.MethodSpec
+import com.palantir.javapoet.ParameterSpec
+import com.palantir.javapoet.TypeSpec
 import graphql.language.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -149,7 +149,7 @@ class InterfaceGenerator(
 
         val fieldName = fieldDefinition.name
         val getterPrefix =
-            if (returnType == com.squareup.javapoet.TypeName.BOOLEAN &&
+            if (returnType == com.palantir.javapoet.TypeName.BOOLEAN &&
                 config.generateIsGetterForPrimitiveBooleanFields
             ) {
                 "is"
@@ -161,7 +161,7 @@ class InterfaceGenerator(
                 .methodBuilder(
                     typeUtils.transformIfDefaultClassMethodExists(
                         "${getterPrefix}${fieldName.capitalized()}",
-                        TypeUtils.Companion.GET_CLASS,
+                        TypeUtils.GET_CLASS,
                     ),
                 ).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                 .returns(returnType)
@@ -190,7 +190,7 @@ class InterfaceGenerator(
             val setterBuilder =
                 MethodSpec
                     .methodBuilder(
-                        typeUtils.transformIfDefaultClassMethodExists("set${fieldName.capitalized()}", TypeUtils.Companion.SET_CLASS),
+                        typeUtils.transformIfDefaultClassMethodExists("set${fieldName.capitalized()}", TypeUtils.SET_CLASS),
                     ).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                     .addParameter(parameterBuilder.build())
 

@@ -21,9 +21,9 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.generators.shared.findSchemaTypeMapping
 import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.WildcardTypeName
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.ParameterizedTypeName
+import com.palantir.javapoet.WildcardTypeName
 import graphql.language.*
 import graphql.language.TypeName
 import graphql.relay.PageInfo
@@ -31,7 +31,7 @@ import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 import java.time.*
 import java.util.*
-import com.squareup.javapoet.TypeName as JavaTypeName
+import com.palantir.javapoet.TypeName as JavaTypeName
 
 class TypeUtils(
     private val packageName: String,
@@ -283,13 +283,12 @@ class TypeUtils(
     fun transformIfDefaultClassMethodExists(
         originName: String,
         defaultMethodName: String,
-    ): String {
-        return if (defaultMethodName == originName) {
-            return originName + "Field"
+    ): String =
+        if (defaultMethodName == originName) {
+            originName + "Field"
         } else {
             originName
         }
-    }
 
     private fun isFieldTypeDefinedInDocument(name: String): Boolean =
         document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||

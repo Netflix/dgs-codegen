@@ -4237,17 +4237,17 @@ It takes a title and such.
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(9)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("ShowsGraphQLQuery")
-        assertThat(codeGenResult.javaQueryTypes[1].typeSpec.name).isEqualTo("MovieGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("ShowsGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[1].typeSpec().name()).isEqualTo("MovieGraphQLQuery")
 
-        assertThat(codeGenResult.javaQueryTypes[2].typeSpec.name).isEqualTo("ShowsGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[3].typeSpec.name).isEqualTo("MovieGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[4].typeSpec.name).isEqualTo("FooGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[2].typeSpec().name()).isEqualTo("ShowsGraphQLMutation")
+        assertThat(codeGenResult.javaQueryTypes[3].typeSpec().name()).isEqualTo("MovieGraphQLMutation")
+        assertThat(codeGenResult.javaQueryTypes[4].typeSpec().name()).isEqualTo("FooGraphQLQuery")
 
-        assertThat(codeGenResult.javaQueryTypes[5].typeSpec.name).isEqualTo("ShowsGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[6].typeSpec.name).isEqualTo("MovieGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[7].typeSpec.name).isEqualTo("FooGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[8].typeSpec.name).isEqualTo("BarGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[5].typeSpec().name()).isEqualTo("ShowsGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[6].typeSpec().name()).isEqualTo("MovieGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[7].typeSpec().name()).isEqualTo("FooGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[8].typeSpec().name()).isEqualTo("BarGraphQLQuery")
 
         assertCompilesJava(codeGenResult.javaQueryTypes)
     }
@@ -4422,14 +4422,16 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(
             dataTypes[0]
-                .typeSpec.fieldSpecs[1]
-                .type
+                .typeSpec()
+                .fieldSpecs()[1]
+                .type()
                 .toString(),
         ).contains(BASE_PACKAGE_NAME)
         assertThat(
             dataTypes[0]
-                .typeSpec.fieldSpecs[2]
-                .type
+                .typeSpec()
+                .fieldSpecs()[2]
+                .type()
                 .toString(),
         ).isEqualTo("java.time.LocalDate")
     }
