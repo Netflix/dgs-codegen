@@ -22,10 +22,10 @@ import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
-import com.squareup.javapoet.AnnotationSpec
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.AnnotationSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import org.assertj.core.api.Assertions.assertThat
 import org.jetbrains.kotlin.cli.common.ExitCode
@@ -142,7 +142,7 @@ fun List<FileSpec>.assertKotlinGeneratedAnnotation(shouldHaveDate: Boolean) =
 
 fun List<JavaFile>.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) =
     onEach {
-        it.typeSpec.assertJavaGeneratedAnnotation(shouldHaveDate)
+        it.typeSpec().assertJavaGeneratedAnnotation(shouldHaveDate)
     }
 
 fun KTypeSpec.assertKotlinGeneratedAnnotation(
@@ -177,28 +177,28 @@ fun KTypeSpec.assertKotlinGeneratedAnnotation(
 
 fun TypeSpec.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) {
     val generatedSpec =
-        annotations
+        annotations()
             .firstOrNull { it.canonicalName() == "$BASE_PACKAGE_NAME.Generated" }
     assertThat(generatedSpec)
         .`as`("@Generated annotation exists in %s", this)
         .isNotNull
 
     val jakartaGeneratedSpec =
-        annotations.firstOrNull { it.canonicalName() == generatedAnnotationClassName }
+        annotations().firstOrNull { it.canonicalName() == generatedAnnotationClassName }
     assertThat(jakartaGeneratedSpec)
         .`as`("$generatedAnnotationClassName annotation exists in %s", this)
         .isNotNull
 
     if (shouldHaveDate) {
-        assertThat(jakartaGeneratedSpec!!.members.keys).contains("date")
+        assertThat(jakartaGeneratedSpec!!.members().keys).contains("date")
     } else {
-        assertThat(jakartaGeneratedSpec!!.members.keys).doesNotContain("date")
+        assertThat(jakartaGeneratedSpec!!.members().keys).doesNotContain("date")
     }
 
-    this.typeSpecs.forEach { it.assertJavaGeneratedAnnotation(shouldHaveDate) }
+    this.typeSpecs().forEach { it.assertJavaGeneratedAnnotation(shouldHaveDate) }
 }
 
-fun AnnotationSpec.canonicalName(): String = (type as ClassName).canonicalName()
+fun AnnotationSpec.canonicalName(): String = (type() as ClassName).canonicalName()
 
 fun KAnnotationSpec.canonicalName() = (typeName as KClassName).canonicalName
 

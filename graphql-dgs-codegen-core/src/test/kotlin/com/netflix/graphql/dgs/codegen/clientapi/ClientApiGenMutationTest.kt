@@ -50,7 +50,7 @@ class ClientApiGenMutationTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("UpdateMovieGraphQLQuery")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
@@ -85,7 +85,7 @@ class ClientApiGenMutationTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("UpdateMovieGraphQLQuery")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
@@ -128,9 +128,10 @@ class ClientApiGenMutationTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(
             codeGenResult.javaQueryTypes[0]
-                .typeSpec.typeSpecs[0]
-                .methodSpecs[1]
-                .javadoc
+                .typeSpec()
+                .typeSpecs()[0]
+                .methodSpecs()[1]
+                .javadoc()
                 .toString(),
         ).isEqualTo("Some movie description")
 
@@ -172,9 +173,10 @@ class ClientApiGenMutationTest {
 
         val initMethod =
             codeGenResult.javaQueryTypes[0]
-                .typeSpec.methodSpecs
-                .find { it.name == "<init>" }
-                ?.code
+                .typeSpec()
+                .methodSpecs()
+                .find { it.name() == "<init>" }
+                ?.code()
                 .toString()
 
         val expected =
@@ -220,9 +222,10 @@ class ClientApiGenMutationTest {
 
         assert(
             codeGenResult.javaQueryTypes[0]
-                .typeSpec.methodSpecs
-                .find { it.name == "<init>" }
-                ?.code
+                .typeSpec()
+                .methodSpecs()
+                .find { it.name() == "<init>" }
+                ?.code()
                 .toString()
                 .contains("super(\"mutation\", queryName);\ngetInput().put(\"movieId\", movieId);"),
         )
@@ -331,7 +334,7 @@ class ClientApiGenMutationTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("UpdateMovieTitleGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("UpdateMovieTitleGraphQLQuery")
 
         assertCompilesJava(codeGenResult)
     }

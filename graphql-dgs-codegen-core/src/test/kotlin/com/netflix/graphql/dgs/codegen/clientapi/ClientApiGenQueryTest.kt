@@ -48,13 +48,14 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PeopleGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("PeopleGraphQLQuery")
         codeGenResult.javaQueryTypes[0]
-            .typeSpec.methodSpecs
-            .find { it -> it.isConstructor && it.parameters.isEmpty() }
-        codeGenResult.javaQueryTypes[0].typeSpec.methodSpecs.find { it ->
+            .typeSpec()
+            .methodSpecs()
+            .find { it.isConstructor && it.parameters().isEmpty() }
+        codeGenResult.javaQueryTypes[0].typeSpec().methodSpecs().find {
             it.isConstructor &&
-                (it.parameters.find { param -> param.name == "queryName" } != null)
+                (it.parameters().find { param -> param.name() == "queryName" } != null)
         }
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
@@ -87,10 +88,11 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PeopleGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("PeopleGraphQLQuery")
         assertThat(
             codeGenResult.javaQueryTypes[0]
-                .typeSpec.javadoc
+                .typeSpec()
+                .javadoc()
                 .toString(),
         ).isEqualTo(
             """
@@ -142,7 +144,7 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("GetPersonGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("GetPersonGraphQLQuery")
 
         assertCompilesJava(codeGenResult)
     }
@@ -274,8 +276,8 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(2)
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.name).isEqualTo("MovieQuery")
-        assertThat(codeGenResult.javaDataTypes[1].typeSpec.name).isEqualTo("BooleanQuery")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec().name()).isEqualTo("MovieQuery")
+        assertThat(codeGenResult.javaDataTypes[1].typeSpec().name()).isEqualTo("BooleanQuery")
 
         assertCompilesJava(codeGenResult.javaDataTypes)
     }
@@ -305,9 +307,10 @@ class ClientApiGenQueryTest {
             ).generate()
         assertThat(
             codeGenResult.javaQueryTypes[0]
-                .typeSpec.typeSpecs[0]
-                .methodSpecs[1]
-                .name,
+                .typeSpec()
+                .typeSpecs()[0]
+                .methodSpecs()[1]
+                .name(),
         ).isEqualTo("lastname")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
@@ -343,9 +346,10 @@ class ClientApiGenQueryTest {
 
         assertThat(
             codeGenResult.javaQueryTypes[0]
-                .typeSpec.typeSpecs[0]
-                .methodSpecs[1]
-                .name,
+                .typeSpec()
+                .typeSpecs()[0]
+                .methodSpecs()[1]
+                .name(),
         ).isEqualTo("index")
 
         assertCompilesJava(
@@ -381,12 +385,13 @@ class ClientApiGenQueryTest {
                 ),
             ).generate()
 
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PersonSearchGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("PersonSearchGraphQLQuery")
         assertThat(
             codeGenResult.javaQueryTypes[0]
-                .typeSpec.typeSpecs[0]
-                .methodSpecs[1]
-                .name,
+                .typeSpec()
+                .typeSpecs()[0]
+                .methodSpecs()[1]
+                .name(),
         ).isEqualTo("index")
 
         assertCompilesJava(
@@ -415,7 +420,7 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("MovieTitlesGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("MovieTitlesGraphQLQuery")
 
         assertCompilesJava(codeGenResult)
     }
@@ -450,7 +455,7 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("PersonsGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("PersonsGraphQLQuery")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes,
@@ -491,25 +496,28 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("SearchGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("SearchGraphQLQuery")
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
-        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().name()).isEqualTo("SearchProjectionRoot")
         assertThat(
             codeGenResult.clientProjections[0]
-                .typeSpec.methodSpecs[2]
-                .name,
+                .typeSpec()
+                .methodSpecs()[2]
+                .name(),
         ).isEqualTo("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().name()).isEqualTo("MovieFragmentProjection")
         assertThat(
             codeGenResult.clientProjections[1]
-                .typeSpec.methodSpecs[3]
-                .name,
+                .typeSpec()
+                .methodSpecs()[3]
+                .name(),
         ).isEqualTo("duration")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SeriesFragmentProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().name()).isEqualTo("SeriesFragmentProjection")
         assertThat(
             codeGenResult.clientProjections[2]
-                .typeSpec.methodSpecs[3]
-                .name,
+                .typeSpec()
+                .methodSpecs()[3]
+                .name(),
         ).isEqualTo("episodes")
 
         assertCompilesJava(
@@ -550,30 +558,35 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("QueryRootGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("QueryRootGraphQLQuery")
 
         assertThat(codeGenResult.javaInterfaces.size).isEqualTo(1)
-        assertThat(codeGenResult.javaInterfaces[0].typeSpec.name).isEqualTo("HasDefaultField")
+        assertThat(codeGenResult.javaInterfaces[0].typeSpec().name()).isEqualTo("HasDefaultField")
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
         assertThat(
             codeGenResult.javaDataTypes[0]
-                .typeSpec.fieldSpecs.size,
+                .typeSpec()
+                .fieldSpecs()
+                .size,
         ).isEqualTo(4)
         assertThat(
             codeGenResult.javaDataTypes[0]
-                .typeSpec.fieldSpecs[0]
-                .name,
+                .typeSpec()
+                .fieldSpecs()[0]
+                .name(),
         ).isEqualTo("name")
         assertThat(
             codeGenResult.javaDataTypes[0]
-                .typeSpec.fieldSpecs[1]
-                .name,
+                .typeSpec()
+                .fieldSpecs()[1]
+                .name(),
         ).isEqualTo("_default")
         assertThat(
             codeGenResult.javaDataTypes[0]
-                .typeSpec.fieldSpecs[2]
-                .name,
+                .typeSpec()
+                .fieldSpecs()[2]
+                .name(),
         ).isEqualTo("_public")
 
         assertCompilesJava(
@@ -957,24 +970,27 @@ class ClientApiGenQueryTest {
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(2)
 
-        assertThat(codeGenResult.javaDataTypes[0].typeSpec.name).isEqualTo("FooInput")
+        assertThat(codeGenResult.javaDataTypes[0].typeSpec().name()).isEqualTo("FooInput")
         assertThat(
             codeGenResult.javaDataTypes[0]
-                .typeSpec.fieldSpecs[0]
-                .name,
+                .typeSpec()
+                .fieldSpecs()[0]
+                .name(),
         ).isEqualTo("_public")
         assertThat(
             codeGenResult.javaDataTypes[0]
-                .typeSpec.fieldSpecs[0]
-                .initializer
+                .typeSpec()
+                .fieldSpecs()[0]
+                .initializer()
                 .toString(),
         ).isEqualTo("true")
 
-        assertThat(codeGenResult.javaDataTypes[1].typeSpec.name).isEqualTo("BarInput")
+        assertThat(codeGenResult.javaDataTypes[1].typeSpec().name()).isEqualTo("BarInput")
         assertThat(
             codeGenResult.javaDataTypes[1]
-                .typeSpec.fieldSpecs[0]
-                .initializer
+                .typeSpec()
+                .fieldSpecs()[0]
+                .initializer()
                 .toString(),
         ).isEqualTo("")
 
@@ -1024,17 +1040,17 @@ class ClientApiGenQueryTest {
             ).generate()
 
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(9)
-        assertThat(codeGenResult.javaQueryTypes[0].typeSpec.name).isEqualTo("ShowsGraphQLQuery")
-        assertThat(codeGenResult.javaQueryTypes[1].typeSpec.name).isEqualTo("MovieGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("ShowsGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[1].typeSpec().name()).isEqualTo("MovieGraphQLQuery")
 
-        assertThat(codeGenResult.javaQueryTypes[2].typeSpec.name).isEqualTo("ShowsGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[3].typeSpec.name).isEqualTo("MovieGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[4].typeSpec.name).isEqualTo("FooGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[2].typeSpec().name()).isEqualTo("ShowsGraphQLMutation")
+        assertThat(codeGenResult.javaQueryTypes[3].typeSpec().name()).isEqualTo("MovieGraphQLMutation")
+        assertThat(codeGenResult.javaQueryTypes[4].typeSpec().name()).isEqualTo("FooGraphQLQuery")
 
-        assertThat(codeGenResult.javaQueryTypes[5].typeSpec.name).isEqualTo("ShowsGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[6].typeSpec.name).isEqualTo("MovieGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[7].typeSpec.name).isEqualTo("FooGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[8].typeSpec.name).isEqualTo("BarGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes[5].typeSpec().name()).isEqualTo("ShowsGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[6].typeSpec().name()).isEqualTo("MovieGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[7].typeSpec().name()).isEqualTo("FooGraphQLSubscription")
+        assertThat(codeGenResult.javaQueryTypes[8].typeSpec().name()).isEqualTo("BarGraphQLQuery")
 
         assertCompilesJava(codeGenResult.javaQueryTypes)
     }
@@ -1070,17 +1086,17 @@ class ClientApiGenQueryTest {
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
 
-        val typeSpec = codeGenResult.javaDataTypes[0].typeSpec
-        assertThat(typeSpec.name).isEqualTo("Bar")
-        assertThat(typeSpec.fieldSpecs[0].name).isEqualTo("object")
-        assertThat(typeSpec.fieldSpecs.size).isEqualTo(2)
-        assertThat(typeSpec.fieldSpecs[1].name).isEqualTo("_class")
+        val typeSpec = codeGenResult.javaDataTypes[0].typeSpec()
+        assertThat(typeSpec.name()).isEqualTo("Bar")
+        assertThat(typeSpec.fieldSpecs()[0].name()).isEqualTo("object")
+        assertThat(typeSpec.fieldSpecs().size).isEqualTo(2)
+        assertThat(typeSpec.fieldSpecs()[1].name()).isEqualTo("_class")
 
-        assertThat(typeSpec.methodSpecs.size).isGreaterThan(0)
-        assertThat(typeSpec.methodSpecs[0].name).isEqualTo("getObject")
-        assertThat(typeSpec.methodSpecs[1].name).isEqualTo("setObject")
-        assertThat(typeSpec.methodSpecs[2].name).isEqualTo("getClassField")
-        assertThat(typeSpec.methodSpecs[3].name).isEqualTo("setClassField")
+        assertThat(typeSpec.methodSpecs().size).isGreaterThan(0)
+        assertThat(typeSpec.methodSpecs()[0].name()).isEqualTo("getObject")
+        assertThat(typeSpec.methodSpecs()[1].name()).isEqualTo("setObject")
+        assertThat(typeSpec.methodSpecs()[2].name()).isEqualTo("getClassField")
+        assertThat(typeSpec.methodSpecs()[3].name()).isEqualTo("setClassField")
 
         assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaInterfaces)
     }

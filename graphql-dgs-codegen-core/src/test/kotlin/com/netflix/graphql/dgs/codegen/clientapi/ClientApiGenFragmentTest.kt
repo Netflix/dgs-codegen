@@ -22,7 +22,7 @@ import com.netflix.graphql.dgs.codegen.BASE_PACKAGE_NAME
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
-import com.squareup.javapoet.JavaFile
+import com.palantir.javapoet.JavaFile
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 
@@ -61,19 +61,19 @@ class ClientApiGenFragmentTest {
             ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
-        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("__typename")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("duration")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs)
+        assertThat(codeGenResult.clientProjections[0].typeSpec().name()).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("__typename")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().name()).isEqualTo("MovieFragmentProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("duration")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs())
             .extracting("name")
             .doesNotContain("episodes")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("SeriesFragmentProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("episodes")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs)
+        assertThat(codeGenResult.clientProjections[2].typeSpec().name()).isEqualTo("SeriesFragmentProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("episodes")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs())
             .extracting("name")
             .doesNotContain("duration")
 
@@ -121,21 +121,21 @@ class ClientApiGenFragmentTest {
             ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
-        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("__typename")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("ShowProjection")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("__typename")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MovieFragmentProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("duration")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs)
+        assertThat(codeGenResult.clientProjections[0].typeSpec().name()).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("__typename")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().name()).isEqualTo("ShowProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("__typename")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().name()).isEqualTo("MovieFragmentProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("duration")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs())
             .extracting("name")
             .doesNotContain("episodes")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("SeriesFragmentProjection")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("episodes")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs)
+        assertThat(codeGenResult.clientProjections[3].typeSpec().name()).isEqualTo("SeriesFragmentProjection")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs()).extracting("name").contains("episodes")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs())
             .extracting("name")
             .doesNotContain("duration")
 
@@ -174,16 +174,16 @@ class ClientApiGenFragmentTest {
             ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(3)
-        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("__typename")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("onMovie")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("onActor")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").doesNotContain("name")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("ActorFragmentProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("name")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().name()).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("__typename")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("onMovie")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("onActor")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().name()).isEqualTo("MovieFragmentProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").doesNotContain("name")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().name()).isEqualTo("ActorFragmentProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("name")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").doesNotContain("title")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
@@ -221,18 +221,18 @@ class ClientApiGenFragmentTest {
             ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
-        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("onMovie")
-        assertThat(codeGenResult.clientProjections[0].typeSpec.methodSpecs).extracting("name").contains("onActor")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("MovieFragmentProjection")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").doesNotContain("name")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("ActorFragmentProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("name")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("ActorProjectionRoot")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("name")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().name()).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("onMovie")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("onActor")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().name()).isEqualTo("MovieFragmentProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").doesNotContain("name")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().name()).isEqualTo("ActorFragmentProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("name")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").doesNotContain("title")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().name()).isEqualTo("ActorProjectionRoot")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs()).extracting("name").contains("name")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs()).extracting("name").doesNotContain("title")
 
         assertCompilesJava(
             codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
@@ -274,29 +274,33 @@ class ClientApiGenFragmentTest {
             ).generate()
 
         assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
-        assertThat(codeGenResult.clientProjections[0].typeSpec.name).isEqualTo("SearchProjectionRoot")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.name).isEqualTo("SearchResultProjection")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").doesNotContain("name")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("onMovie")
-        assertThat(codeGenResult.clientProjections[1].typeSpec.methodSpecs).extracting("name").contains("onActor")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.name).isEqualTo("MovieFragmentProjection")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").contains("title")
-        assertThat(codeGenResult.clientProjections[2].typeSpec.methodSpecs).extracting("name").doesNotContain("name")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.name).isEqualTo("ActorFragmentProjection")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").contains("name")
-        assertThat(codeGenResult.clientProjections[3].typeSpec.methodSpecs).extracting("name").doesNotContain("title")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().name()).isEqualTo("SearchProjectionRoot")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().name()).isEqualTo("SearchResultProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").doesNotContain("title")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").doesNotContain("name")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("onMovie")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("onActor")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().name()).isEqualTo("MovieFragmentProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").doesNotContain("name")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().name()).isEqualTo("ActorFragmentProjection")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs()).extracting("name").contains("name")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs()).extracting("name").doesNotContain("title")
 
         assertThat(
             codeGenResult.clientProjections[2]
-                .typeSpec.initializerBlock.isEmpty,
+                .typeSpec()
+                .initializerBlock()
+                .isEmpty,
         ).isFalse
         assertThat(
             codeGenResult.clientProjections[3]
-                .typeSpec.initializerBlock.isEmpty,
+                .typeSpec()
+                .initializerBlock()
+                .isEmpty,
         ).isFalse
 
-        val searchResult = codeGenResult.javaInterfaces[0].typeSpec
+        val searchResult = codeGenResult.javaInterfaces[0].typeSpec()
 
         assertThat(JavaFile.builder("$BASE_PACKAGE_NAME.types", searchResult).build().toString()).isEqualTo(
             """

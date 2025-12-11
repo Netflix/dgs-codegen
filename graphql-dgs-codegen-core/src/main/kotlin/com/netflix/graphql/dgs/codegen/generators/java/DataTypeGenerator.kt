@@ -21,14 +21,14 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.*
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.CodeBlock
-import com.squareup.javapoet.FieldSpec
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.MethodSpec
-import com.squareup.javapoet.ParameterSpec
-import com.squareup.javapoet.ParameterizedTypeName
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.CodeBlock
+import com.palantir.javapoet.FieldSpec
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.MethodSpec
+import com.palantir.javapoet.ParameterSpec
+import com.palantir.javapoet.ParameterizedTypeName
+import com.palantir.javapoet.TypeSpec
 import graphql.language.ArrayValue
 import graphql.language.BooleanValue
 import graphql.language.Description
@@ -61,7 +61,7 @@ import java.util.Locale
 import java.util.Objects
 import java.util.Optional
 import javax.lang.model.element.Modifier
-import com.squareup.javapoet.TypeName as JavaTypeName
+import com.palantir.javapoet.TypeName as JavaTypeName
 
 class DataTypeGenerator(
     config: CodeGenConfig,
@@ -249,8 +249,8 @@ class InputTypeGenerator(
         value: Value<out Value<*>>,
         type: JavaTypeName,
         inputTypeDefinitions: List<InputObjectTypeDefinition>,
-    ): CodeBlock? {
-        return when (value) {
+    ): CodeBlock? =
+        when (value) {
             is BooleanValue -> CodeBlock.of("\$L", value.isValue)
             is IntValue -> CodeBlock.of("\$L", value.value)
             is StringValue -> {
@@ -261,6 +261,7 @@ class InputTypeGenerator(
                     null
                 }
             }
+
             is FloatValue -> CodeBlock.of("\$L", value.value)
             is EnumValue -> CodeBlock.of("\$T.\$N", type, value.name)
             is ArrayValue ->
@@ -270,17 +271,22 @@ class InputTypeGenerator(
                     CodeBlock.of(
                         "\$T.asList(\$L)",
                         Arrays::class.java,
-                        CodeBlock.join(value.values.map { generateCode(it, type.className, inputTypeDefinitions) }, ", "),
+                        CodeBlock.join(
+                            value.values.map { generateCode(it, type.className, inputTypeDefinitions) },
+                            ", ",
+                        ),
                     )
                 }
+
             is ObjectValue -> {
                 val inputObjectDefinition =
                     inputTypeDefinitions.first {
-                        val expectedCanonicalClassName = config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
+                        val expectedCanonicalClassName =
+                            config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
                         expectedCanonicalClassName == type.className.canonicalName()
                     }
                 if (value.objectFields.isEmpty()) {
-                    return CodeBlock.of("new \$T()", type)
+                    CodeBlock.of("new \$T()", type)
                 } else {
                     CodeBlock.of(
                         "new \$T(){{\$L}}",
@@ -298,16 +304,20 @@ class InputTypeGenerator(
                                         typeUtils.findReturnType(argumentType.type),
                                         inputTypeDefinitions,
                                     )
-                                CodeBlock.of("set\$L(\$L);", objectProperty.name.replaceFirstChar { it.uppercaseChar() }, argumentValue)
+                                CodeBlock.of(
+                                    "set\$L(\$L);",
+                                    objectProperty.name.replaceFirstChar { it.uppercaseChar() },
+                                    argumentValue,
+                                )
                             },
                             "",
                         ),
                     )
                 }
             }
+
             else -> CodeBlock.of("\$L", value)
         }
-    }
 
     private fun bigDecimalCodeBlock(
         value: Value<out Value<*>>,
@@ -345,7 +355,7 @@ class InputTypeGenerator(
         // Validate URI string
         try {
             URI.create(value.value)
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             error("$type cannot be created from invalid URI string: ${value.value}")
         }
         return CodeBlock.of("\$T.create(\$S)", JAVA_URI, value.value)
@@ -363,7 +373,7 @@ class InputTypeGenerator(
         get() =
             when (this) {
                 is ClassName -> this
-                is ParameterizedTypeName -> typeArguments.first().className
+                is ParameterizedTypeName -> typeArguments().first().className
                 else -> throw UnsupportedOperationException("Unknown type: ${this.javaClass}")
             }
 }
@@ -374,7 +384,7 @@ internal data class Field(
     val nullable: Boolean,
     val initialValue: CodeBlock? = null,
     val overrideGetter: Boolean = false,
-    val interfaceType: com.squareup.javapoet.TypeName? = null,
+    val interfaceType: JavaTypeName? = null,
     val description: Description? = null,
     val directives: List<Directive> = listOf(),
     val trackFieldSet: Boolean = false,
@@ -502,7 +512,7 @@ abstract class BaseDataTypeGenerator(
 
     private fun addHashcode(javaType: TypeSpec.Builder) {
         val builtType = javaType.build()
-        if (builtType.fieldSpecs.isEmpty()) {
+        if (builtType.fieldSpecs().isEmpty()) {
             return
         }
         val methodBuilder =
@@ -515,14 +525,14 @@ abstract class BaseDataTypeGenerator(
         methodBuilder.addStatement(
             "return \$T.hash(\$L)",
             Objects::class.java,
-            builtType.fieldSpecs.joinToString(", ") { it.name },
+            builtType.fieldSpecs().joinToString(", ") { it.name() },
         )
         javaType.addMethod(methodBuilder.build())
     }
 
     private fun addEquals(javaType: TypeSpec.Builder) {
         val builtType = javaType.build()
-        if (builtType.fieldSpecs.isEmpty()) {
+        if (builtType.fieldSpecs().isEmpty()) {
             return
         }
 
@@ -532,19 +542,19 @@ abstract class BaseDataTypeGenerator(
                 .addAnnotation(Override::class.java)
                 .addModifiers(Modifier.PUBLIC)
                 .returns(JavaTypeName.BOOLEAN)
-                .addParameter(JavaTypeName.OBJECT, "o")
+                .addParameter(ClassName.OBJECT, "o")
 
         methodBuilder.addStatement("if (this == o) return true")
         methodBuilder.addStatement("if (o == null || getClass() != o.getClass()) return false")
-        methodBuilder.addStatement("\$L that = (\$L) o", builtType.name, builtType.name)
+        methodBuilder.addStatement("\$L that = (\$L) o", builtType.name(), builtType.name())
         methodBuilder.addStatement(
             "return \$L",
             CodeBlock.join(
-                builtType.fieldSpecs.map { field ->
-                    if (field.type.isPrimitive) {
-                        CodeBlock.of("\$L == that.\$L", field.name, field.name)
+                builtType.fieldSpecs().map { field ->
+                    if (field.type().isPrimitive) {
+                        CodeBlock.of("\$L == that.\$L", field.name(), field.name())
                     } else {
-                        CodeBlock.of("\$T.equals(\$L, that.\$L)", Objects::class.java, field.name, field.name)
+                        CodeBlock.of("\$T.equals(\$L, that.\$L)", Objects::class.java, field.name(), field.name())
                     }
                 },
                 " &&\n",
@@ -568,7 +578,7 @@ abstract class BaseDataTypeGenerator(
         val toStringBody =
             CodeBlock
                 .builder()
-                .add("return \"\$L{", builtType.name)
+                .add("return \"\$L{", builtType.name())
         for ((idx, fieldDef) in fieldDefinitions.withIndex()) {
             if (fieldDef.directives.any { it.name == "sensitive" }) {
                 toStringBody.add("\$L='*****'", fieldDef.name)
@@ -702,7 +712,7 @@ abstract class BaseDataTypeGenerator(
     ) {
         val returnType = fieldDefinition.type
         val getterPrefix =
-            if (returnType == com.squareup.javapoet.TypeName.BOOLEAN &&
+            if (returnType == JavaTypeName.BOOLEAN &&
                 config.generateIsGetterForPrimitiveBooleanFields
             ) {
                 "is"

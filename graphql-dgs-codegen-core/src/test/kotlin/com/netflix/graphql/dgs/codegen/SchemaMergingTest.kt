@@ -44,12 +44,13 @@ class SchemaMergingTest {
             .assertThat(
                 result.javaDataTypes
                     .single {
-                        it.typeSpec.name == "Person"
-                    }.typeSpec.fieldSpecs,
+                        it.typeSpec().name() == "Person"
+                    }.typeSpec()
+                    .fieldSpecs(),
             ).extracting("name")
             .contains("name", "movies")
 
-        val movieType = result.javaDataTypes.find { it.typeSpec.name == "Movie" }
+        val movieType = result.javaDataTypes.find { it.typeSpec().name() == "Movie" }
         Assertions.assertThat(movieType).isNotNull
     }
 

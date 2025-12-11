@@ -29,10 +29,10 @@ import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.f
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findUnionExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
-import com.squareup.javapoet.AnnotationSpec
-import com.squareup.javapoet.ClassName
-import com.squareup.javapoet.JavaFile
-import com.squareup.javapoet.TypeSpec
+import com.palantir.javapoet.AnnotationSpec
+import com.palantir.javapoet.ClassName
+import com.palantir.javapoet.JavaFile
+import com.palantir.javapoet.TypeSpec
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.KModifier
 import graphql.language.*
@@ -323,10 +323,10 @@ class CodeGen(
             CodeGenResult.EMPTY
         }
 
-    private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult {
-        return if (config.generateClientApi || config.generateClientApiv2) {
+    private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult =
+        if (config.generateClientApi || config.generateClientApiv2) {
             val generatedRepresentations = mutableMapOf<String, Any>()
-            return definitions
+            definitions
                 .asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
                 .filter { it.hasDirective("key") }
@@ -336,7 +336,6 @@ class CodeGen(
         } else {
             CodeGenResult.EMPTY
         }
-    }
 
     private fun generateJavaDataFetchers(definitions: Collection<Definition<*>>): CodeGenResult =
         definitions
