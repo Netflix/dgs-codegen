@@ -1,0 +1,16 @@
+input Person {
+    name: String! = "Damian"
+    age: Int! = 18
+    car: Car! = { brand: "Ford" }
+    hobbies: [Hobby!]! = [Hokey]
+    isHappy: Boolean! = true
+}
+
+enum Hobby {
+    Football
+    Hokey
+}
+
+input Car {
+    brand: String! = "BMW"
+}

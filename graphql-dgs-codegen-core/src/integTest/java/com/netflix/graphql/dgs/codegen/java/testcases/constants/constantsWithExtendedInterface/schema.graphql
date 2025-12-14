@@ -1,0 +1,12 @@
+type Query {
+  people: [Person]
+}
+
+interface Person {
+  firstname: String!
+  lastname: String
+}
+
+extend interface Person {
+  age: Int
+}
