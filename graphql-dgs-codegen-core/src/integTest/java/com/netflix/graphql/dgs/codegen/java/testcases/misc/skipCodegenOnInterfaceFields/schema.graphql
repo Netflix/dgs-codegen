@@ -1,0 +1,4 @@
+interface Person {
+  name: String
+  email: String @skipcodegen
+}

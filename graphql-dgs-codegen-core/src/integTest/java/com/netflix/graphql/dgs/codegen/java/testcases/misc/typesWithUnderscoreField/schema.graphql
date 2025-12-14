@@ -1,0 +1,11 @@
+interface MyInterface {
+    _: ID
+}
+
+type MyInterfaceImpl implements MyInterface {
+    _: ID
+}
+
+type Query {
+    impl: MyInterfaceImpl
+}
