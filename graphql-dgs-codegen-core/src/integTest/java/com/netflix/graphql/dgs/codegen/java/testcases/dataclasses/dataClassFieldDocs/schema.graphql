@@ -1,0 +1,17 @@
+type Query {
+  search(movieFilter: MovieFilter!): Movie
+}
+
+type Movie {
+  """
+  The original, non localized title with some specials characters : %!({[*$,.:;.
+  """
+  title: String
+}
+
+input MovieFilter {
+  """
+  Starts-with filter
+  """
+  titleFilter: String
+}

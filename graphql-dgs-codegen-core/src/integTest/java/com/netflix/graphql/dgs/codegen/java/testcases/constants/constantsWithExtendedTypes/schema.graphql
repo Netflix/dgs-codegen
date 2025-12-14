@@ -1,0 +1,12 @@
+type Query {
+  people: [Person]
+}
+
+type Person {
+  firstname: String
+  lastname: String
+}
+
+extend type Person {
+  email: String
+}

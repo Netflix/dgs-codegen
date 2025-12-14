@@ -1,0 +1,11 @@
+interface A { name : String }
+
+type Example implements A {
+    name: String
+}
+
+interface B { age :Int }
+
+extend type Example implements B{
+    age :Int
+}
