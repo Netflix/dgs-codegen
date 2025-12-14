@@ -1,0 +1,21 @@
+type Query {
+  cars: [Car]
+}
+
+type Car {
+  make: String
+  model: String
+  engine: Engine
+}
+
+type Engine {
+  type: String
+  bhp: Int
+  size: Float
+  performance: Performance
+}
+
+type Performance {
+  zeroToSixty: Float
+  quarterMile: Float
+}
