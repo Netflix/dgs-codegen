@@ -1,0 +1,8 @@
+type Query {
+  people: [Person]
+}
+
+type Person {
+  name: String!
+  email: [String]!
+}

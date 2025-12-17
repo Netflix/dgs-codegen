@@ -1,0 +1,12 @@
+type SampleType {
+  return: String!
+}
+
+type Query {
+  people: [Person]
+}
+
+type Person {
+  info(package: String): String
+  interface: String
+}

@@ -1,0 +1,16 @@
+type Query {
+  person(a1: String, a2: String!, a3: I): Person
+}
+
+interface Person {
+  firstname: String
+}
+
+type Employee implements Person {
+  firstname: String
+  company: String
+}
+
+input I {
+  arg: String
+}
