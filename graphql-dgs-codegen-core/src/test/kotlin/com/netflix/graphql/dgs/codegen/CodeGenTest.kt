@@ -7061,15 +7061,16 @@ It takes a title and such.
         dataTypes[0].writeTo(System.out)
         assertCompilesJava(dataTypes)
     }
+
     @Test
     fun `public no-arg constructor is generated when jspecify enabled and all fields are nullable`() {
         val schema =
             """
-        type Foo {
-            a: String
-            b: Int
-        }
-        """.trimIndent()
+            type Foo {
+                a: String
+                b: Int
+            }
+            """.trimIndent()
 
         val result =
             CodeGen(
@@ -7096,11 +7097,11 @@ It takes a title and such.
     fun `required-fields constructor is generated when jspecify enabled and non-null fields exist`() {
         val schema =
             """
-        type Foo {
-            a: String!
-            b: Int
-        }
-        """.trimIndent()
+            type Foo {
+                a: String!
+                b: Int
+            }
+            """.trimIndent()
 
         val result =
             CodeGen(
@@ -7128,6 +7129,4 @@ It takes a title and such.
 
         assertCompilesJava(result)
     }
-
 }
-
