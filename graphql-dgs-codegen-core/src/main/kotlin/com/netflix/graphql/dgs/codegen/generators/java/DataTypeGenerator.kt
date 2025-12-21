@@ -481,9 +481,6 @@ abstract class BaseDataTypeGenerator(
             }
         }
 
-
-
-
         addToString(fields, javaType)
 
         addEquals(javaType)
