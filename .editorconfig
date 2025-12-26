@@ -1,3 +1,5 @@
+root = true
+
 [{*.kt,*.kts}]
 ij_kotlin_code_style_defaults = KOTLIN_OFFICIAL
 ktlint_standard_no-wildcard-imports = disabled
