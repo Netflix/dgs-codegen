@@ -552,7 +552,11 @@ class ClientApiGenerator(
                 |${
                         fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
                             """
-                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}, false, null);
+                     |InputArgument ${input.name}Arg = new InputArgument(
+                     |        "${input.name}", 
+                     |        ${javaReservedKeywordSanitizer.sanitize(input.name)}, 
+                     |        false, 
+                     |        null);
                      |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
                             """.trimMargin()
                         }
@@ -591,10 +595,12 @@ class ClientApiGenerator(
                 |${
                         fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
                             """
-                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}Reference, true, ${getVariableDefinitionType(
+                     |InputArgument ${javaReservedKeywordSanitizer.sanitize(
+                                input.name,
+                            )}Arg = new InputArgument("${input.name}", ${input.name}Reference, true, ${getVariableDefinitionType(
                                 input.type,
                             )});
-                     |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
+                     |getInputArguments().get("${fieldDefinition.name}").add(${javaReservedKeywordSanitizer.sanitize(input.name)}Arg);
                             """.trimMargin()
                         }
                     }
@@ -935,8 +941,12 @@ class ClientApiGenerator(
                                 |${
                                         it.inputValueDefinitions.joinToString("\n") { input ->
                                             """
-                                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}, false, null);
-                                     |getInputArguments().get("${it.name}").add(${input.name}Arg);
+                                     |InputArgument ${javaReservedKeywordSanitizer.sanitize(input.name)}Arg = new InputArgument(
+                                     |        "${input.name}",
+                                     |        ${javaReservedKeywordSanitizer.sanitize(input.name)},
+                                     |        false,
+                                     |        null);
+                                     |getInputArguments().get("${it.name}").add(${javaReservedKeywordSanitizer.sanitize(input.name)}Arg);
                                             """.trimMargin()
                                         }}
                                 |return this;
@@ -945,9 +955,14 @@ class ClientApiGenerator(
                                 ).addModifiers(Modifier.PUBLIC)
 
                         it.inputValueDefinitions.forEach { input ->
-                            methodWithInputArgumentsBuilder.addParameter(
-                                ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build(),
-                            )
+                            methodWithInputArgumentsBuilder
+                                .addParameter(
+                                    ParameterSpec
+                                        .builder(
+                                            typeUtils.findReturnType(input.type),
+                                            javaReservedKeywordSanitizer.sanitize(input.name),
+                                        ).build(),
+                                )
                         }
 
                         javaType.addMethod(methodWithInputArgumentsBuilder.build())
