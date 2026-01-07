@@ -462,16 +462,15 @@ abstract class BaseDataTypeGenerator(
         val requiredFields = fields.filter { !it.nullable }
 
         if (config.generateJSpecifyAnnotations) {
-            if (requiredFields.isEmpty()) {
-                addDefaultConstructor(javaType, true)
-            } else {
-                addDefaultConstructor(javaType, false)
+            val allFieldsNullable = requiredFields.isEmpty()
+            addDefaultConstructor(javaType, allFieldsNullable)
 
-                if (fields.isNotEmpty() && fields.size < 256) {
-                    addParameterizedConstructor(fields, javaType)
+            if (config.javaGenerateAllConstructor && fields.isNotEmpty() && fields.size < 256) {
+                addParameterizedConstructor(fields, javaType)
+
+                if (requiredFields.isNotEmpty() && requiredFields.size < fields.size) {
+                    addParameterizedConstructor(requiredFields, javaType)
                 }
-
-                addParameterizedConstructor(requiredFields, javaType)
             }
         } else {
             addDefaultConstructor(javaType, true)
