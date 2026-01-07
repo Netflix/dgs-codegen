@@ -160,6 +160,57 @@ class Kotlin2CodeGenTest {
         assertCompilesKotlin(codeGenResult)
     }
 
+    @Test
+    fun `generateClientApiv2 works with generateKotlinClosureProjections`() {
+        val schema =
+            """
+            type Query {
+                people: [Person]
+            }
+
+            type Person {
+                firstname: String
+                lastname: String
+                age: Int
+            }
+            """.trimIndent()
+
+        val packageName = "com.netflix.graphql.dgs.codegen.kotlin2.clientv2"
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = packageName,
+                    language = Language.KOTLIN,
+                    generateClientApiv2 = true,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                ),
+            ).generate()
+
+        val dgsClient = codeGenResult.kotlinClientTypes.find { it.name == "DgsClient" }
+        assertThat(dgsClient).isNotNull
+        assertThat(dgsClient?.members).isNotEmpty
+
+        val dgsClientType = dgsClient?.members?.filterIsInstance<com.squareup.kotlinpoet.TypeSpec>()?.first()
+        val buildQueryMethod = dgsClientType?.funSpecs?.find { it.name == "buildQuery" }
+        assertThat(buildQueryMethod).isNotNull
+        assertThat(buildQueryMethod?.returnType.toString()).isEqualTo("kotlin.String")
+
+        val queryProjection = codeGenResult.kotlinClientTypes.find { it.name == "QueryProjection" }
+        assertThat(queryProjection).isNotNull
+
+        val personProjection = codeGenResult.kotlinClientTypes.find { it.name == "PersonProjection" }
+        assertThat(personProjection).isNotNull
+
+        val personProjectionType = personProjection?.members?.filterIsInstance<com.squareup.kotlinpoet.TypeSpec>()?.first()
+        val propertyNames = personProjectionType?.propertySpecs?.map { it.name }
+        assertThat(propertyNames).contains("firstname", "lastname", "age")
+
+        assertCompilesKotlin(codeGenResult)
+    }
+
     companion object {
         @Suppress("unused")
         @JvmStatic
