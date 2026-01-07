@@ -927,7 +927,7 @@ class ClientApiGenerator(
                         val methodWithInputArgumentsBuilder =
                             MethodSpec
                                 .methodBuilder(javaReservedKeywordSanitizer.sanitize(it.name))
-                                .returns(ClassName.get(getPackageName(), javaType.build().name()))
+                                .returns(TypeVariableName.get("$clazzName<PARENT, ROOT>"))
                                 .addCode(
                                     """
                                 |getFields().put("${it.name}", null);
