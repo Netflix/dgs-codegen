@@ -928,6 +928,51 @@ class ClientApiGenProjectionTest {
     }
 
     @Test
+    fun `Scalar fields with inputs in sub projections should have generic parameters in query API`() {
+        val schema =
+            """
+            type Query {
+                profile(filter: String): Profile
+            }
+
+            type Profile {
+                account: Account
+            }
+
+            type Account {
+                permissions(filter: [String!]!): [String!]
+                name: String
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApiv2 = true,
+                ),
+            ).generate()
+
+        val accountProjection =
+            codeGenResult.clientProjections.find { it.typeSpec().name() == "AccountProjection" }
+                ?: fail("AccountProjection not found")
+
+        val permissionsMethod =
+            accountProjection.typeSpec().methodSpecs().find {
+                it.name() == "permissions" && it.parameters().isNotEmpty()
+            } ?: fail("Method not found")
+
+        assertThat(permissionsMethod.returnType())
+            .extracting { (it as TypeVariableName).name() }
+            .isEqualTo("AccountProjection<PARENT, ROOT>")
+        assertThat(permissionsMethod.parameters()[0].name()).isEqualTo("filter")
+        assertThat(permissionsMethod.parameters()[0].type().toString()).isEqualTo("java.util.List<java.lang.String>")
+
+        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+    }
+
+    @Test
     fun `Dedupe type names in Projections to support multiple schema files`() {
         val schema =
             """
