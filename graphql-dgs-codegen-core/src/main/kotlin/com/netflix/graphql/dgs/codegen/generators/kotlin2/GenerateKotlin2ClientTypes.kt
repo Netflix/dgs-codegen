@@ -52,7 +52,7 @@ fun generateKotlin2ClientTypes(
     config: CodeGenConfig,
     document: Document,
 ): List<FileSpec> {
-    if (!config.generateClientApi && !config.generateClientApiv2) {
+    if (!config.generateClientApi) {
         return emptyList()
     }
 

@@ -6979,7 +6979,7 @@ It takes a title and such.
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
         assertThat(

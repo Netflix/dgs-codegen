@@ -629,7 +629,7 @@ class EntitiesClientApiGenTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     language = Language.JAVA,
                 ),
             ).generate()

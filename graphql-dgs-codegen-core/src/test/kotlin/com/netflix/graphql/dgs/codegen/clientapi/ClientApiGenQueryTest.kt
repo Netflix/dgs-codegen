@@ -43,7 +43,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -83,7 +83,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -139,7 +139,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -212,7 +212,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     includeQueries = setOf("shows"),
                     generateDataTypes = false,
                     writeToFiles = false,
@@ -270,7 +270,7 @@ class ClientApiGenQueryTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateDataTypes = false,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     includeQueries = setOf("movies"),
                 ),
             ).generate()
@@ -302,7 +302,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
         assertThat(
@@ -340,7 +340,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -381,7 +381,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -414,7 +414,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     includeQueries = setOf("movieTitles"),
                 ),
             ).generate()
@@ -450,7 +450,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -491,7 +491,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -553,7 +553,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -621,7 +621,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     writeToFiles = true,
                 ),
             ).generate()
@@ -761,7 +761,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     typeMapping = mapOf("Long" to "java.lang.Long"),
                 ),
             ).generate()
@@ -863,7 +863,7 @@ class ClientApiGenQueryTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateDataTypes = true,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     typeMapping = mapOf("Long" to "java.lang.Long"),
                 ),
             ).generate()
@@ -963,7 +963,7 @@ class ClientApiGenQueryTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateDataTypes = false,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     includeQueries = setOf("foo", "bar"),
                 ),
             ).generate()
@@ -1035,7 +1035,7 @@ class ClientApiGenQueryTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -1079,7 +1079,7 @@ class ClientApiGenQueryTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateDataTypes = true,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                     includeQueries = setOf("bar"),
                 ),
             ).generate()
