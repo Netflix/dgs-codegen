@@ -197,8 +197,7 @@ open class GenerateJavaTask
                     language = Language.valueOf(language.uppercase(Locale.getDefault())),
                     generateBoxedTypes = generateBoxedTypes,
                     generateIsGetterForPrimitiveBooleanFields = generateIsGetterForPrimitiveBooleanFields,
-                    generateClientApi = generateClient,
-                    generateClientApiv2 = generateClientv2,
+                    generateClientApi = generateClient || generateClientv2, // Allow setting either for backwards compatibility
                     generateKotlinNullableClasses = generateKotlinNullableClasses,
                     generateKotlinClosureProjections = generateKotlinClosureProjections,
                     generateInterfaces = generateInterfaces,

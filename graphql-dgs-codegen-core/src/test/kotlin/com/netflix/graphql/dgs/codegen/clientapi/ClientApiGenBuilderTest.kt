@@ -39,7 +39,7 @@ class ClientApiGenBuilderTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -73,7 +73,7 @@ class ClientApiGenBuilderTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -104,7 +104,7 @@ class ClientApiGenBuilderTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -133,7 +133,7 @@ class ClientApiGenBuilderTest {
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
-                    generateClientApiv2 = true,
+                    generateClientApi = true,
                 ),
             ).generate()
 
@@ -171,7 +171,7 @@ class ClientApiGenBuilderTest {
                     CodeGenConfig(
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
-                        generateClientApiv2 = true,
+                        generateClientApi = true,
                         addDeprecatedAnnotation = true,
                     ),
                 ).generate()
@@ -219,7 +219,7 @@ class ClientApiGenBuilderTest {
                     CodeGenConfig(
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
-                        generateClientApiv2 = true,
+                        generateClientApi = true,
                         addDeprecatedAnnotation = true,
                     ),
                 ).generate()
@@ -273,7 +273,7 @@ class ClientApiGenBuilderTest {
                     CodeGenConfig(
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
-                        generateClientApiv2 = true,
+                        generateClientApi = true,
                         addDeprecatedAnnotation = true,
                     ),
                 ).generate()
@@ -329,7 +329,7 @@ class ClientApiGenBuilderTest {
                     CodeGenConfig(
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
-                        generateClientApiv2 = true,
+                        generateClientApi = true,
                         addDeprecatedAnnotation = true,
                     ),
                 ).generate()
@@ -387,7 +387,7 @@ class ClientApiGenBuilderTest {
                     CodeGenConfig(
                         schemas = setOf(schema),
                         packageName = BASE_PACKAGE_NAME,
-                        generateClientApiv2 = true,
+                        generateClientApi = true,
                     ),
                 ).generate()
 

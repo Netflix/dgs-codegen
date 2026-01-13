@@ -296,7 +296,7 @@ class CodeGen(
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
         val methodNames = mutableSetOf<String>()
-        return if (config.generateClientApi || config.generateClientApiv2) {
+        return if (config.generateClientApi) {
             definitions
                 .asSequence()
                 .filterIsInstance<ObjectTypeDefinition>()
@@ -311,7 +311,7 @@ class CodeGen(
     }
 
     private fun generateJavaClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult =
-        if (config.generateClientApi || config.generateClientApiv2) {
+        if (config.generateClientApi) {
             val federatedDefinitions =
                 definitions
                     .asSequence()
@@ -324,7 +324,7 @@ class CodeGen(
         }
 
     private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult =
-        if (config.generateClientApi || config.generateClientApiv2) {
+        if (config.generateClientApi) {
             val generatedRepresentations = mutableMapOf<String, Any>()
             definitions
                 .asSequence()
@@ -554,7 +554,6 @@ class CodeGenConfig(
     var generateBoxedTypes: Boolean = false,
     var generateIsGetterForPrimitiveBooleanFields: Boolean = false,
     var generateClientApi: Boolean = false,
-    var generateClientApiv2: Boolean = false,
     var generateInterfaces: Boolean = false,
     var generateKotlinNullableClasses: Boolean = false,
     var generateKotlinClosureProjections: Boolean = false,
