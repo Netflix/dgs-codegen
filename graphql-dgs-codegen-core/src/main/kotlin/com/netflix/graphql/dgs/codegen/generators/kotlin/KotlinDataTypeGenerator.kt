@@ -186,9 +186,11 @@ abstract class AbstractKotlinDataTypeGenerator(
         description: Description? = null,
         directives: List<Directive> = emptyList(),
     ): CodeGenResult {
+        val typeName = config.typePrefix + name + config.typeSuffix
+
         val kotlinType =
             TypeSpec
-                .classBuilder(name)
+                .classBuilder(typeName)
                 .addOptionalGeneratedAnnotation(config)
 
         if (config.implementSerializable) {
