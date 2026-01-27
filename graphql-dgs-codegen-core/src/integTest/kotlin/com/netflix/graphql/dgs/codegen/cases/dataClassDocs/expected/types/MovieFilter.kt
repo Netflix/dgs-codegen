@@ -1,6 +1,5 @@
 package com.netflix.graphql.dgs.codegen.cases.dataClassDocs.expected.types
 
-import com.fasterxml.jackson.`annotation`.JsonCreator
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.netflix.graphql.dgs.codegen.GraphQLInput
 import kotlin.Any
@@ -13,7 +12,7 @@ import kotlin.collections.List
  *
  * It takes a title and such.
  */
-public data class MovieFilter @JsonCreator constructor(
+public data class MovieFilter(
   @JsonProperty("titleFilter")
   public val titleFilter: String? = default<MovieFilter, String?>("titleFilter", null),
 ) : GraphQLInput() {
