@@ -18,7 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
-import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLInput
@@ -89,7 +88,6 @@ fun generateKotlin2InputTypes(
                     .primaryConstructor(
                         FunSpec
                             .constructorBuilder()
-                            .addAnnotation(JsonCreator::class)
                             .addParameters(
                                 fields.map { field ->
                                     val type = type(field)

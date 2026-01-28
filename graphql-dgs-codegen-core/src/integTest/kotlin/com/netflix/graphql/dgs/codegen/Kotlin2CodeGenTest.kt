@@ -18,11 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.fail
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.MethodSource
+import java.net.URLClassLoader
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
@@ -35,6 +37,7 @@ import kotlin.io.path.readText
 class Kotlin2CodeGenTest {
     // set this to true to update all expected outputs instead of running tests
     private val updateExpected = false
+    private val objectMapper = jacksonObjectMapper()
 
     @ParameterizedTest
     @MethodSource("listTestsToRun")
@@ -158,6 +161,109 @@ class Kotlin2CodeGenTest {
         assertThat(dataType.propertySpecs.map { it.name }).contains("underscoreField_")
 
         assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun `Jackson should deserialize input type with all optional fields without @JsonCreator annotation`() {
+        val schema =
+            """
+            input PersonInput {
+                name: String
+                age: Int
+                email: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = "com.netflix.test.alloptional",
+                    language = Language.KOTLIN,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                ),
+            ).generate()
+
+        val buildDir = assertCompilesKotlin(result)
+        val classLoader = URLClassLoader(arrayOf(buildDir.toUri().toURL()), this.javaClass.classLoader)
+        val inputClass = classLoader.loadClass("com.netflix.test.alloptional.types.PersonInput")
+
+        val json = """{"name": "John", "age": 30, "email": "john@example.com"}"""
+        val instance = objectMapper.readValue(json, inputClass)
+        assertThat(instance).isNotNull
+    }
+
+    @Test
+    fun `Jackson should deserialize input type with required field`() {
+        val schema =
+            """
+            input PersonInput {
+                name: String!
+                age: Int
+                email: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = "com.netflix.test.withrequired",
+                    language = Language.KOTLIN,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                ),
+            ).generate()
+
+        val buildDir = assertCompilesKotlin(result)
+        val classLoader = URLClassLoader(arrayOf(buildDir.toUri().toURL()), this.javaClass.classLoader)
+        val inputClass = classLoader.loadClass("com.netflix.test.withrequired.types.PersonInput")
+
+        // Test runtime Jackson deserialization
+        val json = """{"name": "John", "age": 30, "email": "john@example.com"}"""
+        val instance = objectMapper.readValue(json, inputClass)
+        assertThat(instance).isNotNull
+
+        val nameField = inputClass.getDeclaredField("name")
+        nameField.isAccessible = true
+        assertThat(nameField.get(instance)).isEqualTo("John")
+    }
+
+    @Test
+    fun `Input type with explicit defaults should deserialize without conflicting creators error`() {
+        val schema =
+            """
+            input PersonInput {
+                name: String! = "Unknown"
+                age: Int! = 0
+                active: Boolean! = true
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = "com.netflix.test.alldefaults",
+                    language = Language.KOTLIN,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                ),
+            ).generate()
+
+        val buildDir = assertCompilesKotlin(result)
+        val classLoader = URLClassLoader(arrayOf(buildDir.toUri().toURL()), this.javaClass.classLoader)
+        val inputClass = classLoader.loadClass("com.netflix.test.alldefaults.types.PersonInput")
+
+        val json = """{"name": "John", "age": 30, "active": false}"""
+
+        val instance = objectMapper.readValue(json, inputClass)
+        assertThat(instance).isNotNull
+
+        val nameField = inputClass.getDeclaredField("name")
+        nameField.isAccessible = true
+        assertThat(nameField.get(instance)).isEqualTo("John")
     }
 
     companion object {
