@@ -3,18 +3,15 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableListOfNull
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
-import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = Person.Builder::class)
-@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = Person.Builder::class)
+@JsonDeserialize(builder = Person.Builder::class)
 public class Person(
   name: () -> String = nameDefault,
   email: () -> List<String?> = emailDefault,
@@ -39,8 +36,7 @@ public class Person(
         { throw IllegalStateException("Field `email` was not requested") }
   }
 
-  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
+  @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var name: () -> String = nameDefault

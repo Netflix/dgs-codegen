@@ -3,20 +3,17 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullablePrimitiveI
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
 import kotlin.collections.List
 import kotlin.jvm.JvmName
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
-import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = MyType.Builder::class)
-@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = MyType.Builder::class)
+@JsonDeserialize(builder = MyType.Builder::class)
 public class MyType(
   count: () -> List<Int>? = countDefault,
   truth: () -> List<Boolean>? = truthDefault,
@@ -51,8 +48,7 @@ public class MyType(
         { throw IllegalStateException("Field `floaty` was not requested") }
   }
 
-  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
+  @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var count: () -> List<Int>? = countDefault

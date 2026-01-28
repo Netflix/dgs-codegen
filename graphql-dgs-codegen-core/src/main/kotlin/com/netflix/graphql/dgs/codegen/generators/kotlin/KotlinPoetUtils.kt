@@ -59,11 +59,11 @@ fun configureJacksonVersion(jacksonVersions: Set<JacksonVersion>) {
  * Which Jackson versions to generate annotations for.
  *
  * 1. Use configured versions from Gradle plugin (inferred from project dependencies) if available
- * 2. Default to both versions
+ * 2. Default to Jackson 2 for backwards compatibility
  */
 private fun getJacksonVersions(): Set<JacksonVersion> =
     // Use configured versions if available and non-empty
-    configuredVersions.takeIf { it.isNotEmpty() } ?: setOf(JacksonVersion.JACKSON_2, JacksonVersion.JACKSON_3)
+    configuredVersions.takeIf { it.isNotEmpty() } ?: setOf(JacksonVersion.JACKSON_2)
 
 /**
  * Get the ClassName(s) for JsonDeserialize annotation based on detected Jackson version(s).

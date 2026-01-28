@@ -110,8 +110,7 @@ class JacksonVersionDetectionTest {
     }
 
     @Test
-    fun `defaults to both versions when no configuration is provided`() {
-        // Don't configure anything - should default to both versions
+    fun `defaults to Jackson 2 when no configuration is provided`() {
         val result =
             CodeGen(
                 CodeGenConfig(
@@ -125,13 +124,15 @@ class JacksonVersionDetectionTest {
         val movieType = result.kotlinDataTypes.first { it.name == "Movie" }
         val fileContent = movieType.toString()
 
-        // Should have both Jackson 2 and 3 annotations by default
         assertThat(fileContent).contains("com.fasterxml.jackson.databind.`annotation`.JsonDeserialize")
-        assertThat(fileContent).contains("tools.jackson.databind.`annotation`.JsonDeserialize")
+        assertThat(fileContent).doesNotContain("tools.jackson.databind.`annotation`.JsonDeserialize")
+
+        assertThat(fileContent).contains("com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder")
+        assertThat(fileContent).doesNotContain("tools.jackson.databind.`annotation`.JsonPOJOBuilder")
     }
 
     @Test
-    fun `empty configuration defaults to both versions`() {
+    fun `empty configuration defaults to Jackson 2`() {
         val result =
             CodeGen(
                 CodeGenConfig(
@@ -146,8 +147,11 @@ class JacksonVersionDetectionTest {
         val movieType = result.kotlinDataTypes.first { it.name == "Movie" }
         val fileContent = movieType.toString()
 
-        // Should default to both versions
+        // Should default to Jackson 2 (backwards compatibility)
         assertThat(fileContent).contains("com.fasterxml.jackson.databind.`annotation`.JsonDeserialize")
-        assertThat(fileContent).contains("tools.jackson.databind.`annotation`.JsonDeserialize")
+        assertThat(fileContent).doesNotContain("tools.jackson.databind.`annotation`.JsonDeserialize")
+
+        assertThat(fileContent).contains("com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder")
+        assertThat(fileContent).doesNotContain("tools.jackson.databind.`annotation`.JsonPOJOBuilder")
     }
 }

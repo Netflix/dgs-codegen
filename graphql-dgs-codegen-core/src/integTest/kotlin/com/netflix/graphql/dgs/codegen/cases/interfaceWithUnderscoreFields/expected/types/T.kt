@@ -3,18 +3,15 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceWithUnderscoreFields.expe
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
-import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = T.Builder::class)
-@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = T.Builder::class)
+@JsonDeserialize(builder = T.Builder::class)
 public class T(
   _id: () -> String? = _idDefault,
   id: () -> String? = idDefault,
@@ -40,8 +37,7 @@ public class T(
         { throw IllegalStateException("Field `id` was not requested") }
   }
 
-  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
+  @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var _id: () -> String? = _idDefault

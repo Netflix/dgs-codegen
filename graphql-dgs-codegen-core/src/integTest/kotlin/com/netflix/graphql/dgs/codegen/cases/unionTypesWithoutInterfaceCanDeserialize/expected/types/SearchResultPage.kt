@@ -3,17 +3,14 @@ package com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeser
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.collections.List
 import kotlin.jvm.JvmName
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
-import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = SearchResultPage.Builder::class)
-@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = SearchResultPage.Builder::class)
+@JsonDeserialize(builder = SearchResultPage.Builder::class)
 public class SearchResultPage(
   items: () -> List<SearchResult?>? = itemsDefault,
 ) {
@@ -28,8 +25,7 @@ public class SearchResultPage(
         { throw IllegalStateException("Field `items` was not requested") }
   }
 
-  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
+  @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var items: () -> List<SearchResult?>? = itemsDefault

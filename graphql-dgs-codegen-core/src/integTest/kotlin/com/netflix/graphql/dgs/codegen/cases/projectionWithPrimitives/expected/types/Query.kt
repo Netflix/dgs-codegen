@@ -3,18 +3,15 @@ package com.netflix.graphql.dgs.codegen.cases.projectionWithPrimitives.expected.
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
-import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = Query.Builder::class)
-@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = Query.Builder::class)
+@JsonDeserialize(builder = Query.Builder::class)
 public class Query(
   string: () -> String? = stringDefault,
   strings: () -> List<String?>? = stringsDefault,
@@ -39,8 +36,7 @@ public class Query(
         { throw IllegalStateException("Field `strings` was not requested") }
   }
 
-  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
+  @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var string: () -> String? = stringDefault

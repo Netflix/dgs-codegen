@@ -3,18 +3,15 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expec
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.Boolean
 import kotlin.String
 import kotlin.jvm.JvmName
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
-import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = PageInfo.Builder::class)
-@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = PageInfo.Builder::class)
+@JsonDeserialize(builder = PageInfo.Builder::class)
 public class PageInfo(
   startCursor: () -> String? = startCursorDefault,
   endCursor: () -> String? = endCursorDefault,
@@ -59,8 +56,7 @@ public class PageInfo(
         { throw IllegalStateException("Field `hasPreviousPage` was not requested") }
   }
 
-  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
-  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
+  @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var startCursor: () -> String? = startCursorDefault
