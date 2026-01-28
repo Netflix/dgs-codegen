@@ -3,16 +3,19 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.Suppress
 import kotlin.collections.List
 import kotlin.jvm.JvmName
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
+import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
+import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@JsonDeserialize(builder = Dog.Builder::class)
+@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = Dog.Builder::class)
+@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = Dog.Builder::class)
 public class Dog(
   id: () -> String = idDefault,
   name: () -> String? = nameDefault,
@@ -83,7 +86,8 @@ public class Dog(
         { throw IllegalStateException("Field `parents` was not requested") }
   }
 
-  @JsonPOJOBuilder
+  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
+  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var id: () -> String = idDefault

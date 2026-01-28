@@ -3,18 +3,21 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassDocs.expected.types
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.jvm.JvmName
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
+import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
+import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 /**
  * Movies are fun to watch.
  * They also work well as examples in GraphQL.
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@JsonDeserialize(builder = Movie.Builder::class)
+@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = Movie.Builder::class)
+@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = Movie.Builder::class)
 public class Movie(
   title: () -> String? = titleDefault,
 ) {
@@ -29,7 +32,8 @@ public class Movie(
         { throw IllegalStateException("Field `title` was not requested") }
   }
 
-  @JsonPOJOBuilder
+  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
+  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var title: () -> String? = titleDefault

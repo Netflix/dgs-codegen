@@ -2,15 +2,19 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWIthNoFields.expected.typ
 
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
+import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
+import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@JsonDeserialize(builder = Person.Builder::class)
+@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = Person.Builder::class)
+@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = Person.Builder::class)
 public class Person() {
   public companion object
 
-  @JsonPOJOBuilder
+  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
+  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     public fun build(): Person = Person(

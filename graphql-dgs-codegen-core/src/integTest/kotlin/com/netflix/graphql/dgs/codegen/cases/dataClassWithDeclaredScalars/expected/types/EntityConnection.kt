@@ -3,14 +3,17 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expec
 import com.fasterxml.jackson.`annotation`.JsonIgnoreProperties
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
-import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.collections.List
 import kotlin.jvm.JvmName
+import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize as FasterxmlJacksonDatabindAnnotationJsonDeserialize
+import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder as FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
+import tools.jackson.databind.`annotation`.JsonDeserialize as ToolsJacksonDatabindAnnotationJsonDeserialize
+import tools.jackson.databind.`annotation`.JsonPOJOBuilder as ToolsJacksonDatabindAnnotationJsonPOJOBuilder
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
-@JsonDeserialize(builder = EntityConnection.Builder::class)
+@FasterxmlJacksonDatabindAnnotationJsonDeserialize(builder = EntityConnection.Builder::class)
+@ToolsJacksonDatabindAnnotationJsonDeserialize(builder = EntityConnection.Builder::class)
 public class EntityConnection(
   pageInfo: () -> PageInfo = pageInfoDefault,
   edges: () -> List<EntityEdge?>? = edgesDefault,
@@ -35,7 +38,8 @@ public class EntityConnection(
         { throw IllegalStateException("Field `edges` was not requested") }
   }
 
-  @JsonPOJOBuilder
+  @FasterxmlJacksonDatabindAnnotationJsonPOJOBuilder
+  @ToolsJacksonDatabindAnnotationJsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {
     private var pageInfo: () -> PageInfo = pageInfoDefault
