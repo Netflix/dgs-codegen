@@ -214,21 +214,20 @@ class ClientApiGenerator(
 
         it.inputValueDefinitions.forEach { inputValue ->
             val findReturnType = TypeUtils(getDatatypesPackageName(), config, document).findReturnType(inputValue.type)
+            val sanitizedInputName = javaReservedKeywordSanitizer.sanitize(inputValue.name)
 
             val deprecatedDirective = getDeprecateDirective(inputValue)
             val deprecationReason = deprecatedDirective?.let { it1 -> getDeprecatedReason(it1) }
 
             val methodBuilder =
                 MethodSpec
-                    .methodBuilder(javaReservedKeywordSanitizer.sanitize(inputValue.name))
-                    .addParameter(findReturnType, javaReservedKeywordSanitizer.sanitize(inputValue.name))
+                    .methodBuilder(sanitizedInputName)
+                    .addParameter(findReturnType, sanitizedInputName)
                     .returns(ClassName.get("", "Builder"))
                     .addModifiers(Modifier.PUBLIC)
                     .addCode(
                         """
-                    |this.${javaReservedKeywordSanitizer.sanitize(
-                            inputValue.name,
-                        )} = ${javaReservedKeywordSanitizer.sanitize(inputValue.name)};
+                    |this.$sanitizedInputName = $sanitizedInputName;
                     |this.fieldsSet.add("${inputValue.name}");
                     |return this;
                         """.trimMargin(),
@@ -237,19 +236,19 @@ class ClientApiGenerator(
             addDeprecationWarnings(deprecatedDirective, methodBuilder, inputValue, deprecationReason)
             builderClass
                 .addMethod(methodBuilder.build())
-                .addField(findReturnType, javaReservedKeywordSanitizer.sanitize(inputValue.name), Modifier.PRIVATE)
+                .addField(findReturnType, sanitizedInputName, Modifier.PRIVATE)
 
             val inputValueType = inputValue.type
             val typeForVariableDefinition = getVariableDefinitionType(inputValueType)
             val referenceMethodBuilder =
                 MethodSpec
-                    .methodBuilder(javaReservedKeywordSanitizer.sanitize(inputValue.name) + "Reference")
+                    .methodBuilder(sanitizedInputName + "Reference")
                     .addParameter(stringType, "variableRef")
                     .returns(ClassName.get("", "Builder"))
                     .addModifiers(Modifier.PUBLIC)
                     .addCode(
                         """
-                    |this.variableReferences.put("${javaReservedKeywordSanitizer.sanitize(inputValue.name)}", variableRef);
+                    |this.variableReferences.put("${inputValue.name}", variableRef);
                     |this.variableDefinitions.add(graphql.language.VariableDefinition.newVariableDefinition(variableRef, $typeForVariableDefinition).build());
                     |this.fieldsSet.add("${inputValue.name}");
                     |return this;
@@ -259,21 +258,21 @@ class ClientApiGenerator(
             addDeprecationWarnings(deprecatedDirective, referenceMethodBuilder, inputValue, deprecationReason)
             builderClass.addMethod(referenceMethodBuilder.build())
 
-            constructorBuilder.addParameter(findReturnType, javaReservedKeywordSanitizer.sanitize(inputValue.name))
-            legacyConstructorBuilder.addParameter(findReturnType, javaReservedKeywordSanitizer.sanitize(inputValue.name))
+            constructorBuilder.addParameter(findReturnType, sanitizedInputName)
+            legacyConstructorBuilder.addParameter(findReturnType, sanitizedInputName)
 
             if (findReturnType.isPrimitive) {
                 val code =
                     """
-                    |getInput().put("${inputValue.name}", ${javaReservedKeywordSanitizer.sanitize(inputValue.name)});                   
+                    |getInput().put("${inputValue.name}", $sanitizedInputName);
                     """.trimMargin()
                 constructorBuilder.addCode(code)
                 legacyConstructorBuilder.addCode(code)
             } else {
                 val code =
                     """
-                    |if (${javaReservedKeywordSanitizer.sanitize(inputValue.name)} != null || fieldsSet.contains("${inputValue.name}")) {
-                    |    getInput().put("${inputValue.name}", ${javaReservedKeywordSanitizer.sanitize(inputValue.name)});
+                    |if ($sanitizedInputName != null || fieldsSet.contains("${inputValue.name}")) {
+                    |    getInput().put("${inputValue.name}", $sanitizedInputName);
                     |}
                     """.trimMargin()
                 constructorBuilder.addCode(code)
@@ -551,9 +550,10 @@ class ClientApiGenerator(
                 |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());                      
                 |${
                         fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
+                            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
                             """
-                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}, false, null);
-                     |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
+                     |InputArgument ${sanitizedName}Arg = new InputArgument("${input.name}", $sanitizedName, false, null);
+                     |getInputArguments().get("${fieldDefinition.name}").add(${sanitizedName}Arg);
                             """.trimMargin()
                         }
                     }
@@ -590,11 +590,12 @@ class ClientApiGenerator(
                 |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());              
                 |${
                         fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
+                            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
                             """
-                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}Reference, true, ${getVariableDefinitionType(
+                     |InputArgument ${sanitizedName}Arg = new InputArgument("${input.name}", ${sanitizedName}Reference, true, ${getVariableDefinitionType(
                                 input.type,
                             )});
-                     |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
+                     |getInputArguments().get("${fieldDefinition.name}").add(${sanitizedName}Arg);
                             """.trimMargin()
                         }
                     }
@@ -604,7 +605,8 @@ class ClientApiGenerator(
                 ).addModifiers(Modifier.PUBLIC)
 
         fieldDefinition.inputValueDefinitions.forEach { input ->
-            methodBuilder.addParameter(ParameterSpec.builder(ClassName.get(String::class.java), "${input.name}Reference").build())
+            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
+            methodBuilder.addParameter(ParameterSpec.builder(ClassName.get(String::class.java), "${sanitizedName}Reference").build())
         }
         return javaType.addMethod(methodBuilder.build())
     }
@@ -934,9 +936,10 @@ class ClientApiGenerator(
                                 |getInputArguments().computeIfAbsent("${it.name}", k -> new ${'$'}T<>());
                                 |${
                                         it.inputValueDefinitions.joinToString("\n") { input ->
+                                            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
                                             """
-                                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}, false, null);
-                                     |getInputArguments().get("${it.name}").add(${input.name}Arg);
+                                     |InputArgument ${sanitizedName}Arg = new InputArgument("${input.name}", $sanitizedName, false, null);
+                                     |getInputArguments().get("${it.name}").add(${sanitizedName}Arg);
                                             """.trimMargin()
                                         }}
                                 |return this;
@@ -945,8 +948,9 @@ class ClientApiGenerator(
                                 ).addModifiers(Modifier.PUBLIC)
 
                         it.inputValueDefinitions.forEach { input ->
+                            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
                             methodWithInputArgumentsBuilder.addParameter(
-                                ParameterSpec.builder(typeUtils.findReturnType(input.type), input.name).build(),
+                                ParameterSpec.builder(typeUtils.findReturnType(input.type), sanitizedName).build(),
                             )
                         }
 
