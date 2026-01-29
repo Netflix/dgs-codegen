@@ -7061,4 +7061,114 @@ It takes a title and such.
         dataTypes[0].writeTo(System.out)
         assertCompilesJava(dataTypes)
     }
+
+    @Test
+    fun `public no-arg constructor is generated when jspecify enabled and all fields are nullable`() {
+        val schema =
+            """
+            type Foo {
+                a: String
+                b: Int
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.JAVA,
+                    generateJSpecifyAnnotations = true,
+                    javaGenerateAllConstructor = true,
+                ),
+            ).generate()
+
+        val fooType = result.javaDataTypes.single { it.typeSpec().name() == "Foo" }
+        val constructors = fooType.typeSpec().methodSpecs().filter { it.isConstructor }
+
+        assertThat(constructors).anySatisfy { ctor ->
+            assertThat(ctor.modifiers()).contains(javax.lang.model.element.Modifier.PUBLIC)
+            assertThat(ctor.parameters()).isEmpty()
+        }
+
+        assertCompilesJava(result)
+    }
+
+    @Test
+    fun `required-fields constructor is generated when jspecify enabled and non-null fields exist`() {
+        val schema =
+            """
+            type Foo {
+                a: String!
+                b: Int
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.JAVA,
+                    generateJSpecifyAnnotations = true,
+                    javaGenerateAllConstructor = true,
+                ),
+            ).generate()
+
+        val fooType = result.javaDataTypes.single { it.typeSpec().name() == "Foo" }
+        val constructors = fooType.typeSpec().methodSpecs().filter { it.isConstructor }
+
+        assertThat(constructors).anySatisfy { ctor ->
+            assertThat(ctor.modifiers()).contains(javax.lang.model.element.Modifier.PUBLIC)
+            assertThat(ctor.parameters()).hasSize(1)
+            assertThat(ctor.parameters()[0].name()).isEqualTo("a")
+        }
+
+        assertThat(constructors).anySatisfy { ctor ->
+            assertThat(ctor.modifiers()).contains(javax.lang.model.element.Modifier.PRIVATE)
+            assertThat(ctor.parameters()).isEmpty()
+        }
+
+        assertCompilesJava(result)
+    }
+
+    @Test
+    fun `required-fields constructor is not generated when all fields are required`() {
+        val schema =
+            """
+            type Foo {
+                a: String!
+                b: Int!
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.JAVA,
+                    generateJSpecifyAnnotations = true,
+                    javaGenerateAllConstructor = true,
+                ),
+            ).generate()
+
+        val fooType = result.javaDataTypes.single { it.typeSpec().name() == "Foo" }
+        val constructors = fooType.typeSpec().methodSpecs().filter { it.isConstructor }
+
+        assertThat(constructors).anySatisfy { ctor ->
+            assertThat(ctor.modifiers()).contains(javax.lang.model.element.Modifier.PRIVATE)
+            assertThat(ctor.parameters()).isEmpty()
+        }
+
+        val publicMultiArgCtors =
+            constructors.filter { ctor ->
+                ctor.modifiers().contains(javax.lang.model.element.Modifier.PUBLIC) && ctor.parameters().isNotEmpty()
+            }
+
+        assertThat(publicMultiArgCtors).hasSize(1)
+        assertThat(publicMultiArgCtors.single().parameters()).hasSize(2)
+
+        assertCompilesJava(result)
+    }
 }
