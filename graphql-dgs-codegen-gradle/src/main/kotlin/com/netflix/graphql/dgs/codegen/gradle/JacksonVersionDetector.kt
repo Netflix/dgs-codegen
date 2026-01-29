@@ -59,7 +59,7 @@ object JacksonVersionDetector {
         if (result.size == 2) {
             logger.info("DGS Codegen: Both Jackson 2 and 3 detected in project dependencies. Will generate annotations for both.")
         } else if (result.isEmpty()) {
-            logger.warn("DGS Codegen: Could not detect Jackson version from project dependencies. Will generate annotations for both.")
+            logger.warn("DGS Codegen: Could not detect Jackson version from project dependencies. Defaulting to Jackson 2 annotations.")
         }
 
         return result
