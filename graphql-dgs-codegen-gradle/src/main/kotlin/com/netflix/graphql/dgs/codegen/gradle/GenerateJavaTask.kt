@@ -182,6 +182,8 @@ open class GenerateJavaTask
                 logger.info("Processing $it")
             }
 
+            val jacksonVersions = JacksonVersionDetector.detectVersions(project)
+
             val config =
                 CodeGenConfig(
                     schemas = emptySet(),
@@ -224,6 +226,7 @@ open class GenerateJavaTask
                     javaGenerateAllConstructor = javaGenerateAllConstructor,
                     trackInputFieldSet = trackInputFieldSet,
                     generateJSpecifyAnnotations = generateJSpecifyAnnotations,
+                    jacksonVersions = jacksonVersions,
                 )
 
             logger.info("Codegen config: {}", config)
