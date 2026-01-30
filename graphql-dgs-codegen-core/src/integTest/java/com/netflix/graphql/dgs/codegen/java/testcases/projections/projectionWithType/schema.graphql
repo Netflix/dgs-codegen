@@ -1,0 +1,13 @@
+type Query {
+  person: Person
+  people: [Person]
+}
+
+interface Person {
+  firstname: String
+}
+
+type Employee implements Person {
+  firstname: String
+  company: String
+}

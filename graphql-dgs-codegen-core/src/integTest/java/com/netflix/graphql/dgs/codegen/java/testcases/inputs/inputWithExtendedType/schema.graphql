@@ -1,0 +1,11 @@
+type Query {
+  movies(filter: MovieFilter): [String]
+}
+
+input MovieFilter {
+  genre: String
+}
+
+extend input MovieFilter {
+  releaseYear: Int
+}

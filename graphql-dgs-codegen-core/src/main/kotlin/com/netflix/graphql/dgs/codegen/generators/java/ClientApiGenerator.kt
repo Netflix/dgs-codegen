@@ -551,8 +551,9 @@ class ClientApiGenerator(
                 |getInputArguments().computeIfAbsent("${fieldDefinition.name}", k -> new ${'$'}T<>());                      
                 |${
                         fieldDefinition.inputValueDefinitions.joinToString("\n") { input ->
+                            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
                             """
-                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}, false, null);
+                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", $sanitizedName, false, null);
                      |getInputArguments().get("${fieldDefinition.name}").add(${input.name}Arg);
                             """.trimMargin()
                         }
@@ -934,8 +935,9 @@ class ClientApiGenerator(
                                 |getInputArguments().computeIfAbsent("${it.name}", k -> new ${'$'}T<>());
                                 |${
                                         it.inputValueDefinitions.joinToString("\n") { input ->
+                                            val sanitizedName = javaReservedKeywordSanitizer.sanitize(input.name)
                                             """
-                                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", ${input.name}, false, null);
+                                     |InputArgument ${input.name}Arg = new InputArgument("${input.name}", $sanitizedName, false, null);
                                      |getInputArguments().get("${it.name}").add(${input.name}Arg);
                                             """.trimMargin()
                                         }}

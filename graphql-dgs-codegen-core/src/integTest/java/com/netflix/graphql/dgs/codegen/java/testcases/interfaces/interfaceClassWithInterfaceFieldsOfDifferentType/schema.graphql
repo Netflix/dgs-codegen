@@ -1,0 +1,18 @@
+interface Pet {
+  name: String
+  diet: Diet
+}
+
+interface Diet {
+  calories: String
+}
+
+type Vegetarian implements Diet {
+  calories: String
+  vegetables: [String]
+}
+
+type Dog implements Pet {
+  name: String
+  diet: Vegetarian
+}

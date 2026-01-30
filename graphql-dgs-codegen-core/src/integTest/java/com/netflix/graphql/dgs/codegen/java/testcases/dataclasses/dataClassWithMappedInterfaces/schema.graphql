@@ -1,0 +1,15 @@
+type Query {
+    products: [Product]
+}
+
+interface Node {
+    id: ID!
+}
+
+interface Entity implements Node {
+    id: ID!
+}
+
+type Product implements Entity & Node {
+    id: ID!
+}
