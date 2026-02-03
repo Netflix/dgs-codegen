@@ -460,15 +460,24 @@ abstract class BaseDataTypeGenerator(
         }
 
         if (config.generateJSpecifyAnnotations) {
-            // Since JSpecify annotations are enabled, add a private no-arg constructor
-            // only for the Builder to access
-            addDefaultConstructor(javaType, false)
+            val requiredFields = fields.filter { !it.nullable }
+            addDefaultConstructor(javaType, requiredFields.isEmpty())
+
+            if (config.javaGenerateAllConstructor) {
+                if (fields.isNotEmpty() && fields.size < 256) {
+                    addParameterizedConstructor(fields, javaType)
+                }
+
+                if (requiredFields.isNotEmpty() && requiredFields.size < fields.size && requiredFields.size < 256) {
+                    addParameterizedConstructor(requiredFields, javaType)
+                }
+            }
         } else {
             addDefaultConstructor(javaType, true)
-        }
 
-        if (config.javaGenerateAllConstructor && fields.isNotEmpty() && fields.size < 256) {
-            addParameterizedConstructor(fields, javaType)
+            if (config.javaGenerateAllConstructor && fields.isNotEmpty() && fields.size < 256) {
+                addParameterizedConstructor(fields, javaType)
+            }
         }
 
         addToString(fields, javaType)
