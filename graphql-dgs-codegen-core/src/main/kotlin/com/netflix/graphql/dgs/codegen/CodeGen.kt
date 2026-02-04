@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.*
 import com.netflix.graphql.dgs.codegen.generators.kotlin.*
+import com.netflix.graphql.dgs.codegen.generators.kotlin.configureJacksonVersion
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.*
 import com.netflix.graphql.dgs.codegen.generators.shared.DocFileSpec
 import com.netflix.graphql.dgs.codegen.generators.shared.DocGenerator
@@ -75,6 +76,8 @@ class CodeGen(
         )
 
     fun generate(): CodeGenResult {
+        configureJacksonVersion(config.jacksonVersions)
+
         loadTypeMappingsFromDependencies()
 
         val codeGenResult =
@@ -582,6 +585,7 @@ class CodeGenConfig(
     var addDeprecatedAnnotation: Boolean = false,
     var trackInputFieldSet: Boolean = false,
     var generateJSpecifyAnnotations: Boolean = false,
+    var jacksonVersions: Set<JacksonVersion> = emptySet(),
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
@@ -616,6 +620,11 @@ class CodeGenConfig(
 enum class Language {
     JAVA,
     KOTLIN,
+}
+
+enum class JacksonVersion {
+    JACKSON_2,
+    JACKSON_3,
 }
 
 data class CodeGenResult(
