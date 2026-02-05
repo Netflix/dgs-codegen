@@ -1,0 +1,13 @@
+input Person {
+    name: String = "John"
+    age: Int = 23
+    car: Car = { brand: "Ford" }
+}
+
+input Car {
+    brand: String! = "BMW"
+}
+
+input MovieFilter {
+    director: Person = { name: "Damian", car: { brand: "Tesla" } }
+}
