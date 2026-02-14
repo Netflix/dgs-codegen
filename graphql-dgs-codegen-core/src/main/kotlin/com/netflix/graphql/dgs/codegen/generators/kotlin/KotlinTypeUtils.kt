@@ -157,6 +157,8 @@ class KotlinTypeUtils(
             return commonScalars.getValue(name)
         }
 
+        val typeName = config.typePrefix + name + config.typeSuffix
+
         return when (name) {
             STRING.simpleName -> STRING
             "StringValue" -> STRING
@@ -168,7 +170,7 @@ class KotlinTypeUtils(
             "BooleanValue" -> BOOLEAN
             "ID" -> STRING
             "IDValue" -> STRING
-            else -> "${config.packageNameTypes}.$name".toKtTypeName()
+            else -> "${config.packageNameTypes}.$typeName".toKtTypeName()
         }
     }
 
