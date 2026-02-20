@@ -1,0 +1,7 @@
+type Query {
+  test: SomeType
+}
+
+type SomeType {
+  CAPSField: String
+}
