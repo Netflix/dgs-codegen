@@ -41,6 +41,7 @@ import graphql.language.InputObjectTypeExtensionDefinition
 import graphql.language.IntValue
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.NonNullType
+import graphql.language.NullValue
 import graphql.language.ObjectTypeDefinition
 import graphql.language.ObjectTypeExtensionDefinition
 import graphql.language.ObjectValue
@@ -316,6 +317,7 @@ class InputTypeGenerator(
                 }
             }
 
+            is NullValue -> CodeBlock.of("null")
             else -> CodeBlock.of("\$L", value)
         }
 

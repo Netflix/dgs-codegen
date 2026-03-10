@@ -1760,6 +1760,48 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun generateInputWithDefaultNullValue() {
+        val schema =
+            """
+            input QuantityRuleInput {
+                maximum: Int = null
+                minimum: Int!
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                ),
+            ).generate()
+        val dataTypes = codeGenResult.kotlinDataTypes
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName).isEqualTo(TYPES_PACKAGE_NAME)
+
+        val members = data.members
+        assertThat(members).hasSize(1)
+
+        val type = members[0] as TypeSpec
+        assertThat(type.name).isEqualTo("QuantityRuleInput")
+
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(2)
+
+        val maximumParam = ctorSpec.parameters.find { it.name == "maximum" }
+        assertThat(maximumParam).isNotNull
+        assertThat(maximumParam!!.defaultValue).isNotNull
+        assertThat(maximumParam.defaultValue.toString()).isEqualTo("null")
+
+        assertCompilesKotlin(dataTypes)
+    }
+
+    @Test
     fun generateInputWithEmptyDefaultValueForArray() {
         val schema =
             """
