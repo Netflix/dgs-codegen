@@ -584,6 +584,46 @@ class ClientApiGenProjectionTest {
     }
 
     @Test
+    fun testInterfaceProjectionIncludesTypenameAutomatically() {
+        val schema =
+            """
+            type Query {
+                account: Account
+            }
+
+            type Account {
+                subscriber: Subscriber
+            }
+
+            interface Subscriber {
+                id: ID
+            }
+
+            type PremiumSubscriber implements Subscriber {
+                id: ID
+                tier: String
+            }
+
+            type BasicSubscriber implements Subscriber {
+                id: ID
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        val customerProjection = codeGenResult.clientProjections.first { it.typeSpec().name() == "SubscriberProjection" }
+        assertThat(customerProjection.typeSpec().initializerBlock().isEmpty).isFalse
+        assertCompilesJava(codeGenResult);
+    }
+
+    @Test
     fun testScalarsDontGenerateProjections() {
         val schema =
             """
