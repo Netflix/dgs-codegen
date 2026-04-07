@@ -19,8 +19,7 @@ public class CarProjection(
       return this
     }
 
-  public fun engine(_alias: String? = null, _projection: EngineProjection.() -> EngineProjection):
-      CarProjection {
+  public fun engine(_alias: String? = null, _projection: EngineProjection.() -> EngineProjection): CarProjection {
     field(_alias, "engine", EngineProjection(inputValueSerializer), _projection)
     return this
   }

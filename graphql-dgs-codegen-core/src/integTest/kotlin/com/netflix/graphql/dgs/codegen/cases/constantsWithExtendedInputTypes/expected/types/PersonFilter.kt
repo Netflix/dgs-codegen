@@ -14,6 +14,5 @@ public data class PersonFilter(
   @JsonProperty("birthYear")
   public val birthYear: Int? = default<PersonFilter, Int?>("birthYear", null),
 ) : GraphQLInput() {
-  override fun fields(): List<Pair<String, Any?>> = listOf("email" to email, "birthYear" to
-      birthYear)
+  override fun fields(): List<Pair<String, Any?>> = listOf("email" to email, "birthYear" to birthYear)
 }

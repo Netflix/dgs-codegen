@@ -16,8 +16,7 @@ public class SearchResultProjection(
     return this
   }
 
-  public fun onRating(_projection: RatingProjection.() -> RatingProjection):
-      SearchResultProjection {
+  public fun onRating(_projection: RatingProjection.() -> RatingProjection): SearchResultProjection {
     fragment("Rating", RatingProjection(), _projection)
     return this
   }

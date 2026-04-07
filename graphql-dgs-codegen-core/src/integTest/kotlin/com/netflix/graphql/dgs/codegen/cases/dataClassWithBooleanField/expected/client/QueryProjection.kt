@@ -7,8 +7,7 @@ import kotlin.String
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
-  public fun test(_alias: String? = null,
-      _projection: RequiredTestTypeProjection.() -> RequiredTestTypeProjection): QueryProjection {
+  public fun test(_alias: String? = null, _projection: RequiredTestTypeProjection.() -> RequiredTestTypeProjection): QueryProjection {
     field(_alias, "test", RequiredTestTypeProjection(inputValueSerializer), _projection)
     return this
   }

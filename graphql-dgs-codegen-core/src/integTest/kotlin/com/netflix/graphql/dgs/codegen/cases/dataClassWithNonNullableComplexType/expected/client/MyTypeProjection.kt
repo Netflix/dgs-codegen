@@ -7,8 +7,7 @@ import kotlin.String
 public class MyTypeProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
-  public fun other(_alias: String? = null,
-      _projection: OtherTypeProjection.() -> OtherTypeProjection): MyTypeProjection {
+  public fun other(_alias: String? = null, _projection: OtherTypeProjection.() -> OtherTypeProjection): MyTypeProjection {
     field(_alias, "other", OtherTypeProjection(inputValueSerializer), _projection)
     return this
   }

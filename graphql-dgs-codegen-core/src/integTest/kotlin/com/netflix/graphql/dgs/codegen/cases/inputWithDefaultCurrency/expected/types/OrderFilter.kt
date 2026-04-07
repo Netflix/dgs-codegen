@@ -10,8 +10,8 @@ import kotlin.collections.List
 
 public data class OrderFilter(
   @JsonProperty("value")
-  public val `value`: Currency = default<OrderFilter, Currency>("value",
-      java.util.Currency.getInstance("USD")),
+  public val `value`:
+      Currency = default<OrderFilter, Currency>("value", java.util.Currency.getInstance("USD")),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("value" to `value`)
 }

@@ -18,8 +18,7 @@ public class PersonProjection(
       return this
     }
 
-  public fun onEmployee(_projection: EmployeeProjection.() -> EmployeeProjection):
-      PersonProjection {
+  public fun onEmployee(_projection: EmployeeProjection.() -> EmployeeProjection): PersonProjection {
     fragment("Employee", EmployeeProjection(), _projection)
     return this
   }

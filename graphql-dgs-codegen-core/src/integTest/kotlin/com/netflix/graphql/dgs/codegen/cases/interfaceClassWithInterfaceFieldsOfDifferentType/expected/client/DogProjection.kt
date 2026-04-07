@@ -13,8 +13,7 @@ public class DogProjection(
       return this
     }
 
-  public fun diet(_alias: String? = null,
-      _projection: VegetarianProjection.() -> VegetarianProjection): DogProjection {
+  public fun diet(_alias: String? = null, _projection: VegetarianProjection.() -> VegetarianProjection): DogProjection {
     field(_alias, "diet", VegetarianProjection(inputValueSerializer), _projection)
     return this
   }

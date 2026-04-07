@@ -13,8 +13,7 @@ public class EntityEdgeProjection(
       return this
     }
 
-  public fun node(_alias: String? = null, _projection: EntityProjection.() -> EntityProjection):
-      EntityEdgeProjection {
+  public fun node(_alias: String? = null, _projection: EntityProjection.() -> EntityProjection): EntityEdgeProjection {
     field(_alias, "node", EntityProjection(inputValueSerializer), _projection)
     return this
   }

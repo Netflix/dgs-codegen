@@ -12,8 +12,7 @@ public class QueryProjection(
     _alias: String? = null,
     _projection: SearchResultPageProjection.() -> SearchResultPageProjection,
   ): QueryProjection {
-    field(_alias, "search", SearchResultPageProjection(inputValueSerializer), _projection, "text" to
-        text)
+    field(_alias, "search", SearchResultPageProjection(inputValueSerializer), _projection, "text" to text)
     return this
   }
 }

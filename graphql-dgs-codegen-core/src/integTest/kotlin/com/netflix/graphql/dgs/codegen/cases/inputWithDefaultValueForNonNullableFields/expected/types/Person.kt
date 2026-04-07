@@ -15,15 +15,13 @@ public data class Person(
   @JsonProperty("age")
   public val age: Int = default<Person, Int>("age", 18),
   @JsonProperty("car")
-  public val car: Car = default<Person, Car>("car",
-      com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.types.Car(brand
-      = "Ford")),
+  public val car:
+      Car = default<Person, Car>("car", com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.types.Car(brand = "Ford")),
   @JsonProperty("hobbies")
-  public val hobbies: List<Hobby> = default<Person, List<Hobby>>("hobbies",
-      listOf(com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.types.Hobby.Hokey)),
+  public val hobbies:
+      List<Hobby> = default<Person, List<Hobby>>("hobbies", listOf(com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.types.Hobby.Hokey)),
   @JsonProperty("isHappy")
   public val isHappy: Boolean = default<Person, Boolean>("isHappy", true),
 ) : GraphQLInput() {
-  override fun fields(): List<Pair<String, Any?>> = listOf("name" to name, "age" to age, "car" to
-      car, "hobbies" to hobbies, "isHappy" to isHappy)
+  override fun fields(): List<Pair<String, Any?>> = listOf("name" to name, "age" to age, "car" to car, "hobbies" to hobbies, "isHappy" to isHappy)
 }
