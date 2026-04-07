@@ -106,8 +106,8 @@ def infer_build_file(project_dir):
     return build_file
 
 
-def run_example_build(settings_file, project_dir):
-    command = [gradlew, "-p", project_dir, "-c", settings_file, "clean", "check"]
+def run_example_build(project_dir):
+    command = [gradlew, "-p", project_dir, "clean", "check"]
     str_cmd = " ".join(command)
     try:
         Out.info(f"Running {str_cmd}")
@@ -172,7 +172,7 @@ def main(argv):
         infer_build_file(project_root)
         gradle_settings_file_path = f"{project_root}/settings.gradle.kts"
         generate_gradle_settings(settings_gradle_kts_template, codegen_version, gradle_settings_file_path)
-        run_example_build(gradle_settings_file_path, project_root)
+        run_example_build(project_root)
 
     if not keep_project_dir:
         Out.info(f"Removing {projects_dir}...")
