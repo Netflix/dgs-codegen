@@ -140,8 +140,14 @@ class InterfaceGenerator internal constructor(
                     .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
                     .any { node -> node.name == innerType.name }
             }
-            is NonNullType -> isListOfInterface(fieldType.type)
-            else -> false
+
+            is NonNullType -> {
+                isListOfInterface(fieldType.type)
+            }
+
+            else -> {
+                false
+            }
         }
 
     private fun addInterfaceMethod(
@@ -179,7 +185,12 @@ class InterfaceGenerator internal constructor(
 
         javaType.addMethod(getterBuilder.build())
 
-        if (config.generateInterfaceSetters && (config.generateInterfaceMethodsForInterfaceFields || !isFieldAnInterface(fieldDefinition))
+        if (config.generateInterfaceSetters && (
+                config.generateInterfaceMethodsForInterfaceFields ||
+                    !isFieldAnInterface(
+                        fieldDefinition,
+                    )
+            )
         ) {
             val parameterBuilder =
                 ParameterSpec

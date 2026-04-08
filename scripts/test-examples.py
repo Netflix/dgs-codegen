@@ -106,14 +106,23 @@ def infer_build_file(project_dir):
     return build_file
 
 
+def infer_gradlew(project_dir):
+    project_gradlew = os.path.join(project_dir, "gradlew")
+    if os.path.isfile(project_gradlew):
+        os.chmod(project_gradlew, 0o755)
+        Out.info(f"Using project's own gradlew: {project_gradlew}")
+        return project_gradlew
+    Out.info(f"Project gradlew not found, falling back to framework gradlew: {gradlew}")
+    return gradlew
+
+
 def run_example_build(project_dir):
-    project_gradlew = f"{project_dir}/gradlew"
+    project_gradlew = infer_gradlew(project_dir)
     command = [project_gradlew, "-p", project_dir, "clean", "check"]
     str_cmd = " ".join(command)
     try:
         Out.info(f"Running {str_cmd}")
-        p = subprocess.check_output(command)
-        Out.info(p.decode("utf-8"))
+        subprocess.run(command, check=True)
     except subprocess.SubprocessError as error:
         Out.error(f"Unable to test {project_dir}, command '{str_cmd}' failed!", error)
         sys.exit(2)

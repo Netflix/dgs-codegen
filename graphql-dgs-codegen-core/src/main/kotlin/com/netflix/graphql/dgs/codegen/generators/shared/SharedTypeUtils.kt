@@ -111,12 +111,14 @@ internal fun <T> parseMappedType(
                 val typeString = mappedType.substring(startIndex, symbolAhead.index)
                 stack.add(Pair(typeString.toTypeName(true), mutableListOf()))
             }
+
             is GenericSymbol.Comma -> {
                 val typeString = mappedType.substring(iterator.getLastSymbolIndex() + 1, symbolAhead.index)
                 if (typeString.trim().isNotEmpty()) {
                     stack.last().second.add(typeString.toTypeName(true))
                 }
             }
+
             is GenericSymbol.CloseBracket -> {
                 if (stack.isEmpty()) throw IllegalArgumentException("Wrong mapped type $mappedType")
 
@@ -136,8 +138,10 @@ internal fun <T> parseMappedType(
 
                 stack.last().second.add(parameterized)
             }
-            else ->
+
+            else -> {
                 logger.info("Symbol ahead [$symbolAhead] didn't match any of the expected variations.")
+            }
         }
     }
 

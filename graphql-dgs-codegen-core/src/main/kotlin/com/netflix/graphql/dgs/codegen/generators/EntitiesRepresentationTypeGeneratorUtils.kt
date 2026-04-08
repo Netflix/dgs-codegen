@@ -72,13 +72,16 @@ object EntitiesRepresentationTypeGeneratorUtils {
             is NonNullType -> {
                 findType(typeName.type, document)
             }
+
             is ListType -> {
                 findType(typeName.type, document)
             }
-            else ->
+
+            else -> {
                 document.definitions
                     .filterIsInstance<TypeDefinition<*>>()
                     .find { it.name == (typeName as TypeName).name }
+            }
         }
 
     fun parseKeyDirectiveValue(keyDirective: List<String>): Map<String, Any> {
@@ -113,11 +116,13 @@ object EntitiesRepresentationTypeGeneratorUtils {
                         @Suppress("UNCHECKED_CAST")
                         current = Node("", current.map[current.key] as MutableMap<String, Any>, previous)
                     }
+
                     "}" -> {
                         // pop back to parent level
                         current = parent
                         parent = parent.parent!!
                     }
+
                     else -> {
                         // make an entry at the current level
                         current.map.putIfAbsent(it, mutableMapOf<String, Any>())

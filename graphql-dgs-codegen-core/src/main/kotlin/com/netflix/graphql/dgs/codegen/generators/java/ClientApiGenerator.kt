@@ -407,9 +407,17 @@ class ClientApiGenerator internal constructor(
 
     private fun getVariableDefinitionType(inputValueType: Type<*>): String =
         when (inputValueType) {
-            is TypeName -> "new graphql.language.TypeName(\"${inputValueType.name}\")"
-            is ListType -> "new graphql.language.ListType(${getVariableDefinitionType(inputValueType.type)})"
-            is NonNullType -> "new graphql.language.NonNullType(${getVariableDefinitionType(inputValueType.type)})"
+            is TypeName -> {
+                "new graphql.language.TypeName(\"${inputValueType.name}\")"
+            }
+
+            is ListType -> {
+                "new graphql.language.ListType(${getVariableDefinitionType(inputValueType.type)})"
+            }
+
+            is NonNullType -> {
+                "new graphql.language.NonNullType(${getVariableDefinitionType(inputValueType.type)})"
+            }
 
             else -> {
                 "new graphql.language.TypeName(\"String\")"

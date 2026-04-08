@@ -44,9 +44,18 @@ class RequiredTypeCollector internal constructor(
         val fieldDefinitions = mutableListOf<FieldDefinition>()
         for (definition in schemaIndex.definitions.asSequence().filterIsInstance<ObjectTypeDefinition>()) {
             when (definition.name) {
-                "Query" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeQueries }
-                "Mutation" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeMutations }
-                "Subscription" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeSubscriptions }
+                "Query" -> {
+                    definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeQueries }
+                }
+
+                "Mutation" -> {
+                    definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeMutations }
+                }
+
+                "Subscription" -> {
+                    definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeSubscriptions }
+                }
+
                 else -> {
                     if (config.generateClientApi) {
                         fieldDefinitions.addAll(definition.fieldDefinitions)

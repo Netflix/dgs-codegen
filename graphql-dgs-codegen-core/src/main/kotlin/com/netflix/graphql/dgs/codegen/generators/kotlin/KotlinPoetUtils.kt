@@ -389,8 +389,14 @@ private fun generateCode(
     type: String = "",
 ): CodeBlock =
     when (value) {
-        is BooleanValue -> CodeBlock.of("$prefix%L", (value as BooleanValue).isValue)
-        is IntValue -> CodeBlock.of("$prefix%L", (value as IntValue).value)
+        is BooleanValue -> {
+            CodeBlock.of("$prefix%L", (value as BooleanValue).isValue)
+        }
+
+        is IntValue -> {
+            CodeBlock.of("$prefix%L", (value as IntValue).value)
+        }
+
         is StringValue -> {
             // If string value ends with .class and classImports mapping is provided, treat as Kotlin KClass
             val string = (value as StringValue).value
@@ -407,9 +413,13 @@ private fun generateCode(
                 CodeBlock.of("$prefix%S", string)
             }
         }
-        is FloatValue -> CodeBlock.of("$prefix%L", (value as FloatValue).value)
+
+        is FloatValue -> {
+            CodeBlock.of("$prefix%L", (value as FloatValue).value)
+        }
+
         // In an enum value the prefix/type (key in the parameters map for the enum) is used to get the package name from the config
-        is EnumValue ->
+        is EnumValue -> {
             CodeBlock.of(
                 "$prefix%M",
                 MemberName(
@@ -426,7 +436,9 @@ private fun generateCode(
                     (value as EnumValue).name,
                 ),
             )
-        is ArrayValue ->
+        }
+
+        is ArrayValue -> {
             if ((value as ArrayValue).values.isEmpty()) {
                 CodeBlock.of("[]")
             } else {
@@ -442,7 +454,11 @@ private fun generateCode(
                     },
                 )
             }
-        else -> CodeBlock.of("$prefix%L", value)
+        }
+
+        else -> {
+            CodeBlock.of("$prefix%L", value)
+        }
     }
 
 /**

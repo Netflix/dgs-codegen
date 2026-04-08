@@ -82,7 +82,7 @@ class DocGenerator internal constructor(
                 """.trimIndent()
             }.joinToString("\n")}
             """
-        }else {
+        } else {
             ""
         }}
             |## Example
@@ -233,11 +233,26 @@ class DocGenerator internal constructor(
 
         if (type is TypeName) {
             return when (type.name) {
-                "ID" -> StringValue("random12345")
-                "String" -> StringValue("randomString")
-                "Boolean" -> BooleanValue(true)
-                "Int" -> IntValue(BigInteger.valueOf(123456789))
-                "Float" -> FloatValue(BigDecimal.valueOf(12345.6789))
+                "ID" -> {
+                    StringValue("random12345")
+                }
+
+                "String" -> {
+                    StringValue("randomString")
+                }
+
+                "Boolean" -> {
+                    BooleanValue(true)
+                }
+
+                "Int" -> {
+                    IntValue(BigInteger.valueOf(123456789))
+                }
+
+                "Float" -> {
+                    FloatValue(BigDecimal.valueOf(12345.6789))
+                }
+
                 else -> {
                     getSchemaTypeMockValue(type)
                 }

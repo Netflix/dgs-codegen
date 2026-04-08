@@ -766,7 +766,9 @@ enum class JacksonVersion {
         fun fromString(value: String): JacksonVersion =
             when (value.trim()) {
                 "2" -> JACKSON_2
+
                 "3" -> JACKSON_3
+
                 else -> throw IllegalArgumentException(
                     "Invalid Jackson version '$value'. Supported values are \"2\" (com.fasterxml.jackson) " +
                         "and \"3\" (tools.jackson).",
@@ -899,6 +901,7 @@ fun List<FieldDefinition>.filterIncludedInConfig(
                 this.filter { it.name in config.includeQueries }
             }
         }
+
         "Mutation" -> {
             if (config.includeMutations.isEmpty()) {
                 this
@@ -906,6 +909,7 @@ fun List<FieldDefinition>.filterIncludedInConfig(
                 this.filter { it.name in config.includeMutations }
             }
         }
+
         "Subscription" -> {
             if (config.includeSubscriptions.isEmpty()) {
                 this
@@ -913,7 +917,10 @@ fun List<FieldDefinition>.filterIncludedInConfig(
                 this.filter { it.name in config.includeSubscriptions }
             }
         }
-        else -> this
+
+        else -> {
+            this
+        }
     }
 
 fun <T : DirectivesContainer<*>> DirectivesContainer<T>.shouldSkip(config: CodeGenConfig): Boolean =

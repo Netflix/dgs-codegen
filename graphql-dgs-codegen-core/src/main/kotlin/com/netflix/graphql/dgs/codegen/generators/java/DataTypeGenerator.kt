@@ -256,8 +256,14 @@ class InputTypeGenerator internal constructor(
         inputTypeDefinitions: List<InputObjectTypeDefinition>,
     ): CodeBlock? =
         when (value) {
-            is BooleanValue -> CodeBlock.of("\$L", value.isValue)
-            is IntValue -> CodeBlock.of("\$L", value.value)
+            is BooleanValue -> {
+                CodeBlock.of("\$L", value.isValue)
+            }
+
+            is IntValue -> {
+                CodeBlock.of("\$L", value.value)
+            }
+
             is StringValue -> {
                 // Only generate string literal default values for string types to prevent invalid Java initialization
                 if (type is ClassName && type == ClassName.get(String::class.java)) {
@@ -267,9 +273,15 @@ class InputTypeGenerator internal constructor(
                 }
             }
 
-            is FloatValue -> CodeBlock.of("\$L", value.value)
-            is EnumValue -> CodeBlock.of("\$T.\$N", type, value.name)
-            is ArrayValue ->
+            is FloatValue -> {
+                CodeBlock.of("\$L", value.value)
+            }
+
+            is EnumValue -> {
+                CodeBlock.of("\$T.\$N", type, value.name)
+            }
+
+            is ArrayValue -> {
                 if (value.values.isEmpty()) {
                     CodeBlock.of("\$T.emptyList()", Collections::class.java)
                 } else {
@@ -282,6 +294,7 @@ class InputTypeGenerator internal constructor(
                         ),
                     )
                 }
+            }
 
             is ObjectValue -> {
                 val inputObjectDefinition =
@@ -321,8 +334,13 @@ class InputTypeGenerator internal constructor(
                 }
             }
 
-            is NullValue -> CodeBlock.of("null")
-            else -> CodeBlock.of("\$L", value)
+            is NullValue -> {
+                CodeBlock.of("null")
+            }
+
+            else -> {
+                CodeBlock.of("\$L", value)
+            }
         }
 
     private fun bigDecimalCodeBlock(
