@@ -618,9 +618,9 @@ class ClientApiGenProjectionTest {
                 ),
             ).generate()
 
-        val customerProjection = codeGenResult.clientProjections.first { it.typeSpec().name() == "SubscriberProjection" }
-        assertThat(customerProjection.typeSpec().initializerBlock().isEmpty).isFalse
-        assertCompilesJava(codeGenResult);
+        val subscriberProjection = codeGenResult.clientProjections.first { it.typeSpec().name() == "SubscriberProjection" }
+        assertThat(subscriberProjection.typeSpec().initializerBlock().toString()).contains("__typename")
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
