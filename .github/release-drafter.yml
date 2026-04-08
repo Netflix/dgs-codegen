@@ -1,4 +1,16 @@
+categories:
+  - title: "⭐ Improvements"
+    labels:
+      - "enhancement"
+  - title: "🐞 Bug Fixes"
+    labels:
+      - "bug"
+  - title: "🔨 Dependency Upgrades"
+    labels:
+      - "dependencies"
+      - "gradle-wrapper"
+
 template: |
-  ## What’s Changed
+  ## What's Changed
 
   $CHANGES
