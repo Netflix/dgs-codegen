@@ -807,16 +807,6 @@ class ClientApiGenerator(
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
 
-        // Automatically include __typename when the field type is interface to maintain parity with fragment projections
-        if (type is InterfaceTypeDefinition) {
-            javaType.addInitializerBlock(
-                CodeBlock
-                    .builder()
-                    .addStatement("getFields().put(\$S, null)", TypeNameMetaFieldDef.name)
-                    .build(),
-            )
-        }
-
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
