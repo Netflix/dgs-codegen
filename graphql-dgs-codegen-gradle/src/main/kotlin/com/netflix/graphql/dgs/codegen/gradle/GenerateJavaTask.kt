@@ -182,8 +182,6 @@ open class GenerateJavaTask
                 logger.info("Processing $it")
             }
 
-            val jacksonVersions = JacksonVersionDetector.detectVersions(project)
-
             val config =
                 CodeGenConfig(
                     schemas = emptySet(),
