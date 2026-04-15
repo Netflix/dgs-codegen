@@ -228,7 +228,6 @@ open class GenerateJavaTask
                     javaGenerateAllConstructor = javaGenerateAllConstructor,
                     trackInputFieldSet = trackInputFieldSet,
                     generateJSpecifyAnnotations = generateJSpecifyAnnotations,
-                    jacksonVersions = jacksonVersions,
                 )
 
             logger.info("Codegen config: {}", config)

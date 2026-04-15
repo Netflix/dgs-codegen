@@ -24,8 +24,8 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addControlFlow
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.disableJsonTypeInfoAnnotation
-import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonBuilderAnnotations
-import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonDeserializeAnnotations
+import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonBuilderAnnotation
+import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonDeserializeAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonIgnorePropertiesAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonPropertyAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
@@ -134,10 +134,8 @@ fun generateKotlin2DataTypes(
                 TypeSpec
                     .classBuilder("Builder")
                     .addOptionalGeneratedAnnotation(config)
-                    .apply {
-                        jsonBuilderAnnotations().forEach { addAnnotation(it) }
-                        addAnnotation(jsonIgnorePropertiesAnnotation("__typename"))
-                    }
+                    .addAnnotation(jsonBuilderAnnotation())
+                    .addAnnotation(jsonIgnorePropertiesAnnotation("__typename"))
                     // add a backing property for each field
                     .addProperties(
                         fields.map { field ->
@@ -195,9 +193,11 @@ fun generateKotlin2DataTypes(
                     }
                     // add jackson annotations
                     .addAnnotation(disableJsonTypeInfoAnnotation())
-                    .apply {
-                        jsonDeserializeAnnotations(builderClassName).forEach { addAnnotation(it) }
-                    }
+                    .addAnnotation(
+                        jsonDeserializeAnnotation(
+                            builderClassName,
+                        ),
+                    )
                     // add nested classes
                     .addType(companionObject)
                     .addType(builder)
