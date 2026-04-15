@@ -19,11 +19,30 @@ package com.netflix.graphql.dgs.client.codegen
 import graphql.GraphQLContext
 import graphql.language.Argument
 import graphql.language.AstPrinter
+import graphql.language.Directive
 import graphql.language.Field
 import graphql.language.OperationDefinition
 import graphql.language.SelectionSet
+import graphql.language.StringValue
 import graphql.language.VariableReference
 import graphql.schema.Coercing
+
+/**
+ * Represents a single directive to be applied to the top-level operation field.
+ *
+ * Example — to produce `@idempotent(key: "abc-123")`:
+ * ```kotlin
+ * GraphQLDirective("idempotent", mapOf("key" to "abc-123"))
+ * ```
+ *
+ * Argument values are serialized as GraphQL StringValues. For non-string scalars
+ * (Int, Boolean, EnumValue, etc.) pass a pre-built `graphql.language.Value<*>`
+ * instance instead of a plain Kotlin value and it will be used as-is.
+ */
+data class GraphQLDirective(
+    val name: String,
+    val arguments: Map<String, Any> = emptyMap(),
+)
 
 class GraphQLQueryRequest
     @JvmOverloads
@@ -31,13 +50,17 @@ class GraphQLQueryRequest
         val query: GraphQLQuery,
         val projection: BaseProjectionNode? = null,
         options: GraphQLQueryRequestOptions? = null,
+        /** Zero or more directives to apply to the top-level operation field. */
+        val directives: List<GraphQLDirective> = emptyList(),
     ) {
         private var selectionSet: SelectionSet? = null
+
         constructor(
             query: GraphQLQuery,
             projection: BaseProjectionNode,
             scalars: Map<Class<*>, Coercing<*, *>>,
         ) : this(query = query, projection = projection, options = GraphQLQueryRequestOptions(scalars = scalars))
+
         constructor(
             query: GraphQLQuery,
             selectionSet: SelectionSet,
@@ -47,8 +70,7 @@ class GraphQLQueryRequest
             projection = null,
             options =
                 GraphQLQueryRequestOptions(
-                    scalars =
-                        scalars ?: emptyMap(),
+                    scalars = scalars ?: emptyMap(),
                 ),
         ) {
             this.selectionSet = selectionSet
@@ -67,7 +89,10 @@ class GraphQLQueryRequest
             if (options?.allowNullablePropertyInputValues == true) {
                 NullableInputValueSerializer(options.scalars)
             } else {
-                InputValueSerializer(options?.scalars ?: emptyMap(), options?.graphQLContext ?: GraphQLContext.getDefault())
+                InputValueSerializer(
+                    options?.scalars ?: emptyMap(),
+                    options?.graphQLContext ?: GraphQLContext.getDefault(),
+                )
             }
 
         val projectionSerializer = ProjectionSerializer(inputValueSerializer, query)
@@ -80,9 +105,12 @@ class GraphQLQueryRequest
             val operationDef = OperationDefinition.newOperationDefinition()
 
             query.name?.let { operationDef.name(it) }
-            query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
+            query.getOperationType()?.let {
+                operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase()))
+            }
 
             val selection = Field.newField(query.getOperationName())
+
             if (query.input.isNotEmpty()) {
                 selection.arguments(
                     query.input.map { (name, value) ->
@@ -91,6 +119,30 @@ class GraphQLQueryRequest
                         } else {
                             Argument(name, inputValueSerializer.toValue(value))
                         }
+                    },
+                )
+            }
+
+            // Apply directives to the top-level operation field
+            if (directives.isNotEmpty()) {
+                selection.directives(
+                    directives.map { directive ->
+                        Directive.newDirective()
+                            .name(directive.name)
+                            .arguments(
+                                directive.arguments.map { (argName, argValue) ->
+                                    val langValue =
+                                        if (argValue is graphql.language.Value<*>) {
+                                            // Caller supplied a pre-built AST value — use it directly
+                                            argValue
+                                        } else {
+                                            // Default: treat as a GraphQL String scalar
+                                            StringValue.of(argValue.toString())
+                                        }
+                                    Argument(argName, langValue)
+                                },
+                            )
+                            .build()
                     },
                 )
             }
