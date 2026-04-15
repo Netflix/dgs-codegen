@@ -2190,6 +2190,33 @@ class CodeGenTest {
     }
 
     @Test
+    fun generateInputWithDefaultNullValue() {
+        val schema =
+            """
+            input QuantityRuleInput {
+                maximum: Int = null
+                minimum: Int!
+            }
+            """.trimIndent()
+
+        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        assertThat(dataTypes).hasSize(1)
+
+        val data = dataTypes[0]
+        assertThat(data.packageName()).isEqualTo(TYPES_PACKAGE_NAME)
+
+        val type = data.typeSpec()
+        assertThat(type.name()).isEqualTo("QuantityRuleInput")
+
+        val fields = type.fieldSpecs()
+        val maximumField = fields.find { it.name() == "maximum" }
+        assertThat(maximumField).isNotNull
+        assertThat(maximumField!!.initializer().toString()).isEqualTo("null")
+
+        assertCompilesJava(dataTypes)
+    }
+
+    @Test
     fun generateExtendedInputTypes() {
         val schema =
             """
