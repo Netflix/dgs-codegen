@@ -69,9 +69,6 @@ class CodegenPlugin : Plugin<Project> {
                     Optional.ofNullable(codegenExtension.clientCoreScope.orNull),
                 )
             }
-            generateJavaTaskProvider.configure { task ->
-                task.jacksonVersions = JacksonVersionDetector.detectVersions(p)
-            }
         }
     }
 

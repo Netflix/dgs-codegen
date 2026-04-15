@@ -20,7 +20,6 @@ package com.netflix.graphql.dgs.codegen.gradle
 
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
-import com.netflix.graphql.dgs.codegen.JacksonVersion
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
@@ -171,9 +170,6 @@ open class GenerateJavaTask
                 project.configurations.findByName("dgsCodegen"),
             )
 
-        @Input
-        var jacksonVersions: Set<JacksonVersion> = emptySet()
-
         @TaskAction
         fun generate() {
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
@@ -185,6 +181,8 @@ open class GenerateJavaTask
             schemaPaths.forEach {
                 logger.info("Processing $it")
             }
+
+            val jacksonVersions = JacksonVersionDetector.detectVersions(project)
 
             val config =
                 CodeGenConfig(
