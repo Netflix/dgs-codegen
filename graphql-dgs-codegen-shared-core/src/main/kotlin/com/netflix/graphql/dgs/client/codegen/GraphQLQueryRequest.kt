@@ -127,7 +127,8 @@ class GraphQLQueryRequest
             if (directives.isNotEmpty()) {
                 selection.directives(
                     directives.map { directive ->
-                        Directive.newDirective()
+                        Directive
+                            .newDirective()
                             .name(directive.name)
                             .arguments(
                                 directive.arguments.map { (argName, argValue) ->
@@ -141,8 +142,7 @@ class GraphQLQueryRequest
                                         }
                                     Argument(argName, langValue)
                                 },
-                            )
-                            .build()
+                            ).build()
                     },
                 )
             }
