@@ -7,8 +7,7 @@ import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultCurrency.expected.t
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
-  public fun orders(filter: OrderFilter? = default<QueryProjection, OrderFilter?>("filter")):
-      QueryProjection {
+  public fun orders(filter: OrderFilter? = default<QueryProjection, OrderFilter?>("filter")): QueryProjection {
     field("orders", "filter" to filter)
     return this
   }

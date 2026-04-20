@@ -19,8 +19,7 @@ public class PersonProjection(
       return this
     }
 
-  public fun friends(_alias: String? = null, _projection: PersonProjection.() -> PersonProjection):
-      PersonProjection {
+  public fun friends(_alias: String? = null, _projection: PersonProjection.() -> PersonProjection): PersonProjection {
     field(_alias, "friends", PersonProjection(inputValueSerializer), _projection)
     return this
   }

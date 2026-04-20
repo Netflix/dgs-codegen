@@ -25,20 +25,17 @@ public class PetProjection(
       return this
     }
 
-  public fun mother(_alias: String? = null, _projection: PetProjection.() -> PetProjection):
-      PetProjection {
+  public fun mother(_alias: String? = null, _projection: PetProjection.() -> PetProjection): PetProjection {
     field(_alias, "mother", PetProjection(inputValueSerializer), _projection)
     return this
   }
 
-  public fun father(_alias: String? = null, _projection: PetProjection.() -> PetProjection):
-      PetProjection {
+  public fun father(_alias: String? = null, _projection: PetProjection.() -> PetProjection): PetProjection {
     field(_alias, "father", PetProjection(inputValueSerializer), _projection)
     return this
   }
 
-  public fun parents(_alias: String? = null, _projection: PetProjection.() -> PetProjection):
-      PetProjection {
+  public fun parents(_alias: String? = null, _projection: PetProjection.() -> PetProjection): PetProjection {
     field(_alias, "parents", PetProjection(inputValueSerializer), _projection)
     return this
   }

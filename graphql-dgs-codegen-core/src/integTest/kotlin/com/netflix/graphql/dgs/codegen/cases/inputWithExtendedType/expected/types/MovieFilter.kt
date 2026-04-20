@@ -14,6 +14,5 @@ public data class MovieFilter(
   @JsonProperty("releaseYear")
   public val releaseYear: Int? = default<MovieFilter, Int?>("releaseYear", null),
 ) : GraphQLInput() {
-  override fun fields(): List<Pair<String, Any?>> = listOf("genre" to genre, "releaseYear" to
-      releaseYear)
+  override fun fields(): List<Pair<String, Any?>> = listOf("genre" to genre, "releaseYear" to releaseYear)
 }

@@ -7,8 +7,5 @@ import graphql.language.OperationDefinition
 import kotlin.String
 
 public object DgsClient {
-  public fun buildQuery(inputValueSerializer: InputValueSerializerInterface? = null,
-      _projection: QueryProjection.() -> QueryProjection): String =
-      GraphQLProjection.asQuery(OperationDefinition.Operation.QUERY,
-      QueryProjection(inputValueSerializer), _projection)
+  public fun buildQuery(inputValueSerializer: InputValueSerializerInterface? = null, _projection: QueryProjection.() -> QueryProjection): String = GraphQLProjection.asQuery(OperationDefinition.Operation.QUERY, QueryProjection(inputValueSerializer), _projection)
 }

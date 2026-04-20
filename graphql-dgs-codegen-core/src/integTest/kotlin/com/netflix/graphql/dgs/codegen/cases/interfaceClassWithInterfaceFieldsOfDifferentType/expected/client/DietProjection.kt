@@ -12,8 +12,7 @@ public class DietProjection(
       return this
     }
 
-  public fun onVegetarian(_projection: VegetarianProjection.() -> VegetarianProjection):
-      DietProjection {
+  public fun onVegetarian(_projection: VegetarianProjection.() -> VegetarianProjection): DietProjection {
     fragment("Vegetarian", VegetarianProjection(), _projection)
     return this
   }

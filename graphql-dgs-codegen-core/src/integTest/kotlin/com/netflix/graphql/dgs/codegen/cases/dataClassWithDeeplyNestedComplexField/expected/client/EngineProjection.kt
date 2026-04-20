@@ -25,8 +25,7 @@ public class EngineProjection(
       return this
     }
 
-  public fun performance(_alias: String? = null,
-      _projection: PerformanceProjection.() -> PerformanceProjection): EngineProjection {
+  public fun performance(_alias: String? = null, _projection: PerformanceProjection.() -> PerformanceProjection): EngineProjection {
     field(_alias, "performance", PerformanceProjection(inputValueSerializer), _projection)
     return this
   }

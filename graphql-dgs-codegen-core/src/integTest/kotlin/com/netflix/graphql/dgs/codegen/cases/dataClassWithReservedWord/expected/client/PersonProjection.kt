@@ -13,8 +13,7 @@ public class PersonProjection(
       return this
     }
 
-  public fun info(`package`: String? = default<PersonProjection, String?>("package")):
-      PersonProjection {
+  public fun info(`package`: String? = default<PersonProjection, String?>("package")): PersonProjection {
     field("info", "package" to `package`)
     return this
   }

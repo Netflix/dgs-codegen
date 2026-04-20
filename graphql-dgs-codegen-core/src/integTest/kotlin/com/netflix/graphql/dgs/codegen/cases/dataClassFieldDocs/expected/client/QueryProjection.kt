@@ -13,8 +13,7 @@ public class QueryProjection(
     _alias: String? = null,
     _projection: MovieProjection.() -> MovieProjection,
   ): QueryProjection {
-    field(_alias, "search", MovieProjection(inputValueSerializer), _projection, "movieFilter" to
-        movieFilter)
+    field(_alias, "search", MovieProjection(inputValueSerializer), _projection, "movieFilter" to movieFilter)
     return this
   }
 }

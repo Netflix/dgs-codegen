@@ -13,8 +13,7 @@ public class StoneFruitProjection(
       return this
     }
 
-  public fun seeds(_alias: String? = null, _projection: SeedProjection.() -> SeedProjection):
-      StoneFruitProjection {
+  public fun seeds(_alias: String? = null, _projection: SeedProjection.() -> SeedProjection): StoneFruitProjection {
     field(_alias, "seeds", SeedProjection(inputValueSerializer), _projection)
     return this
   }

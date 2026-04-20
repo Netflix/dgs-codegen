@@ -14,10 +14,8 @@ public data class Person(
   @JsonProperty("age")
   public val age: Int? = default<Person, Int?>("age", 23),
   @JsonProperty("car")
-  public val car: Car? = default<Person, Car?>("car",
-      com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.types.Car(brand
-      = "Ford")),
+  public val car:
+      Car? = default<Person, Car?>("car", com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.types.Car(brand = "Ford")),
 ) : GraphQLInput() {
-  override fun fields(): List<Pair<String, Any?>> = listOf("name" to name, "age" to age, "car" to
-      car)
+  override fun fields(): List<Pair<String, Any?>> = listOf("name" to name, "age" to age, "car" to car)
 }

@@ -7,8 +7,7 @@ import kotlin.String
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
-  public fun products(_alias: String? = null,
-      _projection: ProductProjection.() -> ProductProjection): QueryProjection {
+  public fun products(_alias: String? = null, _projection: ProductProjection.() -> ProductProjection): QueryProjection {
     field(_alias, "products", ProductProjection(inputValueSerializer), _projection)
     return this
   }
