@@ -19,6 +19,7 @@ package com.netflix.graphql.dgs.client.codegen
 import graphql.GraphQLContext
 import graphql.language.Argument
 import graphql.language.AstPrinter
+import graphql.language.Directive
 import graphql.language.Field
 import graphql.language.OperationDefinition
 import graphql.language.SelectionSet
@@ -30,7 +31,7 @@ class GraphQLQueryRequest
     constructor(
         val query: GraphQLQuery,
         val projection: BaseProjectionNode? = null,
-        options: GraphQLQueryRequestOptions? = null,
+        private val options: GraphQLQueryRequestOptions? = null,
     ) {
         private var selectionSet: SelectionSet? = null
         constructor(
@@ -57,6 +58,11 @@ class GraphQLQueryRequest
         class GraphQLQueryRequestOptions(
             val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
             val graphQLContext: GraphQLContext = GraphQLContext.getDefault(),
+            /**
+             * Directives to attach to the top-level selection field (the root query, mutation,
+             * or subscription field). Only valid for directives declared `on FIELD` in the schema.
+             */
+            val operationFieldDirectives: List<Directive> = emptyList(),
         ) {
             // When enabled, input values that are derived from properties
             // whose values are null will be serialized in the query request
@@ -94,6 +100,11 @@ class GraphQLQueryRequest
                     },
                 )
             }
+
+            options
+                ?.operationFieldDirectives
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { selection.directives(it) }
 
             if (projection != null) {
                 val selectionSetFromProjection =
