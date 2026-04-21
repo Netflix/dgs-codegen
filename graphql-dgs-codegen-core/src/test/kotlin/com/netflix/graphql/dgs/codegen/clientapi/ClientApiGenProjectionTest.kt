@@ -18,10 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen.clientapi
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.codegen.BASE_PACKAGE_NAME
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
+import com.netflix.graphql.dgs.codegen.toClassLoader
 import com.palantir.javapoet.TypeVariableName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -1009,5 +1012,52 @@ class ClientApiGenProjectionTest {
             .contains("q1", "q2")
 
         assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+    }
+
+    @Test
+    fun `concrete type deserializes JSON matching fields selected by interface subprojection`() {
+        val schema =
+            """
+            type Query {
+                search: Details
+            }
+
+            type Details {
+                show: Show
+            }
+
+            interface Show {
+                title: String
+            }
+
+            type Movie implements Show {
+                title: String
+                duration: Int
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        val testClassLoader = assertCompilesJava(codeGenResult).toClassLoader()
+        val showProjection =
+            testClassLoader
+                .loadClass("$BASE_PACKAGE_NAME.client.ShowProjection")
+                .getDeclaredConstructor(BaseSubProjectionNode::class.java, BaseSubProjectionNode::class.java)
+                .newInstance(null, null) as BaseSubProjectionNode<*, *>
+
+        val payload = mutableMapOf<String, Any>("title" to "The Matrix", "duration" to 136)
+        showProjection.fields.keys.forEach { payload.putIfAbsent(it, "Movie") }
+        val responseJson = ObjectMapper().writeValueAsString(payload)
+
+        val movieClass = testClassLoader.loadClass("$BASE_PACKAGE_NAME.types.Movie")
+        // Should deserialize via ObjectMapper without error, no unrecognized fields
+        assertThat(ObjectMapper().readValue(responseJson, movieClass)).isNotNull
     }
 }
