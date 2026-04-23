@@ -28,10 +28,17 @@ import graphql.language.Directive
 import graphql.language.IntValue
 import graphql.language.OperationDefinition
 import graphql.language.StringValue
+import graphql.language.TypeName
 import graphql.language.Value
+import graphql.language.VariableDefinition
+import graphql.language.VariableReference
 import graphql.parser.InvalidSyntaxException
 import graphql.parser.Parser
 import graphql.schema.Coercing
+import graphql.schema.idl.RuntimeWiring
+import graphql.schema.idl.SchemaGenerator
+import graphql.schema.idl.SchemaParser
+import graphql.validation.Validator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -541,6 +548,62 @@ class GraphQLQueryRequestTest {
     }
 
     @Test
+    fun snapshotsFieldDirectivesForEachRequest() {
+        val directives = mutableListOf(Directive("idempotent", listOf(Argument("key", StringValue.of("abc-123")))))
+        val options = GraphQLQueryRequestOptions().apply { operationFieldDirectives = directives }
+        val first = GraphQLQueryRequest(TestGraphQLMutation(), options = options)
+
+        directives.clear()
+        val second = GraphQLQueryRequest(TestGraphQLMutation(), options = options)
+        options.operationFieldDirectives = listOf(Directive("traced"))
+        val third = GraphQLQueryRequest(TestGraphQLMutation(), options = options)
+        options.operationFieldDirectives = emptyList()
+
+        assertThat(first.serializeCompact()).isEqualTo("""mutation{testMutation @idempotent(key:"abc-123")}""")
+        assertThat(second.serializeCompact()).isEqualTo("mutation{testMutation}")
+        assertThat(third.serializeCompact()).isEqualTo("mutation{testMutation @traced}")
+    }
+
+    @Test
+    fun validatesFieldDirectivesWithVariablesAcrossOperationTypesAndPrinters() {
+        val schema =
+            SchemaGenerator().makeExecutableSchema(
+                SchemaParser().parse(
+                    """
+                    directive @idempotent(key: ID!) on FIELD
+                    type Query { test: String }
+                    type Mutation { test: String }
+                    type Subscription { test: String }
+                    """.trimIndent(),
+                ),
+                RuntimeWiring.newRuntimeWiring().build(),
+            )
+        val directive = Directive("idempotent", listOf(Argument("key", VariableReference.of("key"))))
+        for (operation in listOf("query", "mutation", "subscription")) {
+            val query =
+                object : GraphQLQuery(operation) {
+                    override fun getOperationName(): String = "test"
+                }
+            query.variableDefinitions.add(
+                VariableDefinition.newVariableDefinition("key", graphql.language.NonNullType(TypeName("ID"))).build(),
+            )
+            val request =
+                GraphQLQueryRequest(
+                    query,
+                    options = GraphQLQueryRequestOptions().apply { operationFieldDirectives = listOf(directive) },
+                )
+            for (serialized in listOf(request.serialize(), request.serializeCompact())) {
+                val document = Parser().parseDocument(serialized)
+                assertThat(Validator().validateDocument(schema, document, Locale.ROOT)).isEmpty()
+                val definition = document.definitions.single() as OperationDefinition
+                val field = definition.selectionSet.selections.single() as graphql.language.Field
+                assertThat(field.directives.map { it.name }).containsExactly("idempotent")
+                assertThat(definition.directives).isEmpty()
+            }
+        }
+    }
+
+    @Test
     fun testSerializeOperationFieldDirectiveWithStringArgument() {
         val query =
             TestGraphQLMutation().apply {
@@ -556,7 +619,7 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(
                 query,
                 MovieProjection().name().movieId(),
-                GraphQLQueryRequestOptions(operationFieldDirectives = listOf(idempotent)),
+                GraphQLQueryRequestOptions().apply { operationFieldDirectives = listOf(idempotent) },
             )
         val result = request.serialize()
         assertValidQuery(result)
@@ -587,7 +650,7 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(
                 query,
                 null,
-                GraphQLQueryRequestOptions(operationFieldDirectives = directives),
+                GraphQLQueryRequestOptions().apply { operationFieldDirectives = directives },
             )
         val result = request.serialize()
         assertValidQuery(result)
@@ -616,7 +679,7 @@ class GraphQLQueryRequestTest {
             GraphQLQueryRequest(
                 query,
                 null,
-                GraphQLQueryRequestOptions(operationFieldDirectives = listOf(directive)),
+                GraphQLQueryRequestOptions().apply { operationFieldDirectives = listOf(directive) },
             )
         val result = request.serialize()
         assertValidQuery(result)
