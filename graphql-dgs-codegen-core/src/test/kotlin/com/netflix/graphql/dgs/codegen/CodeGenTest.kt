@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen
 
 import com.netflix.graphql.dgs.codegen.generators.java.disableJsonTypeInfoAnnotation
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.CodeBlock
@@ -4991,6 +4992,58 @@ It takes a title and such.
         allSources.assertJavaGeneratedAnnotation(false)
         assertThat(generatedAnnotationFile.single().toString())
             .contains("java.lang.annotation.Retention", "RetentionPolicy.CLASS")
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
+    fun generateSourceWithoutGeneratedAnnotation() {
+        val schema =
+            """
+            type Query {
+                employees(filter:EmployeeFilterInput) : [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            type Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+
+            input EmployeeFilterInput {
+                rank: String
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.JAVA,
+                    addGeneratedAnnotation = false,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        assertThat(codeGenResult.javaSources())
+            .noneMatch { it.typeSpec().name() == "Generated" && it.typeSpec().kind() == TypeSpec.Kind.ANNOTATION }
+
+        codeGenResult.javaSources().forEach { file ->
+            assertThat(file.typeSpec().annotations().map { it.canonicalName() })
+                .`as`("no @Generated annotation on %s", file.typeSpec())
+                .doesNotContain("$BASE_PACKAGE_NAME.Generated", generatedAnnotationClassName)
+        }
+
         assertCompilesJava(codeGenResult)
     }
 

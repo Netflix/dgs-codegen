@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
@@ -4532,6 +4533,65 @@ It takes a title and such.
 
         assertThat(generatedAnnotationFile.single().toString())
             .contains("@Retention(value = AnnotationRetention.BINARY)")
+
+        assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun generateSourceWithoutGeneratedAnnotation() {
+        val schema =
+            """
+            type Query {
+                employees(filter:EmployeeFilterInput) : [Person]
+            }
+
+            interface Person {
+                firstname: String
+                lastname: String
+            }
+
+            type Employee implements Person {
+                firstname: String
+                lastname: String
+                company: String
+            }
+            enum EmployeeTypes {
+                ENGINEER
+                MANAGER
+                DIRECTOR
+            }
+
+            input EmployeeFilterInput {
+                rank: String
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    addGeneratedAnnotation = false,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        assertThat(codeGenResult.kotlinSources()).noneMatch { it.name == "Generated" }
+        assertThat(codeGenResult.javaSources()).noneMatch { it.typeSpec().name() == "Generated" }
+
+        codeGenResult.kotlinSources().forEach { file ->
+            file.members.filterIsInstance(TypeSpec::class.java).forEach { type ->
+                assertThat(type.annotations.map { it.canonicalName() })
+                    .`as`("no @Generated annotation on %s at %s", type, file)
+                    .doesNotContain("$BASE_PACKAGE_NAME.Generated", generatedAnnotationClassName)
+            }
+        }
+        codeGenResult.javaSources().forEach { file ->
+            assertThat(file.typeSpec().annotations().map { it.canonicalName() })
+                .`as`("no @Generated annotation on %s", file.typeSpec())
+                .doesNotContain("$BASE_PACKAGE_NAME.Generated", generatedAnnotationClassName)
+        }
 
         assertCompilesKotlin(codeGenResult)
     }
