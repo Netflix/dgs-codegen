@@ -55,25 +55,30 @@ class GraphQLQueryRequest
             this.selectionSet = selectionSet
         }
 
-        class GraphQLQueryRequestOptions(
-            val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
-            val graphQLContext: GraphQLContext = GraphQLContext.getDefault(),
-            /**
-             * Directives to attach to the top-level selection field (the root query, mutation,
-             * or subscription field). Only valid for directives declared `on FIELD` in the schema.
-             */
-            val operationFieldDirectives: List<Directive> = emptyList(),
-        ) {
-            // When enabled, input values that are derived from properties
-            // whose values are null will be serialized in the query request
-            var allowNullablePropertyInputValues = false
-        }
+        class GraphQLQueryRequestOptions
+            @JvmOverloads
+            constructor(
+                val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
+                val graphQLContext: GraphQLContext = GraphQLContext.getDefault(),
+                /**
+                 * Directives to attach to the top-level selection field (the field invoked on the root query,
+                 * mutation, or subscription field). Only valid for directives declared `on FIELD` in the schema.
+                 */
+                val operationFieldDirectives: List<Directive> = emptyList(),
+            ) {
+                // When enabled, input values that are derived from properties
+                // whose values are null will be serialized in the query request
+                var allowNullablePropertyInputValues = false
+            }
 
         val inputValueSerializer =
             if (options?.allowNullablePropertyInputValues == true) {
                 NullableInputValueSerializer(options.scalars)
             } else {
-                InputValueSerializer(options?.scalars ?: emptyMap(), options?.graphQLContext ?: GraphQLContext.getDefault())
+                InputValueSerializer(
+                    options?.scalars ?: emptyMap(),
+                    options?.graphQLContext ?: GraphQLContext.getDefault(),
+                )
             }
 
         val projectionSerializer = ProjectionSerializer(inputValueSerializer, query)
@@ -86,7 +91,9 @@ class GraphQLQueryRequest
             val operationDef = OperationDefinition.newOperationDefinition()
 
             query.name?.let { operationDef.name(it) }
-            query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
+            query
+                .getOperationType()
+                ?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
 
             val selection = Field.newField(query.getOperationName())
             if (query.input.isNotEmpty()) {
