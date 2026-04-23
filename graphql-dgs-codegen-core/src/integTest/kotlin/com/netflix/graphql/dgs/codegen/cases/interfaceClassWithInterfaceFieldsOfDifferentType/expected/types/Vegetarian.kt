@@ -10,7 +10,11 @@ import kotlin.String
 import kotlin.Suppress
 import kotlin.collections.List
 import kotlin.jvm.JvmName
+import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFieldsOfDifferentType.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Vegetarian.Builder::class)
 public class Vegetarian(
@@ -30,6 +34,8 @@ public class Vegetarian(
   public val vegetables: List<String?>?
     get() = __vegetables.invoke()
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   public companion object {
     private val caloriesDefault: () -> String? = 
         { throw IllegalStateException("Field `calories` was not requested") }
@@ -38,6 +44,8 @@ public class Vegetarian(
         { throw IllegalStateException("Field `vegetables` was not requested") }
   }
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

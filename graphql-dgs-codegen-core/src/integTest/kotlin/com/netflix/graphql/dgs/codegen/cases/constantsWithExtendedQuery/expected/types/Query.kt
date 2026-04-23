@@ -8,7 +8,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.collections.List
 import kotlin.jvm.JvmName
+import com.netflix.graphql.dgs.codegen.cases.constantsWithExtendedQuery.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
@@ -27,6 +31,8 @@ public class Query(
   public val friends: List<Person?>?
     get() = __friends.invoke()
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   public companion object {
     private val peopleDefault: () -> List<Person?>? = 
         { throw IllegalStateException("Field `people` was not requested") }
@@ -35,6 +41,8 @@ public class Query(
         { throw IllegalStateException("Field `friends` was not requested") }
   }
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

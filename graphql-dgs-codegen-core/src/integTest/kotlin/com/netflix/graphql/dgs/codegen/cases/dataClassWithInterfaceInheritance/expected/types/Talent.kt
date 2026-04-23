@@ -9,7 +9,11 @@ import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithInterfaceInheritance.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Talent.Builder::class)
 public class Talent(
@@ -45,6 +49,8 @@ public class Talent(
   public val imdbProfile: String?
     get() = __imdbProfile.invoke()
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   public companion object {
     private val firstnameDefault: () -> String = 
         { throw IllegalStateException("Field `firstname` was not requested") }
@@ -59,6 +65,8 @@ public class Talent(
         { throw IllegalStateException("Field `imdbProfile` was not requested") }
   }
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

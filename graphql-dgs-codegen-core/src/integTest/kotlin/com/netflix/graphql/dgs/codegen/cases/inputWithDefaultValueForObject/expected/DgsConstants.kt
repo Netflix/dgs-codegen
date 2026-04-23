@@ -2,7 +2,11 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.exp
 
 import kotlin.String
 
+@jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@Generated
 public object DgsConstants {
+  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @Generated
   public object PERSON {
     public const val TYPE_NAME: String = "Person"
 
@@ -13,12 +17,16 @@ public object DgsConstants {
     public const val Car: String = "car"
   }
 
+  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @Generated
   public object CAR {
     public const val TYPE_NAME: String = "Car"
 
     public const val Brand: String = "brand"
   }
 
+  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @Generated
   public object MOVIEFILTER {
     public const val TYPE_NAME: String = "MovieFilter"
 

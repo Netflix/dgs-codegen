@@ -7,7 +7,11 @@ import kotlin.Int
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
+import com.netflix.graphql.dgs.codegen.cases.inputWithExtendedType.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 public data class MovieFilter(
   @JsonProperty("genre")
   public val genre: String? = default<MovieFilter, String?>("genre", null),

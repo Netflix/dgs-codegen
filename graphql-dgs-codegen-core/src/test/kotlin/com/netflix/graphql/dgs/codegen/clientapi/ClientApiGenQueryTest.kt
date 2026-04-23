@@ -58,7 +58,7 @@ class ClientApiGenQueryTest {
                 (it.parameters().find { param -> param.name() == "queryName" } != null)
         }
 
-        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -100,7 +100,7 @@ class ClientApiGenQueryTest {
             """.trimIndent(),
         )
 
-        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -242,7 +242,7 @@ class ClientApiGenQueryTest {
                 "VideoProjection",
             )
 
-        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -279,7 +279,7 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.javaDataTypes[0].typeSpec().name()).isEqualTo("MovieQuery")
         assertThat(codeGenResult.javaDataTypes[1].typeSpec().name()).isEqualTo("BooleanQuery")
 
-        assertCompilesJava(codeGenResult.javaDataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -313,7 +313,7 @@ class ClientApiGenQueryTest {
                 .name(),
         ).isEqualTo("lastname")
 
-        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -352,9 +352,7 @@ class ClientApiGenQueryTest {
                 .name(),
         ).isEqualTo("index")
 
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -394,9 +392,7 @@ class ClientApiGenQueryTest {
                 .name(),
         ).isEqualTo("index")
 
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -457,9 +453,7 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("PersonsGraphQLQuery")
 
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -520,10 +514,7 @@ class ClientApiGenQueryTest {
                 .name(),
         ).isEqualTo("episodes")
 
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
-                codeGenResult.javaInterfaces,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -560,7 +551,7 @@ class ClientApiGenQueryTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("QueryRootGraphQLQuery")
 
-        assertThat(codeGenResult.javaInterfaces.size).isEqualTo(1)
+        assertThat(codeGenResult.javaInterfaces.size).isEqualTo(2)
         assertThat(codeGenResult.javaInterfaces[0].typeSpec().name()).isEqualTo("HasDefaultField")
 
         assertThat(codeGenResult.javaDataTypes.size).isEqualTo(1)
@@ -589,10 +580,7 @@ class ClientApiGenQueryTest {
                 .name(),
         ).isEqualTo("_public")
 
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
-                codeGenResult.javaInterfaces,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -994,7 +982,7 @@ class ClientApiGenQueryTest {
                 .toString(),
         ).isEqualTo("")
 
-        assertCompilesJava(codeGenResult.javaDataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1036,6 +1024,7 @@ class ClientApiGenQueryTest {
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     generateClientApi = true,
+                    addGeneratedAnnotation = false,
                 ),
             ).generate()
 
@@ -1098,6 +1087,6 @@ class ClientApiGenQueryTest {
         assertThat(typeSpec.methodSpecs()[2].name()).isEqualTo("getClassField")
         assertThat(typeSpec.methodSpecs()[3].name()).isEqualTo("setClassField")
 
-        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaInterfaces)
+        assertCompilesJava(codeGenResult)
     }
 }

@@ -9,7 +9,11 @@ import graphql.relay.SimpleListConnection
 import java.lang.IllegalStateException
 import kotlin.collections.List
 import kotlin.jvm.JvmName
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
@@ -28,6 +32,8 @@ public class Query(
   public val entityConnection: SimpleListConnection<EntityEdge>?
     get() = __entityConnection.invoke()
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   public companion object {
     private val entityDefault: () -> List<Entity?>? = 
         { throw IllegalStateException("Field `entity` was not requested") }
@@ -36,6 +42,8 @@ public class Query(
         { throw IllegalStateException("Field `entityConnection` was not requested") }
   }
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

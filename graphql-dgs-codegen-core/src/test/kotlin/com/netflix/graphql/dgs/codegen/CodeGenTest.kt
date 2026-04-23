@@ -125,13 +125,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         val typeSpec = dataTypes[0].typeSpec()
@@ -142,7 +143,7 @@ class CodeGenTest {
         assertThat(typeSpec.fieldSpecs()).extracting("name").contains("firstname", "lastname")
         assertThat(typeSpec.methodSpecs()).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
         dataTypes[0].writeTo(System.out)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -455,7 +456,7 @@ class CodeGenTest {
                 ?: Assertions.fail("Unable to find Movie data type")
         assertThat(movieType.typeSpec().annotations()).matches(hasJspecifyNullMarkedAnnotation())
 
-        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaInterfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     private fun hasJspecifyNullMarkedAnnotation(): (List<AnnotationSpec>) -> Boolean = hasJspecifyAnnotation("NullMarked")
@@ -498,7 +499,8 @@ class CodeGenTest {
                 javaGenerateAllConstructor = false,
             )
 
-        val (dataTypes) = CodeGen(codeGenConfig).generate()
+        val codeGenResult = CodeGen(codeGenConfig).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes).hasSize(1)
         val personType = dataTypes[0].typeSpec()
@@ -509,7 +511,7 @@ class CodeGenTest {
         assertThat(constructors).hasSize(1)
         assertThat(constructors[0].parameters()).isEmpty()
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -526,20 +528,21 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
         val toString = assertThat(dataTypes[0].typeSpec().methodSpecs()).filteredOn("name", "toString")
         toString.extracting("code").allMatch { "return \"Person{" in it.toString() }
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -556,19 +559,20 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec().methodSpecs()).extracting("name").contains("equals")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -583,18 +587,19 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -611,13 +616,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
@@ -627,7 +633,7 @@ class CodeGenTest {
         assertThat(builderType.methodSpecs()).extracting("name").contains("firstname", "lastname", "build")
         assertThat(builderType.methodSpecs()).filteredOn("name", "firstname").extracting("returnType.simpleName").contains("Builder")
         assertThat(builderType.methodSpecs()).filteredOn("name", "build").extracting("returnType.simpleName").contains("Person")
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -644,19 +650,20 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
         assertThat(dataTypes[0].typeSpec().methodSpecs()).extracting("name").contains("hashCode")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -673,19 +680,20 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = "com.mypackage",
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
         assertThat(dataTypes[0].packageName()).isEqualTo("com.mypackage.types")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -702,13 +710,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
@@ -718,7 +727,7 @@ class CodeGenTest {
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -735,13 +744,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
@@ -751,7 +761,7 @@ class CodeGenTest {
         type.extracting("rawType.canonicalName").contains("java.util.List")
         type.flatExtracting("typeArguments").extracting("canonicalName").contains("java.lang.String")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -774,13 +784,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         val employee = dataTypes.single().typeSpec()
@@ -789,18 +800,21 @@ class CodeGenTest {
         assertThat(employee.fieldSpecs().size).isEqualTo(3)
         assertThat(employee.fieldSpecs()).extracting("name").contains("firstname", "lastname", "company")
 
-        val annotation = employee.annotations().single()
-        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        val annotations = employee.annotations()
+        assertThat(annotations).contains(disableJsonTypeInfoAnnotation())
 
-        val person = interfaces[0]
+        val person = interfaces.find { it.typeSpec().name() == "Person" }
         assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
                |import com.fasterxml.jackson.annotation.JsonSubTypes;
                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import jakarta.annotation.Generated;
                |import java.lang.String;
                |
+               |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+               |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                |@JsonTypeInfo(
                |    use = JsonTypeInfo.Id.NAME,
                |    include = JsonTypeInfo.As.PROPERTY,
@@ -820,7 +834,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -842,7 +856,7 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -850,6 +864,7 @@ class CodeGenTest {
                     generateIsGetterForPrimitiveBooleanFields = true,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         val employee = dataTypes.single().typeSpec()
@@ -858,18 +873,21 @@ class CodeGenTest {
         assertThat(employee.fieldSpecs().size).isEqualTo(2)
         assertThat(employee.fieldSpecs()).extracting("name").contains("enabled", "boxedEnabled")
 
-        val annotation = employee.annotations().single()
-        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        val annotations = employee.annotations()
+        assertThat(annotations).contains(disableJsonTypeInfoAnnotation())
 
-        val person = interfaces[0]
+        val person = interfaces.find { it.typeSpec().name() == "FeatureToggle" }
         assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
                |import com.fasterxml.jackson.annotation.JsonSubTypes;
                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import jakarta.annotation.Generated;
                |import java.lang.Boolean;
                |
+               |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+               |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                |@JsonTypeInfo(
                |    use = JsonTypeInfo.Id.NAME,
                |    include = JsonTypeInfo.As.PROPERTY,
@@ -889,7 +907,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -932,13 +950,14 @@ class CodeGenTest {
             |}
             """.trimMargin()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
         assertThat(interfaces[0].toString()).isEqualTo(
             """
@@ -946,9 +965,12 @@ class CodeGenTest {
                 |
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import jakarta.annotation.Generated;
                 |import java.lang.String;
                 |import java.util.List;
                 |
+                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NAME,
                 |    include = JsonTypeInfo.As.PROPERTY,
@@ -979,7 +1001,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1006,13 +1028,14 @@ class CodeGenTest {
             |}
             """.trimMargin()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
         assertThat(interfaces[0].toString()).isEqualTo(
             """
@@ -1020,8 +1043,11 @@ class CodeGenTest {
                 |
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import jakarta.annotation.Generated;
                 |import java.lang.String;
                 |
+                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NAME,
                 |    include = JsonTypeInfo.As.PROPERTY,
@@ -1039,7 +1065,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1062,13 +1088,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         val employee = dataTypes.single().typeSpec()
@@ -1077,18 +1104,21 @@ class CodeGenTest {
         assertThat(employee.fieldSpecs().size).isEqualTo(3)
         assertThat(employee.fieldSpecs()).extracting("name").contains("firstname", "lastname", "company")
 
-        val annotation = employee.annotations().single()
-        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        val annotations = employee.annotations()
+        assertThat(annotations).contains(disableJsonTypeInfoAnnotation())
 
-        val person = interfaces[0]
+        val person = interfaces.find { it.typeSpec().name() == "Person" }
         assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
                |import com.fasterxml.jackson.annotation.JsonSubTypes;
                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import jakarta.annotation.Generated;
                |import java.lang.String;
                |
+               |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+               |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                |@JsonTypeInfo(
                |    use = JsonTypeInfo.Id.NAME,
                |    include = JsonTypeInfo.As.PROPERTY,
@@ -1108,7 +1138,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1127,13 +1157,14 @@ class CodeGenTest {
 
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         // Check data class
         assertThat(dataTypes.size).isEqualTo(1)
@@ -1149,7 +1180,7 @@ class CodeGenTest {
             .extracting("type", ParameterizedTypeName::class.java)
             .contains(parameterizedType)
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1179,13 +1210,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes).extracting("typeSpec.name").contains("Car", "Engine", "Performance")
         assertThat(dataTypes)
@@ -1196,7 +1228,7 @@ class CodeGenTest {
             .extracting("type.simpleName")
             .containsExactly("Performance")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1213,7 +1245,7 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -1221,11 +1253,12 @@ class CodeGenTest {
                     javaGenerateAllConstructor = false,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes[0].typeSpec().methodSpecs())
             .filteredOn { it.name().equals("<init>") && it.parameters().isNotEmpty() }
             .hasSize(0)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1242,18 +1275,19 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes[0].typeSpec().methodSpecs())
             .filteredOn { it.name().equals("<init>") && it.parameters().isNotEmpty() }
             .hasSize(1)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1290,7 +1324,7 @@ class CodeGenTest {
         ).isEqualTo(3)
         assertThat(codeGenResult.javaEnumTypes[0].typeSpec().enumConstants()).containsKeys("ENGINEER", "MANAGER", "DIRECTOR")
 
-        assertCompilesJava(codeGenResult.javaEnumTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1322,7 +1356,7 @@ class CodeGenTest {
         assertThat(codeGenResult.javaEnumTypes[0].typeSpec().name()).isEqualTo("EmployeeTypes")
         assertThat(codeGenResult.javaEnumTypes[0].typeSpec().enumConstants()).containsOnlyKeys("_default", "_root", "_new", "name")
 
-        assertCompilesJava(codeGenResult.javaEnumTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1382,8 +1416,11 @@ class CodeGenTest {
                 """
                 package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 
+                import jakarta.annotation.Generated;
                 import java.lang.Deprecated;
                 
+                @Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                @com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 public enum EmployeeTypes {
                   /**
                    * chatGPT does the engineering now
@@ -1399,7 +1436,7 @@ class CodeGenTest {
                 """.trimIndent(),
             )
 
-            assertCompilesJava(codeGenResult.javaEnumTypes)
+            assertCompilesJava(codeGenResult)
         }
 
         @Test
@@ -1426,6 +1463,10 @@ class CodeGenTest {
                 """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
+                |import jakarta.annotation.Generated;
+                |
+                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |public enum SomeEnum {
                 |  @ValidName
                 |  ENUM_VALUE
@@ -1474,7 +1515,7 @@ class CodeGenTest {
         ).isEqualTo(4)
         assertThat(codeGenResult.javaEnumTypes[0].typeSpec().enumConstants()).containsKeys("ENGINEER", "MANAGER", "DIRECTOR", "QA")
 
-        assertCompilesJava(codeGenResult.javaEnumTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -1504,7 +1545,7 @@ class CodeGenTest {
         assertThat(dataFetchers.size).isEqualTo(1)
         assertThat(dataFetchers[0].typeSpec().name()).isEqualTo("PeopleDatafetcher")
         assertThat(dataFetchers[0].packageName()).isEqualTo(DATA_FETCHER_PACKAGE_NAME)
-        assertCompilesJava(dataFetchers + dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     class MappedTypesTestCases : ArgumentsProvider {
@@ -1559,7 +1600,7 @@ class CodeGenTest {
                 mappedTypeAsString: String,
                 expected: String,
             ) {
-                val (dataTypes) =
+                val codeGenResult =
                     CodeGen(
                         CodeGenConfig(
                             schemas = setOf(schema),
@@ -1567,6 +1608,7 @@ class CodeGenTest {
                             typeMapping = mapOf("JSON" to mappedTypeAsString),
                         ),
                     ).generate()
+                val (dataTypes) = codeGenResult
                 assertThat(dataTypes.size).isEqualTo(1)
                 assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Person")
                 assertThat(dataTypes[0].packageName()).isEqualTo(TYPES_PACKAGE_NAME)
@@ -1588,7 +1630,7 @@ class CodeGenTest {
                         .type()
                         .toString(),
                 ).isEqualTo(expected)
-                assertCompilesJava(dataTypes)
+                assertCompilesJava(codeGenResult)
             }
         }
 
@@ -1720,16 +1762,19 @@ class CodeGenTest {
             ).generate()
         val interfaces = codeGenResult.javaInterfaces
 
-        assertThat(interfaces.size).isEqualTo(1)
+        assertThat(interfaces.size).isEqualTo(2)
         assertThat(interfaces[0].toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import jakarta.annotation.Generated;
                 |import java.lang.String;
                 |import mypackage.Cat;
                 |
+                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NAME,
                 |    include = JsonTypeInfo.As.PROPERTY,
@@ -1791,8 +1836,6 @@ class CodeGenTest {
                 .type()
                 .toString(),
         ).isEqualTo("mypackage.SomethingWithAName")
-
-        assertThat(javaInterfaces).isEmpty()
     }
 
     @Test
@@ -1837,8 +1880,6 @@ class CodeGenTest {
                 .toString(),
         ).isEqualTo("mypackage.SomethingWithAName")
         assertThat((dataTypes[1].typeSpec().superinterfaces()[0].toString())).contains("mypackage.SomethingWithAName")
-
-        assertThat(javaInterfaces).isEmpty()
     }
 
     @Test
@@ -1875,7 +1916,6 @@ class CodeGenTest {
             ).generate()
 
         assertThat(dataTypes).isEmpty()
-        assertThat(javaInterfaces).isEmpty()
     }
 
     @Test
@@ -1910,7 +1950,7 @@ class CodeGenTest {
             ).generate()
 
         assertThat(dataTypes).hasSize(1)
-        assertThat(javaInterfaces).hasSize(1)
+        assertThat(javaInterfaces).hasSize(2)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("Movie")
     }
 
@@ -1985,13 +2025,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("MovieFilter")
@@ -2000,7 +2041,7 @@ class CodeGenTest {
         assertThat(dataTypes[0].typeSpec().fieldSpecs().size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().fieldSpecs()).extracting("name").contains("genre")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @ParameterizedTest
@@ -2017,10 +2058,11 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, _, enumTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME, trackInputFieldSet = trackInputFieldSet),
             ).generate()
+        val (dataTypes, _, enumTypes) = codeGenResult
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -2042,7 +2084,7 @@ class CodeGenTest {
             assertThat(colorField.initializer().toString()).isEqualTo("$TYPES_PACKAGE_NAME.Color.red")
         }
 
-        assertCompilesJava(enumTypes + dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2067,9 +2109,10 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val (dataTypes, _, enumTypes) = codeGenResult
 
-        assertCompilesJava(enumTypes + dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2081,7 +2124,8 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val (dataTypes) = codeGenResult
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -2097,7 +2141,7 @@ class CodeGenTest {
         assertThat(colorField.name()).isEqualTo("names")
         assertThat(colorField.initializer().toString()).isEqualTo("java.util.Collections.emptyList()")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2109,7 +2153,8 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val (dataTypes) = codeGenResult
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -2125,7 +2170,7 @@ class CodeGenTest {
         assertThat(colorField.name()).isEqualTo("names")
         assertThat(colorField.initializer().toString()).isEqualTo("""java.util.Arrays.asList("A", "B")""")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2137,7 +2182,8 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val (dataTypes) = codeGenResult
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -2153,7 +2199,7 @@ class CodeGenTest {
         assertThat(colorField.name()).isEqualTo("numbers")
         assertThat(colorField.initializer().toString()).isEqualTo("""java.util.Arrays.asList(1, 2, 3)""")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2170,7 +2216,8 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, _, enumTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val (dataTypes, _, enumTypes) = codeGenResult
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -2186,7 +2233,7 @@ class CodeGenTest {
         assertThat(colorField.name()).isEqualTo("colors")
         assertThat(colorField.initializer().toString()).isEqualTo("""java.util.Arrays.asList($TYPES_PACKAGE_NAME.Color.red)""")
 
-        assertCompilesJava(dataTypes + enumTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2206,13 +2253,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         assertThat(dataTypes[0].typeSpec().name()).isEqualTo("MovieFilter")
@@ -2220,7 +2268,7 @@ class CodeGenTest {
 
         assertThat(dataTypes[0].typeSpec().fieldSpecs().size).isEqualTo(2)
         assertThat(dataTypes[0].typeSpec().fieldSpecs()).extracting("name").contains("genre", "releaseYear")
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2237,13 +2285,14 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes[0].typeSpec().methodSpecs()).extracting("name").contains("toString")
         val expectedString = """return "Person{firstname='" + firstname + "', lastname='" + lastname + "'}";"""
@@ -2256,7 +2305,7 @@ class CodeGenTest {
                 .toString()
                 .trimIndent()
         assertThat(generatedString).isEqualTo(expectedString)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2275,13 +2324,14 @@ class CodeGenTest {
             directive @sensitive on FIELD_DEFINITION
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes[0].typeSpec().methodSpecs()).extracting("name").contains("toString")
         val expectedString = """return "Person{firstname='" + firstname + "', lastname='" + lastname + "', password='*****'}";"""
@@ -2294,7 +2344,7 @@ class CodeGenTest {
                 .toString()
                 .trimIndent()
         assertThat(generatedString).isEqualTo(expectedString)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2310,13 +2360,14 @@ class CodeGenTest {
             directive @sensitive on INPUT_FIELD_DEFINITION
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes[0].typeSpec().methodSpecs()).extracting("name").contains("toString")
         val expectedString = """return "PersonFilter{email='*****'}";"""
@@ -2329,7 +2380,7 @@ class CodeGenTest {
                 .toString()
                 .trimIndent()
         assertThat(generatedString).isEqualTo(expectedString)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @ParameterizedTest(name = "{index} => Snake Case? {0}; expected names {1}")
@@ -2726,7 +2777,10 @@ class CodeGenTest {
                 |
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import jakarta.annotation.Generated;
                 |
+                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NAME,
                 |    include = JsonTypeInfo.As.PROPERTY,
@@ -2743,7 +2797,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(result.javaDataTypes + result.javaInterfaces)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -2825,7 +2879,7 @@ class CodeGenTest {
             .containsExactly("ShowType", "SourceType")
         assertThat(codeGenResult.clientProjections).isEmpty()
 
-        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2908,7 +2962,7 @@ class CodeGenTest {
             .containsExactly("ShouldNotInclude", "ShowType", "SourceType")
         assertThat(codeGenResult.clientProjections).isEmpty()
 
-        assertCompilesJava(codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes + codeGenResult.javaInterfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -2987,16 +3041,17 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME, subPackageNameTypes = "mytypes"),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         val typeSpec = dataTypes[0].typeSpec()
         assertThat(typeSpec.name()).isEqualTo("Person")
         assertThat(dataTypes[0].packageName()).isEqualTo("$BASE_PACKAGE_NAME.mytypes")
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -3027,13 +3082,14 @@ class CodeGenTest {
 
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         val talent = dataTypes.single().typeSpec()
@@ -3044,18 +3100,21 @@ class CodeGenTest {
             .extracting("name")
             .contains("firstname", "lastname", "company", "imdbProfile")
 
-        val annotation = talent.annotations().single()
-        assertThat(annotation).isEqualTo(disableJsonTypeInfoAnnotation())
+        val annotations = talent.annotations()
+        assertThat(annotations).contains(disableJsonTypeInfoAnnotation())
 
-        assertThat(interfaces).hasSize(2)
+        assertThat(interfaces).hasSize(3)
 
         val person = interfaces[0]
         assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
+               |import jakarta.annotation.Generated;
                |import java.lang.String;
                |
+               |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+               |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                |public interface Person {
                |  String getFirstname();
                |
@@ -3076,8 +3135,11 @@ class CodeGenTest {
                |
                |import com.fasterxml.jackson.annotation.JsonSubTypes;
                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+               |import jakarta.annotation.Generated;
                |import java.lang.String;
                |
+               |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+               |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                |@JsonTypeInfo(
                |    use = JsonTypeInfo.Id.NAME,
                |    include = JsonTypeInfo.As.PROPERTY,
@@ -3106,11 +3168,14 @@ class CodeGenTest {
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import jakarta.annotation.Generated;
                 |import java.lang.Object;
                 |import java.lang.Override;
                 |import java.lang.String;
                 |import java.util.Objects;
                 |
+                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NONE
                 |)
@@ -3190,6 +3255,8 @@ class CodeGenTest {
                 |    return new Builder();
                 |  }
                 |
+                |  @Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |  @com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |  public static class Builder {
                 |    private String firstname;
                 |
@@ -3233,7 +3300,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -3267,24 +3334,28 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
-        assertThat(interfaces).hasSize(2)
+        assertThat(interfaces).hasSize(3)
 
         val person = interfaces.find { it.typeSpec().name() == "Person" }!!
         assertThat(person.toString()).isEqualTo(
             """
             |package com.netflix.graphql.dgs.codegen.tests.generated.types;
             |
+            |import jakarta.annotation.Generated;
             |import java.lang.Integer;
             |import java.lang.String;
             |
+            |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+            |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |public interface Person {
             |  String getName();
             |
@@ -3305,9 +3376,12 @@ class CodeGenTest {
             |
             |import com.fasterxml.jackson.annotation.JsonSubTypes;
             |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+            |import jakarta.annotation.Generated;
             |import java.lang.Integer;
             |import java.lang.String;
             |
+            |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+            |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |@JsonTypeInfo(
             |    use = JsonTypeInfo.Id.NAME,
             |    include = JsonTypeInfo.As.PROPERTY,
@@ -3332,7 +3406,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -3361,7 +3435,7 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -3369,18 +3443,22 @@ class CodeGenTest {
                     generateInterfaceMethodsForInterfaceFields = true,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
-        assertThat(interfaces).hasSize(2)
+        assertThat(interfaces).hasSize(3)
 
         val person = interfaces.find { it.typeSpec().name() == "Person" }!!
         assertThat(person.toString()).isEqualTo(
             """
             |package com.netflix.graphql.dgs.codegen.tests.generated.types;
             |
+            |import jakarta.annotation.Generated;
             |import java.lang.Integer;
             |import java.lang.String;
             |import java.util.List;
             |
+            |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+            |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |public interface Person {
             |  String getName();
             |
@@ -3409,10 +3487,13 @@ class CodeGenTest {
             |
             |import com.fasterxml.jackson.annotation.JsonSubTypes;
             |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+            |import jakarta.annotation.Generated;
             |import java.lang.Integer;
             |import java.lang.String;
             |import java.util.List;
             |
+            |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+            |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |@JsonTypeInfo(
             |    use = JsonTypeInfo.Id.NAME,
             |    include = JsonTypeInfo.As.PROPERTY,
@@ -3440,7 +3521,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -3458,7 +3539,7 @@ class CodeGenTest {
 
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -3466,16 +3547,20 @@ class CodeGenTest {
                     generateInterfaceSetters = false,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
-        assertThat(interfaces).hasSize(1)
+        assertThat(interfaces).hasSize(2)
 
-        val person = interfaces[0]
+        val person = interfaces.find { it.typeSpec().name() == "Person" }
         assertThat(person.toString()).isEqualTo(
             """
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
+               |import jakarta.annotation.Generated;
                |import java.lang.String;
                |
+               |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+               |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                |public interface Person {
                |  String getFirstname();
                |
@@ -3484,7 +3569,7 @@ class CodeGenTest {
                |
             """.trimMargin(),
         )
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -3513,9 +3598,10 @@ class CodeGenTest {
                 ),
             ).generate()
 
-        assertThat(result.javaInterfaces).hasSize(1)
-        assertThat(result.javaInterfaces[0].typeSpec().methodSpecs()).hasSize(6)
-        assertThat(result.javaInterfaces[0].typeSpec().methodSpecs())
+        assertThat(result.javaInterfaces).hasSize(2)
+        val person = result.javaInterfaces.single { it.typeSpec().name() == "Person" }
+        assertThat(person.typeSpec().methodSpecs()).hasSize(6)
+        assertThat(person.typeSpec().methodSpecs())
             .extracting("name")
             .containsExactly("getFirstname", "setFirstname", "getLastname", "setLastname", "getAge", "setAge")
     }
@@ -3539,7 +3625,7 @@ class CodeGenTest {
             CodeGen(
                 CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME, generateClientApi = true, typeMapping = mapOf()),
             ).generate()
-        assertCompilesJava(codeGenResult.javaFiles)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -3577,7 +3663,7 @@ class CodeGenTest {
         assertThat(iapple.typeSpec().name()).isEqualTo("IApple")
         assertThat(iapple.typeSpec().fieldSpecs()).isEmpty()
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -3612,18 +3698,21 @@ class CodeGenTest {
         val dataTypes = result.javaDataTypes
 
         val iFruit = interfaces[2]
-        assertThat(iFruit.typeSpec().annotations().size).isEqualTo(2)
-        assertThat(
-            iFruit.typeSpec().annotations()[0].toString(),
-        ).isEqualTo(
+        val jsonTypeInfo =
+            iFruit.typeSpec().annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.fasterxml.jackson.annotation.JsonTypeInfo"
+            }
+        assertThat(jsonTypeInfo.toString()).isEqualTo(
             "@com.fasterxml.jackson.annotation.JsonTypeInfo(use = com.fasterxml.jackson.annotation.JsonTypeInfo.Id.NAME, include = com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY, property = \"__typename\")",
         )
-        assertThat(
-            iFruit.typeSpec().annotations()[1].toString(),
-        ).isEqualTo(
+        val jsonSubTypes =
+            iFruit.typeSpec().annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.fasterxml.jackson.annotation.JsonSubTypes"
+            }
+        assertThat(jsonSubTypes.toString()).isEqualTo(
             "@com.fasterxml.jackson.annotation.JsonSubTypes(@com.fasterxml.jackson.annotation.JsonSubTypes.Type(value = com.netflix.graphql.dgs.codegen.tests.generated.types.Apple.class, name = \"Apple\"))",
         )
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -3661,7 +3750,7 @@ class CodeGenTest {
         assertThat(itruthy.typeSpec().fieldSpecs()).isEmpty()
         assertThat(itruthy.typeSpec().methodSpecs()[0].name()).isEqualTo("isTruth")
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -3679,7 +3768,7 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -3687,17 +3776,22 @@ class CodeGenTest {
                     generateInterfaceSetters = false,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
-        assertThat(interfaces).hasSize(1)
+        assertThat(interfaces).hasSize(2)
+        val petInterface = interfaces.find { it.typeSpec().name() == "Pet" }
 
-        assertThat(interfaces[0].toString()).isEqualTo(
+        assertThat(petInterface.toString()).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import jakarta.annotation.Generated;
                 |import java.lang.String;
                 |
+                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NAME,
                 |    include = JsonTypeInfo.As.PROPERTY,
@@ -3711,7 +3805,7 @@ class CodeGenTest {
                 |}
             |
             """.trimMargin(),
-            assertCompilesJava(dataTypes + interfaces),
+            assertCompilesJava(codeGenResult),
         )
     }
 
@@ -3765,7 +3859,7 @@ class CodeGenTest {
         assertThat(category.typeSpec().methodSpecs()[2].name()).isEqualTo("getFruit")
         assertThat(category.typeSpec().methodSpecs()[3].name()).isEqualTo("setFruit")
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -3831,7 +3925,7 @@ class CodeGenTest {
         assertThat(category.typeSpec().methodSpecs()[2].name()).isEqualTo("getFruit")
         assertThat(category.typeSpec().methodSpecs()[3].name()).isEqualTo("setFruit")
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -3855,7 +3949,7 @@ class CodeGenTest {
             |}
             """.trimMargin()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -3863,6 +3957,7 @@ class CodeGenTest {
                     generateInterfaceMethodsForInterfaceFields = true,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
         assertThat(interfaces[0].toString()).isEqualTo(
             """
@@ -3870,9 +3965,12 @@ class CodeGenTest {
                 |
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+                |import jakarta.annotation.Generated;
                 |import java.lang.String;
                 |import java.util.List;
                 |
+                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NAME,
                 |    include = JsonTypeInfo.As.PROPERTY,
@@ -3895,7 +3993,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -3924,7 +4022,7 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -3933,18 +4031,22 @@ class CodeGenTest {
                     generateInterfaceSetters = false,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
-        assertThat(interfaces).hasSize(2)
+        assertThat(interfaces).hasSize(3)
 
         val person = interfaces.find { it.typeSpec().name() == "Person" }!!
         assertThat(person.toString()).isEqualTo(
             """
             |package com.netflix.graphql.dgs.codegen.tests.generated.types;
             |
+            |import jakarta.annotation.Generated;
             |import java.lang.Integer;
             |import java.lang.String;
             |import java.util.List;
             |
+            |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+            |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |public interface Person {
             |  String getName();
             |
@@ -3965,10 +4067,13 @@ class CodeGenTest {
             |
             |import com.fasterxml.jackson.annotation.JsonSubTypes;
             |import com.fasterxml.jackson.annotation.JsonTypeInfo;
+            |import jakarta.annotation.Generated;
             |import java.lang.Integer;
             |import java.lang.String;
             |import java.util.List;
             |
+            |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
+            |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |@JsonTypeInfo(
             |    use = JsonTypeInfo.Id.NAME,
             |    include = JsonTypeInfo.As.PROPERTY,
@@ -3988,7 +4093,7 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -4046,7 +4151,7 @@ class CodeGenTest {
         assertThat((basket.typeSpec().methodSpecs()[0].returnType() as ClassName).simpleName()).isEqualTo("Fruit")
         assertThat(basket.typeSpec().methodSpecs()).extracting("name").contains("getFruit")
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -4072,21 +4177,22 @@ class CodeGenTest {
 
             """.trimIndent()
 
-        val (dataTypes, interfaces) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes, interfaces) = codeGenResult
 
         assertThat(dataTypes).hasSize(1)
-        assertThat(interfaces).hasSize(2)
+        assertThat(interfaces).hasSize(3)
 
         assertThat(interfaces[1].typeSpec().superinterfaces()).hasSize(1)
         assertThat((interfaces[1].typeSpec().superinterfaces()[0] as ClassName).simpleName()).isEqualTo("Fruit")
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -4119,7 +4225,7 @@ class CodeGenTest {
         val interfaces = result.javaInterfaces
         val dataTypes = result.javaDataTypes
 
-        assertThat(interfaces).hasSize(3)
+        assertThat(interfaces).hasSize(4)
 
         val team = interfaces[0]
         assertThat(team.typeSpec().name()).isEqualTo("ITeam")
@@ -4143,7 +4249,7 @@ class CodeGenTest {
         ).contains("int")
         assertThat(standing.typeSpec().methodSpecs()[2].returnType()).extracting("simpleName").isEqualTo("ITeam")
 
-        assertCompilesJava(dataTypes + interfaces)
+        assertCompilesJava(result)
     }
 
     @ParameterizedTest
@@ -4209,7 +4315,7 @@ class CodeGenTest {
         val interfaces = result.javaInterfaces
         val dataTypes = result.javaDataTypes
 
-        assertThat(interfaces).hasSize(4) // IMovie, IMoviePage, IGenre, IRating
+        assertThat(interfaces).hasSize(5) // IMovie, IMoviePage, IGenre, IRating, Generated
         assertThat(dataTypes).hasSize(5) // Movie, MoviePage, Genre, Rating, MovieFilter
 
         val iMovie = interfaces[0]
@@ -4304,7 +4410,7 @@ class CodeGenTest {
             assertThat(movieFilter.typeSpec().fieldSpecs()[4].type()).extracting("simpleName").isEqualTo("Rating")
         }
 
-        assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -4379,7 +4485,7 @@ class CodeGenTest {
         val interfaces = result.javaInterfaces
         val dataTypes = result.javaDataTypes
 
-        assertThat(interfaces).hasSize(6) // IMovie, IMoviePage, IGenre, IActionGenre, IComedyGenre, IRating
+        assertThat(interfaces).hasSize(7) // IMovie, IMoviePage, IGenre, IActionGenre, IComedyGenre, IRating, Generated
         assertThat(dataTypes).hasSize(0)
 
         val iMovie = interfaces[0]
@@ -4420,7 +4526,7 @@ class CodeGenTest {
         assertThat(iGenre.typeSpec().name()).isEqualTo("Genre")
         assertThat(iGenre.typeSpec().methodSpecs()).extracting("name").containsExactly("getName", "setName")
 
-        assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -4468,7 +4574,7 @@ class CodeGenTest {
         val interfaces = result.javaInterfaces
         val dataTypes = result.javaDataTypes
 
-        assertThat(interfaces).hasSize(5) // IHuman, IDroid, ISearchResultPage, SearchResult, Character
+        assertThat(interfaces).hasSize(6) // IHuman, IDroid, ISearchResultPage, SearchResult, Character, Generated
         assertThat(dataTypes).hasSize(3) // Human, Droid, SearchResultPage
 
         assertThat(interfaces[0].typeSpec().name()).isEqualTo("IHuman")
@@ -4506,7 +4612,7 @@ class CodeGenTest {
         assertThat(parameterizedTypeName.rawType()).extracting("simpleName").isEqualTo("List")
         assertThat(parameterizedTypeName.typeArguments()[0]).extracting("simpleName").isEqualTo("SearchResult")
 
-        assertCompilesJava(dataTypes + interfaces + result.javaEnumTypes)
+        assertCompilesJava(result)
     }
 
     @Test
@@ -4820,6 +4926,7 @@ It takes a title and such.
                     packageName = BASE_PACKAGE_NAME,
                     language = Language.JAVA,
                     addGeneratedAnnotation = true,
+                    disableDatesInGeneratedAnnotation = false,
                     generateClientApi = true,
                 ),
             ).generate()
@@ -4912,15 +5019,19 @@ It takes a title and such.
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
         assertThat(person.javadoc().toString()).isEqualTo("This is going bye bye")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("Deprecated")
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        val personDeprecated =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "java.lang.Deprecated"
+            }
+        assertThat((personDeprecated.type() as ClassName).simpleName()).isEqualTo("Deprecated")
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].javadoc().toString()).isEqualTo("@deprecated This field is no longer available. Replaced by firstName")
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("Deprecated")
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        val fieldDeprecated =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "java.lang.Deprecated"
+            }
+        assertThat((fieldDeprecated.type() as ClassName).simpleName()).isEqualTo("Deprecated")
     }
 
     @Test
@@ -4946,23 +5057,22 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(2)
-        assertThat((person.annotations()[0] as AnnotationSpec).members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["types"],
-        ).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(2)
+        assertThat(validPerson.members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
+        assertThat(validPerson.members()["types"])
+            .isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidName")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
     }
 
     @Test
@@ -4988,23 +5098,22 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(2)
-        assertThat((person.annotations()[0] as AnnotationSpec).members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["types"],
-        ).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(2)
+        assertThat(validPerson.members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
+        assertThat(validPerson.members()["types"])
+            .isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidName")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
     }
 
     @Test
@@ -5030,14 +5139,15 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName()).isEqualTo("com.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(2)
-        assertThat((person.annotations()[0] as AnnotationSpec).members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["types"],
-        ).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(2)
+        assertThat(validPerson.members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
+        assertThat(validPerson.members()["types"])
+            .isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(1)
@@ -5090,23 +5200,22 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(2)
-        assertThat((person.annotations()[0] as AnnotationSpec).members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["types"],
-        ).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(2)
+        assertThat(validPerson.members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
+        assertThat(validPerson.members()["types"])
+            .isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.anotherValidator.ValidName")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
     }
 
     @Test
@@ -5132,16 +5241,15 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(2)
-        assertThat((person.annotations()[0] as AnnotationSpec).members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["types"],
-        ).isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(2)
+        assertThat(validPerson.members()["maxLimit"]).isEqualTo(listOf(CodeBlock.of("\$L", 10)))
+        assertThat(validPerson.members()["types"])
+            .isEqualTo(listOf(CodeBlock.of("{\$L}", "\"husband\", \"wife\"")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(1)
@@ -5174,22 +5282,21 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(1)
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["groups"],
-        ).isEqualTo(listOf(CodeBlock.of("\$L", "com.test.validator.groups.BasicValidation.class")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(1)
+        assertThat(validPerson.members()["groups"])
+            .isEqualTo(listOf(CodeBlock.of("\$L", "com.test.validator.groups.BasicValidation.class")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.anotherValidator.ValidName")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
     }
 
     @Test
@@ -5214,22 +5321,21 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(1)
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["groups"],
-        ).isEqualTo(listOf(CodeBlock.of("\$S", "BasicValidation.class"))) // treat as string when no mapping is provided
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(1)
+        assertThat(validPerson.members()["groups"])
+            .isEqualTo(listOf(CodeBlock.of("\$S", "BasicValidation.class"))) // treat as string when no mapping is provided
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.anotherValidator.ValidName")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
     }
 
     @Test
@@ -5262,26 +5368,24 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(1)
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["groups"],
-        ).isEqualTo(
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(1)
+        assertThat(validPerson.members()["groups"]).isEqualTo(
             listOf(
                 CodeBlock.of("{\$L}", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class"),
             ),
         )
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.anotherValidator.ValidName")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
     }
 
     @Test
@@ -5320,35 +5424,31 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(1)
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["groups"],
-        ).isEqualTo(
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(1)
+        assertThat(validPerson.members()["groups"]).isEqualTo(
             listOf(
                 CodeBlock.of("{\$L}", "com.test.validator.groups.BasicValidation.class, com.test.validator.groups.AdvanceValidation.class"),
             ),
         )
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(2)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.anotherValidator.ValidName")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
 
-        assertThat(fields[1].annotations()).hasSize(1)
-        assertThat(((fields[1].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidDateOfBirth")
-        assertThat(
-            ((fields[1].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.dob.ValidDateOfBirth")
-        assertThat(
-            (fields[1].annotations()[0] as AnnotationSpec).members()["levels"],
-        ).isEqualTo(
+        val validDob =
+            fields[1].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.dob.ValidDateOfBirth"
+            }
+        assertThat((validDob.type() as ClassName).simpleName()).isEqualTo("ValidDateOfBirth")
+        assertThat(validDob.members()["levels"]).isEqualTo(
             listOf(
                 CodeBlock.of(
                     "{\$L}",
@@ -5381,21 +5481,21 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(1)
-        assertThat((person.annotations()[0] as AnnotationSpec).members()["sexType"])
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(1)
+        assertThat(validPerson.members()["sexType"])
             .isEqualTo(listOf(CodeBlock.of("\$L", "com.enums.MALE")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.anotherValidator.ValidName")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
     }
 
     @Test
@@ -5421,15 +5521,14 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(1)
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["types"],
-        ).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(1)
+        assertThat(validPerson.members()["types"])
+            .isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(1)
@@ -5462,15 +5561,14 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(1)
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["types"],
-        ).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(1)
+        assertThat(validPerson.members()["types"])
+            .isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(1)
@@ -5503,26 +5601,26 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidPerson")
-        assertThat(
-            ((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.validator.ValidPerson")
-        assertThat((person.annotations()[0] as AnnotationSpec).members()).hasSize(1)
-        assertThat(
-            (person.annotations()[0] as AnnotationSpec).members()["types"],
-        ).isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
+        val validPerson =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.validator.ValidPerson"
+            }
+        assertThat((validPerson.type() as ClassName).simpleName()).isEqualTo("ValidPerson")
+        assertThat(validPerson.members()).hasSize(1)
+        assertThat(validPerson.members()["types"])
+            .isEqualTo(listOf(CodeBlock.of("{\$L}", "com.enums.HUSBAND, com.enums.WIFE")))
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(2)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.anotherValidator.ValidName")
-        assertThat(((fields[0].annotations()[1] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("NullValue")
-        assertThat(
-            ((fields[0].annotations()[1] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.nullValidator.NullValue")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
+        val nullValue =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.nullValidator.NullValue"
+            }
+        assertThat((nullValue.type() as ClassName).simpleName()).isEqualTo("NullValue")
     }
 
     @Test
@@ -5593,15 +5691,20 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("Deprecated")
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        val personDeprecated =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "java.lang.Deprecated"
+            }
+        assertThat((personDeprecated.type() as ClassName).simpleName()).isEqualTo("Deprecated")
         assertThat(person.javadoc().toString()).isEqualTo("Deprecated in the GraphQL schema.")
+
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(1)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("Deprecated")
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        val fieldDeprecated =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "java.lang.Deprecated"
+            }
+        assertThat((fieldDeprecated.type() as ClassName).simpleName()).isEqualTo("Deprecated")
         assertThat(fields[0].javadoc().toString()).isEqualTo("Deprecated in the GraphQL schema.")
     }
 
@@ -5629,9 +5732,11 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(1)
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("Deprecated")
-        assertThat(((person.annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName()).isEqualTo("java.lang.Deprecated")
+        val deprecated =
+            person.annotations().single {
+                (it.type() as ClassName).canonicalName() == "java.lang.Deprecated"
+            }
+        assertThat((deprecated.type() as ClassName).simpleName()).isEqualTo("Deprecated")
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(0)
@@ -5661,7 +5766,11 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(2)
+        assertThat(
+            person.annotations().filterNot {
+                (it.type() as ClassName).simpleName() == "Generated"
+            },
+        ).hasSize(2)
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(1)
@@ -5695,18 +5804,23 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(2)
+        assertThat(
+            person.annotations().filterNot {
+                (it.type() as ClassName).simpleName() == "Generated"
+            },
+        ).hasSize(2)
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
-        assertThat(fields[0].annotations()).hasSize(2)
-        assertThat(((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
-        assertThat(
-            ((fields[0].annotations()[0] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.anotherValidator.ValidName")
-        assertThat(((fields[0].annotations()[1] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("NullValue")
-        assertThat(
-            ((fields[0].annotations()[1] as AnnotationSpec).type() as ClassName).canonicalName(),
-        ).isEqualTo("com.test.nullValidator.NullValue")
+        val validName =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
+        val nullValue =
+            fields[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.nullValidator.NullValue"
+            }
+        assertThat((nullValue.type() as ClassName).simpleName()).isEqualTo("NullValue")
         val methods = person.methodSpecs()
         assertThat((methods[0] as MethodSpec).name()).isEqualTo("getName")
         assertThat(methods[0].annotations()).hasSize(0)
@@ -5736,7 +5850,11 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(2)
+        assertThat(
+            person.annotations().filterNot {
+                (it.type() as ClassName).simpleName() == "Generated"
+            },
+        ).hasSize(2)
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(1)
@@ -5772,7 +5890,11 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(2)
+        assertThat(
+            person.annotations().filterNot {
+                (it.type() as ClassName).simpleName() == "Generated"
+            },
+        ).hasSize(2)
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(1)
@@ -5810,7 +5932,11 @@ It takes a title and such.
         assertThat(dataTypes.size).isEqualTo(1)
         val person = dataTypes.single().typeSpec()
         assertThat(person.name()).isEqualTo("Person")
-        assertThat(person.annotations()).hasSize(2)
+        assertThat(
+            person.annotations().filterNot {
+                (it.type() as ClassName).simpleName() == "Generated"
+            },
+        ).hasSize(2)
         val fields = person.fieldSpecs()
         assertThat(fields).hasSize(1)
         assertThat(fields[0].annotations()).hasSize(1)
@@ -5823,7 +5949,11 @@ It takes a title and such.
         assertThat(methods[3].annotations()).hasSize(0)
         val parameters = (methods[3] as MethodSpec).parameters()
         assertThat(parameters).hasSize(1)
-        assertThat(((parameters[0].annotations()[0] as AnnotationSpec).type() as ClassName).simpleName()).isEqualTo("ValidName")
+        val validName =
+            parameters[0].annotations().single {
+                (it.type() as ClassName).canonicalName() == "com.test.anotherValidator.ValidName"
+            }
+        assertThat((validName.type() as ClassName).simpleName()).isEqualTo("ValidName")
     }
 
     @Test
@@ -6091,7 +6221,7 @@ It takes a title and such.
                 .initializer()
                 .toString(),
         ).isEqualTo("java.util.Locale.forLanguageTag(\"en-US\")")
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -6130,7 +6260,7 @@ It takes a title and such.
             }
             """.trimIndent()
 
-        val dataTypes =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -6141,8 +6271,9 @@ It takes a title and such.
                         ),
                     trackInputFieldSet = trackInputFieldSet,
                 ),
-            ).generate().javaDataTypes
+            ).generate()
 
+        val dataTypes = codeGenResult.javaDataTypes
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -6174,7 +6305,7 @@ It takes a title and such.
             assertThat(uriField.initializer().toString()).isEqualTo("java.net.URI.create(\"https://someurl.com\")")
         }
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -6186,7 +6317,7 @@ It takes a title and such.
             }
             """.trimIndent()
 
-        val dataTypes =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
@@ -6196,7 +6327,8 @@ It takes a title and such.
                             "Uri" to "java.lang.String",
                         ),
                 ),
-            ).generate().javaDataTypes
+            ).generate()
+        val dataTypes = codeGenResult.javaDataTypes
 
         assertThat(dataTypes).hasSize(1)
 
@@ -6214,7 +6346,7 @@ It takes a title and such.
         assertThat(uriField!!.type().toString()).isEqualTo("java.lang.String")
         assertThat(uriField.initializer().toString()).isEqualTo("\"https://someurl.com\"")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -6257,14 +6389,15 @@ It takes a title and such.
             }
             """.trimIndent()
 
-        val dataTypes =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                     trackInputFieldSet = trackInputFieldSet,
                 ),
-            ).generate().javaDataTypes
+            ).generate()
+        val dataTypes = codeGenResult.javaDataTypes
 
         assertThat(dataTypes).hasSize(2)
 
@@ -6285,7 +6418,7 @@ It takes a title and such.
             assertThat(colorField.initializer().toString()).isEqualTo("""new $TYPES_PACKAGE_NAME.Person()""")
         }
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -6306,13 +6439,14 @@ It takes a title and such.
             }
             """.trimIndent()
 
-        val dataTypes =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
-            ).generate().javaDataTypes
+            ).generate()
+        val dataTypes = codeGenResult.javaDataTypes
 
         assertThat(dataTypes).hasSize(3)
 
@@ -6332,7 +6466,7 @@ It takes a title and such.
                 """{{setName("Harrison");setCar(new com.netflix.graphql.dgs.codegen.tests.generated.types.Car(){{setBrand("Ford");}})""" +
                 ";}}",
         )
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -6349,13 +6483,14 @@ It takes a title and such.
             }
             """.trimIndent()
 
-        val dataTypes =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
-            ).generate().javaDataTypes
+            ).generate()
+        val dataTypes = codeGenResult.javaDataTypes
 
         assertThat(dataTypes).hasSize(2)
 
@@ -6376,7 +6511,7 @@ It takes a title and such.
                 "new com.netflix.graphql.dgs.codegen.tests.generated.types.Movie(){{setName(\"Matrix\");setYear(1999);}}" +
                 ")",
         )
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -6492,7 +6627,7 @@ It takes a title and such.
                 .initializer()
                 .toString(),
         ).isEqualTo("new java.math.BigDecimal(3.14E+19)")
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -6660,7 +6795,7 @@ It takes a title and such.
         val dataTypes = codeGenResult.javaDataTypes
         assertThat(dataFetchers).isEmpty()
         assertThat(dataTypes.size).isEqualTo(2)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
         val ageFieldSpec = dataTypes[0].typeSpec().fieldSpecs()[2]
         assertThat(ageFieldSpec.name()).isEqualTo("age")
         assertThat(ageFieldSpec.type().toString()).isEqualTo("java.lang.Long")
@@ -6695,7 +6830,7 @@ It takes a title and such.
         val dataTypes = codeGenResult.javaDataTypes
         assertThat(dataFetchers).isEmpty()
         assertThat(dataTypes.size).isEqualTo(1)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
         val minFieldSpec = dataTypes[0].typeSpec().fieldSpecs()[0]
         assertThat(minFieldSpec.type().toString()).isEqualTo("double")
         assertThat(minFieldSpec.initializer().toString()).isEqualTo("0.0")
@@ -6831,10 +6966,11 @@ It takes a title and such.
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME, trackInputFieldSet = true),
             ).generate()
+        val (dataTypes) = codeGenResult
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -6890,7 +7026,7 @@ It takes a title and such.
                 .trimIndent(),
         ).isEqualTo("return requiredString;")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -6922,7 +7058,7 @@ It takes a title and such.
                 .initializer()
                 .toString(),
         ).isEqualTo("java.util.Currency.getInstance(\"USD\")")
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -7008,13 +7144,14 @@ It takes a title and such.
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         val typeSpec = dataTypes[0].typeSpec()
@@ -7025,7 +7162,7 @@ It takes a title and such.
         assertThat(typeSpec.fieldSpecs()).extracting("name").contains("firstname", "lastname")
         assertThat(typeSpec.methodSpecs()).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
         dataTypes[0].writeTo(System.out)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -7042,13 +7179,14 @@ It takes a title and such.
             }
             """.trimIndent()
 
-        val (dataTypes) =
+        val codeGenResult =
             CodeGen(
                 CodeGenConfig(
                     schemas = setOf(schema),
                     packageName = BASE_PACKAGE_NAME,
                 ),
             ).generate()
+        val (dataTypes) = codeGenResult
 
         assertThat(dataTypes.size).isEqualTo(1)
         val typeSpec = dataTypes[0].typeSpec()
@@ -7059,7 +7197,7 @@ It takes a title and such.
         assertThat(typeSpec.fieldSpecs()).extracting("name").contains("firstname", "lastname")
         assertThat(typeSpec.methodSpecs()).flatExtracting("parameters").extracting("name").contains("firstname", "lastname")
         dataTypes[0].writeTo(System.out)
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test

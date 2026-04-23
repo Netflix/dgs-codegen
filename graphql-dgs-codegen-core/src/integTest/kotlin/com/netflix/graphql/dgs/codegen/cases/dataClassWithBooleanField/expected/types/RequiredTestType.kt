@@ -8,7 +8,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import java.lang.IllegalStateException
 import kotlin.Boolean
 import kotlin.jvm.JvmName
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithBooleanField.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = RequiredTestType.Builder::class)
 public class RequiredTestType(
@@ -20,11 +24,15 @@ public class RequiredTestType(
   public val isRequired: Boolean
     get() = __isRequired.invoke()
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   public companion object {
     private val isRequiredDefault: () -> Boolean = 
         { throw IllegalStateException("Field `isRequired` was not requested") }
   }
 
+  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @ExpectedGenerated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

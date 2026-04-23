@@ -7,7 +7,11 @@ import kotlin.Any
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultCurrency.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 public data class OrderFilter(
   @JsonProperty("value")
   public val `value`: Currency = default<OrderFilter, Currency>("value",

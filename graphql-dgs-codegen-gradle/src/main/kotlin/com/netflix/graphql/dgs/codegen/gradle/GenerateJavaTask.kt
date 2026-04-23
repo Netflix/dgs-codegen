@@ -138,10 +138,10 @@ open class GenerateJavaTask
         var snakeCaseConstantNames = false
 
         @Input
-        var addGeneratedAnnotation = false
+        var addGeneratedAnnotation = true
 
         @Input
-        var disableDatesInGeneratedAnnotation = false
+        var disableDatesInGeneratedAnnotation = true
 
         @Input
         var addDeprecatedAnnotation = false

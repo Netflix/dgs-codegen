@@ -21,6 +21,14 @@ plugins {
     id 'com.netflix.dgs.codegen'
 }
 
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+}
+
 configurations {
     // injected by Gradle Runner through test configuration, see CodegenGradlePluginTest
     CodeGenConfiguration.exclude group: "com.netflix.graphql.dgs.codegen", module: "graphql-dgs-codegen-core"

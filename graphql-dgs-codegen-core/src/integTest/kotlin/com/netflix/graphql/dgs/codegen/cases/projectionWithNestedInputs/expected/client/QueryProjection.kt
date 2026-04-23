@@ -5,7 +5,11 @@ import com.netflix.graphql.dgs.codegen.GraphQLProjection
 import com.netflix.graphql.dgs.codegen.cases.projectionWithNestedInputs.expected.types.I1
 import com.netflix.graphql.dgs.codegen.cases.projectionWithNestedInputs.expected.types.I2
 import kotlin.String
+import com.netflix.graphql.dgs.codegen.cases.projectionWithNestedInputs.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

@@ -86,18 +86,26 @@ class Kotlin2CodeGenTest {
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
                 |import kotlin.Deprecated
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
+                |import jakarta.`annotation`.Generated as AnnotationGenerated
                 |
+                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+                |@GeneratedGenerated
                 |public enum class TownJobTypes {
+                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+                |  @GeneratedGenerated
                 |  @Deprecated(message = "town switched to electric lights")
                 |  LAMPLIGHTER,
                 |  ;
                 |
+                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+                |  @GeneratedGenerated
                 |  public companion object
                 |}
                 |
             """.trimMargin(),
         )
-        assertCompilesKotlin(result.kotlinEnumTypes)
+        assertCompilesKotlin(result)
     }
 
     @Test
@@ -126,18 +134,25 @@ class Kotlin2CodeGenTest {
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
+                |import jakarta.`annotation`.Generated as AnnotationGenerated
+                |
+                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+                |@GeneratedGenerated
                 |public enum class MyEnum {
                 |  A,
                 |  B,
                 |  C,
                 |  ;
                 |
+                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+                |  @GeneratedGenerated
                 |  public companion object
                 |}
                 |
             """.trimMargin(),
         )
 
-        assertCompilesKotlin(result.kotlinEnumTypes)
+        assertCompilesKotlin(result)
     }
 }

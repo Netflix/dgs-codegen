@@ -6,7 +6,11 @@ import kotlin.Any
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
+import com.netflix.graphql.dgs.codegen.cases.projectionWithTypeAndArgs.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 public data class I(
   @JsonProperty("arg")
   public val arg: String? = default<I, String?>("arg", null),

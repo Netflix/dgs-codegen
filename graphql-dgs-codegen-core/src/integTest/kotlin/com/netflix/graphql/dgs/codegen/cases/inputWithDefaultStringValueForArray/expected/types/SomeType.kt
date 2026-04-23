@@ -6,7 +6,11 @@ import kotlin.Any
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultStringValueForArray.expected.Generated as ExpectedGenerated
+import jakarta.`annotation`.Generated as AnnotationGenerated
 
+@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@ExpectedGenerated
 public data class SomeType(
   @JsonProperty("names")
   public val names: List<String?>? = default<SomeType, List<String?>?>("names", listOf("A", "B")),

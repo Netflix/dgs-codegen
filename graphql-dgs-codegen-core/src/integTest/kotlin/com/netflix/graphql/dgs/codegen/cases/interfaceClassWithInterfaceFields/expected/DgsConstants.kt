@@ -2,7 +2,11 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.
 
 import kotlin.String
 
+@jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@Generated
 public object DgsConstants {
+  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @Generated
   public object DOG {
     public const val TYPE_NAME: String = "Dog"
 
@@ -19,6 +23,8 @@ public object DgsConstants {
     public const val Parents: String = "parents"
   }
 
+  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @Generated
   public object BIRD {
     public const val TYPE_NAME: String = "Bird"
 
@@ -35,6 +41,8 @@ public object DgsConstants {
     public const val Parents: String = "parents"
   }
 
+  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+  @Generated
   public object PET {
     public const val TYPE_NAME: String = "Pet"
 

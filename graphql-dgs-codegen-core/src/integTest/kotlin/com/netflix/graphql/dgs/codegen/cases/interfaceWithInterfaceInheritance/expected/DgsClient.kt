@@ -6,6 +6,8 @@ import com.netflix.graphql.dgs.codegen.cases.interfaceWithInterfaceInheritance.e
 import graphql.language.OperationDefinition
 import kotlin.String
 
+@jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
+@Generated
 public object DgsClient {
   public fun buildQuery(inputValueSerializer: InputValueSerializerInterface? = null,
       _projection: QueryProjection.() -> QueryProjection): String =

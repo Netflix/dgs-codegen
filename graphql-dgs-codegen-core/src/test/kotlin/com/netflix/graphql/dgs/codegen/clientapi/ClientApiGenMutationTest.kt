@@ -52,7 +52,7 @@ class ClientApiGenMutationTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("UpdateMovieGraphQLQuery")
 
-        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -87,9 +87,7 @@ class ClientApiGenMutationTest {
         assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(1)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("UpdateMovieGraphQLQuery")
 
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -135,9 +133,7 @@ class ClientApiGenMutationTest {
                 .toString(),
         ).isEqualTo("Some movie description")
 
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -192,9 +188,7 @@ class ClientApiGenMutationTest {
             """.trimMargin()
 
         assert(initMethod.contains(expected))
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -230,9 +224,7 @@ class ClientApiGenMutationTest {
                 .contains("super(\"mutation\", queryName);\ngetInput().put(\"movieId\", movieId);"),
         )
 
-        assertCompilesJava(
-            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaDataTypes,
-        )
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
@@ -310,7 +302,7 @@ class ClientApiGenMutationTest {
             .extracting("name")
             .containsExactly("ShowsProjectionRoot", "BooleanProjection")
 
-        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaDataTypes + codeGenResult.javaEnumTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
