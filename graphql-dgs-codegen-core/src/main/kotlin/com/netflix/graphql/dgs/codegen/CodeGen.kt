@@ -579,6 +579,7 @@ class CodeGenConfig(
     var implementSerializable: Boolean = false,
     var addGeneratedAnnotation: Boolean = true,
     var disableDatesInGeneratedAnnotation: Boolean = true,
+    var hasJakartaAnnotationApi: Boolean = true,
     var addDeprecatedAnnotation: Boolean = false,
     var trackInputFieldSet: Boolean = false,
     var generateJSpecifyAnnotations: Boolean = false,

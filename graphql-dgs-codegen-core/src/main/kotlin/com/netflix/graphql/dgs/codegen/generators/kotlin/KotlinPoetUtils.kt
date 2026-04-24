@@ -187,13 +187,14 @@ fun suppressInapplicableJvmNameAnnotation(): AnnotationSpec =
 private fun generatedAnnotation(
     packageName: String,
     generateDate: Boolean,
+    hasJakartaAnnotationApi: Boolean,
 ): List<AnnotationSpec> {
     val graphqlGenerated =
         AnnotationSpec
             .builder(ClassName(packageName, "Generated"))
             .build()
 
-    return if (generatedAnnotationClassName == null) {
+    return if (!hasJakartaAnnotationApi || generatedAnnotationClassName == null) {
         listOf(graphqlGenerated)
     } else {
         val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
@@ -468,7 +469,11 @@ fun TypeSpec.Builder.addEnumConstants(enumSpecs: Iterable<TypeSpec>): TypeSpec.B
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
-            generatedAnnotation(config.packageName, !config.disableDatesInGeneratedAnnotation).forEach {
+            generatedAnnotation(
+                config.packageName,
+                !config.disableDatesInGeneratedAnnotation,
+                config.hasJakartaAnnotationApi,
+            ).forEach {
                 addAnnotation(it)
             }
         }

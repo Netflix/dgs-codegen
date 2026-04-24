@@ -22,8 +22,10 @@ import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
+import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
@@ -170,6 +172,9 @@ open class GenerateJavaTask
                 project.configurations.findByName("dgsCodegen"),
             )
 
+        @get:Internal
+        val compileClasspathConfiguration: Property<Configuration> = objectFactory.property(Configuration::class.java)
+
         @TaskAction
         fun generate() {
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
@@ -181,6 +186,8 @@ open class GenerateJavaTask
             schemaPaths.forEach {
                 logger.info("Processing $it")
             }
+
+            val hasJakartaAnnotationApi = JakartaAnnotationDetector.detect(compileClasspathConfiguration.get())
 
             val config =
                 CodeGenConfig(
@@ -216,6 +223,7 @@ open class GenerateJavaTask
                     implementSerializable = implementSerializable,
                     addGeneratedAnnotation = addGeneratedAnnotation,
                     disableDatesInGeneratedAnnotation = disableDatesInGeneratedAnnotation,
+                    hasJakartaAnnotationApi = hasJakartaAnnotationApi,
                     addDeprecatedAnnotation = addDeprecatedAnnotation,
                     includeImports = includeImports,
                     includeEnumImports = includeEnumImports,
