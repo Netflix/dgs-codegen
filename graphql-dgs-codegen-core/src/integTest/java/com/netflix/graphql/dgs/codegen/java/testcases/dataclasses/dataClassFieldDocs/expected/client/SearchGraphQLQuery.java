@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassFieldDocs.expected.client;
 
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery;
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassFieldDocs.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassFieldDocs.expected.types.MovieFilter;
 import graphql.language.VariableDefinition;
 import java.lang.Override;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Generated
 public class SearchGraphQLQuery extends GraphQLQuery {
   public SearchGraphQLQuery(MovieFilter movieFilter, String queryName, Set<String> fieldsSet) {
     super("query", queryName);
@@ -48,6 +50,7 @@ public class SearchGraphQLQuery extends GraphQLQuery {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private Set<String> fieldsSet = new HashSet<>();
 

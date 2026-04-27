@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBi
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBigDecimal.expected.Generated;
 import graphql.schema.DataFetchingEnvironment;
 import java.lang.String;
 
+@Generated
 @DgsComponent
 public class OrdersDatafetcher {
   @DgsData(

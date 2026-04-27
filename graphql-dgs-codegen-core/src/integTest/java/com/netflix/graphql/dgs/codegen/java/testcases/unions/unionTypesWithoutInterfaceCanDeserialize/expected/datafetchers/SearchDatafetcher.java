@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.unions.unionTypesWithoutI
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.unions.unionTypesWithoutInterfaceCanDeserialize.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.unions.unionTypesWithoutInterfaceCanDeserialize.expected.types.SearchResultPage;
 import graphql.schema.DataFetchingEnvironment;
 
+@Generated
 @DgsComponent
 public class SearchDatafetcher {
   @DgsData(

@@ -2,10 +2,12 @@ package com.netflix.graphql.dgs.codegen.java.testcases.enums.enumType.expected.d
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.enums.enumType.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.enums.enumType.expected.types.EmployeeTypes;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 
+@Generated
 @DgsComponent
 public class TypesDatafetcher {
   @DgsData(

@@ -2,10 +2,12 @@ package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWith
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithExtendedInterfaceInheritance.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithExtendedInterfaceInheritance.expected.types.Person;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 
+@Generated
 @DgsComponent
 public class PeopleDatafetcher {
   @DgsData(

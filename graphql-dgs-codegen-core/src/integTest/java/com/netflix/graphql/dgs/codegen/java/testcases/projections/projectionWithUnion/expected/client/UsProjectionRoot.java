@@ -1,7 +1,9 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithUnion.expected.client;
 
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode;
+import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithUnion.expected.Generated;
 
+@Generated
 public class UsProjectionRoot<PARENT extends BaseSubProjectionNode<?, ?>, ROOT extends BaseSubProjectionNode<?, ?>> extends BaseSubProjectionNode<PARENT, ROOT> {
   public UsProjectionRoot() {
     super(null, null, java.util.Optional.of("U"));

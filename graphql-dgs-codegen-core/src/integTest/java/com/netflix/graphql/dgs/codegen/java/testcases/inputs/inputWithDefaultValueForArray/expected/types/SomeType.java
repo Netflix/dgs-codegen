@@ -1,5 +1,6 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultValueForArray.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultValueForArray.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -7,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+@Generated
 public class SomeType {
   private List<String> names = Collections.emptyList();
 
@@ -47,6 +49,7 @@ public class SomeType {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private List<String> names = Collections.emptyList();
 

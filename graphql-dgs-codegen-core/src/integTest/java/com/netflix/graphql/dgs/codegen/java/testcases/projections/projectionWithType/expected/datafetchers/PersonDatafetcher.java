@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWit
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithType.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithType.expected.types.Person;
 import graphql.schema.DataFetchingEnvironment;
 
+@Generated
 @DgsComponent
 public class PersonDatafetcher {
   @DgsData(

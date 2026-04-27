@@ -1,5 +1,6 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassDocs.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassDocs.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
@@ -10,6 +11,7 @@ import java.util.Objects;
  *
  * It takes a title and such.
  */
+@Generated
 public class MovieFilter {
   private String titleFilter;
 
@@ -50,6 +52,7 @@ public class MovieFilter {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private String titleFilter;
 

@@ -2,10 +2,12 @@ package com.netflix.graphql.dgs.codegen.java.testcases.unions.union.expected.dat
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.unions.union.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.unions.union.expected.types.SearchResult;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 
+@Generated
 @DgsComponent
 public class SearchDatafetcher {
   @DgsData(

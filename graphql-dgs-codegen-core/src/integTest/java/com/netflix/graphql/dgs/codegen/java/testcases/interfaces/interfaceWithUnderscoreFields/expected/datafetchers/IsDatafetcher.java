@@ -2,10 +2,12 @@ package com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceWithU
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceWithUnderscoreFields.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceWithUnderscoreFields.expected.types.I;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 
+@Generated
 @DgsComponent
 public class IsDatafetcher {
   @DgsData(

@@ -2,19 +2,23 @@ package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultCu
 
 import java.lang.String;
 
+@Generated
 public class DgsConstants {
   public static final String QUERY_TYPE = "Query";
 
+  @Generated
   public static class QUERY {
     public static final String TYPE_NAME = "Query";
 
     public static final String Orders = "orders";
 
+    @Generated
     public static class ORDERS_INPUT_ARGUMENT {
       public static final String Filter = "filter";
     }
   }
 
+  @Generated
   public static class ORDERFILTER {
     public static final String TYPE_NAME = "OrderFilter";
 

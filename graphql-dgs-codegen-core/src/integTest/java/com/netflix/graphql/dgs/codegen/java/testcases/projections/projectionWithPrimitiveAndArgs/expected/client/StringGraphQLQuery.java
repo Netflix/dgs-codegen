@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithPrimitiveAndArgs.expected.client;
 
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery;
+import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithPrimitiveAndArgs.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithPrimitiveAndArgs.expected.types.I;
 import graphql.language.VariableDefinition;
 import java.lang.Override;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Generated
 public class StringGraphQLQuery extends GraphQLQuery {
   public StringGraphQLQuery(String a1, String a2, I a3, String queryName, Set<String> fieldsSet) {
     super("query", queryName);
@@ -56,6 +58,7 @@ public class StringGraphQLQuery extends GraphQLQuery {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private Set<String> fieldsSet = new HashSet<>();
 

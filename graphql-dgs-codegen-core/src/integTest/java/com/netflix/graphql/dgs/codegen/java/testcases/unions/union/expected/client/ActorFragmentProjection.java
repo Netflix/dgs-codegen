@@ -1,9 +1,11 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.unions.union.expected.client;
 
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode;
+import com.netflix.graphql.dgs.codegen.java.testcases.unions.union.expected.Generated;
 import java.lang.Override;
 import java.lang.String;
 
+@Generated
 public class ActorFragmentProjection<PARENT extends BaseSubProjectionNode<?, ?>, ROOT extends BaseSubProjectionNode<?, ?>> extends BaseSubProjectionNode<PARENT, ROOT> {
   {
     getFields().put("__typename", null);

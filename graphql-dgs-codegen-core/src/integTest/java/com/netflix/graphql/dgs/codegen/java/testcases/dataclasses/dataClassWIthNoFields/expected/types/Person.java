@@ -1,8 +1,10 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWIthNoFields.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWIthNoFields.expected.Generated;
 import java.lang.Override;
 import java.lang.String;
 
+@Generated
 public class Person {
   public Person() {
   }
@@ -16,6 +18,7 @@ public class Person {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     public Person build() {
       Person result = new Person();

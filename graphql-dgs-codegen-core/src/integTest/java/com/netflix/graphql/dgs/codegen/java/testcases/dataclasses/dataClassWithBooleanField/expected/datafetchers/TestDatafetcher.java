@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWith
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithBooleanField.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithBooleanField.expected.types.RequiredTestType;
 import graphql.schema.DataFetchingEnvironment;
 
+@Generated
 @DgsComponent
 public class TestDatafetcher {
   @DgsData(

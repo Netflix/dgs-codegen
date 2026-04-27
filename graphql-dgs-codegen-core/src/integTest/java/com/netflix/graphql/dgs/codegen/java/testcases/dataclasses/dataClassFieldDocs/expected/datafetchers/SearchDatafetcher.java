@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassFiel
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassFieldDocs.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassFieldDocs.expected.types.Movie;
 import graphql.schema.DataFetchingEnvironment;
 
+@Generated
 @DgsComponent
 public class SearchDatafetcher {
   @DgsData(

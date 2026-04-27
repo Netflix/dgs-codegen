@@ -1,7 +1,9 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithStringProperties.expected.client;
 
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode;
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithStringProperties.expected.Generated;
 
+@Generated
 public class PeopleProjectionRoot<PARENT extends BaseSubProjectionNode<?, ?>, ROOT extends BaseSubProjectionNode<?, ?>> extends BaseSubProjectionNode<PARENT, ROOT> {
   public PeopleProjectionRoot() {
     super(null, null, java.util.Optional.of("Person"));

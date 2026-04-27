@@ -1,8 +1,10 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithExtendedInterface.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithExtendedInterface.expected.Generated;
 import java.lang.Integer;
 import java.lang.String;
 
+@Generated
 public interface Person {
   String getFirstname();
 

@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.java.testcases.unions.unionWithExtendedT
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.netflix.graphql.dgs.codegen.java.testcases.unions.unionWithExtendedType.expected.Generated;
 
+@Generated
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.PROPERTY,

@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceClass
 
 import java.lang.String;
 
+@Generated
 public class DgsConstants {
+  @Generated
   public static class VEGETARIAN {
     public static final String TYPE_NAME = "Vegetarian";
 
@@ -11,6 +13,7 @@ public class DgsConstants {
     public static final String Vegetables = "vegetables";
   }
 
+  @Generated
   public static class DOG {
     public static final String TYPE_NAME = "Dog";
 
@@ -19,6 +22,7 @@ public class DgsConstants {
     public static final String Diet = "diet";
   }
 
+  @Generated
   public static class PET {
     public static final String TYPE_NAME = "Pet";
 
@@ -27,6 +31,7 @@ public class DgsConstants {
     public static final String Diet = "diet";
   }
 
+  @Generated
   public static class DIET {
     public static final String TYPE_NAME = "Diet";
 

@@ -1,10 +1,12 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassFieldDocs.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassFieldDocs.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Objects;
 
+@Generated
 public class MovieFilter {
   /**
    * Starts-with filter
@@ -51,6 +53,7 @@ public class MovieFilter {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     /**
      * Starts-with filter

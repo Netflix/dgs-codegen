@@ -1,11 +1,13 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBigDecimal.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBigDecimal.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.math.BigDecimal;
 import java.util.Objects;
 
+@Generated
 public class OrderFilter {
   private BigDecimal min = new BigDecimal("1.1");
 
@@ -70,6 +72,7 @@ public class OrderFilter {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private BigDecimal min = new BigDecimal("1.1");
 

@@ -2,10 +2,12 @@ package com.netflix.graphql.dgs.codegen.java.testcases.constants.constantsWithEx
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.constants.constantsWithExtendedTypes.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.constants.constantsWithExtendedTypes.expected.types.Person;
 import graphql.schema.DataFetchingEnvironment;
 import java.util.List;
 
+@Generated
 @DgsComponent
 public class PeopleDatafetcher {
   @DgsData(

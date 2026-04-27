@@ -1,5 +1,6 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithNonNullablePrimitiveInList.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithNonNullablePrimitiveInList.expected.Generated;
 import java.lang.Boolean;
 import java.lang.Double;
 import java.lang.Integer;
@@ -9,6 +10,7 @@ import java.lang.String;
 import java.util.List;
 import java.util.Objects;
 
+@Generated
 public class MyType {
   private List<Integer> count;
 
@@ -73,6 +75,7 @@ public class MyType {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private List<Integer> count;
 

@@ -1,11 +1,13 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithExtendedType.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithExtendedType.expected.Generated;
 import java.lang.Integer;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Objects;
 
+@Generated
 public class MovieFilter {
   private String genre;
 
@@ -58,6 +60,7 @@ public class MovieFilter {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private String genre;
 

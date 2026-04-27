@@ -1,10 +1,12 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.misc.skipCodegenOnTypes.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.misc.skipCodegenOnTypes.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Objects;
 
+@Generated
 public class Person {
   private String name;
 
@@ -45,6 +47,7 @@ public class Person {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private String name;
 

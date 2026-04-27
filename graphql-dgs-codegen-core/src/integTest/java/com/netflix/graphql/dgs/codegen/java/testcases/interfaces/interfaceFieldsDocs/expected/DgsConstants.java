@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceField
 
 import java.lang.String;
 
+@Generated
 public class DgsConstants {
+  @Generated
   public static class TITLED {
     public static final String TYPE_NAME = "Titled";
 

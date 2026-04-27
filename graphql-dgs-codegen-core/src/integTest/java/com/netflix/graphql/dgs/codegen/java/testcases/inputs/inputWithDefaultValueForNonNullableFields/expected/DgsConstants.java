@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultVa
 
 import java.lang.String;
 
+@Generated
 public class DgsConstants {
+  @Generated
   public static class PERSON {
     public static final String TYPE_NAME = "Person";
 
@@ -17,6 +19,7 @@ public class DgsConstants {
     public static final String IsHappy = "isHappy";
   }
 
+  @Generated
   public static class CAR {
     public static final String TYPE_NAME = "Car";
 

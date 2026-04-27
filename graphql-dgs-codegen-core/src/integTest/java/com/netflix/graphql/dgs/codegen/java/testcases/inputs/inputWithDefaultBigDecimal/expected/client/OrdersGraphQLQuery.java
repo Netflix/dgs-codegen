@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBigDecimal.expected.client;
 
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery;
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBigDecimal.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBigDecimal.expected.types.OrderFilter;
 import graphql.language.VariableDefinition;
 import java.lang.Override;
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Generated
 public class OrdersGraphQLQuery extends GraphQLQuery {
   public OrdersGraphQLQuery(OrderFilter filter, String queryName, Set<String> fieldsSet) {
     super("query", queryName);
@@ -48,6 +50,7 @@ public class OrdersGraphQLQuery extends GraphQLQuery {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private Set<String> fieldsSet = new HashSet<>();
 

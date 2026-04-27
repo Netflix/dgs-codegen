@@ -1,11 +1,13 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.unions.unionTypesWithoutInterfaceCanDeserialize.expected.types;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.netflix.graphql.dgs.codegen.java.testcases.unions.unionTypesWithoutInterfaceCanDeserialize.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Objects;
 
+@Generated
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NONE
 )
@@ -73,6 +75,7 @@ public class Droid implements SearchResult {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private String id;
 

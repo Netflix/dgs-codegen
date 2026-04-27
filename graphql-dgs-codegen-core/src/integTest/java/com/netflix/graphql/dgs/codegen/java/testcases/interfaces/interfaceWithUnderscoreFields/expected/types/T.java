@@ -1,11 +1,13 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceWithUnderscoreFields.expected.types;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceWithUnderscoreFields.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Objects;
 
+@Generated
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NONE
 )
@@ -61,6 +63,7 @@ public class T implements com.netflix.graphql.dgs.codegen.java.testcases.interfa
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private String _id;
 

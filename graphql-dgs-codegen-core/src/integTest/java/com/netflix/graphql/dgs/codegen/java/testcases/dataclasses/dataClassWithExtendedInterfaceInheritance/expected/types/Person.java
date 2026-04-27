@@ -2,8 +2,10 @@ package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWith
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithExtendedInterfaceInheritance.expected.Generated;
 import java.lang.String;
 
+@Generated
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.PROPERTY,

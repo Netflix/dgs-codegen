@@ -1,10 +1,12 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.constants.constantsForInputTypes.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.constants.constantsForInputTypes.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Objects;
 
+@Generated
 public class PersonFilter {
   private String email;
 
@@ -45,6 +47,7 @@ public class PersonFilter {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private String email;
 

@@ -1,11 +1,13 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.unions.unionTypesWithoutInterfaceCanDeserialize.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.unions.unionTypesWithoutInterfaceCanDeserialize.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.List;
 import java.util.Objects;
 
+@Generated
 public class SearchResultPage {
   private List<SearchResult> items;
 
@@ -46,6 +48,7 @@ public class SearchResultPage {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private List<SearchResult> items;
 

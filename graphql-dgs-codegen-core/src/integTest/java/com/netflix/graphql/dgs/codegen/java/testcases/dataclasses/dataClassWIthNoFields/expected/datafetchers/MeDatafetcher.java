@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWIth
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWIthNoFields.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWIthNoFields.expected.types.Person;
 import graphql.schema.DataFetchingEnvironment;
 
+@Generated
 @DgsComponent
 public class MeDatafetcher {
   @DgsData(

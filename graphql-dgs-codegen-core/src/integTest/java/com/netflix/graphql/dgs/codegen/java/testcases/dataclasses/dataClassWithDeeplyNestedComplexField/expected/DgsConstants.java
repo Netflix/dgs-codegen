@@ -2,15 +2,18 @@ package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWith
 
 import java.lang.String;
 
+@Generated
 public class DgsConstants {
   public static final String QUERY_TYPE = "Query";
 
+  @Generated
   public static class QUERY {
     public static final String TYPE_NAME = "Query";
 
     public static final String Cars = "cars";
   }
 
+  @Generated
   public static class CAR {
     public static final String TYPE_NAME = "Car";
 
@@ -21,6 +24,7 @@ public class DgsConstants {
     public static final String Engine = "engine";
   }
 
+  @Generated
   public static class ENGINE {
     public static final String TYPE_NAME = "Engine";
 
@@ -33,6 +37,7 @@ public class DgsConstants {
     public static final String Performance = "performance";
   }
 
+  @Generated
   public static class PERFORMANCE {
     public static final String TYPE_NAME = "Performance";
 

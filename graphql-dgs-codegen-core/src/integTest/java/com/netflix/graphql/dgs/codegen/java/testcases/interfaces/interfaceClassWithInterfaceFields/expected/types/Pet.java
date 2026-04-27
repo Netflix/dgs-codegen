@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceClass
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceClassWithInterfaceFields.expected.Generated;
 import java.lang.String;
 import java.util.List;
 
+@Generated
 @JsonTypeInfo(
     use = JsonTypeInfo.Id.NAME,
     include = JsonTypeInfo.As.PROPERTY,

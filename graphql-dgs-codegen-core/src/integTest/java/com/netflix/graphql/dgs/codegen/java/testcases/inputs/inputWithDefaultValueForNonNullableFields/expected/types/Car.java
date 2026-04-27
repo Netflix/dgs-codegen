@@ -1,10 +1,12 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultValueForNonNullableFields.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultValueForNonNullableFields.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Objects;
 
+@Generated
 public class Car {
   private String brand = "BMW";
 
@@ -45,6 +47,7 @@ public class Car {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private String brand = "BMW";
 

@@ -2,10 +2,12 @@ package com.netflix.graphql.dgs.codegen.java.testcases.inputs.input.expected.dat
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.input.expected.Generated;
 import graphql.schema.DataFetchingEnvironment;
 import java.lang.String;
 import java.util.List;
 
+@Generated
 @DgsComponent
 public class MoviesDatafetcher {
   @DgsData(

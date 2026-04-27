@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultCu
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultCurrency.expected.Generated;
 import graphql.schema.DataFetchingEnvironment;
 import java.lang.String;
 
+@Generated
 @DgsComponent
 public class OrdersDatafetcher {
   @DgsData(

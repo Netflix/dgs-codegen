@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWith
 
 import java.lang.String;
 
+@Generated
 public class DgsConstants {
   public static final String QUERY_TYPE = "Query";
 
+  @Generated
   public static class QUERY {
     public static final String TYPE_NAME = "Query";
 
@@ -13,6 +15,7 @@ public class DgsConstants {
     public static final String EntityConnection = "entityConnection";
   }
 
+  @Generated
   public static class ENTITY {
     public static final String TYPE_NAME = "Entity";
 
@@ -21,6 +24,7 @@ public class DgsConstants {
     public static final String DateTime = "dateTime";
   }
 
+  @Generated
   public static class ENTITYCONNECTION {
     public static final String TYPE_NAME = "EntityConnection";
 
@@ -29,6 +33,7 @@ public class DgsConstants {
     public static final String Edges = "edges";
   }
 
+  @Generated
   public static class ENTITYEDGE {
     public static final String TYPE_NAME = "EntityEdge";
 
@@ -37,6 +42,7 @@ public class DgsConstants {
     public static final String Node = "node";
   }
 
+  @Generated
   public static class PAGEINFO {
     public static final String TYPE_NAME = "PageInfo";
 

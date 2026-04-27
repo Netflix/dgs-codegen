@@ -1,10 +1,12 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithBooleanField.expected.types;
 
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithBooleanField.expected.Generated;
 import java.lang.Object;
 import java.lang.Override;
 import java.lang.String;
 import java.util.Objects;
 
+@Generated
 public class RequiredTestType {
   private boolean isRequired;
 
@@ -45,6 +47,7 @@ public class RequiredTestType {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private boolean isRequired;
 

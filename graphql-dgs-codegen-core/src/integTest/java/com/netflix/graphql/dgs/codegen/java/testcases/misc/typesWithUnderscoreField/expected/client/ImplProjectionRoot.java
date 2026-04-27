@@ -1,7 +1,9 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.misc.typesWithUnderscoreField.expected.client;
 
 import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode;
+import com.netflix.graphql.dgs.codegen.java.testcases.misc.typesWithUnderscoreField.expected.Generated;
 
+@Generated
 public class ImplProjectionRoot<PARENT extends BaseSubProjectionNode<?, ?>, ROOT extends BaseSubProjectionNode<?, ?>> extends BaseSubProjectionNode<PARENT, ROOT> {
   public ImplProjectionRoot() {
     super(null, null, java.util.Optional.of("MyInterfaceImpl"));

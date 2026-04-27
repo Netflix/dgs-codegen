@@ -1,6 +1,7 @@
 package com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithEnum.expected.client;
 
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery;
+import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithEnum.expected.Generated;
 import graphql.language.VariableDefinition;
 import java.lang.Override;
 import java.lang.String;
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+@Generated
 public class EsGraphQLQuery extends GraphQLQuery {
   public EsGraphQLQuery(String queryName) {
     super("query", queryName);
@@ -29,6 +31,7 @@ public class EsGraphQLQuery extends GraphQLQuery {
     return new Builder();
   }
 
+  @Generated
   public static class Builder {
     private Set<String> fieldsSet = new HashSet<>();
 

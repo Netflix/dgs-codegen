@@ -2,10 +2,12 @@ package com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWith
 
 import com.netflix.graphql.dgs.DgsComponent;
 import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithMappedTypes.expected.Generated;
 import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithMappedTypes.expected.types.EntityEdge;
 import graphql.relay.SimpleListConnection;
 import graphql.schema.DataFetchingEnvironment;
 
+@Generated
 @DgsComponent
 public class EntityConnectionDatafetcher {
   @DgsData(
