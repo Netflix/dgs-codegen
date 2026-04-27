@@ -22,7 +22,9 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 
 object JakartaAnnotationDetector {
-    private const val JAKARTA_ANNOTATION_COORDS = "jakarta.annotation:jakarta.annotation-api"
+    private const val JAKARTA_ANNOTATION_GROUP = "jakarta.annotation"
+    private const val JAKARTA_ANNOTATION_MODULE = "jakarta.annotation-api"
+    private const val JAKARTA_ANNOTATION_MIN_MAJOR = 2 // jakarta.annotation.Generated introduced in 2.0.0
 
     fun detect(configuration: Configuration): Boolean =
         configuration.incoming
@@ -31,6 +33,10 @@ object JakartaAnnotationDetector {
             .any { comp ->
                 val id = comp.id
                 id is ModuleComponentIdentifier &&
-                    "${id.group}:${id.module}" == JAKARTA_ANNOTATION_COORDS
+                    id.group == JAKARTA_ANNOTATION_GROUP &&
+                    id.module == JAKARTA_ANNOTATION_MODULE &&
+                    majorVersion(id.version) >= JAKARTA_ANNOTATION_MIN_MAJOR
             }
+
+    private fun majorVersion(version: String): Int = version.takeWhile { it.isDigit() }.toIntOrNull() ?: -1
 }

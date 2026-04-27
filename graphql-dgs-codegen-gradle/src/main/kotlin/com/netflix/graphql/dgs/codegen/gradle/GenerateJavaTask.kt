@@ -173,7 +173,10 @@ open class GenerateJavaTask
             )
 
         @get:Internal
-        val compileClasspathConfiguration: Property<Configuration> = objectFactory.property(Configuration::class.java)
+        val compileClasspathConfiguration: Property<Configuration> =
+            objectFactory.property(Configuration::class.java).apply {
+                project.configurations.findByName("compileClasspath")?.let { convention(it) }
+            }
 
         @TaskAction
         fun generate() {
@@ -187,7 +190,8 @@ open class GenerateJavaTask
                 logger.info("Processing $it")
             }
 
-            val hasJakartaAnnotationApi = JakartaAnnotationDetector.detect(compileClasspathConfiguration.get())
+            val hasJakartaAnnotationApi =
+                compileClasspathConfiguration.orNull?.let { JakartaAnnotationDetector.detect(it) } ?: false
 
             val config =
                 CodeGenConfig(
