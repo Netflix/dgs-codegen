@@ -19,18 +19,18 @@ public class PeopleProjectionRoot<PARENT extends BaseSubProjectionNode<?, ?>, RO
     StringProjection<PeopleProjectionRoot<PARENT, ROOT>, PeopleProjectionRoot<PARENT, ROOT>> projection = new StringProjection<>(this, this);    
     getFields().put("info", projection);
     getInputArguments().computeIfAbsent("info", k -> new ArrayList<>());                      
-    InputArgument packageArg = new InputArgument("package", _package, false, null);
-    getInputArguments().get("info").add(packageArg);
+    InputArgument _packageArg = new InputArgument("package", _package, false, null);
+    getInputArguments().get("info").add(_packageArg);
     return projection;
   }
 
   public StringProjection<PeopleProjectionRoot<PARENT, ROOT>, PeopleProjectionRoot<PARENT, ROOT>> infoWithVariableReferences(
-      String packageReference) {
+      String _packageReference) {
     StringProjection<PeopleProjectionRoot<PARENT, ROOT>, PeopleProjectionRoot<PARENT, ROOT>> projection = new StringProjection<>(this, this);    
     getFields().put("info", projection);
     getInputArguments().computeIfAbsent("info", k -> new ArrayList<>());              
-    InputArgument packageArg = new InputArgument("package", packageReference, true, new graphql.language.TypeName("String"));
-    getInputArguments().get("info").add(packageArg);
+    InputArgument _packageArg = new InputArgument("package", _packageReference, true, new graphql.language.TypeName("String"));
+    getInputArguments().get("info").add(_packageArg);
     return projection;
   }
 
