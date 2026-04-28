@@ -5,15 +5,13 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.Boolean
 import kotlin.String
 import kotlin.jvm.JvmName
-import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = PageInfo.Builder::class)
 public class PageInfo(
@@ -46,8 +44,7 @@ public class PageInfo(
   public val hasPreviousPage: Boolean
     get() = __hasPreviousPage.invoke()
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   public companion object {
     private val startCursorDefault: () -> String? = 
         { throw IllegalStateException("Field `startCursor` was not requested") }
@@ -62,8 +59,7 @@ public class PageInfo(
         { throw IllegalStateException("Field `hasPreviousPage` was not requested") }
   }
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

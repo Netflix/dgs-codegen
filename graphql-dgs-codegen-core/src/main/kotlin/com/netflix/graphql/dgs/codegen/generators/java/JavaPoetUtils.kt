@@ -22,9 +22,9 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.generators.shared.JAKARTA_GENERATED_ANNOTATION
 import com.netflix.graphql.dgs.codegen.generators.shared.PackageParserUtil
 import com.netflix.graphql.dgs.codegen.generators.shared.ParserConstants
-import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
@@ -144,34 +144,36 @@ fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
 private fun generatedAnnotation(
     packageName: String,
     generateDate: Boolean,
-): List<AnnotationSpec> {
-    val graphqlGenerated =
-        AnnotationSpec
+    generatedAnnotationType: String?,
+): AnnotationSpec {
+    if (generatedAnnotationType == null) {
+        return AnnotationSpec
             .builder(ClassName.get(packageName, "Generated"))
             .build()
-
-    return if (generatedAnnotationClassName == null) {
-        listOf(graphqlGenerated)
-    } else {
-        val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
-
-        var jakartaGeneratedBuilder =
-            AnnotationSpec
-                .builder(generatedAnnotation)
-                .addMember("value", "${'$'}S", CodeGen::class.qualifiedName!!)
-
-        if (generateDate) {
-            jakartaGeneratedBuilder = jakartaGeneratedBuilder.addMember("date", "${'$'}S", generatedDate)
-        }
-
-        listOf(jakartaGeneratedBuilder.build(), graphqlGenerated)
     }
+
+    val builder = AnnotationSpec.builder(ClassName.bestGuess(generatedAnnotationType))
+
+    if (generatedAnnotationType == JAKARTA_GENERATED_ANNOTATION) {
+        builder.addMember("value", "${'$'}S", CodeGen::class.qualifiedName!!)
+        if (generateDate) {
+            builder.addMember("date", "${'$'}S", generatedDate)
+        }
+    }
+
+    return builder.build()
 }
 
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
-            generatedAnnotation(config.packageName, !config.disableDatesInGeneratedAnnotation).forEach { addAnnotation(it) }
+            addAnnotation(
+                generatedAnnotation(
+                    config.packageName,
+                    !config.disableDatesInGeneratedAnnotation,
+                    config.generatedAnnotationType,
+                ),
+            )
         }
     }
 

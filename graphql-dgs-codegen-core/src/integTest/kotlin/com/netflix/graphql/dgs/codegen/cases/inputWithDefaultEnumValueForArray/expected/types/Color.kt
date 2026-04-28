@@ -1,20 +1,15 @@
 package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultEnumValueForArray.expected.types
 
-import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultEnumValueForArray.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultEnumValueForArray.expected.Generated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 public enum class Color {
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   red,
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   blue,
   ;
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   public companion object
 }

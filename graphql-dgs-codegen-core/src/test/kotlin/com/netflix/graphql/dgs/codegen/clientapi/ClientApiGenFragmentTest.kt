@@ -308,10 +308,9 @@ class ClientApiGenFragmentTest {
                 |
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
-                |import jakarta.annotation.Generated;
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
                 |
-                |@Generated("com.netflix.graphql.dgs.codegen.CodeGen")
-                |@com.netflix.graphql.dgs.codegen.tests.generated.Generated
+                |@Generated
                 |@JsonTypeInfo(
                 |    use = JsonTypeInfo.Id.NAME,
                 |    include = JsonTypeInfo.As.PROPERTY,

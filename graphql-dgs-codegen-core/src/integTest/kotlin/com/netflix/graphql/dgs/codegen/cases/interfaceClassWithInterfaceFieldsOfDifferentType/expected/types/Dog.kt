@@ -5,15 +5,13 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFieldsOfDifferentType.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
-import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFieldsOfDifferentType.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Dog.Builder::class)
 public class Dog(
@@ -34,8 +32,7 @@ public class Dog(
   override val diet: Vegetarian?
     get() = __diet.invoke()
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   public companion object {
     private val nameDefault: () -> String? = 
         { throw IllegalStateException("Field `name` was not requested") }
@@ -44,8 +41,7 @@ public class Dog(
         { throw IllegalStateException("Field `diet` was not requested") }
   }
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

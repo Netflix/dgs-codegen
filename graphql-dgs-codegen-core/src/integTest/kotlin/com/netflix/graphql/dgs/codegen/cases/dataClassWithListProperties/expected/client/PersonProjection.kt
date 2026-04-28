@@ -2,11 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithListProperties.expect
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
-import com.netflix.graphql.dgs.codegen.cases.dataClassWithListProperties.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithListProperties.expected.Generated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 public class PersonProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

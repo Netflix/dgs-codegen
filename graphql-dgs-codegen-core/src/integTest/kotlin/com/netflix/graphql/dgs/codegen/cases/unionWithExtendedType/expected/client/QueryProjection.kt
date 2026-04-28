@@ -2,12 +2,10 @@ package com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.cli
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.Generated
 import kotlin.String
-import com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

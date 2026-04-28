@@ -1,20 +1,15 @@
 package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.types
 
-import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.Generated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 public enum class Hobby {
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   Football,
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   Hokey,
   ;
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   public companion object
 }

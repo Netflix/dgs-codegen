@@ -85,21 +85,17 @@ class Kotlin2CodeGenTest {
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |import kotlin.Deprecated
-                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-                |import jakarta.`annotation`.Generated as AnnotationGenerated
                 |
-                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |@GeneratedGenerated
+                |@Generated
                 |public enum class TownJobTypes {
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  @Deprecated(message = "town switched to electric lights")
                 |  LAMPLIGHTER,
                 |  ;
                 |
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  public companion object
                 |}
                 |
@@ -134,19 +130,16 @@ class Kotlin2CodeGenTest {
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
-                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-                |import jakarta.`annotation`.Generated as AnnotationGenerated
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |
-                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |@GeneratedGenerated
+                |@Generated
                 |public enum class MyEnum {
                 |  A,
                 |  B,
                 |  C,
                 |  ;
                 |
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  public companion object
                 |}
                 |

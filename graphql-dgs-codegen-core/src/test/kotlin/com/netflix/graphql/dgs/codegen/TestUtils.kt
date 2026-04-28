@@ -21,7 +21,6 @@ package com.netflix.graphql.dgs.codegen
 import com.google.testing.compile.Compilation
 import com.google.testing.compile.CompilationSubject
 import com.google.testing.compile.Compiler.javac
-import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.JavaFile
@@ -133,69 +132,67 @@ fun <T> invokeMethod(
     return result as T
 }
 
-fun List<FileSpec>.assertKotlinGeneratedAnnotation(shouldHaveDate: Boolean) =
-    onEach {
-        it.members
-            .filterIsInstance(KTypeSpec::class.java)
-            .forEach { typeSpec -> typeSpec.assertKotlinGeneratedAnnotation(it, shouldHaveDate) }
-    }
+fun List<FileSpec>.assertKotlinGeneratedAnnotation(
+    generatedAnnotationType: String? = null,
+    shouldHaveDate: Boolean = false,
+) = onEach {
+    it.members
+        .filterIsInstance<KTypeSpec>()
+        .forEach { typeSpec -> typeSpec.assertKotlinGeneratedAnnotation(it, generatedAnnotationType, shouldHaveDate) }
+}
 
-fun List<JavaFile>.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) =
-    onEach {
-        it.typeSpec().assertJavaGeneratedAnnotation(shouldHaveDate)
-    }
+fun List<JavaFile>.assertJavaGeneratedAnnotation(
+    generatedAnnotationType: String? = null,
+    shouldHaveDate: Boolean = false,
+) = onEach {
+    it.typeSpec().assertJavaGeneratedAnnotation(generatedAnnotationType, shouldHaveDate)
+}
 
 fun KTypeSpec.assertKotlinGeneratedAnnotation(
     fileSpec: FileSpec,
+    generatedAnnotationType: String?,
     shouldHaveDate: Boolean,
 ) {
-    val generatedSpec =
-        annotations
-            .firstOrNull { it.canonicalName() == "$BASE_PACKAGE_NAME.Generated" }
+    val expectedName = generatedAnnotationType ?: "$BASE_PACKAGE_NAME.Generated"
+    val generatedSpec = annotations.firstOrNull { it.canonicalName() == expectedName }
     assertThat(generatedSpec)
-        .`as`("@Generated annotation exists in %s at %s", this, fileSpec)
+        .`as`("@$expectedName annotation exists in %s at %s", this, fileSpec)
         .isNotNull
 
-    val javaxGeneratedSpec =
-        annotations.firstOrNull { it.canonicalName() == generatedAnnotationClassName }
-    assertThat(javaxGeneratedSpec)
-        .`as`("$generatedAnnotationClassName annotation exists in %s at %s", this, fileSpec)
-        .isNotNull
-
-    if (shouldHaveDate) {
-        assertThat(javaxGeneratedSpec!!.members)
-            .`as`("generatedAnnotationClassName has a date in %s at %s", this, fileSpec)
-            .anyMatch { it.toString().startsWith("date = ") }
-    } else {
-        assertThat(javaxGeneratedSpec!!.members)
-            .`as`("generatedAnnotationClassName has no date in %s at %s", this, fileSpec)
-            .noneMatch { it.toString().startsWith("date = ") }
+    if (generatedAnnotationType != null) {
+        if (shouldHaveDate) {
+            assertThat(generatedSpec!!.members)
+                .`as`("$expectedName has a date in %s at %s", this, fileSpec)
+                .anyMatch { it.toString().startsWith("date = ") }
+        } else {
+            assertThat(generatedSpec!!.members)
+                .`as`("$expectedName has no date in %s at %s", this, fileSpec)
+                .noneMatch { it.toString().startsWith("date = ") }
+        }
     }
 
-    typeSpecs.forEach { it.assertKotlinGeneratedAnnotation(fileSpec, shouldHaveDate) }
+    typeSpecs.forEach { it.assertKotlinGeneratedAnnotation(fileSpec, generatedAnnotationType, shouldHaveDate) }
 }
 
-fun TypeSpec.assertJavaGeneratedAnnotation(shouldHaveDate: Boolean) {
-    val generatedSpec =
-        annotations()
-            .firstOrNull { it.canonicalName() == "$BASE_PACKAGE_NAME.Generated" }
+fun TypeSpec.assertJavaGeneratedAnnotation(
+    generatedAnnotationType: String?,
+    shouldHaveDate: Boolean,
+) {
+    val expectedName = generatedAnnotationType ?: "$BASE_PACKAGE_NAME.Generated"
+    val generatedSpec = annotations().firstOrNull { it.canonicalName() == expectedName }
     assertThat(generatedSpec)
-        .`as`("@Generated annotation exists in %s", this)
+        .`as`("@$expectedName annotation exists in %s", this)
         .isNotNull
 
-    val jakartaGeneratedSpec =
-        annotations().firstOrNull { it.canonicalName() == generatedAnnotationClassName }
-    assertThat(jakartaGeneratedSpec)
-        .`as`("$generatedAnnotationClassName annotation exists in %s", this)
-        .isNotNull
-
-    if (shouldHaveDate) {
-        assertThat(jakartaGeneratedSpec!!.members().keys).contains("date")
-    } else {
-        assertThat(jakartaGeneratedSpec!!.members().keys).doesNotContain("date")
+    if (generatedAnnotationType != null) {
+        if (shouldHaveDate) {
+            assertThat(generatedSpec!!.members().keys).contains("date")
+        } else {
+            assertThat(generatedSpec!!.members().keys).doesNotContain("date")
+        }
     }
 
-    this.typeSpecs().forEach { it.assertJavaGeneratedAnnotation(shouldHaveDate) }
+    this.typeSpecs().forEach { it.assertJavaGeneratedAnnotation(generatedAnnotationType, shouldHaveDate) }
 }
 
 fun AnnotationSpec.canonicalName(): String = (type() as ClassName).canonicalName()

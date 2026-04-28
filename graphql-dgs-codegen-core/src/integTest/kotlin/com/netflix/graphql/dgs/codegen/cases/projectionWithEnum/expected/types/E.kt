@@ -1,17 +1,13 @@
 package com.netflix.graphql.dgs.codegen.cases.projectionWithEnum.expected.types
 
-import com.netflix.graphql.dgs.codegen.cases.projectionWithEnum.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
+import com.netflix.graphql.dgs.codegen.cases.projectionWithEnum.expected.Generated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 public enum class E {
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   V,
   ;
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   public companion object
 }

@@ -2,10 +2,8 @@ package com.netflix.graphql.dgs.codegen.cases.extendedDataClassWithInterface.exp
 
 import kotlin.String
 
-@jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
 @Generated
 public object DgsConstants {
-  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
   @Generated
   public object EXAMPLE {
     public const val TYPE_NAME: String = "Example"
@@ -15,7 +13,6 @@ public object DgsConstants {
     public const val Age: String = "age"
   }
 
-  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
   @Generated
   public object A {
     public const val TYPE_NAME: String = "A"
@@ -23,7 +20,6 @@ public object DgsConstants {
     public const val Name: String = "name"
   }
 
-  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
   @Generated
   public object B {
     public const val TYPE_NAME: String = "B"

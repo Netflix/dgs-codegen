@@ -144,6 +144,10 @@ open class GenerateJavaTask
         var disableDatesInGeneratedAnnotation = true
 
         @Input
+        @org.gradle.api.tasks.Optional
+        var generatedAnnotationType: String? = null
+
+        @Input
         var addDeprecatedAnnotation = false
 
         @Input
@@ -216,6 +220,7 @@ open class GenerateJavaTask
                     implementSerializable = implementSerializable,
                     addGeneratedAnnotation = addGeneratedAnnotation,
                     disableDatesInGeneratedAnnotation = disableDatesInGeneratedAnnotation,
+                    generatedAnnotationType = generatedAnnotationType,
                     addDeprecatedAnnotation = addDeprecatedAnnotation,
                     includeImports = includeImports,
                     includeEnumImports = includeEnumImports,

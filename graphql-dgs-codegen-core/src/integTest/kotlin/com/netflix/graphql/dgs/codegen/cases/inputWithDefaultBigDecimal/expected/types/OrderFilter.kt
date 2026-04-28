@@ -2,16 +2,14 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultBigDecimal.expecte
 
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultBigDecimal.expected.Generated
 import java.math.BigDecimal
 import kotlin.Any
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
-import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultBigDecimal.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 public data class OrderFilter(
   @JsonProperty("min")
   public val min: BigDecimal = default<OrderFilter, BigDecimal>("min", java.math.BigDecimal("1.1")),

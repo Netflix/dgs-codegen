@@ -5,15 +5,13 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableListOfNullableValues.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
-import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableListOfNullableValues.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Person.Builder::class)
 public class Person(
@@ -32,8 +30,7 @@ public class Person(
   public val email: List<String?>
     get() = __email.invoke()
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   public companion object {
     private val nameDefault: () -> String = 
         { throw IllegalStateException("Field `name` was not requested") }
@@ -42,8 +39,7 @@ public class Person(
         { throw IllegalStateException("Field `email` was not requested") }
   }
 
-  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-  @ExpectedGenerated
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

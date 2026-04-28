@@ -18,7 +18,6 @@
 
 package com.netflix.graphql.dgs.codegen
 
-import com.netflix.graphql.dgs.codegen.generators.shared.generatedAnnotationClassName
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import org.assertj.core.api.Assertions.assertThat
@@ -679,12 +678,10 @@ class KotlinCodeGenTest {
                 |
                 |import com.fasterxml.jackson.`annotation`.JsonSubTypes
                 |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |import kotlin.String
-                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-                |import jakarta.`annotation`.Generated as AnnotationGenerated
                 |
-                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |@GeneratedGenerated
+                |@Generated
                 |@JsonTypeInfo(
                 |  use = JsonTypeInfo.Id.NAME,
                 |  include = JsonTypeInfo.As.PROPERTY,
@@ -698,8 +695,7 @@ class KotlinCodeGenTest {
                 |
                 |  public val lastname: String?
                 |
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  public companion object
                 |}
                 |
@@ -712,12 +708,10 @@ class KotlinCodeGenTest {
                 |
                 |import com.fasterxml.jackson.`annotation`.JsonProperty
                 |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |import kotlin.String
-                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-                |import jakarta.`annotation`.Generated as AnnotationGenerated
                 |
-                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |@GeneratedGenerated
+                |@Generated
                 |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
                 |public data class Employee(
                 |  @JsonProperty("firstname")
@@ -727,8 +721,7 @@ class KotlinCodeGenTest {
                 |  @JsonProperty("company")
                 |  public val company: String? = null,
                 |) : Person {
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  public companion object
                 |}
                 |
@@ -1142,19 +1135,16 @@ class KotlinCodeGenTest {
                 """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |import kotlin.Deprecated
-                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-                |import jakarta.`annotation`.Generated as AnnotationGenerated
                 |
-                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |@GeneratedGenerated
+                |@Generated
                 |public enum class TownJobTypes {
                 |  @Deprecated(message = "town switched to electric lights")
                 |  LAMPLIGHTER,
                 |  ;
                 |
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  public companion object
                 |}
                 |
@@ -1188,18 +1178,15 @@ class KotlinCodeGenTest {
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
                 |import ValidName
-                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-                |import jakarta.`annotation`.Generated as AnnotationGenerated
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |
-                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |@GeneratedGenerated
+                |@Generated
                 |public enum class SomeEnum {
                 |  @ValidName
                 |  ENUM_VALUE,
                 |  ;
                 |
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  public companion object
                 |}
                 |
@@ -1316,13 +1303,11 @@ class KotlinCodeGenTest {
                 |
                 |import com.fasterxml.jackson.`annotation`.JsonSubTypes
                 |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |import kotlin.String
                 |import mypackage.Cat
-                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-                |import jakarta.`annotation`.Generated as AnnotationGenerated
                 |
-                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |@GeneratedGenerated
+                |@Generated
                 |@JsonTypeInfo(
                 |  use = JsonTypeInfo.Id.NAME,
                 |  include = JsonTypeInfo.As.PROPERTY,
@@ -1335,8 +1320,7 @@ class KotlinCodeGenTest {
                 |public interface Pet {
                 |  public val name: String
                 |
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  public companion object
                 |}
                 |
@@ -1378,12 +1362,10 @@ class KotlinCodeGenTest {
                 |
                 |import com.fasterxml.jackson.`annotation`.JsonSubTypes
                 |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |import mypackage.Cat
-                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-                |import jakarta.`annotation`.Generated as AnnotationGenerated
                 |
-                |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |@GeneratedGenerated
+                |@Generated
                 |@JsonTypeInfo(
                 |  use = JsonTypeInfo.Id.NAME,
                 |  include = JsonTypeInfo.As.PROPERTY,
@@ -1394,8 +1376,7 @@ class KotlinCodeGenTest {
                 |  JsonSubTypes.Type(value = Dog::class, name = "Dog")
                 |])
                 |public interface Pet {
-                |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-                |  @GeneratedGenerated
+                |  @Generated
                 |  public companion object
                 |}
                 |
@@ -2481,11 +2462,9 @@ class KotlinCodeGenTest {
             |
             |import com.fasterxml.jackson.`annotation`.JsonSubTypes
             |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
-            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-            |import jakarta.`annotation`.Generated as AnnotationGenerated
+            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |
-            |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |@GeneratedGenerated
+            |@Generated
             |@JsonTypeInfo(
             |  use = JsonTypeInfo.Id.NAME,
             |  include = JsonTypeInfo.As.PROPERTY,
@@ -2497,8 +2476,7 @@ class KotlinCodeGenTest {
             |  JsonSubTypes.Type(value = Rating::class, name = "Rating")
             |])
             |public interface SearchResult {
-            |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |  @GeneratedGenerated
+            |  @Generated
             |  public companion object
             |}
             |
@@ -3759,19 +3737,16 @@ class KotlinCodeGenTest {
             """
             |package com.netflix.graphql.dgs.codegen.tests.generated.types
             |
+            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |import kotlin.String
-            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-            |import jakarta.`annotation`.Generated as AnnotationGenerated
             |
-            |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |@GeneratedGenerated
+            |@Generated
             |public interface Person {
             |  public val firstname: String?
             |
             |  public val lastname: String?
             |
-            |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |  @GeneratedGenerated
+            |  @Generated
             |  public companion object
             |}
             |
@@ -3785,12 +3760,10 @@ class KotlinCodeGenTest {
             |
             |import com.fasterxml.jackson.`annotation`.JsonSubTypes
             |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |import kotlin.String
-            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-            |import jakarta.`annotation`.Generated as AnnotationGenerated
             |
-            |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |@GeneratedGenerated
+            |@Generated
             |@JsonTypeInfo(
             |  use = JsonTypeInfo.Id.NAME,
             |  include = JsonTypeInfo.As.PROPERTY,
@@ -3806,8 +3779,7 @@ class KotlinCodeGenTest {
             |
             |  public val company: String?
             |
-            |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |  @GeneratedGenerated
+            |  @Generated
             |  public companion object
             |}
             |
@@ -3820,12 +3792,10 @@ class KotlinCodeGenTest {
             |
             |import com.fasterxml.jackson.`annotation`.JsonProperty
             |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |import kotlin.String
-            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-            |import jakarta.`annotation`.Generated as AnnotationGenerated
             |
-            |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |@GeneratedGenerated
+            |@Generated
             |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
             |public data class Talent(
             |  @JsonProperty("firstname")
@@ -3837,8 +3807,7 @@ class KotlinCodeGenTest {
             |  @JsonProperty("imdbProfile")
             |  public val imdbProfile: String? = null,
             |) : Employee {
-            |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |  @GeneratedGenerated
+            |  @Generated
             |  public companion object
             |}
             |
@@ -3897,13 +3866,11 @@ class KotlinCodeGenTest {
             |
             |import com.fasterxml.jackson.`annotation`.JsonSubTypes
             |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |import kotlin.String
             |import kotlin.collections.List
-            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-            |import jakarta.`annotation`.Generated as AnnotationGenerated
             |
-            |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |@GeneratedGenerated
+            |@Generated
             |@JsonTypeInfo(
             |  use = JsonTypeInfo.Id.NAME,
             |  include = JsonTypeInfo.As.PROPERTY,
@@ -3926,8 +3893,7 @@ class KotlinCodeGenTest {
             |
             |  public val parents: List<Pet?>?
             |
-            |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |  @GeneratedGenerated
+            |  @Generated
             |  public companion object
             |}
             |
@@ -3979,12 +3945,10 @@ class KotlinCodeGenTest {
             |
             |import com.fasterxml.jackson.`annotation`.JsonSubTypes
             |import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
             |import kotlin.String
-            |import com.netflix.graphql.dgs.codegen.tests.generated.Generated as GeneratedGenerated
-            |import jakarta.`annotation`.Generated as AnnotationGenerated
             |
-            |@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |@GeneratedGenerated
+            |@Generated
             |@JsonTypeInfo(
             |  use = JsonTypeInfo.Id.NAME,
             |  include = JsonTypeInfo.As.PROPERTY,
@@ -3998,8 +3962,7 @@ class KotlinCodeGenTest {
             |
             |  public val diet: Diet?
             |
-            |  @AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-            |  @GeneratedGenerated
+            |  @Generated
             |  public companion object
             |}
             |
@@ -4428,33 +4391,36 @@ It takes a title and such.
     }
 
     @Test
-    fun generateSourceWithGeneratedAnnotation() {
-        val schema =
-            """
-            type Query {
-                employees(filter:EmployeeFilterInput) : [Person]
-            }
+    fun generateSourceWithDefaultGeneratedAnnotation() {
+        val schema = generatedAnnotationTestSchema
 
-            interface Person {
-                firstname: String
-                lastname: String
-            }
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    generateClientApi = true,
+                ),
+            ).generate()
 
-            type Employee implements Person {
-                firstname: String
-                lastname: String
-                company: String
-            }
-            enum EmployeeTypes {
-                ENGINEER
-                MANAGER
-                DIRECTOR
-            }
-            
-            input EmployeeFilterInput {
-                rank: String
-            }
-            """.trimIndent()
+        val (generatedAnnotationFile, allKotlinSources) =
+            codeGenResult
+                .kotlinSources()
+                .partition { it.name == "Generated" }
+
+        allKotlinSources.assertKotlinGeneratedAnnotation()
+        codeGenResult.javaSources().assertJavaGeneratedAnnotation()
+
+        assertThat(generatedAnnotationFile.single().toString())
+            .contains("@Retention(value = AnnotationRetention.BINARY)")
+
+        assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
+    fun generateSourceWithJakartaGeneratedAnnotationWithDate() {
+        val schema = generatedAnnotationTestSchema
 
         val codeGenResult =
             CodeGen(
@@ -4464,52 +4430,25 @@ It takes a title and such.
                     language = Language.KOTLIN,
                     addGeneratedAnnotation = true,
                     disableDatesInGeneratedAnnotation = false,
+                    generatedAnnotationType = "jakarta.annotation.Generated",
                     generateClientApi = true,
                 ),
             ).generate()
 
-        val (generatedAnnotationFile, allKotlinSources) =
-            codeGenResult
-                .kotlinSources()
-                .partition { it.name == "Generated" }
+        assertThat(codeGenResult.kotlinSources()).noneMatch { it.name == "Generated" }
+        assertThat(codeGenResult.javaSources()).noneMatch { it.typeSpec().name() == "Generated" }
 
-        allKotlinSources.assertKotlinGeneratedAnnotation(shouldHaveDate = true)
-        codeGenResult.javaSources().assertJavaGeneratedAnnotation(shouldHaveDate = true)
-
-        assertThat(generatedAnnotationFile.single().toString())
-            .contains("@Retention(value = AnnotationRetention.BINARY)")
-
-        assertCompilesKotlin(codeGenResult)
+        codeGenResult
+            .kotlinSources()
+            .assertKotlinGeneratedAnnotation("jakarta.annotation.Generated", shouldHaveDate = true)
+        codeGenResult
+            .javaSources()
+            .assertJavaGeneratedAnnotation("jakarta.annotation.Generated", shouldHaveDate = true)
     }
 
     @Test
-    fun generateSourceWithGeneratedAnnotationWithoutDate() {
-        val schema =
-            """
-            type Query {
-                employees(filter:EmployeeFilterInput) : [Person]
-            }
-
-            interface Person {
-                firstname: String
-                lastname: String
-            }
-
-            type Employee implements Person {
-                firstname: String
-                lastname: String
-                company: String
-            }
-            enum EmployeeTypes {
-                ENGINEER
-                MANAGER
-                DIRECTOR
-            }
-            
-            input EmployeeFilterInput {
-                rank: String
-            }
-            """.trimIndent()
+    fun generateSourceWithJakartaGeneratedAnnotationWithoutDate() {
+        val schema = generatedAnnotationTestSchema
 
         val codeGenResult =
             CodeGen(
@@ -4519,52 +4458,25 @@ It takes a title and such.
                     language = Language.KOTLIN,
                     addGeneratedAnnotation = true,
                     disableDatesInGeneratedAnnotation = true,
+                    generatedAnnotationType = "jakarta.annotation.Generated",
                     generateClientApi = true,
                 ),
             ).generate()
 
-        val (generatedAnnotationFile, allKotlinSources) =
-            codeGenResult
-                .kotlinSources()
-                .partition { it.name == "Generated" }
+        assertThat(codeGenResult.kotlinSources()).noneMatch { it.name == "Generated" }
+        assertThat(codeGenResult.javaSources()).noneMatch { it.typeSpec().name() == "Generated" }
 
-        allKotlinSources.assertKotlinGeneratedAnnotation(shouldHaveDate = false)
-        codeGenResult.javaSources().assertJavaGeneratedAnnotation(shouldHaveDate = false)
-
-        assertThat(generatedAnnotationFile.single().toString())
-            .contains("@Retention(value = AnnotationRetention.BINARY)")
-
-        assertCompilesKotlin(codeGenResult)
+        codeGenResult
+            .kotlinSources()
+            .assertKotlinGeneratedAnnotation("jakarta.annotation.Generated", shouldHaveDate = false)
+        codeGenResult
+            .javaSources()
+            .assertJavaGeneratedAnnotation("jakarta.annotation.Generated", shouldHaveDate = false)
     }
 
     @Test
     fun generateSourceWithoutGeneratedAnnotation() {
-        val schema =
-            """
-            type Query {
-                employees(filter:EmployeeFilterInput) : [Person]
-            }
-
-            interface Person {
-                firstname: String
-                lastname: String
-            }
-
-            type Employee implements Person {
-                firstname: String
-                lastname: String
-                company: String
-            }
-            enum EmployeeTypes {
-                ENGINEER
-                MANAGER
-                DIRECTOR
-            }
-
-            input EmployeeFilterInput {
-                rank: String
-            }
-            """.trimIndent()
+        val schema = generatedAnnotationTestSchema
 
         val codeGenResult =
             CodeGen(
@@ -4584,13 +4496,13 @@ It takes a title and such.
             file.members.filterIsInstance(TypeSpec::class.java).forEach { type ->
                 assertThat(type.annotations.map { it.canonicalName() })
                     .`as`("no @Generated annotation on %s at %s", type, file)
-                    .doesNotContain("$BASE_PACKAGE_NAME.Generated", generatedAnnotationClassName)
+                    .doesNotContain("$BASE_PACKAGE_NAME.Generated", "jakarta.annotation.Generated")
             }
         }
         codeGenResult.javaSources().forEach { file ->
             assertThat(file.typeSpec().annotations().map { it.canonicalName() })
                 .`as`("no @Generated annotation on %s", file.typeSpec())
-                .doesNotContain("$BASE_PACKAGE_NAME.Generated", generatedAnnotationClassName)
+                .doesNotContain("$BASE_PACKAGE_NAME.Generated", "jakarta.annotation.Generated")
         }
 
         assertCompilesKotlin(codeGenResult)
@@ -5354,4 +5266,31 @@ It takes a title and such.
 
         assertCompilesKotlin(generatedResult)
     }
+
+    private val generatedAnnotationTestSchema =
+        """
+        type Query {
+            employees(filter:EmployeeFilterInput) : [Person]
+        }
+
+        interface Person {
+            firstname: String
+            lastname: String
+        }
+
+        type Employee implements Person {
+            firstname: String
+            lastname: String
+            company: String
+        }
+        enum EmployeeTypes {
+            ENGINEER
+            MANAGER
+            DIRECTOR
+        }
+
+        input EmployeeFilterInput {
+            rank: String
+        }
+        """.trimIndent()
 }

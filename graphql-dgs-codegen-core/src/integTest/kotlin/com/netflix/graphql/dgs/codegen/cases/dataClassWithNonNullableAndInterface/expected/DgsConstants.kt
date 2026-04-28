@@ -2,12 +2,10 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableAndInterfa
 
 import kotlin.String
 
-@jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
 @Generated
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
-  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
   @Generated
   public object QUERY {
     public const val TYPE_NAME: String = "Query"
@@ -15,7 +13,6 @@ public object DgsConstants {
     public const val People: String = "people"
   }
 
-  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
   @Generated
   public object EMPLOYEE {
     public const val TYPE_NAME: String = "Employee"
@@ -27,7 +24,6 @@ public object DgsConstants {
     public const val Company: String = "company"
   }
 
-  @jakarta.`annotation`.Generated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
   @Generated
   public object PERSON {
     public const val TYPE_NAME: String = "Person"

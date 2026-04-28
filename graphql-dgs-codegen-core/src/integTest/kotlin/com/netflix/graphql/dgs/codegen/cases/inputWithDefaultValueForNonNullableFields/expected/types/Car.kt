@@ -2,15 +2,13 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullabl
 
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.Generated
 import kotlin.Any
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
-import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullableFields.expected.Generated as ExpectedGenerated
-import jakarta.`annotation`.Generated as AnnotationGenerated
 
-@AnnotationGenerated(value = ["com.netflix.graphql.dgs.codegen.CodeGen"])
-@ExpectedGenerated
+@Generated
 public data class Car(
   @JsonProperty("brand")
   public val brand: String = default<Car, String>("brand", "BMW"),

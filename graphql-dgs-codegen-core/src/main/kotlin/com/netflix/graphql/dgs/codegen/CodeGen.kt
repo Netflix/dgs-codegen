@@ -346,7 +346,7 @@ class CodeGen(
             .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
 
     private fun generateJavaGeneratedAnnotation(config: CodeGenConfig): CodeGenResult =
-        if (config.addGeneratedAnnotation) {
+        if (config.addGeneratedAnnotation && config.generatedAnnotationType == null) {
             val retention =
                 AnnotationSpec
                     .builder(java.lang.annotation.Retention::class.java)
@@ -467,7 +467,7 @@ class CodeGen(
     }
 
     private fun generateKotlinGeneratedAnnotation(config: CodeGenConfig): CodeGenResult =
-        if (config.addGeneratedAnnotation) {
+        if (config.addGeneratedAnnotation && config.generatedAnnotationType == null) {
             val generated =
                 KTypeSpec
                     .annotationBuilder(KClassName(config.packageName, "Generated"))
@@ -579,6 +579,8 @@ class CodeGenConfig(
     var implementSerializable: Boolean = false,
     var addGeneratedAnnotation: Boolean = true,
     var disableDatesInGeneratedAnnotation: Boolean = true,
+    /** Fully-qualified class name of the @Generated annotation to apply to generated types. Default `<packageName>.Generated`. */
+    var generatedAnnotationType: String? = null,
     var addDeprecatedAnnotation: Boolean = false,
     var trackInputFieldSet: Boolean = false,
     var generateJSpecifyAnnotations: Boolean = false,
