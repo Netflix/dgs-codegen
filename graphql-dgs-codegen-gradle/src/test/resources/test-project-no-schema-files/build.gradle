@@ -26,15 +26,6 @@ configurations {
     CodeGenConfiguration.exclude group: "com.netflix.graphql.dgs.codegen", module: "graphql-dgs-codegen-core"
 }
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    // Required to resolve @jakarta.annotation.Generated emitted when addGeneratedAnnotation is true
-    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
-}
-
 generateJava {
     schemaPaths = ["${projectDir}/src/main/resources/schema"]
     packageName = 'com.netflix.testproject.graphql'
