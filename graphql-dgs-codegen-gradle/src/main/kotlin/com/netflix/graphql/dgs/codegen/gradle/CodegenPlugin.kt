@@ -39,10 +39,7 @@ class CodegenPlugin : Plugin<Project> {
         project.plugins.apply(JavaPlugin::class.java)
 
         val generateJavaTaskProvider = project.tasks.register("generateJava", GenerateJavaTask::class.java)
-        generateJavaTaskProvider.configure { task ->
-            task.group = GRADLE_GROUP
-            task.compileClasspathConfiguration.set(project.configurations.named("compileClasspath"))
-        }
+        generateJavaTaskProvider.configure { it.group = GRADLE_GROUP }
 
         val javaExtension = project.extensions.getByType(JavaPluginExtension::class.java)
 

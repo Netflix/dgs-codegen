@@ -144,14 +144,13 @@ fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
 private fun generatedAnnotation(
     packageName: String,
     generateDate: Boolean,
-    hasJakartaAnnotationApi: Boolean,
 ): List<AnnotationSpec> {
     val graphqlGenerated =
         AnnotationSpec
             .builder(ClassName.get(packageName, "Generated"))
             .build()
 
-    return if (!hasJakartaAnnotationApi || generatedAnnotationClassName == null) {
+    return if (generatedAnnotationClassName == null) {
         listOf(graphqlGenerated)
     } else {
         val generatedAnnotation = ClassName.bestGuess(generatedAnnotationClassName)
@@ -172,11 +171,7 @@ private fun generatedAnnotation(
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
-            generatedAnnotation(
-                config.packageName,
-                !config.disableDatesInGeneratedAnnotation,
-                config.hasJakartaAnnotationApi,
-            ).forEach { addAnnotation(it) }
+            generatedAnnotation(config.packageName, !config.disableDatesInGeneratedAnnotation).forEach { addAnnotation(it) }
         }
     }
 
