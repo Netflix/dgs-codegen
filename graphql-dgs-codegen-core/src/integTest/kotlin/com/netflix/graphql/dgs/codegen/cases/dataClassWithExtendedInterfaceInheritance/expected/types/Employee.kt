@@ -5,12 +5,14 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithExtendedInterfaceInheritance.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Employee.Builder::class)
 public class Employee(
@@ -46,6 +48,7 @@ public class Employee(
   override val age: Int
     get() = __age.invoke()
 
+  @Generated
   public companion object {
     private val firstnameDefault: () -> String = 
         { throw IllegalStateException("Field `firstname` was not requested") }
@@ -60,6 +63,7 @@ public class Employee(
         { throw IllegalStateException("Field `age` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

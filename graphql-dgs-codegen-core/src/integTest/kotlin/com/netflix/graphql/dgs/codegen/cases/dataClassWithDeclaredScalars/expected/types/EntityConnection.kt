@@ -5,10 +5,12 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = EntityConnection.Builder::class)
 public class EntityConnection(
@@ -27,6 +29,7 @@ public class EntityConnection(
   public val edges: List<EntityEdge?>?
     get() = __edges.invoke()
 
+  @Generated
   public companion object {
     private val pageInfoDefault: () -> PageInfo = 
         { throw IllegalStateException("Field `pageInfo` was not requested") }
@@ -35,6 +38,7 @@ public class EntityConnection(
         { throw IllegalStateException("Field `edges` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

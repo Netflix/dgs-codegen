@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithBooleanField.expected
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithBooleanField.expected.Generated
 
+@Generated
 public class RequiredTestTypeProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

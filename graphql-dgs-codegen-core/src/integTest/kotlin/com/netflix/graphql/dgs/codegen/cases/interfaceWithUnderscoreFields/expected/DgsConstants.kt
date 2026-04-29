@@ -2,15 +2,18 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceWithUnderscoreFields.expe
 
 import kotlin.String
 
+@Generated
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
+  @Generated
   public object QUERY {
     public const val TYPE_NAME: String = "Query"
 
     public const val Is: String = "is"
   }
 
+  @Generated
   public object T {
     public const val TYPE_NAME: String = "T"
 
@@ -19,6 +22,7 @@ public object DgsConstants {
     public const val Id: String = "id"
   }
 
+  @Generated
   public object I {
     public const val TYPE_NAME: String = "I"
 

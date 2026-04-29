@@ -2,8 +2,10 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultCurrency.expected.
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultCurrency.expected.Generated
 import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultCurrency.expected.types.OrderFilter
 
+@Generated
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

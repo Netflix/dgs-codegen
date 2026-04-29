@@ -2,8 +2,10 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableComplexTyp
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableComplexType.expected.Generated
 import kotlin.String
 
+@Generated
 public class MyTypeProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

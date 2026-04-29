@@ -176,9 +176,6 @@ internal fun findSchemaTypeMapping(
     return null
 }
 
-internal val generatedAnnotationClassName: String? =
-    runCatching {
-        Class.forName("jakarta.annotation.Generated").canonicalName
-    }.getOrNull()
-
 internal val generatedDate: String = Instant.now().toString()
+
+internal const val JAKARTA_GENERATED_ANNOTATION = "jakarta.annotation.Generated"

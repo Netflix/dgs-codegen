@@ -2,15 +2,18 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithInterfaceInheritance.
 
 import kotlin.String
 
+@Generated
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
+  @Generated
   public object QUERY {
     public const val TYPE_NAME: String = "Query"
 
     public const val People: String = "people"
   }
 
+  @Generated
   public object TALENT {
     public const val TYPE_NAME: String = "Talent"
 
@@ -23,6 +26,7 @@ public object DgsConstants {
     public const val ImdbProfile: String = "imdbProfile"
   }
 
+  @Generated
   public object PERSON {
     public const val TYPE_NAME: String = "Person"
 
@@ -31,6 +35,7 @@ public object DgsConstants {
     public const val Lastname: String = "lastname"
   }
 
+  @Generated
   public object EMPLOYEE {
     public const val TYPE_NAME: String = "Employee"
 

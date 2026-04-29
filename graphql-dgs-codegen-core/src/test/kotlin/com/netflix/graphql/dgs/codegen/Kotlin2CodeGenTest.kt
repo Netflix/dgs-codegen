@@ -85,19 +85,23 @@ class Kotlin2CodeGenTest {
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
                 |import kotlin.Deprecated
                 |
+                |@Generated
                 |public enum class TownJobTypes {
+                |  @Generated
                 |  @Deprecated(message = "town switched to electric lights")
                 |  LAMPLIGHTER,
                 |  ;
                 |
+                |  @Generated
                 |  public companion object
                 |}
                 |
             """.trimMargin(),
         )
-        assertCompilesKotlin(result.kotlinEnumTypes)
+        assertCompilesKotlin(result)
     }
 
     @Test
@@ -126,18 +130,22 @@ class Kotlin2CodeGenTest {
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.enums
                 |
+                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated
+                |
+                |@Generated
                 |public enum class MyEnum {
                 |  A,
                 |  B,
                 |  C,
                 |  ;
                 |
+                |  @Generated
                 |  public companion object
                 |}
                 |
             """.trimMargin(),
         )
 
-        assertCompilesKotlin(result.kotlinEnumTypes)
+        assertCompilesKotlin(result)
     }
 }

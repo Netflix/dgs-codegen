@@ -2,12 +2,14 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.exp
 
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.Generated
 import kotlin.Any
 import kotlin.Int
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
+@Generated
 public data class Person(
   @JsonProperty("name")
   public val name: String? = default<Person, String?>("name", "John"),

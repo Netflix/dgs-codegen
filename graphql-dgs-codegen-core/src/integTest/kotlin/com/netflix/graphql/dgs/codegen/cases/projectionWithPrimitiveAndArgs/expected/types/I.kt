@@ -2,11 +2,13 @@ package com.netflix.graphql.dgs.codegen.cases.projectionWithPrimitiveAndArgs.exp
 
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.cases.projectionWithPrimitiveAndArgs.expected.Generated
 import kotlin.Any
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
+@Generated
 public data class I(
   @JsonProperty("arg")
   public val arg: String? = default<I, String?>("arg", null),

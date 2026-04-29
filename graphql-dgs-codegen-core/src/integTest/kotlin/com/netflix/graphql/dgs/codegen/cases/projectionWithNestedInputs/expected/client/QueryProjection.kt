@@ -2,10 +2,12 @@ package com.netflix.graphql.dgs.codegen.cases.projectionWithNestedInputs.expecte
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.projectionWithNestedInputs.expected.Generated
 import com.netflix.graphql.dgs.codegen.cases.projectionWithNestedInputs.expected.types.I1
 import com.netflix.graphql.dgs.codegen.cases.projectionWithNestedInputs.expected.types.I2
 import kotlin.String
 
+@Generated
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

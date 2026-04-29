@@ -5,11 +5,13 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.projectionWithPrimitives.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
@@ -28,6 +30,7 @@ public class Query(
   public val strings: List<String?>?
     get() = __strings.invoke()
 
+  @Generated
   public companion object {
     private val stringDefault: () -> String? = 
         { throw IllegalStateException("Field `string` was not requested") }
@@ -36,6 +39,7 @@ public class Query(
         { throw IllegalStateException("Field `strings` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

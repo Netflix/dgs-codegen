@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.extendedDataClassWithInterface.exp
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.extendedDataClassWithInterface.expected.Generated
 
+@Generated
 public class AProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

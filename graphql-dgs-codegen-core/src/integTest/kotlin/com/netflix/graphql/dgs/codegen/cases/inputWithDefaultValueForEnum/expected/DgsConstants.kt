@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForEnum.expec
 
 import kotlin.String
 
+@Generated
 public object DgsConstants {
+  @Generated
   public object COLORFILTER {
     public const val TYPE_NAME: String = "ColorFilter"
 

@@ -2,15 +2,18 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexFi
 
 import kotlin.String
 
+@Generated
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
+  @Generated
   public object QUERY {
     public const val TYPE_NAME: String = "Query"
 
     public const val Cars: String = "cars"
   }
 
+  @Generated
   public object CAR {
     public const val TYPE_NAME: String = "Car"
 
@@ -21,6 +24,7 @@ public object DgsConstants {
     public const val Engine: String = "engine"
   }
 
+  @Generated
   public object ENGINE {
     public const val TYPE_NAME: String = "Engine"
 
@@ -33,6 +37,7 @@ public object DgsConstants {
     public const val Performance: String = "performance"
   }
 
+  @Generated
   public object PERFORMANCE {
     public const val TYPE_NAME: String = "Performance"
 

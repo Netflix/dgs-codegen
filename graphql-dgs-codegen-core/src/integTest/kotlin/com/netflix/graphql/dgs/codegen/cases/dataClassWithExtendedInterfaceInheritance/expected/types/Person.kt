@@ -2,11 +2,13 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithExtendedInterfaceInhe
 
 import com.fasterxml.jackson.`annotation`.JsonSubTypes
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithExtendedInterfaceInheritance.expected.Generated
 import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.PROPERTY,

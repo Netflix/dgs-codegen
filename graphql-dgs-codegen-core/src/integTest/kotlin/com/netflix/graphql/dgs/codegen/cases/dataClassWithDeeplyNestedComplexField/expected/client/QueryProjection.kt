@@ -2,8 +2,10 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexFi
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import kotlin.String
 
+@Generated
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

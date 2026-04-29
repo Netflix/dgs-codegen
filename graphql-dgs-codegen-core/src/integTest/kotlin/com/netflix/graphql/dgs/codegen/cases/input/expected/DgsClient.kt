@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.codegen.cases.input.expected.client.QueryProjecti
 import graphql.language.OperationDefinition
 import kotlin.String
 
+@Generated
 public object DgsClient {
   public fun buildQuery(inputValueSerializer: InputValueSerializerInterface? = null,
       _projection: QueryProjection.() -> QueryProjection): String =

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullablePrimitiveInList.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.Boolean
 import kotlin.Double
@@ -12,6 +13,7 @@ import kotlin.Int
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = MyType.Builder::class)
 public class MyType(
@@ -37,6 +39,7 @@ public class MyType(
   public val floaty: List<Double>?
     get() = __floaty.invoke()
 
+  @Generated
   public companion object {
     private val countDefault: () -> List<Int>? = 
         { throw IllegalStateException("Field `count` was not requested") }
@@ -48,6 +51,7 @@ public class MyType(
         { throw IllegalStateException("Field `floaty` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.skipCodegenOnFields.expected
 
 import kotlin.String
 
+@Generated
 public object DgsConstants {
+  @Generated
   public object PERSON {
     public const val TYPE_NAME: String = "Person"
 

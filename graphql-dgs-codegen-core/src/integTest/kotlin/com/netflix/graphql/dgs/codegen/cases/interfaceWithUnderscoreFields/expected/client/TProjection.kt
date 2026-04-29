@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceWithUnderscoreFields.expe
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.interfaceWithUnderscoreFields.expected.Generated
 
+@Generated
 public class TProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

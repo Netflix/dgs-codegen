@@ -5,10 +5,12 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.interfaceWithInterfaceInheritance.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Seed.Builder::class)
 public class Seed(
@@ -20,11 +22,13 @@ public class Seed(
   public val name: String?
     get() = __name.invoke()
 
+  @Generated
   public companion object {
     private val nameDefault: () -> String? = 
         { throw IllegalStateException("Field `name` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

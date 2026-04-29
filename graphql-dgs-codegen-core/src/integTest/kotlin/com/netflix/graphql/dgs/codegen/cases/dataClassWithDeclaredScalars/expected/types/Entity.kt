@@ -5,11 +5,13 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
 import java.time.OffsetDateTime
 import kotlin.Long
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Entity.Builder::class)
 public class Entity(
@@ -28,6 +30,7 @@ public class Entity(
   public val dateTime: OffsetDateTime?
     get() = __dateTime.invoke()
 
+  @Generated
   public companion object {
     private val longDefault: () -> Long? = 
         { throw IllegalStateException("Field `long` was not requested") }
@@ -36,6 +39,7 @@ public class Entity(
         { throw IllegalStateException("Field `dateTime` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

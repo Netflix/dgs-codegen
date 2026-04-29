@@ -2,11 +2,13 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForEnum.expec
 
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForEnum.expected.Generated
 import kotlin.Any
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
+@Generated
 public data class ColorFilter(
   @JsonProperty("color")
   public val color: Color? = default<ColorFilter, Color?>("color",

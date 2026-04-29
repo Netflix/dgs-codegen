@@ -5,10 +5,12 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = EntityEdge.Builder::class)
 public class EntityEdge(
@@ -27,6 +29,7 @@ public class EntityEdge(
   public val node: Entity?
     get() = __node.invoke()
 
+  @Generated
   public companion object {
     private val cursorDefault: () -> String = 
         { throw IllegalStateException("Field `cursor` was not requested") }
@@ -35,6 +38,7 @@ public class EntityEdge(
         { throw IllegalStateException("Field `node` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

@@ -2,12 +2,14 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultCurrency.expected.
 
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultCurrency.expected.Generated
 import java.util.Currency
 import kotlin.Any
 import kotlin.Pair
 import kotlin.String
 import kotlin.collections.List
 
+@Generated
 public data class OrderFilter(
   @JsonProperty("value")
   public val `value`: Currency = default<OrderFilter, Currency>("value",

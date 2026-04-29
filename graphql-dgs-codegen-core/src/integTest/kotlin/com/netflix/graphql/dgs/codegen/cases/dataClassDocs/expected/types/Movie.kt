@@ -5,6 +5,7 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassDocs.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.jvm.JvmName
@@ -13,6 +14,7 @@ import kotlin.jvm.JvmName
  * Movies are fun to watch.
  * They also work well as examples in GraphQL.
  */
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Movie.Builder::class)
 public class Movie(
@@ -24,11 +26,13 @@ public class Movie(
   public val title: String?
     get() = __title.invoke()
 
+  @Generated
   public companion object {
     private val titleDefault: () -> String? = 
         { throw IllegalStateException("Field `title` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

@@ -5,9 +5,11 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableComplexType.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = MyType.Builder::class)
 public class MyType(
@@ -19,11 +21,13 @@ public class MyType(
   public val other: OtherType
     get() = __other.invoke()
 
+  @Generated
   public companion object {
     private val otherDefault: () -> OtherType = 
         { throw IllegalStateException("Field `other` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

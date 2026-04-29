@@ -138,10 +138,14 @@ open class GenerateJavaTask
         var snakeCaseConstantNames = false
 
         @Input
-        var addGeneratedAnnotation = false
+        var addGeneratedAnnotation = true
 
         @Input
-        var disableDatesInGeneratedAnnotation = false
+        var disableDatesInGeneratedAnnotation = true
+
+        @Input
+        @org.gradle.api.tasks.Optional
+        var generatedAnnotationType: String? = null
 
         @Input
         var addDeprecatedAnnotation = false
@@ -216,6 +220,7 @@ open class GenerateJavaTask
                     implementSerializable = implementSerializable,
                     addGeneratedAnnotation = addGeneratedAnnotation,
                     disableDatesInGeneratedAnnotation = disableDatesInGeneratedAnnotation,
+                    generatedAnnotationType = generatedAnnotationType,
                     addDeprecatedAnnotation = addDeprecatedAnnotation,
                     includeImports = includeImports,
                     includeEnumImports = includeEnumImports,

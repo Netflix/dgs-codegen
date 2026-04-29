@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithNullablePrimitive.exp
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.dataClassWithNullablePrimitive.expected.Generated
 
+@Generated
 public class MyTypeProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

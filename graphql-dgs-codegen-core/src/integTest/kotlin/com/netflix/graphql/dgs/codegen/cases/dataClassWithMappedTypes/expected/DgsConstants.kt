@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected
 
 import kotlin.String
 
+@Generated
 public object DgsConstants {
   public const val QUERY_TYPE: String = "Query"
 
+  @Generated
   public object QUERY {
     public const val TYPE_NAME: String = "Query"
 
@@ -13,6 +15,7 @@ public object DgsConstants {
     public const val EntityConnection: String = "entityConnection"
   }
 
+  @Generated
   public object ENTITY {
     public const val TYPE_NAME: String = "Entity"
 
@@ -21,6 +24,7 @@ public object DgsConstants {
     public const val DateTime: String = "dateTime"
   }
 
+  @Generated
   public object ENTITYCONNECTION {
     public const val TYPE_NAME: String = "EntityConnection"
 
@@ -29,6 +33,7 @@ public object DgsConstants {
     public const val Edges: String = "edges"
   }
 
+  @Generated
   public object ENTITYEDGE {
     public const val TYPE_NAME: String = "EntityEdge"
 
@@ -37,6 +42,7 @@ public object DgsConstants {
     public const val Node: String = "node"
   }
 
+  @Generated
   public object PAGEINFO {
     public const val TYPE_NAME: String = "PageInfo"
 

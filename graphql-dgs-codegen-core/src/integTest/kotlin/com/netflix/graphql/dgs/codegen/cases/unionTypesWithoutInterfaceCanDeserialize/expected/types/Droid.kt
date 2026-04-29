@@ -5,10 +5,12 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Droid.Builder::class)
 public class Droid(
@@ -34,6 +36,7 @@ public class Droid(
   public val primaryFunction: String?
     get() = __primaryFunction.invoke()
 
+  @Generated
   public companion object {
     private val idDefault: () -> String = 
         { throw IllegalStateException("Field `id` was not requested") }
@@ -45,6 +48,7 @@ public class Droid(
         { throw IllegalStateException("Field `primaryFunction` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

@@ -5,11 +5,13 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Human.Builder::class)
 public class Human(
@@ -35,6 +37,7 @@ public class Human(
   public val totalCredits: Int?
     get() = __totalCredits.invoke()
 
+  @Generated
   public companion object {
     private val idDefault: () -> String = 
         { throw IllegalStateException("Field `id` was not requested") }
@@ -46,6 +49,7 @@ public class Human(
         { throw IllegalStateException("Field `totalCredits` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

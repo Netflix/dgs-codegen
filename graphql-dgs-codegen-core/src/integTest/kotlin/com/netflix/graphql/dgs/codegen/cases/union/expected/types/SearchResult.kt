@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.union.expected.types
 
 import com.fasterxml.jackson.`annotation`.JsonSubTypes
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
+import com.netflix.graphql.dgs.codegen.cases.union.expected.Generated
 
+@Generated
 @JsonTypeInfo(
   use = JsonTypeInfo.Id.NAME,
   include = JsonTypeInfo.As.PROPERTY,

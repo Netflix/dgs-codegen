@@ -5,9 +5,11 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.dataClassFieldDocs.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Query.Builder::class)
 public class Query(
@@ -19,11 +21,13 @@ public class Query(
   public val search: Movie?
     get() = __search.invoke()
 
+  @Generated
   public companion object {
     private val searchDefault: () -> Movie? = 
         { throw IllegalStateException("Field `search` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

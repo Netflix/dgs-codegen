@@ -2,8 +2,10 @@ package com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeser
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import kotlin.String
 
+@Generated
 public class SearchResultPageProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

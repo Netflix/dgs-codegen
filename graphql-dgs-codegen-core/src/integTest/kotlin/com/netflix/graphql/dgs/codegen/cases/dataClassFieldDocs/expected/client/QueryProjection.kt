@@ -2,9 +2,11 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassFieldDocs.expected.client
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.dataClassFieldDocs.expected.Generated
 import com.netflix.graphql.dgs.codegen.cases.dataClassFieldDocs.expected.types.MovieFilter
 import kotlin.String
 
+@Generated
 public class QueryProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {

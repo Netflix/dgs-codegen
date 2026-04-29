@@ -5,12 +5,14 @@ import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
+import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.expected.Generated
 import java.lang.IllegalStateException
 import kotlin.String
 import kotlin.Suppress
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
+@Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Dog.Builder::class)
 public class Dog(
@@ -63,6 +65,7 @@ public class Dog(
   override val parents: List<Dog?>?
     get() = __parents.invoke()
 
+  @Generated
   public companion object {
     private val idDefault: () -> String = 
         { throw IllegalStateException("Field `id` was not requested") }
@@ -83,6 +86,7 @@ public class Dog(
         { throw IllegalStateException("Field `parents` was not requested") }
   }
 
+  @Generated
   @JsonPOJOBuilder
   @JsonIgnoreProperties("__typename")
   public class Builder {

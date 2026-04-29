@@ -2,7 +2,9 @@ package com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForNonNullabl
 
 import kotlin.String
 
+@Generated
 public object DgsConstants {
+  @Generated
   public object PERSON {
     public const val TYPE_NAME: String = "Person"
 
@@ -17,6 +19,7 @@ public object DgsConstants {
     public const val IsHappy: String = "isHappy"
   }
 
+  @Generated
   public object CAR {
     public const val TYPE_NAME: String = "Car"
 

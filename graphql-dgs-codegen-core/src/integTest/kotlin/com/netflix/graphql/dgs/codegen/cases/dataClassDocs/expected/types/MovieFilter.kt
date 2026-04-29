@@ -2,6 +2,7 @@ package com.netflix.graphql.dgs.codegen.cases.dataClassDocs.expected.types
 
 import com.fasterxml.jackson.`annotation`.JsonProperty
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.cases.dataClassDocs.expected.Generated
 import kotlin.Any
 import kotlin.Pair
 import kotlin.String
@@ -12,6 +13,7 @@ import kotlin.collections.List
  *
  * It takes a title and such.
  */
+@Generated
 public data class MovieFilter(
   @JsonProperty("titleFilter")
   public val titleFilter: String? = default<MovieFilter, String?>("titleFilter", null),

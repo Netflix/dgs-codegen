@@ -2,8 +2,10 @@ package com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.
 
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.expected.Generated
 import kotlin.String
 
+@Generated
 public class PetProjection(
   inputValueSerializer: InputValueSerializerInterface? = null,
 ) : GraphQLProjection(inputValueSerializer) {
