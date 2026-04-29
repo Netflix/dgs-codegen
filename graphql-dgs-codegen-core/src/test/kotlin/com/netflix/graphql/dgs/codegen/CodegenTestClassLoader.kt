@@ -20,28 +20,31 @@ package com.netflix.graphql.dgs.codegen
 
 import com.google.testing.compile.Compilation
 import java.io.ByteArrayOutputStream
-import java.util.Optional
-import java.util.concurrent.ConcurrentHashMap
 import javax.tools.JavaFileObject
 
 internal class CodegenTestClassLoader(
     private val compilation: Compilation,
     parent: ClassLoader?,
 ) : ClassLoader(parent) {
-    private val seenClasses = ConcurrentHashMap<String, Class<*>>()
+    private val seenClasses = HashMap<String, Class<*>>()
 
     @Throws(ClassNotFoundException::class)
     override fun loadClass(name: String): Class<*> {
         val packageNameAsUnixPath = name.replace(".", "/")
         val normalizedName = "/CLASS_OUTPUT/$packageNameAsUnixPath.class"
 
-        return seenClasses.computeIfAbsent(normalizedName) { _ ->
-            Optional
-                .ofNullable(
-                    compilation
-                        .generatedFiles()
-                        .find { it.kind == JavaFileObject.Kind.CLASS && it.name == normalizedName },
-                ).map { fileObject ->
+        // Guard with a reentrant monitor so that defineClass() triggering a nested loadClass()
+        // on the same thread (e.g. for a superclass) doesn't deadlock or throw.
+        synchronized(seenClasses) {
+            seenClasses[normalizedName]?.let { return it }
+
+            val fileObject =
+                compilation
+                    .generatedFiles()
+                    .find { it.kind == JavaFileObject.Kind.CLASS && it.name == normalizedName }
+
+            val loaded =
+                if (fileObject != null) {
                     val classData =
                         fileObject.openInputStream().use { inputStream ->
                             val buffer = ByteArrayOutputStream()
@@ -49,7 +52,12 @@ internal class CodegenTestClassLoader(
                             buffer.toByteArray()
                         }
                     defineClass(name, classData, 0, classData.size)
-                }.orElse(super.loadClass(name))
+                } else {
+                    super.loadClass(name)
+                }
+
+            seenClasses[normalizedName] = loaded
+            return loaded
         }
     }
 }
