@@ -36,8 +36,6 @@ class CodegenGradlePluginTest {
                 .withProjectDir(File("src/test/resources/test-project/"))
                 .withPluginClasspath()
                 .withArguments(
-                    "-c",
-                    "smoke_test_settings.gradle",
                     "tasks",
                     "--all",
                 ).forwardOutput()
@@ -56,8 +54,6 @@ class CodegenGradlePluginTest {
                 .withProjectDir(File("src/test/resources/test-project/"))
                 .withPluginClasspath()
                 .withArguments(
-                    "-c",
-                    "smoke_test_settings.gradle",
                     "clean",
                     "copyMainSources",
                 ).forwardOutput()
@@ -78,8 +74,6 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings.gradle",
                     "clean",
                     "build",
                 ).forwardOutput()
@@ -98,14 +92,10 @@ class CodegenGradlePluginTest {
         val result =
             GradleRunner
                 .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+                .withProjectDir(File("src/test/resources/test-project-default-dir/"))
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_with_default_dir.gradle",
-                    "-b",
-                    "build_with_default_dir.gradle",
                     "clean",
                     "build",
                 ).forwardOutput()
@@ -128,10 +118,6 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_with_default_dir.gradle",
-                    "-b",
-                    "build_with_default_dir.gradle",
                     "clean",
                     "build",
                 ).forwardOutput()
@@ -151,14 +137,10 @@ class CodegenGradlePluginTest {
         val result =
             GradleRunner
                 .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+                .withProjectDir(File("src/test/resources/test-project-default-dir/"))
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_with_default_dir.gradle",
-                    "-b",
-                    "build_with_default_dir.gradle",
                     "clean",
                     "build",
                 ).forwardOutput()
@@ -178,7 +160,7 @@ class CodegenGradlePluginTest {
         const val EXPECTED_PATH =
             "src/test/resources/test-project/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
         const val EXPECTED_DEFAULT_PATH =
-            "src/test/resources/test-project/build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
+            "src/test/resources/test-project-default-dir/build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
         const val EXPECTED_PATH_EMPTY_SCHEMA =
             "src/test/resources/test-project-no-schema-files/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
     }

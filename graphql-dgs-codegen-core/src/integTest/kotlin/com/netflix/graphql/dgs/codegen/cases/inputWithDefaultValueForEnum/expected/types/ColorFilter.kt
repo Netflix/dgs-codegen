@@ -11,8 +11,8 @@ import kotlin.collections.List
 @Generated
 public data class ColorFilter(
   @JsonProperty("color")
-  public val color: Color? = default<ColorFilter, Color?>("color",
-      com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForEnum.expected.types.Color.red),
+  public val color:
+      Color? = default<ColorFilter, Color?>("color", com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForEnum.expected.types.Color.red),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("color" to color)
 }

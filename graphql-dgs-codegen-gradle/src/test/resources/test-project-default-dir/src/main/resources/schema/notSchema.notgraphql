@@ -1,0 +1,3 @@
+type NotSchema {
+    ignored: Boolean
+}
