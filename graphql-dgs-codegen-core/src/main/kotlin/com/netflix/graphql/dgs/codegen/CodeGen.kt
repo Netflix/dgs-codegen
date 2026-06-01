@@ -584,6 +584,7 @@ class CodeGenConfig(
     var addDeprecatedAnnotation: Boolean = false,
     var trackInputFieldSet: Boolean = false,
     var generateJSpecifyAnnotations: Boolean = false,
+    var jacksonVersions: Set<JacksonVersion> = emptySet(),
 ) {
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
@@ -618,6 +619,11 @@ class CodeGenConfig(
 enum class Language {
     JAVA,
     KOTLIN,
+}
+
+enum class JacksonVersion {
+    JACKSON_2,
+    JACKSON_3,
 }
 
 data class CodeGenResult(

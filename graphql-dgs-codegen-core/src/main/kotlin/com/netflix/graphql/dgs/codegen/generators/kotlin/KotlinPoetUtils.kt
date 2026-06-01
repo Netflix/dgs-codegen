@@ -22,10 +22,9 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize
-import com.fasterxml.jackson.databind.annotation.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.JacksonVersion
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.JAKARTA_GENERATED_ANNOTATION
 import com.netflix.graphql.dgs.codegen.generators.shared.PackageParserUtil
@@ -128,31 +127,57 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
 }
 
 /**
- * Generate a [JsonDeserialize] annotation for the builder class.
+ * Returns the configured Jackson versions, defaulting to Jackson 2 when none are configured
+ * (for backwards compatibility — see [JacksonVersion]).
+ */
+private fun jacksonVersionsOrDefault(config: CodeGenConfig): Set<JacksonVersion> =
+    config.jacksonVersions.ifEmpty { setOf(JacksonVersion.JACKSON_2) }
+
+private fun jsonDeserializeClassName(version: JacksonVersion): ClassName =
+    when (version) {
+        JacksonVersion.JACKSON_2 -> ClassName("com.fasterxml.jackson.databind.annotation", "JsonDeserialize")
+        JacksonVersion.JACKSON_3 -> ClassName("tools.jackson.databind.annotation", "JsonDeserialize")
+    }
+
+private fun jsonPOJOBuilderClassName(version: JacksonVersion): ClassName =
+    when (version) {
+        JacksonVersion.JACKSON_2 -> ClassName("com.fasterxml.jackson.databind.annotation", "JsonPOJOBuilder")
+        JacksonVersion.JACKSON_3 -> ClassName("tools.jackson.databind.annotation", "JsonPOJOBuilder")
+    }
+
+/**
+ * Generate `@JsonDeserialize` annotations for the builder class, one per configured Jackson version.
+ * Jackson 2 lives in `com.fasterxml.jackson.databind.annotation`; Jackson 3 in `tools.jackson.databind.annotation`.
  *
  * Example generated annotation:
  * ```
  * @JsonDeserialize(builder = Movie.Builder::class)
  * ```
  */
-fun jsonDeserializeAnnotation(builderType: ClassName): AnnotationSpec =
-    AnnotationSpec
-        .builder(JsonDeserialize::class)
-        .addMember("builder = %T::class", builderType)
-        .build()
+fun jsonDeserializeAnnotations(
+    config: CodeGenConfig,
+    builderType: ClassName,
+): List<AnnotationSpec> =
+    jacksonVersionsOrDefault(config).map { version ->
+        AnnotationSpec
+            .builder(jsonDeserializeClassName(version))
+            .addMember("builder = %T::class", builderType)
+            .build()
+    }
 
 /**
- * Generate a [JsonPOJOBuilder] annotation for the builder class.
+ * Generate `@JsonPOJOBuilder` annotations for the builder class, one per configured Jackson version.
+ * Jackson 2 lives in `com.fasterxml.jackson.databind.annotation`; Jackson 3 in `tools.jackson.databind.annotation`.
  *
  * Example generated annotation:
  * ```
  * @JsonPOJOBuilder
  * ```
  */
-fun jsonBuilderAnnotation(): AnnotationSpec =
-    AnnotationSpec
-        .builder(JsonPOJOBuilder::class)
-        .build()
+fun jsonBuilderAnnotations(config: CodeGenConfig): List<AnnotationSpec> =
+    jacksonVersionsOrDefault(config).map { version ->
+        AnnotationSpec.builder(jsonPOJOBuilderClassName(version)).build()
+    }
 
 /**
  * Generate a [JvmName] annotation for a kotlin property.
