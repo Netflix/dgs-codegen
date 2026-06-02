@@ -19,8 +19,7 @@
 package com.netflix.graphql.dgs.codegen.gradle
 
 import com.netflix.graphql.dgs.codegen.JacksonVersion
-import org.gradle.api.artifacts.Configuration
-import org.gradle.api.artifacts.component.ModuleComponentIdentifier
+import org.gradle.api.artifacts.result.ResolvedComponentResult
 
 object JacksonVersionDetector {
     private const val JACKSON_2_GROUP = "com.fasterxml.jackson.core"
@@ -28,22 +27,18 @@ object JacksonVersionDetector {
     private const val JACKSON_DATABIND_MODULE = "jackson-databind"
 
     /**
-     * Inspect a configuration's resolved components and report which Jackson major versions
-     * are on the classpath. Uses `incoming.resolutionResult` rather than
-     * `resolvedConfiguration.resolvedArtifacts` to avoid eager artifact download, which can
-     * break plugins (e.g. the Jakarta EE migration plugin) and multi-module projects.
+     * Which Jackson major versions are present among the resolved [components]
+     * (pass `resolutionResult.allComponents`). Reads graph metadata only — no artifact download.
      */
-    fun detect(configuration: Configuration): Set<JacksonVersion> {
-        val versions = mutableSetOf<JacksonVersion>()
-        configuration.incoming.resolutionResult.allComponents.forEach { comp ->
-            val id = comp.id
-            if (id !is ModuleComponentIdentifier) return@forEach
-            if (id.module != JACKSON_DATABIND_MODULE) return@forEach
-            when (id.group) {
-                JACKSON_2_GROUP -> versions += JacksonVersion.JACKSON_2
-                JACKSON_3_GROUP -> versions += JacksonVersion.JACKSON_3
+    fun detect(components: Set<ResolvedComponentResult>): Set<JacksonVersion> =
+        buildSet {
+            for (component in components) {
+                val moduleVersion = component.moduleVersion ?: continue
+                if (moduleVersion.name != JACKSON_DATABIND_MODULE) continue
+                when (moduleVersion.group) {
+                    JACKSON_2_GROUP -> add(JacksonVersion.JACKSON_2)
+                    JACKSON_3_GROUP -> add(JacksonVersion.JACKSON_3)
+                }
             }
         }
-        return versions
-    }
 }

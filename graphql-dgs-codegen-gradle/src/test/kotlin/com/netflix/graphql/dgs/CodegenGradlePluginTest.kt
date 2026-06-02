@@ -174,6 +174,39 @@ class CodegenGradlePluginTest {
         assertThat(File(EXPECTED_DEFAULT_PATH + "NotSchema.java").exists()).isFalse()
     }
 
+    @Test
+    fun generateJavaIsConfigurationCacheCompatible() {
+        val projectDir = File("src/test/resources/test-project/")
+
+        fun run() =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "--configuration-cache",
+                    "--configuration-cache-problems=fail",
+                    "-c",
+                    "smoke_test_settings.gradle",
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .build()
+
+        // Clear Gradle configuration cache before test run.
+        File(projectDir, ".gradle/configuration-cache").deleteRecursively()
+
+        // First run must store the configuration cache (a non-cacheable task field, e.g. a live Configuration, would fail here).
+        val first = run()
+        assertThat(first.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        assertThat(first.output).contains("Configuration cache entry stored.")
+
+        // Second run must reload and reuse the stored entry.
+        val second = run()
+        assertThat(second.output).contains("Reusing configuration cache.")
+    }
+
     companion object {
         const val EXPECTED_PATH =
             "src/test/resources/test-project/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"

@@ -126,10 +126,7 @@ fun jsonSubTypesAnnotation(subTypes: Collection<ClassName>): AnnotationSpec {
         .build()
 }
 
-/**
- * Returns the configured Jackson versions, defaulting to Jackson 2 when none are configured
- * (for backwards compatibility — see [JacksonVersion]).
- */
+/** Configured Jackson versions based on compile dependencies, defaulting to Jackson 2 when none are set. */
 private fun jacksonVersionsOrDefault(config: CodeGenConfig): Set<JacksonVersion> =
     config.jacksonVersions.ifEmpty { setOf(JacksonVersion.JACKSON_2) }
 

@@ -20,12 +20,13 @@ package com.netflix.graphql.dgs.codegen.gradle
 
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.JacksonVersion
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
-import org.gradle.api.artifacts.Configuration
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
-import org.gradle.api.provider.Property
+import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.provider.SetProperty
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
@@ -176,11 +177,14 @@ open class GenerateJavaTask
                 project.configurations.findByName("dgsCodegen"),
             )
 
-        @get:Internal
-        val compileClasspathConfiguration: Property<Configuration> =
-            objectFactory.property(Configuration::class.java).apply {
-                project.configurations.findByName("compileClasspath")?.let { convention(it) }
-            }
+        @Input
+        val jacksonVersions: SetProperty<JacksonVersion> =
+            objectFactory.setProperty(JacksonVersion::class.java).convention(
+                project.configurations
+                    .named(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+                    .map { it.incoming.resolutionResult.allComponents }
+                    .map { JacksonVersionDetector.detect(it) },
+            )
 
         @TaskAction
         fun generate() {
@@ -193,9 +197,6 @@ open class GenerateJavaTask
             schemaPaths.forEach {
                 logger.info("Processing $it")
             }
-
-            val jacksonVersions =
-                compileClasspathConfiguration.orNull?.let { JacksonVersionDetector.detect(it) } ?: emptySet()
 
             val config =
                 CodeGenConfig(
@@ -240,7 +241,7 @@ open class GenerateJavaTask
                     javaGenerateAllConstructor = javaGenerateAllConstructor,
                     trackInputFieldSet = trackInputFieldSet,
                     generateJSpecifyAnnotations = generateJSpecifyAnnotations,
-                    jacksonVersions = jacksonVersions,
+                    jacksonVersions = jacksonVersions.get(),
                 )
 
             logger.info("Codegen config: {}", config)
