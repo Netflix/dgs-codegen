@@ -624,6 +624,19 @@ enum class Language {
 enum class JacksonVersion {
     JACKSON_2,
     JACKSON_3,
+    ;
+
+    companion object {
+        fun fromString(value: String): JacksonVersion =
+            when (value.trim()) {
+                "2" -> JACKSON_2
+                "3" -> JACKSON_3
+                else -> throw IllegalArgumentException(
+                    "Invalid Jackson version '$value'. Supported values are \"2\" (com.fasterxml.jackson) " +
+                        "and \"3\" (tools.jackson).",
+                )
+            }
+    }
 }
 
 data class CodeGenResult(

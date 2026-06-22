@@ -175,9 +175,56 @@ class CodegenGradlePluginTest {
     }
 
     @Test
+    fun jacksonVersionOverrideIsApplied() {
+        // A valid override (["2", "3"]) should be accepted and supersede classpath detection.
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(File("src/test/resources/test-project/"))
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "-c",
+                    "smoke_test_settings_jackson_override.gradle",
+                    "-b",
+                    "build_with_jackson_override.gradle",
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .build()
+
+        assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+    }
+
+    @Test
+    fun invalidJacksonVersionOverrideFailsTheBuild() {
+        // An unsupported override value should fail the build with a clear message.
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(File("src/test/resources/test-project/"))
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "-c",
+                    "smoke_test_settings_invalid_jackson.gradle",
+                    "-b",
+                    "build_with_invalid_jackson_version.gradle",
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .buildAndFail()
+
+        assertThat(result.output).contains("Invalid 'jacksonVersionOverride' value")
+        assertThat(result.output).contains("Invalid Jackson version '4'")
+    }
+
+    @Test
     fun generateJavaIsConfigurationCacheCompatible() {
         val projectDir = File("src/test/resources/test-project/")
 
+        // generateKotlinNullableClasses is enabled so Jackson version detection (the lazy
+        // rootComponent classpath walk) actually runs under the configuration cache.
         fun run() =
             GradleRunner
                 .create()
@@ -188,7 +235,9 @@ class CodegenGradlePluginTest {
                     "--configuration-cache",
                     "--configuration-cache-problems=fail",
                     "-c",
-                    "smoke_test_settings.gradle",
+                    "smoke_test_settings_nullable.gradle",
+                    "-b",
+                    "build_with_nullable_classes.gradle",
                     "clean",
                     "generateJava",
                 ).forwardOutput()

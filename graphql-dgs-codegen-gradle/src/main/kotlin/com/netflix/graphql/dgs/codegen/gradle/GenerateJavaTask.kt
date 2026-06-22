@@ -26,7 +26,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaPlugin
-import org.gradle.api.provider.SetProperty
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
@@ -178,13 +179,25 @@ open class GenerateJavaTask
             )
 
         @Input
-        val jacksonVersions: SetProperty<JacksonVersion> =
-            objectFactory.setProperty(JacksonVersion::class.java).convention(
-                project.configurations
-                    .named(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
-                    .map { it.incoming.resolutionResult.allComponents }
-                    .map { JacksonVersionDetector.detect(it) },
-            )
+        val jacksonVersionOverride: ListProperty<String> =
+            objectFactory.listProperty(String::class.java).convention(emptyList())
+
+        private val detectedJacksonVersions: Provider<Set<JacksonVersion>> =
+            project.configurations
+                .named(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+                .flatMap { it.incoming.resolutionResult.rootComponent }
+                .map { JacksonVersionDetector.detect(it) }
+
+        /**
+         * Effective Jackson versions for this run. Jackson annotations are only emitted and the
+         * override is only resolved when [generateKotlinNullableClasses] is enabled.
+         */
+        private fun resolveJacksonVersions(): Set<JacksonVersion> =
+            if (generateKotlinNullableClasses) {
+                JacksonVersionDetector.resolve(jacksonVersionOverride.get(), detectedJacksonVersions.get())
+            } else {
+                emptySet()
+            }
 
         @TaskAction
         fun generate() {
@@ -241,7 +254,7 @@ open class GenerateJavaTask
                     javaGenerateAllConstructor = javaGenerateAllConstructor,
                     trackInputFieldSet = trackInputFieldSet,
                     generateJSpecifyAnnotations = generateJSpecifyAnnotations,
-                    jacksonVersions = jacksonVersions.get(),
+                    jacksonVersions = resolveJacksonVersions(),
                 )
 
             logger.info("Codegen config: {}", config)
