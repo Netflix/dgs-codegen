@@ -220,6 +220,39 @@ class CodegenGradlePluginTest {
     }
 
     @Test
+    fun detectsJackson3FromCompileClasspath() {
+        // End-to-end detection: Jackson 3 is the only Jackson on the compile classpath
+        // and the generated Kotlin must use the tools.jackson annotation packages.
+        val projectDir = File("src/test/resources/test-project/")
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "-c",
+                    "smoke_test_settings_jackson3.gradle",
+                    "-b",
+                    "build_with_jackson3.gradle",
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .build()
+
+        assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+
+        val generatedTypes =
+            File(projectDir, "build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types")
+                .walk()
+                .filter { it.extension == "kt" }
+                .joinToString("\n") { it.readText() }
+
+        assertThat(generatedTypes).contains("tools.jackson.databind")
+        assertThat(generatedTypes).doesNotContain("com.fasterxml.jackson.databind.`annotation`.JsonDeserialize")
+    }
+
+    @Test
     fun generateJavaIsConfigurationCacheCompatible() {
         val projectDir = File("src/test/resources/test-project/")
 
