@@ -87,6 +87,7 @@ fun generateKotlinCode(
                 )
             }
 
+            is NullValue -> CodeBlock.of("null")
             else -> CodeBlock.of("%L", value)
         }
 
