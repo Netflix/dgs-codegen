@@ -43,6 +43,7 @@ dependencies {
     testImplementation 'org.jetbrains.kotlin:kotlin-compiler'
 
     integTestImplementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
+    integTestImplementation 'tools.jackson.core:jackson-databind:3.2.0' // explicit version to keep tests stable
 }
 
 application {

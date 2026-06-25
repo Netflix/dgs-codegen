@@ -174,6 +174,121 @@ class CodegenGradlePluginTest {
         assertThat(File(EXPECTED_DEFAULT_PATH + "NotSchema.java").exists()).isFalse()
     }
 
+    @Test
+    fun jacksonVersionOverrideIsApplied() {
+        // A valid override (["2", "3"]) should be accepted and supersede classpath detection.
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(File("src/test/resources/test-project/"))
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "-c",
+                    "smoke_test_settings_jackson_override.gradle",
+                    "-b",
+                    "build_with_jackson_override.gradle",
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .build()
+
+        assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+    }
+
+    @Test
+    fun invalidJacksonVersionOverrideFailsTheBuild() {
+        // An unsupported override value should fail the build with a clear message.
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(File("src/test/resources/test-project/"))
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "-c",
+                    "smoke_test_settings_invalid_jackson.gradle",
+                    "-b",
+                    "build_with_invalid_jackson_version.gradle",
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .buildAndFail()
+
+        assertThat(result.output).contains("Invalid 'jacksonVersionOverride' value")
+        assertThat(result.output).contains("Invalid Jackson version '4'")
+    }
+
+    @Test
+    fun detectsJackson3FromCompileClasspath() {
+        // End-to-end detection: Jackson 3 is the only Jackson on the compile classpath
+        // and the generated Kotlin must use the tools.jackson annotation packages.
+        val projectDir = File("src/test/resources/test-project/")
+        val result =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "-c",
+                    "smoke_test_settings_jackson3.gradle",
+                    "-b",
+                    "build_with_jackson3.gradle",
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .build()
+
+        assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+
+        val generatedTypes =
+            File(projectDir, "build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types")
+                .walk()
+                .filter { it.extension == "kt" }
+                .joinToString("\n") { it.readText() }
+
+        assertThat(generatedTypes).contains("tools.jackson.databind")
+        assertThat(generatedTypes).doesNotContain("com.fasterxml.jackson.databind.`annotation`.JsonDeserialize")
+    }
+
+    @Test
+    fun generateJavaIsConfigurationCacheCompatible() {
+        val projectDir = File("src/test/resources/test-project/")
+
+        // generateKotlinNullableClasses is enabled so Jackson version detection (the lazy
+        // rootComponent classpath walk) actually runs under the configuration cache.
+        fun run() =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "--configuration-cache",
+                    "--configuration-cache-problems=fail",
+                    "-c",
+                    "smoke_test_settings_nullable.gradle",
+                    "-b",
+                    "build_with_nullable_classes.gradle",
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .build()
+
+        // Clear Gradle configuration cache before test run.
+        File(projectDir, ".gradle/configuration-cache").deleteRecursively()
+
+        // First run must store the configuration cache (a non-cacheable task field, e.g. a live Configuration, would fail here).
+        val first = run()
+        assertThat(first.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        assertThat(first.output).contains("Configuration cache entry stored.")
+
+        // Second run must reload and reuse the stored entry.
+        val second = run()
+        assertThat(second.output).contains("Reusing configuration cache.")
+    }
+
     companion object {
         const val EXPECTED_PATH =
             "src/test/resources/test-project/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"

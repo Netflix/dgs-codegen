@@ -266,6 +266,38 @@ class Kotlin2CodeGenTest {
         assertThat(nameField.get(instance)).isEqualTo("John")
     }
 
+    @Test
+    fun `generated Jackson 3 annotations compile against Jackson 3 on the classpath`() {
+        val schema =
+            """
+            type Query {
+                movies: [Movie]
+            }
+
+            type Movie {
+                title: String
+                director: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = "com.netflix.test.jackson3",
+                    language = Language.KOTLIN,
+                    generateKotlinNullableClasses = true,
+                    jacksonVersions = setOf(JacksonVersion.JACKSON_3),
+                ),
+            ).generate()
+
+        val movie = result.kotlinDataTypes.first { it.name == "Movie" }.toString()
+        assertThat(movie).contains("tools.jackson.databind.`annotation`.JsonDeserialize")
+        assertThat(movie).contains("tools.jackson.databind.`annotation`.JsonPOJOBuilder")
+
+        assertCompilesKotlin(result)
+    }
+
     companion object {
         @Suppress("unused")
         @JvmStatic
