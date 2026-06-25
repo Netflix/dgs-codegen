@@ -2238,7 +2238,8 @@ class CodeGenTest {
             }
             """.trimIndent()
 
-        val (dataTypes) = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val codeGenResult = CodeGen(CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME)).generate()
+        val (dataTypes) = codeGenResult
         assertThat(dataTypes).hasSize(1)
 
         val data = dataTypes[0]
@@ -2252,7 +2253,7 @@ class CodeGenTest {
         assertThat(maximumField).isNotNull
         assertThat(maximumField!!.initializer().toString()).isEqualTo("null")
 
-        assertCompilesJava(dataTypes)
+        assertCompilesJava(codeGenResult)
     }
 
     @Test
