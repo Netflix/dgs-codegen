@@ -1833,7 +1833,7 @@ class KotlinCodeGenTest {
         assertThat(maximumParam!!.defaultValue).isNotNull
         assertThat(maximumParam.defaultValue.toString()).isEqualTo("null")
 
-        assertCompilesKotlin(dataTypes)
+        assertCompilesKotlin(codeGenResult)
     }
 
     @Test
