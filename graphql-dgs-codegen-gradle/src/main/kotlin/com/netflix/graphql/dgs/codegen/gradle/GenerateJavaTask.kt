@@ -28,6 +28,7 @@ import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
@@ -39,6 +40,7 @@ open class GenerateJavaTask
     @Inject
     constructor(
         objectFactory: ObjectFactory,
+        private val providerFactory: ProviderFactory,
     ) : DefaultTask() {
         @Input
         var generatedSourcesDir: String =
@@ -192,11 +194,14 @@ open class GenerateJavaTask
          * Effective Jackson versions for this run. Jackson annotations are only emitted and the
          * override is only resolved when [generateKotlinNullableClasses] is enabled.
          */
-        private fun resolveJacksonVersions(): Set<JacksonVersion> =
-            if (generateKotlinNullableClasses) {
-                JacksonVersionDetector.resolve(jacksonVersionOverride.get(), detectedJacksonVersions.get())
-            } else {
-                emptySet()
+        @get:Input
+        val effectiveJacksonVersions: Provider<Set<JacksonVersion>> =
+            jacksonVersionOverride.flatMap { override ->
+                when {
+                    !generateKotlinNullableClasses -> providerFactory.provider { emptySet<JacksonVersion>() }
+                    override.isNotEmpty() -> providerFactory.provider { JacksonVersionDetector.resolve(override, emptySet()) }
+                    else -> detectedJacksonVersions
+                }
             }
 
         @TaskAction
@@ -254,7 +259,7 @@ open class GenerateJavaTask
                     javaGenerateAllConstructor = javaGenerateAllConstructor,
                     trackInputFieldSet = trackInputFieldSet,
                     generateJSpecifyAnnotations = generateJSpecifyAnnotations,
-                    jacksonVersions = resolveJacksonVersions(),
+                    jacksonVersions = effectiveJacksonVersions.get(),
                 )
 
             logger.info("Codegen config: {}", config)
