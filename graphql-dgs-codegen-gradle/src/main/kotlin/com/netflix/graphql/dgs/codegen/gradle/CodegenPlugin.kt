@@ -45,11 +45,11 @@ class CodegenPlugin : Plugin<Project> {
 
         val sourceSets =
             if (GradleVersion.current() >=
-                GradleVersion.version("7.1")
+                GradleVersion.version("7.4")
             ) {
                 javaExtension.sourceSets
             } else {
-                throw RuntimeException("Gradle versions < 7.1 are no longer supported by DGS Codegen. Please upgrade your Gradle version.")
+                throw RuntimeException("Gradle versions < 7.4 are no longer supported by DGS Codegen. Please upgrade your Gradle version.")
             }
         val mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
         val outputDir = generateJavaTaskProvider.map(GenerateJavaTask::getOutputDir)

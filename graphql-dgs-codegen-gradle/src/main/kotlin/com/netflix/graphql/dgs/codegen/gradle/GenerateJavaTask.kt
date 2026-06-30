@@ -20,10 +20,15 @@ package com.netflix.graphql.dgs.codegen.gradle
 
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.JacksonVersion
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.plugins.JavaPlugin
+import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Provider
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
@@ -35,6 +40,7 @@ open class GenerateJavaTask
     @Inject
     constructor(
         objectFactory: ObjectFactory,
+        private val providerFactory: ProviderFactory,
     ) : DefaultTask() {
         @Input
         var generatedSourcesDir: String =
@@ -174,6 +180,30 @@ open class GenerateJavaTask
                 project.configurations.findByName("dgsCodegen"),
             )
 
+        @Input
+        val jacksonVersionOverride: ListProperty<String> =
+            objectFactory.listProperty(String::class.java).convention(emptyList())
+
+        private val detectedJacksonVersions: Provider<Set<JacksonVersion>> =
+            project.configurations
+                .named(JavaPlugin.COMPILE_CLASSPATH_CONFIGURATION_NAME)
+                .flatMap { it.incoming.resolutionResult.rootComponent }
+                .map { JacksonVersionDetector.detect(it) }
+
+        /**
+         * Effective Jackson versions for this run. Jackson annotations are only emitted and the
+         * override is only resolved when [generateKotlinNullableClasses] is enabled.
+         */
+        @get:Input
+        val effectiveJacksonVersions: Provider<Set<JacksonVersion>> =
+            jacksonVersionOverride.flatMap { override ->
+                when {
+                    !generateKotlinNullableClasses -> providerFactory.provider { emptySet<JacksonVersion>() }
+                    override.isNotEmpty() -> providerFactory.provider { JacksonVersionDetector.resolve(override, emptySet()) }
+                    else -> detectedJacksonVersions
+                }
+            }
+
         @TaskAction
         fun generate() {
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
@@ -229,6 +259,7 @@ open class GenerateJavaTask
                     javaGenerateAllConstructor = javaGenerateAllConstructor,
                     trackInputFieldSet = trackInputFieldSet,
                     generateJSpecifyAnnotations = generateJSpecifyAnnotations,
+                    jacksonVersions = effectiveJacksonVersions.get(),
                 )
 
             logger.info("Codegen config: {}", config)
