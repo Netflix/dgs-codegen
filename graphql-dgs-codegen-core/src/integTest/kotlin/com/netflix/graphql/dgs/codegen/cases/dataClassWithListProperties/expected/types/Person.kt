@@ -46,6 +46,10 @@ public class Person(
   override fun hashCode(): Int = Objects.hash(if (__name === nameDefault) nameDefault else name,
   if (__email === emailDefault) emailDefault else email)
 
+  override fun toString(): String = listOfNotNull(if (__name === nameDefault) null else "name=" +
+      name, if (__email === emailDefault) null else "email=" + email).joinToString(prefix =
+      "Person(", postfix = ")")
+
   @Generated
   public companion object {
     private val nameDefault: () -> String? = 

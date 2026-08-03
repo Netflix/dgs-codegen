@@ -48,6 +48,7 @@ import com.squareup.kotlinpoet.KModifier
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.buildCodeBlock
@@ -268,6 +269,8 @@ fun generateKotlin2DataTypes(
                     )
                     // add value-based equals/hashCode over the requested fields
                     .addFunctions(equalsAndHashCodeFunctions(className, fields))
+                    // add a toString rendering only the requested fields
+                    .addFunction(toStringFunction(className, fields))
                     .build()
 
             // return a file per type
@@ -291,7 +294,7 @@ fun generateKotlin2DataTypes(
  * against the companion's default lambda, never by invoking it or matching the
  * exception message.
  */
-private class EqualsHashCodeFieldNames(
+private class GeneratedFieldNames(
     field: KotlinFieldInfo,
 ) {
     // Computed as whole identifiers (not "__" + %N) so KotlinPoet's keyword-escaping of a single
@@ -310,7 +313,7 @@ private fun equalsAndHashCodeFunctions(
         return emptyList()
     }
 
-    val names = fields.map(::EqualsHashCodeFieldNames)
+    val names = fields.map(::GeneratedFieldNames)
 
     val equalsFun =
         FunSpec
@@ -368,4 +371,43 @@ private fun equalsAndHashCodeFunctions(
             ).build()
 
     return listOf(equalsFun, hashCodeFun)
+}
+
+/**
+ * Generates a `toString` for a kotlin2 data type that renders only the fields that were
+ * requested, in declaration order - not the full, possibly-throwing set of fields a fixed-field
+ * data class would show. See [Netflix/dgs-codegen#638](https://github.com/Netflix/dgs-codegen/issues/638).
+ */
+private fun toStringFunction(
+    className: ClassName,
+    fields: List<KotlinFieldInfo>,
+): FunSpec {
+    val builder =
+        FunSpec
+            .builder("toString")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(STRING)
+
+    if (fields.isEmpty()) {
+        return builder.addStatement("return %S", "${className.simpleName}()").build()
+    }
+
+    val names = fields.map(::GeneratedFieldNames)
+
+    return builder
+        .addStatement(
+            "return listOfNotNull(%L).joinToString(prefix = %S, postfix = %S)",
+            names
+                .map { n ->
+                    CodeBlock.of(
+                        "if (%N === %N) null else %S + %N",
+                        n.backing,
+                        n.default,
+                        "${n.getter}=",
+                        n.getter,
+                    )
+                }.joinToCode(separator = ", "),
+            "${className.simpleName}(",
+            ")",
+        ).build()
 }

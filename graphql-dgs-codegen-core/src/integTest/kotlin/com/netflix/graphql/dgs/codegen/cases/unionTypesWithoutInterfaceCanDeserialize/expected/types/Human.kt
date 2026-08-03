@@ -55,6 +55,10 @@ public class Human(
   if (__name === nameDefault) nameDefault else name,
   if (__totalCredits === totalCreditsDefault) totalCreditsDefault else totalCredits)
 
+  override fun toString(): String = listOfNotNull(if (__id === idDefault) null else "id=" + id, if
+      (__name === nameDefault) null else "name=" + name, if (__totalCredits === totalCreditsDefault)
+      null else "totalCredits=" + totalCredits).joinToString(prefix = "Human(", postfix = ")")
+
   @Generated
   public companion object {
     private val idDefault: () -> String = 

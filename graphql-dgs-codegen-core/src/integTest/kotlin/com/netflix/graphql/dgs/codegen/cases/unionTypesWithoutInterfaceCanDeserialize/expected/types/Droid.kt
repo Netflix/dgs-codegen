@@ -56,6 +56,11 @@ public class Droid(
   if (__name === nameDefault) nameDefault else name,
   if (__primaryFunction === primaryFunctionDefault) primaryFunctionDefault else primaryFunction)
 
+  override fun toString(): String = listOfNotNull(if (__id === idDefault) null else "id=" + id, if
+      (__name === nameDefault) null else "name=" + name, if (__primaryFunction ===
+      primaryFunctionDefault) null else "primaryFunction=" + primaryFunction).joinToString(prefix =
+      "Droid(", postfix = ")")
+
   @Generated
   public companion object {
     private val idDefault: () -> String = 

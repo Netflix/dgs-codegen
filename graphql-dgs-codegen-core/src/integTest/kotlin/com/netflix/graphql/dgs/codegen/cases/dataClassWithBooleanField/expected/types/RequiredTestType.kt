@@ -11,6 +11,7 @@ import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
+import kotlin.String
 import kotlin.jvm.JvmName
 
 @Generated
@@ -34,6 +35,9 @@ public class RequiredTestType(
 
   override fun hashCode(): Int = Objects.hash(if (__isRequired === isRequiredDefault)
       isRequiredDefault else isRequired)
+
+  override fun toString(): String = listOfNotNull(if (__isRequired === isRequiredDefault) null else
+      "isRequired=" + isRequired).joinToString(prefix = "RequiredTestType(", postfix = ")")
 
   @Generated
   public companion object {

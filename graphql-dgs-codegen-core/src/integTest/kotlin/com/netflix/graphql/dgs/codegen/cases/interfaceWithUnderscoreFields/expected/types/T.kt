@@ -47,6 +47,9 @@ public class T(
   override fun hashCode(): Int = Objects.hash(if (___id === _idDefault) _idDefault else _id,
   if (__id === idDefault) idDefault else id)
 
+  override fun toString(): String = listOfNotNull(if (___id === _idDefault) null else "_id=" + _id,
+      if (__id === idDefault) null else "id=" + id).joinToString(prefix = "T(", postfix = ")")
+
   @Generated
   public companion object {
     private val _idDefault: () -> String? = 

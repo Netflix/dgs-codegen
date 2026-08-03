@@ -11,6 +11,7 @@ import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
+import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
@@ -34,6 +35,9 @@ public class SearchResultPage(
   }
 
   override fun hashCode(): Int = Objects.hash(if (__items === itemsDefault) itemsDefault else items)
+
+  override fun toString(): String = listOfNotNull(if (__items === itemsDefault) null else "items=" +
+      items).joinToString(prefix = "SearchResultPage(", postfix = ")")
 
   @Generated
   public companion object {

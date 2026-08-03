@@ -11,6 +11,7 @@ import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
+import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
@@ -45,6 +46,10 @@ public class EntityConnection(
   override fun hashCode(): Int = Objects.hash(if (__pageInfo === pageInfoDefault) pageInfoDefault
       else pageInfo,
   if (__edges === edgesDefault) edgesDefault else edges)
+
+  override fun toString(): String = listOfNotNull(if (__pageInfo === pageInfoDefault) null else
+      "pageInfo=" + pageInfo, if (__edges === edgesDefault) null else "edges=" +
+      edges).joinToString(prefix = "EntityConnection(", postfix = ")")
 
   @Generated
   public companion object {

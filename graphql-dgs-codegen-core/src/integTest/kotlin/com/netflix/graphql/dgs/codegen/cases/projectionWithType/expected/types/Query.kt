@@ -11,6 +11,7 @@ import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
+import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
@@ -45,6 +46,10 @@ public class Query(
   override fun hashCode(): Int = Objects.hash(if (__person === personDefault) personDefault else
       person,
   if (__people === peopleDefault) peopleDefault else people)
+
+  override fun toString(): String = listOfNotNull(if (__person === personDefault) null else
+      "person=" + person, if (__people === peopleDefault) null else "people=" +
+      people).joinToString(prefix = "Query(", postfix = ")")
 
   @Generated
   public companion object {

@@ -12,6 +12,7 @@ import kotlin.Any
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
+import kotlin.String
 import kotlin.jvm.JvmName
 
 @Generated
@@ -45,6 +46,10 @@ public class Performance(
   override fun hashCode(): Int = Objects.hash(if (__zeroToSixty === zeroToSixtyDefault)
       zeroToSixtyDefault else zeroToSixty,
   if (__quarterMile === quarterMileDefault) quarterMileDefault else quarterMile)
+
+  override fun toString(): String = listOfNotNull(if (__zeroToSixty === zeroToSixtyDefault) null
+      else "zeroToSixty=" + zeroToSixty, if (__quarterMile === quarterMileDefault) null else
+      "quarterMile=" + quarterMile).joinToString(prefix = "Performance(", postfix = ")")
 
   @Generated
   public companion object {

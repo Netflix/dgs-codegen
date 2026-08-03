@@ -49,6 +49,10 @@ public class Example(
   override fun hashCode(): Int = Objects.hash(if (__name === nameDefault) nameDefault else name,
   if (__age === ageDefault) ageDefault else age)
 
+  override fun toString(): String = listOfNotNull(if (__name === nameDefault) null else "name=" +
+      name, if (__age === ageDefault) null else "age=" + age).joinToString(prefix = "Example(",
+      postfix = ")")
+
   @Generated
   public companion object {
     private val nameDefault: () -> String? = 

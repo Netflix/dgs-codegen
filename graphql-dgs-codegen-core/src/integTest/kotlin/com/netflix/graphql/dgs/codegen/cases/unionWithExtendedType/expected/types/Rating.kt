@@ -11,6 +11,7 @@ import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
+import kotlin.String
 import kotlin.jvm.JvmName
 
 @Generated
@@ -33,6 +34,9 @@ public class Rating(
   }
 
   override fun hashCode(): Int = Objects.hash(if (__stars === starsDefault) starsDefault else stars)
+
+  override fun toString(): String = listOfNotNull(if (__stars === starsDefault) null else "stars=" +
+      stars).joinToString(prefix = "Rating(", postfix = ")")
 
   @Generated
   public companion object {

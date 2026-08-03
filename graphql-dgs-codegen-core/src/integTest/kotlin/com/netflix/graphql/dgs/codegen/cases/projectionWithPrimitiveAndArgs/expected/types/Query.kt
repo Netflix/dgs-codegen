@@ -36,6 +36,9 @@ public class Query(
   override fun hashCode(): Int = Objects.hash(if (__string === stringDefault) stringDefault else
       string)
 
+  override fun toString(): String = listOfNotNull(if (__string === stringDefault) null else
+      "string=" + string).joinToString(prefix = "Query(", postfix = ")")
+
   @Generated
   public companion object {
     private val stringDefault: () -> String? = 

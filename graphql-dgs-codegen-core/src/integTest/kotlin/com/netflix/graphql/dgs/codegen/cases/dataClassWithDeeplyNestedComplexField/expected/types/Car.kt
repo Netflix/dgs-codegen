@@ -55,6 +55,10 @@ public class Car(
   if (__model === modelDefault) modelDefault else model,
   if (__engine === engineDefault) engineDefault else engine)
 
+  override fun toString(): String = listOfNotNull(if (__make === makeDefault) null else "make=" +
+      make, if (__model === modelDefault) null else "model=" + model, if (__engine ===
+      engineDefault) null else "engine=" + engine).joinToString(prefix = "Car(", postfix = ")")
+
   @Generated
   public companion object {
     private val makeDefault: () -> String? = 

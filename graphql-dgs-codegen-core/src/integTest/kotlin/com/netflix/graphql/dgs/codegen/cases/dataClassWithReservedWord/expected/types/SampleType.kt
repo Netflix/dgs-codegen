@@ -36,6 +36,9 @@ public class SampleType(
   override fun hashCode(): Int = Objects.hash(if (__return === returnDefault) returnDefault else
       `return`)
 
+  override fun toString(): String = listOfNotNull(if (__return === returnDefault) null else
+      "return=" + `return`).joinToString(prefix = "SampleType(", postfix = ")")
+
   @Generated
   public companion object {
     private val returnDefault: () -> String = 

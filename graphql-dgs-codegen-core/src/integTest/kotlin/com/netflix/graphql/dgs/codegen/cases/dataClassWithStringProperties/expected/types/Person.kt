@@ -46,6 +46,10 @@ public class Person(
       else firstname,
   if (__lastname === lastnameDefault) lastnameDefault else lastname)
 
+  override fun toString(): String = listOfNotNull(if (__firstname === firstnameDefault) null else
+      "firstname=" + firstname, if (__lastname === lastnameDefault) null else "lastname=" +
+      lastname).joinToString(prefix = "Person(", postfix = ")")
+
   @Generated
   public companion object {
     private val firstnameDefault: () -> String? = 

@@ -39,6 +39,9 @@ public class Movie(
 
   override fun hashCode(): Int = Objects.hash(if (__title === titleDefault) titleDefault else title)
 
+  override fun toString(): String = listOfNotNull(if (__title === titleDefault) null else "title=" +
+      title).joinToString(prefix = "Movie(", postfix = ")")
+
   @Generated
   public companion object {
     private val titleDefault: () -> String? = 

@@ -37,6 +37,9 @@ public class Query(
   override fun hashCode(): Int = Objects.hash(if (__movies === moviesDefault) moviesDefault else
       movies)
 
+  override fun toString(): String = listOfNotNull(if (__movies === moviesDefault) null else
+      "movies=" + movies).joinToString(prefix = "Query(", postfix = ")")
+
   @Generated
   public companion object {
     private val moviesDefault: () -> List<String?>? = 

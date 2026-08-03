@@ -12,6 +12,7 @@ import kotlin.Any
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
+import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
@@ -55,6 +56,10 @@ public class MyType(
   override fun hashCode(): Int = Objects.hash(if (__count === countDefault) countDefault else count,
   if (__truth === truthDefault) truthDefault else truth,
   if (__floaty === floatyDefault) floatyDefault else floaty)
+
+  override fun toString(): String = listOfNotNull(if (__count === countDefault) null else "count=" +
+      count, if (__truth === truthDefault) null else "truth=" + truth, if (__floaty ===
+      floatyDefault) null else "floaty=" + floaty).joinToString(prefix = "MyType(", postfix = ")")
 
   @Generated
   public companion object {

@@ -47,6 +47,10 @@ public class Query(
       string,
   if (__strings === stringsDefault) stringsDefault else strings)
 
+  override fun toString(): String = listOfNotNull(if (__string === stringDefault) null else
+      "string=" + string, if (__strings === stringsDefault) null else "strings=" +
+      strings).joinToString(prefix = "Query(", postfix = ")")
+
   @Generated
   public companion object {
     private val stringDefault: () -> String? = 

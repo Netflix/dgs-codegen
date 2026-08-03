@@ -67,6 +67,12 @@ public class PageInfo(
   if (__hasNextPage === hasNextPageDefault) hasNextPageDefault else hasNextPage,
   if (__hasPreviousPage === hasPreviousPageDefault) hasPreviousPageDefault else hasPreviousPage)
 
+  override fun toString(): String = listOfNotNull(if (__startCursor === startCursorDefault) null
+      else "startCursor=" + startCursor, if (__endCursor === endCursorDefault) null else
+      "endCursor=" + endCursor, if (__hasNextPage === hasNextPageDefault) null else "hasNextPage=" +
+      hasNextPage, if (__hasPreviousPage === hasPreviousPageDefault) null else "hasPreviousPage=" +
+      hasPreviousPage).joinToString(prefix = "PageInfo(", postfix = ")")
+
   @Generated
   public companion object {
     private val startCursorDefault: () -> String? = 

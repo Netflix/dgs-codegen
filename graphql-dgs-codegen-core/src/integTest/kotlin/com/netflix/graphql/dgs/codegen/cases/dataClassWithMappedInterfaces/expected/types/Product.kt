@@ -39,6 +39,9 @@ public class Product(
 
   override fun hashCode(): Int = Objects.hash(if (__id === idDefault) idDefault else id)
 
+  override fun toString(): String = listOfNotNull(if (__id === idDefault) null else "id=" +
+      id).joinToString(prefix = "Product(", postfix = ")")
+
   @Generated
   public companion object {
     private val idDefault: () -> String = 

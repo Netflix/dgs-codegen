@@ -93,6 +93,12 @@ public class Dog(
   if (__father === fatherDefault) fatherDefault else father,
   if (__parents === parentsDefault) parentsDefault else parents)
 
+  override fun toString(): String = listOfNotNull(if (__id === idDefault) null else "id=" + id, if
+      (__name === nameDefault) null else "name=" + name, if (__address === addressDefault) null else
+      "address=" + address, if (__mother === motherDefault) null else "mother=" + mother, if
+      (__father === fatherDefault) null else "father=" + father, if (__parents === parentsDefault)
+      null else "parents=" + parents).joinToString(prefix = "Dog(", postfix = ")")
+
   @Generated
   public companion object {
     private val idDefault: () -> String = 

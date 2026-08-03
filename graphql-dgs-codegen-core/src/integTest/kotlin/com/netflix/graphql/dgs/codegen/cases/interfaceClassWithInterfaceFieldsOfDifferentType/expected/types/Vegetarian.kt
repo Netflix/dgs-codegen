@@ -49,6 +49,10 @@ public class Vegetarian(
       else calories,
   if (__vegetables === vegetablesDefault) vegetablesDefault else vegetables)
 
+  override fun toString(): String = listOfNotNull(if (__calories === caloriesDefault) null else
+      "calories=" + calories, if (__vegetables === vegetablesDefault) null else "vegetables=" +
+      vegetables).joinToString(prefix = "Vegetarian(", postfix = ")")
+
   @Generated
   public companion object {
     private val caloriesDefault: () -> String? = 

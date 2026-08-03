@@ -70,6 +70,12 @@ public class Talent(
   if (__company === companyDefault) companyDefault else company,
   if (__imdbProfile === imdbProfileDefault) imdbProfileDefault else imdbProfile)
 
+  override fun toString(): String = listOfNotNull(if (__firstname === firstnameDefault) null else
+      "firstname=" + firstname, if (__lastname === lastnameDefault) null else "lastname=" +
+      lastname, if (__company === companyDefault) null else "company=" + company, if (__imdbProfile
+      === imdbProfileDefault) null else "imdbProfile=" + imdbProfile).joinToString(prefix =
+      "Talent(", postfix = ")")
+
   @Generated
   public companion object {
     private val firstnameDefault: () -> String = 

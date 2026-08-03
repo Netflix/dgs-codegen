@@ -66,6 +66,11 @@ public class Engine(
   if (__size === sizeDefault) sizeDefault else size,
   if (__performance === performanceDefault) performanceDefault else performance)
 
+  override fun toString(): String = listOfNotNull(if (__type === typeDefault) null else "type=" +
+      type, if (__bhp === bhpDefault) null else "bhp=" + bhp, if (__size === sizeDefault) null else
+      "size=" + size, if (__performance === performanceDefault) null else "performance=" +
+      performance).joinToString(prefix = "Engine(", postfix = ")")
+
   @Generated
   public companion object {
     private val typeDefault: () -> String? = 

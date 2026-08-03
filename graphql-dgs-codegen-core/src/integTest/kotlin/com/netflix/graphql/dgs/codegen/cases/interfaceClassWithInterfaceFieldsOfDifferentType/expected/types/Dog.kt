@@ -48,6 +48,10 @@ public class Dog(
   override fun hashCode(): Int = Objects.hash(if (__name === nameDefault) nameDefault else name,
   if (__diet === dietDefault) dietDefault else diet)
 
+  override fun toString(): String = listOfNotNull(if (__name === nameDefault) null else "name=" +
+      name, if (__diet === dietDefault) null else "diet=" + diet).joinToString(prefix = "Dog(",
+      postfix = ")")
+
   @Generated
   public companion object {
     private val nameDefault: () -> String? = 

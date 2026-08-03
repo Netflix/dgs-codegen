@@ -59,6 +59,11 @@ public class Employee(
   if (__lastname === lastnameDefault) lastnameDefault else lastname,
   if (__company === companyDefault) companyDefault else company)
 
+  override fun toString(): String = listOfNotNull(if (__firstname === firstnameDefault) null else
+      "firstname=" + firstname, if (__lastname === lastnameDefault) null else "lastname=" +
+      lastname, if (__company === companyDefault) null else "company=" +
+      company).joinToString(prefix = "Employee(", postfix = ")")
+
   @Generated
   public companion object {
     private val firstnameDefault: () -> String = 

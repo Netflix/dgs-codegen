@@ -13,6 +13,7 @@ import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.Long
+import kotlin.String
 import kotlin.jvm.JvmName
 
 @Generated
@@ -45,6 +46,10 @@ public class Entity(
 
   override fun hashCode(): Int = Objects.hash(if (__long === longDefault) longDefault else long,
   if (__dateTime === dateTimeDefault) dateTimeDefault else dateTime)
+
+  override fun toString(): String = listOfNotNull(if (__long === longDefault) null else "long=" +
+      long, if (__dateTime === dateTimeDefault) null else "dateTime=" +
+      dateTime).joinToString(prefix = "Entity(", postfix = ")")
 
   @Generated
   public companion object {

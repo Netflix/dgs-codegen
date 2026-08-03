@@ -46,6 +46,10 @@ public class EntityEdge(
       cursor,
   if (__node === nodeDefault) nodeDefault else node)
 
+  override fun toString(): String = listOfNotNull(if (__cursor === cursorDefault) null else
+      "cursor=" + cursor, if (__node === nodeDefault) null else "node=" + node).joinToString(prefix
+      = "EntityEdge(", postfix = ")")
+
   @Generated
   public companion object {
     private val cursorDefault: () -> String = 
