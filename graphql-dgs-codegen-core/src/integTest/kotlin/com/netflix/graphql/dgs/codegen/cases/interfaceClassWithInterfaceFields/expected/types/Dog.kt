@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.collections.List
@@ -64,6 +68,30 @@ public class Dog(
   @get:JvmName("getParents")
   override val parents: List<Dog?>?
     get() = __parents.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Dog) return false
+    return (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault ||
+        Objects.equals(id, other.id)) &&
+    (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
+        Objects.equals(name, other.name)) &&
+    (__address === addressDefault) == (other.__address === addressDefault) && (__address ===
+        addressDefault || Objects.equals(address, other.address)) &&
+    (__mother === motherDefault) == (other.__mother === motherDefault) && (__mother ===
+        motherDefault || Objects.equals(mother, other.mother)) &&
+    (__father === fatherDefault) == (other.__father === fatherDefault) && (__father ===
+        fatherDefault || Objects.equals(father, other.father)) &&
+    (__parents === parentsDefault) == (other.__parents === parentsDefault) && (__parents ===
+        parentsDefault || Objects.equals(parents, other.parents))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__id === idDefault) idDefault else id,
+  if (__name === nameDefault) nameDefault else name,
+  if (__address === addressDefault) addressDefault else address,
+  if (__mother === motherDefault) motherDefault else mother,
+  if (__father === fatherDefault) fatherDefault else father,
+  if (__parents === parentsDefault) parentsDefault else parents)
 
   @Generated
   public companion object {

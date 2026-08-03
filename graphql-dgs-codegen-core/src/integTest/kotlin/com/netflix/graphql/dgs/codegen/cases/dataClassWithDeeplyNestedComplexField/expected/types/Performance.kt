@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Double
+import kotlin.Int
 import kotlin.jvm.JvmName
 
 @Generated
@@ -28,6 +32,19 @@ public class Performance(
   @get:JvmName("getQuarterMile")
   public val quarterMile: Double?
     get() = __quarterMile.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Performance) return false
+    return (__zeroToSixty === zeroToSixtyDefault) == (other.__zeroToSixty === zeroToSixtyDefault) &&
+        (__zeroToSixty === zeroToSixtyDefault || Objects.equals(zeroToSixty, other.zeroToSixty)) &&
+    (__quarterMile === quarterMileDefault) == (other.__quarterMile === quarterMileDefault) &&
+        (__quarterMile === quarterMileDefault || Objects.equals(quarterMile, other.quarterMile))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__zeroToSixty === zeroToSixtyDefault)
+      zeroToSixtyDefault else zeroToSixty,
+  if (__quarterMile === quarterMileDefault) quarterMileDefault else quarterMile)
 
   @Generated
   public companion object {

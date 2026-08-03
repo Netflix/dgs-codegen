@@ -7,6 +7,8 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullablePrimitiveInList.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
@@ -38,6 +40,21 @@ public class MyType(
   @get:JvmName("getFloaty")
   public val floaty: List<Double>?
     get() = __floaty.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is MyType) return false
+    return (__count === countDefault) == (other.__count === countDefault) && (__count ===
+        countDefault || Objects.equals(count, other.count)) &&
+    (__truth === truthDefault) == (other.__truth === truthDefault) && (__truth === truthDefault ||
+        Objects.equals(truth, other.truth)) &&
+    (__floaty === floatyDefault) == (other.__floaty === floatyDefault) && (__floaty ===
+        floatyDefault || Objects.equals(floaty, other.floaty))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__count === countDefault) countDefault else count,
+  if (__truth === truthDefault) truthDefault else truth,
+  if (__floaty === floatyDefault) floatyDefault else floaty)
 
   @Generated
   public companion object {

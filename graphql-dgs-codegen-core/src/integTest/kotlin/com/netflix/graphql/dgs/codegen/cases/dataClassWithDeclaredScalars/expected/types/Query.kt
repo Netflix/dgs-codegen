@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
@@ -28,6 +32,20 @@ public class Query(
   @get:JvmName("getEntityConnection")
   public val entityConnection: EntityConnection?
     get() = __entityConnection.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Query) return false
+    return (__entity === entityDefault) == (other.__entity === entityDefault) && (__entity ===
+        entityDefault || Objects.equals(entity, other.entity)) &&
+    (__entityConnection === entityConnectionDefault) == (other.__entityConnection ===
+        entityConnectionDefault) && (__entityConnection === entityConnectionDefault ||
+        Objects.equals(entityConnection, other.entityConnection))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__entity === entityDefault) entityDefault else
+      entity,
+  if (__entityConnection === entityConnectionDefault) entityConnectionDefault else entityConnection)
 
   @Generated
   public companion object {

@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFieldsOfDifferentType.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
@@ -31,6 +35,18 @@ public class Dog(
   @get:JvmName("getDiet")
   override val diet: Vegetarian?
     get() = __diet.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Dog) return false
+    return (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
+        Objects.equals(name, other.name)) &&
+    (__diet === dietDefault) == (other.__diet === dietDefault) && (__diet === dietDefault ||
+        Objects.equals(diet, other.diet))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__name === nameDefault) nameDefault else name,
+  if (__diet === dietDefault) dietDefault else diet)
 
   @Generated
   public companion object {

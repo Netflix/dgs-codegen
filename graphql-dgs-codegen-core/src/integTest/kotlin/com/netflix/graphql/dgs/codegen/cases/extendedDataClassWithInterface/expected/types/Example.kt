@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.extendedDataClassWithInterface.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
@@ -33,6 +36,18 @@ public class Example(
   @get:JvmName("getAge")
   override val age: Int?
     get() = __age.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Example) return false
+    return (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
+        Objects.equals(name, other.name)) &&
+    (__age === ageDefault) == (other.__age === ageDefault) && (__age === ageDefault ||
+        Objects.equals(age, other.age))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__name === nameDefault) nameDefault else name,
+  if (__age === ageDefault) ageDefault else age)
 
   @Generated
   public companion object {

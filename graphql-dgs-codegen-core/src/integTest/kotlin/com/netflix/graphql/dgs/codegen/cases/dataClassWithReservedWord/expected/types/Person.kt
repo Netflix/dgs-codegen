@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithReservedWord.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -28,6 +32,18 @@ public class Person(
   @get:JvmName("getInterface")
   public val `interface`: String?
     get() = __interface.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Person) return false
+    return (__info === infoDefault) == (other.__info === infoDefault) && (__info === infoDefault ||
+        Objects.equals(info, other.info)) &&
+    (__interface === interfaceDefault) == (other.__interface === interfaceDefault) && (__interface
+        === interfaceDefault || Objects.equals(`interface`, other.`interface`))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__info === infoDefault) infoDefault else info,
+  if (__interface === interfaceDefault) interfaceDefault else `interface`)
 
   @Generated
   public companion object {

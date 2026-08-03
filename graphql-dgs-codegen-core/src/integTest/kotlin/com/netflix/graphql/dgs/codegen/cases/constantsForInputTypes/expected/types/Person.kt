@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.constantsForInputTypes.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -28,6 +32,19 @@ public class Person(
   @get:JvmName("getLastname")
   public val lastname: String?
     get() = __lastname.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Person) return false
+    return (__firstname === firstnameDefault) == (other.__firstname === firstnameDefault) &&
+        (__firstname === firstnameDefault || Objects.equals(firstname, other.firstname)) &&
+    (__lastname === lastnameDefault) == (other.__lastname === lastnameDefault) && (__lastname ===
+        lastnameDefault || Objects.equals(lastname, other.lastname))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__firstname === firstnameDefault) firstnameDefault
+      else firstname,
+  if (__lastname === lastnameDefault) lastnameDefault else lastname)
 
   @Generated
   public companion object {

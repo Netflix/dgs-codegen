@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableComplexType.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -21,6 +25,15 @@ public class OtherType(
   @get:JvmName("getName")
   public val name: String
     get() = __name.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is OtherType) return false
+    return (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
+        Objects.equals(name, other.name))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__name === nameDefault) nameDefault else name)
 
   @Generated
   public companion object {

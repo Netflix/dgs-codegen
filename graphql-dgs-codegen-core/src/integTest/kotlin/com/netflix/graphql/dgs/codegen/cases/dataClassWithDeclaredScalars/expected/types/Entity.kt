@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
 import java.time.OffsetDateTime
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.Long
 import kotlin.jvm.JvmName
 
@@ -29,6 +33,18 @@ public class Entity(
   @get:JvmName("getDateTime")
   public val dateTime: OffsetDateTime?
     get() = __dateTime.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Entity) return false
+    return (__long === longDefault) == (other.__long === longDefault) && (__long === longDefault ||
+        Objects.equals(long, other.long)) &&
+    (__dateTime === dateTimeDefault) == (other.__dateTime === dateTimeDefault) && (__dateTime ===
+        dateTimeDefault || Objects.equals(dateTime, other.dateTime))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__long === longDefault) longDefault else long,
+  if (__dateTime === dateTimeDefault) dateTimeDefault else dateTime)
 
   @Generated
   public companion object {

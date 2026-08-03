@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.union.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -21,6 +25,15 @@ public class Movie(
   @get:JvmName("getTitle")
   public val title: String?
     get() = __title.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Movie) return false
+    return (__title === titleDefault) == (other.__title === titleDefault) && (__title ===
+        titleDefault || Objects.equals(title, other.title))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__title === titleDefault) titleDefault else title)
 
   @Generated
   public companion object {

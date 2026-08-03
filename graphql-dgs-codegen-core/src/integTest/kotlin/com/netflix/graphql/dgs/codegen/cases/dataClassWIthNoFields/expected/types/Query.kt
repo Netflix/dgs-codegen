@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWIthNoFields.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.jvm.JvmName
 
 @Generated
@@ -20,6 +24,15 @@ public class Query(
   @get:JvmName("getMe")
   public val me: Person?
     get() = __me.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Query) return false
+    return (__me === meDefault) == (other.__me === meDefault) && (__me === meDefault ||
+        Objects.equals(me, other.me))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__me === meDefault) meDefault else me)
 
   @Generated
   public companion object {

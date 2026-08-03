@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.inputWithDefaultBigDecimal.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -21,6 +25,16 @@ public class Query(
   @get:JvmName("getOrders")
   public val orders: String?
     get() = __orders.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Query) return false
+    return (__orders === ordersDefault) == (other.__orders === ordersDefault) && (__orders ===
+        ordersDefault || Objects.equals(orders, other.orders))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__orders === ordersDefault) ordersDefault else
+      orders)
 
   @Generated
   public companion object {

@@ -7,7 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
 import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -43,6 +46,26 @@ public class PageInfo(
   @get:JvmName("getHasPreviousPage")
   public val hasPreviousPage: Boolean
     get() = __hasPreviousPage.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is PageInfo) return false
+    return (__startCursor === startCursorDefault) == (other.__startCursor === startCursorDefault) &&
+        (__startCursor === startCursorDefault || Objects.equals(startCursor, other.startCursor)) &&
+    (__endCursor === endCursorDefault) == (other.__endCursor === endCursorDefault) && (__endCursor
+        === endCursorDefault || Objects.equals(endCursor, other.endCursor)) &&
+    (__hasNextPage === hasNextPageDefault) == (other.__hasNextPage === hasNextPageDefault) &&
+        (__hasNextPage === hasNextPageDefault || Objects.equals(hasNextPage, other.hasNextPage)) &&
+    (__hasPreviousPage === hasPreviousPageDefault) == (other.__hasPreviousPage ===
+        hasPreviousPageDefault) && (__hasPreviousPage === hasPreviousPageDefault ||
+        Objects.equals(hasPreviousPage, other.hasPreviousPage))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__startCursor === startCursorDefault)
+      startCursorDefault else startCursor,
+  if (__endCursor === endCursorDefault) endCursorDefault else endCursor,
+  if (__hasNextPage === hasNextPageDefault) hasNextPageDefault else hasNextPage,
+  if (__hasPreviousPage === hasPreviousPageDefault) hasPreviousPageDefault else hasPreviousPage)
 
   @Generated
   public companion object {

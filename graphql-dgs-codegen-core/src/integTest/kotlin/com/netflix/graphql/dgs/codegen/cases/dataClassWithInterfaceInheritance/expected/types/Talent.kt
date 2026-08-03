@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithInterfaceInheritance.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
@@ -46,6 +50,25 @@ public class Talent(
   @get:JvmName("getImdbProfile")
   public val imdbProfile: String?
     get() = __imdbProfile.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Talent) return false
+    return (__firstname === firstnameDefault) == (other.__firstname === firstnameDefault) &&
+        (__firstname === firstnameDefault || Objects.equals(firstname, other.firstname)) &&
+    (__lastname === lastnameDefault) == (other.__lastname === lastnameDefault) && (__lastname ===
+        lastnameDefault || Objects.equals(lastname, other.lastname)) &&
+    (__company === companyDefault) == (other.__company === companyDefault) && (__company ===
+        companyDefault || Objects.equals(company, other.company)) &&
+    (__imdbProfile === imdbProfileDefault) == (other.__imdbProfile === imdbProfileDefault) &&
+        (__imdbProfile === imdbProfileDefault || Objects.equals(imdbProfile, other.imdbProfile))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__firstname === firstnameDefault) firstnameDefault
+      else firstname,
+  if (__lastname === lastnameDefault) lastnameDefault else lastname,
+  if (__company === companyDefault) companyDefault else company,
+  if (__imdbProfile === imdbProfileDefault) imdbProfileDefault else imdbProfile)
 
   @Generated
   public companion object {

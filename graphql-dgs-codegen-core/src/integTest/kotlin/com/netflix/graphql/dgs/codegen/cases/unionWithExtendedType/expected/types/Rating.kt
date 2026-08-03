@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Int
 import kotlin.jvm.JvmName
 
@@ -21,6 +24,15 @@ public class Rating(
   @get:JvmName("getStars")
   public val stars: Int?
     get() = __stars.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Rating) return false
+    return (__stars === starsDefault) == (other.__stars === starsDefault) && (__stars ===
+        starsDefault || Objects.equals(stars, other.stars))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__stars === starsDefault) starsDefault else stars)
 
   @Generated
   public companion object {

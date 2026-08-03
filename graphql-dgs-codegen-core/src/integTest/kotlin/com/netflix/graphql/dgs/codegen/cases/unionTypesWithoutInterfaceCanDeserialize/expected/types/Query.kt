@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.jvm.JvmName
 
 @Generated
@@ -20,6 +24,16 @@ public class Query(
   @get:JvmName("getSearch")
   public val search: SearchResultPage?
     get() = __search.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Query) return false
+    return (__search === searchDefault) == (other.__search === searchDefault) && (__search ===
+        searchDefault || Objects.equals(search, other.search))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__search === searchDefault) searchDefault else
+      search)
 
   @Generated
   public companion object {

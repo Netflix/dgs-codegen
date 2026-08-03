@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
@@ -36,6 +39,21 @@ public class Human(
   @get:JvmName("getTotalCredits")
   public val totalCredits: Int?
     get() = __totalCredits.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Human) return false
+    return (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault ||
+        Objects.equals(id, other.id)) &&
+    (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
+        Objects.equals(name, other.name)) &&
+    (__totalCredits === totalCreditsDefault) == (other.__totalCredits === totalCreditsDefault) &&
+        (__totalCredits === totalCreditsDefault || Objects.equals(totalCredits, other.totalCredits))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__id === idDefault) idDefault else id,
+  if (__name === nameDefault) nameDefault else name,
+  if (__totalCredits === totalCreditsDefault) totalCreditsDefault else totalCredits)
 
   @Generated
   public companion object {

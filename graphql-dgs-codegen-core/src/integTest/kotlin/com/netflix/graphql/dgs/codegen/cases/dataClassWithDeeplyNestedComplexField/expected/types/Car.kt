@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -35,6 +39,21 @@ public class Car(
   @get:JvmName("getEngine")
   public val engine: Engine?
     get() = __engine.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Car) return false
+    return (__make === makeDefault) == (other.__make === makeDefault) && (__make === makeDefault ||
+        Objects.equals(make, other.make)) &&
+    (__model === modelDefault) == (other.__model === modelDefault) && (__model === modelDefault ||
+        Objects.equals(model, other.model)) &&
+    (__engine === engineDefault) == (other.__engine === engineDefault) && (__engine ===
+        engineDefault || Objects.equals(engine, other.engine))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__make === makeDefault) makeDefault else make,
+  if (__model === modelDefault) modelDefault else model,
+  if (__engine === engineDefault) engineDefault else engine)
 
   @Generated
   public companion object {

@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
 import kotlin.String
@@ -44,6 +47,24 @@ public class Engine(
   @get:JvmName("getPerformance")
   public val performance: Performance?
     get() = __performance.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Engine) return false
+    return (__type === typeDefault) == (other.__type === typeDefault) && (__type === typeDefault ||
+        Objects.equals(type, other.type)) &&
+    (__bhp === bhpDefault) == (other.__bhp === bhpDefault) && (__bhp === bhpDefault ||
+        Objects.equals(bhp, other.bhp)) &&
+    (__size === sizeDefault) == (other.__size === sizeDefault) && (__size === sizeDefault ||
+        Objects.equals(size, other.size)) &&
+    (__performance === performanceDefault) == (other.__performance === performanceDefault) &&
+        (__performance === performanceDefault || Objects.equals(performance, other.performance))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__type === typeDefault) typeDefault else type,
+  if (__bhp === bhpDefault) bhpDefault else bhp,
+  if (__size === sizeDefault) sizeDefault else size,
+  if (__performance === performanceDefault) performanceDefault else performance)
 
   @Generated
   public companion object {

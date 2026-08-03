@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithNonNullableFields.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
@@ -38,6 +42,22 @@ public class Employee(
   @get:JvmName("getCompany")
   public val company: String?
     get() = __company.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Employee) return false
+    return (__firstname === firstnameDefault) == (other.__firstname === firstnameDefault) &&
+        (__firstname === firstnameDefault || Objects.equals(firstname, other.firstname)) &&
+    (__lastname === lastnameDefault) == (other.__lastname === lastnameDefault) && (__lastname ===
+        lastnameDefault || Objects.equals(lastname, other.lastname)) &&
+    (__company === companyDefault) == (other.__company === companyDefault) && (__company ===
+        companyDefault || Objects.equals(company, other.company))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__firstname === firstnameDefault) firstnameDefault
+      else firstname,
+  if (__lastname === lastnameDefault) lastnameDefault else lastname,
+  if (__company === companyDefault) companyDefault else company)
 
   @Generated
   public companion object {

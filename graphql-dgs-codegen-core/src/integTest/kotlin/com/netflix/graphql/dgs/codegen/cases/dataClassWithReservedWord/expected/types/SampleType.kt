@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithReservedWord.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -21,6 +25,16 @@ public class SampleType(
   @get:JvmName("getReturn")
   public val `return`: String
     get() = __return.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is SampleType) return false
+    return (__return === returnDefault) == (other.__return === returnDefault) && (__return ===
+        returnDefault || Objects.equals(`return`, other.`return`))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__return === returnDefault) returnDefault else
+      `return`)
 
   @Generated
   public companion object {

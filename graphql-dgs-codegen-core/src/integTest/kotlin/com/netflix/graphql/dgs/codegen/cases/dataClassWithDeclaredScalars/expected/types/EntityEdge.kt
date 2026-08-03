@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -28,6 +32,19 @@ public class EntityEdge(
   @get:JvmName("getNode")
   public val node: Entity?
     get() = __node.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is EntityEdge) return false
+    return (__cursor === cursorDefault) == (other.__cursor === cursorDefault) && (__cursor ===
+        cursorDefault || Objects.equals(cursor, other.cursor)) &&
+    (__node === nodeDefault) == (other.__node === nodeDefault) && (__node === nodeDefault ||
+        Objects.equals(node, other.node))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__cursor === cursorDefault) cursorDefault else
+      cursor,
+  if (__node === nodeDefault) nodeDefault else node)
 
   @Generated
   public companion object {

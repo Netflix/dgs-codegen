@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceWithUnderscoreFields.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
@@ -30,6 +34,18 @@ public class T(
   @get:JvmName("getId")
   public val id: String?
     get() = __id.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is T) return false
+    return (___id === _idDefault) == (other.___id === _idDefault) && (___id === _idDefault ||
+        Objects.equals(_id, other._id)) &&
+    (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault || Objects.equals(id,
+        other.id))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (___id === _idDefault) _idDefault else _id,
+  if (__id === idDefault) idDefault else id)
 
   @Generated
   public companion object {

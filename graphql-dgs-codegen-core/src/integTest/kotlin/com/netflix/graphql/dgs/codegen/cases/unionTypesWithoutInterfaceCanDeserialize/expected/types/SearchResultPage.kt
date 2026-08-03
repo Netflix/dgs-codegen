@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
@@ -21,6 +25,15 @@ public class SearchResultPage(
   @get:JvmName("getItems")
   public val items: List<SearchResult?>?
     get() = __items.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is SearchResultPage) return false
+    return (__items === itemsDefault) == (other.__items === itemsDefault) && (__items ===
+        itemsDefault || Objects.equals(items, other.items))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__items === itemsDefault) itemsDefault else items)
 
   @Generated
   public companion object {

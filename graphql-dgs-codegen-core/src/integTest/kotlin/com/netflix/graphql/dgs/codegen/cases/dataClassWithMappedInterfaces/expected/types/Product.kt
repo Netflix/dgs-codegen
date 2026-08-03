@@ -8,6 +8,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedInterfaces.expected.Generated
 import com.netflix.graphql.dgs.codegen.fixtures.Node
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.jvm.JvmName
@@ -25,6 +29,15 @@ public class Product(
   @get:JvmName("getId")
   override val id: String
     get() = __id.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Product) return false
+    return (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault ||
+        Objects.equals(id, other.id))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__id === idDefault) idDefault else id)
 
   @Generated
   public companion object {

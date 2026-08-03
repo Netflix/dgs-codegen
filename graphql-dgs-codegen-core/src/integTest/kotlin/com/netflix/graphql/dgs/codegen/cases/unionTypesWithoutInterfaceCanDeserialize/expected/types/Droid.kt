@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
+import java.util.Objects
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.jvm.JvmName
 
@@ -35,6 +39,22 @@ public class Droid(
   @get:JvmName("getPrimaryFunction")
   public val primaryFunction: String?
     get() = __primaryFunction.invoke()
+
+  override fun equals(other: Any?): Boolean {
+    if (this === other) return true
+    if (other !is Droid) return false
+    return (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault ||
+        Objects.equals(id, other.id)) &&
+    (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
+        Objects.equals(name, other.name)) &&
+    (__primaryFunction === primaryFunctionDefault) == (other.__primaryFunction ===
+        primaryFunctionDefault) && (__primaryFunction === primaryFunctionDefault ||
+        Objects.equals(primaryFunction, other.primaryFunction))
+  }
+
+  override fun hashCode(): Int = Objects.hash(if (__id === idDefault) idDefault else id,
+  if (__name === nameDefault) nameDefault else name,
+  if (__primaryFunction === primaryFunctionDefault) primaryFunctionDefault else primaryFunction)
 
   @Generated
   public companion object {
