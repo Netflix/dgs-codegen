@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -40,26 +40,26 @@ public class Droid(
   public val primaryFunction: String?
     get() = __primaryFunction.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Droid) return false
-    return (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault ||
-        Objects.equals(id, other.id)) &&
-    (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
-        Objects.equals(name, other.name)) &&
-    (__primaryFunction === primaryFunctionDefault) == (other.__primaryFunction ===
-        primaryFunctionDefault) && (__primaryFunction === primaryFunctionDefault ||
-        Objects.equals(primaryFunction, other.primaryFunction))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__id === idDefault) idDefault else id,
+      if (__name === nameDefault) nameDefault else name,
+      if (__primaryFunction === primaryFunctionDefault) primaryFunctionDefault else primaryFunction,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__id === idDefault) idDefault else id,
-  if (__name === nameDefault) nameDefault else name,
-  if (__primaryFunction === primaryFunctionDefault) primaryFunctionDefault else primaryFunction)
+  override fun equals(other: Any?): Boolean = this === other || (other is Droid &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__id === idDefault) null else "id=" + id, if
-      (__name === nameDefault) null else "name=" + name, if (__primaryFunction ===
-      primaryFunctionDefault) null else "primaryFunction=" + primaryFunction).joinToString(prefix =
-      "Droid(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__id === idDefault) null else "id=" + id,
+      if (__name === nameDefault) null else "name=" + name,
+      if (__primaryFunction === primaryFunctionDefault) null else "primaryFunction=" +
+      primaryFunction,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Droid(", postfix =
+      ")")
 
   @Generated
   public companion object {

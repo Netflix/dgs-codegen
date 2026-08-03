@@ -7,12 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithNullablePrimitive.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -41,24 +41,25 @@ public class MyType(
   public val floaty: Double?
     get() = __floaty.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is MyType) return false
-    return (__count === countDefault) == (other.__count === countDefault) && (__count ===
-        countDefault || Objects.equals(count, other.count)) &&
-    (__truth === truthDefault) == (other.__truth === truthDefault) && (__truth === truthDefault ||
-        Objects.equals(truth, other.truth)) &&
-    (__floaty === floatyDefault) == (other.__floaty === floatyDefault) && (__floaty ===
-        floatyDefault || Objects.equals(floaty, other.floaty))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__count === countDefault) countDefault else count,
+      if (__truth === truthDefault) truthDefault else truth,
+      if (__floaty === floatyDefault) floatyDefault else floaty,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__count === countDefault) countDefault else count,
-  if (__truth === truthDefault) truthDefault else truth,
-  if (__floaty === floatyDefault) floatyDefault else floaty)
+  override fun equals(other: Any?): Boolean = this === other || (other is MyType &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__count === countDefault) null else "count=" +
-      count, if (__truth === truthDefault) null else "truth=" + truth, if (__floaty ===
-      floatyDefault) null else "floaty=" + floaty).joinToString(prefix = "MyType(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__count === countDefault) null else "count=" + count,
+      if (__truth === truthDefault) null else "truth=" + truth,
+      if (__floaty === floatyDefault) null else "floaty=" + floaty,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "MyType(", postfix =
+      ")")
 
   @Generated
   public companion object {

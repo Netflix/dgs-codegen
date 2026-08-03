@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
@@ -27,17 +26,21 @@ public class SearchResultPage(
   public val items: List<SearchResult?>?
     get() = __items.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is SearchResultPage) return false
-    return (__items === itemsDefault) == (other.__items === itemsDefault) && (__items ===
-        itemsDefault || Objects.equals(items, other.items))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__items === itemsDefault) itemsDefault else items,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__items === itemsDefault) itemsDefault else items)
+  override fun equals(other: Any?): Boolean = this === other || (other is SearchResultPage &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__items === itemsDefault) null else "items=" +
-      items).joinToString(prefix = "SearchResultPage(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__items === itemsDefault) null else "items=" + items,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "SearchResultPage(",
+      postfix = ")")
 
   @Generated
   public companion object {

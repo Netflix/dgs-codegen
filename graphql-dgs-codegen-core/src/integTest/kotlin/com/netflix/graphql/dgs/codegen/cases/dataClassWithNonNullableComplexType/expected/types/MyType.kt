@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableComplexType.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -26,17 +26,21 @@ public class MyType(
   public val other: OtherType
     get() = __other.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is MyType) return false
-    return (__other === otherDefault) == (other.__other === otherDefault) && (__other ===
-        otherDefault || Objects.equals(other, other.other))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__other === otherDefault) otherDefault else other,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__other === otherDefault) otherDefault else other)
+  override fun equals(other: Any?): Boolean = this === other || (other is MyType &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__other === otherDefault) null else "other=" +
-      other).joinToString(prefix = "MyType(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__other === otherDefault) null else "other=" + other,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "MyType(", postfix =
+      ")")
 
   @Generated
   public companion object {

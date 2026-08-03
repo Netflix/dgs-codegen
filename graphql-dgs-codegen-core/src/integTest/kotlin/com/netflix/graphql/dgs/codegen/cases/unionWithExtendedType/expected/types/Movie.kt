@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -26,17 +26,21 @@ public class Movie(
   public val title: String?
     get() = __title.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Movie) return false
-    return (__title === titleDefault) == (other.__title === titleDefault) && (__title ===
-        titleDefault || Objects.equals(title, other.title))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__title === titleDefault) titleDefault else title,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__title === titleDefault) titleDefault else title)
+  override fun equals(other: Any?): Boolean = this === other || (other is Movie &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__title === titleDefault) null else "title=" +
-      title).joinToString(prefix = "Movie(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__title === titleDefault) null else "title=" + title,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Movie(", postfix =
+      ")")
 
   @Generated
   public companion object {

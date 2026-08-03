@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithListProperties.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
@@ -34,21 +33,23 @@ public class Person(
   public val email: List<String?>?
     get() = __email.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Person) return false
-    return (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
-        Objects.equals(name, other.name)) &&
-    (__email === emailDefault) == (other.__email === emailDefault) && (__email === emailDefault ||
-        Objects.equals(email, other.email))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__name === nameDefault) nameDefault else name,
+      if (__email === emailDefault) emailDefault else email,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__name === nameDefault) nameDefault else name,
-  if (__email === emailDefault) emailDefault else email)
+  override fun equals(other: Any?): Boolean = this === other || (other is Person &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__name === nameDefault) null else "name=" +
-      name, if (__email === emailDefault) null else "email=" + email).joinToString(prefix =
-      "Person(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__name === nameDefault) null else "name=" + name,
+      if (__email === emailDefault) null else "email=" + email,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Person(", postfix =
+      ")")
 
   @Generated
   public companion object {

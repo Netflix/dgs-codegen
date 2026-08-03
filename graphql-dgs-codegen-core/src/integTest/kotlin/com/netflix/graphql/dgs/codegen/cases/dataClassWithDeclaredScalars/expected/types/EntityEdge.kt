@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -33,22 +33,23 @@ public class EntityEdge(
   public val node: Entity?
     get() = __node.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is EntityEdge) return false
-    return (__cursor === cursorDefault) == (other.__cursor === cursorDefault) && (__cursor ===
-        cursorDefault || Objects.equals(cursor, other.cursor)) &&
-    (__node === nodeDefault) == (other.__node === nodeDefault) && (__node === nodeDefault ||
-        Objects.equals(node, other.node))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__cursor === cursorDefault) cursorDefault else cursor,
+      if (__node === nodeDefault) nodeDefault else node,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__cursor === cursorDefault) cursorDefault else
-      cursor,
-  if (__node === nodeDefault) nodeDefault else node)
+  override fun equals(other: Any?): Boolean = this === other || (other is EntityEdge &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__cursor === cursorDefault) null else
-      "cursor=" + cursor, if (__node === nodeDefault) null else "node=" + node).joinToString(prefix
-      = "EntityEdge(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__cursor === cursorDefault) null else "cursor=" + cursor,
+      if (__node === nodeDefault) null else "node=" + node,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "EntityEdge(", postfix
+      = ")")
 
   @Generated
   public companion object {

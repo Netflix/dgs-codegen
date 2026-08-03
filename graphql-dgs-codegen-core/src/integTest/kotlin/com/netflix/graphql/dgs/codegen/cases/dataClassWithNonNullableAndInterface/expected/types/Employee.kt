@@ -7,12 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithNonNullableAndInterface.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -44,26 +44,25 @@ public class Employee(
   override val company: String?
     get() = __company.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Employee) return false
-    return (__firstname === firstnameDefault) == (other.__firstname === firstnameDefault) &&
-        (__firstname === firstnameDefault || Objects.equals(firstname, other.firstname)) &&
-    (__lastname === lastnameDefault) == (other.__lastname === lastnameDefault) && (__lastname ===
-        lastnameDefault || Objects.equals(lastname, other.lastname)) &&
-    (__company === companyDefault) == (other.__company === companyDefault) && (__company ===
-        companyDefault || Objects.equals(company, other.company))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__firstname === firstnameDefault) firstnameDefault else firstname,
+      if (__lastname === lastnameDefault) lastnameDefault else lastname,
+      if (__company === companyDefault) companyDefault else company,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__firstname === firstnameDefault) firstnameDefault
-      else firstname,
-  if (__lastname === lastnameDefault) lastnameDefault else lastname,
-  if (__company === companyDefault) companyDefault else company)
+  override fun equals(other: Any?): Boolean = this === other || (other is Employee &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__firstname === firstnameDefault) null else
-      "firstname=" + firstname, if (__lastname === lastnameDefault) null else "lastname=" +
-      lastname, if (__company === companyDefault) null else "company=" +
-      company).joinToString(prefix = "Employee(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__firstname === firstnameDefault) null else "firstname=" + firstname,
+      if (__lastname === lastnameDefault) null else "lastname=" + lastname,
+      if (__company === companyDefault) null else "company=" + company,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Employee(", postfix =
+      ")")
 
   @Generated
   public companion object {

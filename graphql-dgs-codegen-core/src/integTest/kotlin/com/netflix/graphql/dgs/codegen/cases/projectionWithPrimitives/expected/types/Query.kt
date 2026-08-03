@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.projectionWithPrimitives.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
@@ -34,22 +33,23 @@ public class Query(
   public val strings: List<String?>?
     get() = __strings.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Query) return false
-    return (__string === stringDefault) == (other.__string === stringDefault) && (__string ===
-        stringDefault || Objects.equals(string, other.string)) &&
-    (__strings === stringsDefault) == (other.__strings === stringsDefault) && (__strings ===
-        stringsDefault || Objects.equals(strings, other.strings))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__string === stringDefault) stringDefault else string,
+      if (__strings === stringsDefault) stringsDefault else strings,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__string === stringDefault) stringDefault else
-      string,
-  if (__strings === stringsDefault) stringsDefault else strings)
+  override fun equals(other: Any?): Boolean = this === other || (other is Query &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__string === stringDefault) null else
-      "string=" + string, if (__strings === stringsDefault) null else "strings=" +
-      strings).joinToString(prefix = "Query(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__string === stringDefault) null else "string=" + string,
+      if (__strings === stringsDefault) null else "strings=" + strings,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Query(", postfix =
+      ")")
 
   @Generated
   public companion object {

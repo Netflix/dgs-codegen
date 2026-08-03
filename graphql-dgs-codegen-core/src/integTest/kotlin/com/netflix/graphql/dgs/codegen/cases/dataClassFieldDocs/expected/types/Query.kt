@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassFieldDocs.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -26,18 +26,21 @@ public class Query(
   public val search: Movie?
     get() = __search.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Query) return false
-    return (__search === searchDefault) == (other.__search === searchDefault) && (__search ===
-        searchDefault || Objects.equals(search, other.search))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__search === searchDefault) searchDefault else search,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__search === searchDefault) searchDefault else
-      search)
+  override fun equals(other: Any?): Boolean = this === other || (other is Query &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__search === searchDefault) null else
-      "search=" + search).joinToString(prefix = "Query(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__search === searchDefault) null else "search=" + search,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Query(", postfix =
+      ")")
 
   @Generated
   public companion object {

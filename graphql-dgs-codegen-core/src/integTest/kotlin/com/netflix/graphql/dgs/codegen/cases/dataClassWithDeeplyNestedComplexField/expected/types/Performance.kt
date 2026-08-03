@@ -7,12 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -34,22 +34,23 @@ public class Performance(
   public val quarterMile: Double?
     get() = __quarterMile.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Performance) return false
-    return (__zeroToSixty === zeroToSixtyDefault) == (other.__zeroToSixty === zeroToSixtyDefault) &&
-        (__zeroToSixty === zeroToSixtyDefault || Objects.equals(zeroToSixty, other.zeroToSixty)) &&
-    (__quarterMile === quarterMileDefault) == (other.__quarterMile === quarterMileDefault) &&
-        (__quarterMile === quarterMileDefault || Objects.equals(quarterMile, other.quarterMile))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__zeroToSixty === zeroToSixtyDefault) zeroToSixtyDefault else zeroToSixty,
+      if (__quarterMile === quarterMileDefault) quarterMileDefault else quarterMile,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__zeroToSixty === zeroToSixtyDefault)
-      zeroToSixtyDefault else zeroToSixty,
-  if (__quarterMile === quarterMileDefault) quarterMileDefault else quarterMile)
+  override fun equals(other: Any?): Boolean = this === other || (other is Performance &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__zeroToSixty === zeroToSixtyDefault) null
-      else "zeroToSixty=" + zeroToSixty, if (__quarterMile === quarterMileDefault) null else
-      "quarterMile=" + quarterMile).joinToString(prefix = "Performance(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__zeroToSixty === zeroToSixtyDefault) null else "zeroToSixty=" + zeroToSixty,
+      if (__quarterMile === quarterMileDefault) null else "quarterMile=" + quarterMile,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Performance(",
+      postfix = ")")
 
   @Generated
   public companion object {

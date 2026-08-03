@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -47,31 +47,28 @@ public class PageInfo(
   public val hasPreviousPage: Boolean
     get() = __hasPreviousPage.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is PageInfo) return false
-    return (__startCursor === startCursorDefault) == (other.__startCursor === startCursorDefault) &&
-        (__startCursor === startCursorDefault || Objects.equals(startCursor, other.startCursor)) &&
-    (__endCursor === endCursorDefault) == (other.__endCursor === endCursorDefault) && (__endCursor
-        === endCursorDefault || Objects.equals(endCursor, other.endCursor)) &&
-    (__hasNextPage === hasNextPageDefault) == (other.__hasNextPage === hasNextPageDefault) &&
-        (__hasNextPage === hasNextPageDefault || Objects.equals(hasNextPage, other.hasNextPage)) &&
-    (__hasPreviousPage === hasPreviousPageDefault) == (other.__hasPreviousPage ===
-        hasPreviousPageDefault) && (__hasPreviousPage === hasPreviousPageDefault ||
-        Objects.equals(hasPreviousPage, other.hasPreviousPage))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__startCursor === startCursorDefault) startCursorDefault else startCursor,
+      if (__endCursor === endCursorDefault) endCursorDefault else endCursor,
+      if (__hasNextPage === hasNextPageDefault) hasNextPageDefault else hasNextPage,
+      if (__hasPreviousPage === hasPreviousPageDefault) hasPreviousPageDefault else hasPreviousPage,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__startCursor === startCursorDefault)
-      startCursorDefault else startCursor,
-  if (__endCursor === endCursorDefault) endCursorDefault else endCursor,
-  if (__hasNextPage === hasNextPageDefault) hasNextPageDefault else hasNextPage,
-  if (__hasPreviousPage === hasPreviousPageDefault) hasPreviousPageDefault else hasPreviousPage)
+  override fun equals(other: Any?): Boolean = this === other || (other is PageInfo &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__startCursor === startCursorDefault) null
-      else "startCursor=" + startCursor, if (__endCursor === endCursorDefault) null else
-      "endCursor=" + endCursor, if (__hasNextPage === hasNextPageDefault) null else "hasNextPage=" +
-      hasNextPage, if (__hasPreviousPage === hasPreviousPageDefault) null else "hasPreviousPage=" +
-      hasPreviousPage).joinToString(prefix = "PageInfo(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__startCursor === startCursorDefault) null else "startCursor=" + startCursor,
+      if (__endCursor === endCursorDefault) null else "endCursor=" + endCursor,
+      if (__hasNextPage === hasNextPageDefault) null else "hasNextPage=" + hasNextPage,
+      if (__hasPreviousPage === hasPreviousPageDefault) null else "hasPreviousPage=" +
+      hasPreviousPage,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "PageInfo(", postfix =
+      ")")
 
   @Generated
   public companion object {

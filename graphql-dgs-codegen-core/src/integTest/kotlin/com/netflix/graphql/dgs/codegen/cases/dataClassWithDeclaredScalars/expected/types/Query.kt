@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
@@ -34,23 +33,25 @@ public class Query(
   public val entityConnection: EntityConnection?
     get() = __entityConnection.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Query) return false
-    return (__entity === entityDefault) == (other.__entity === entityDefault) && (__entity ===
-        entityDefault || Objects.equals(entity, other.entity)) &&
-    (__entityConnection === entityConnectionDefault) == (other.__entityConnection ===
-        entityConnectionDefault) && (__entityConnection === entityConnectionDefault ||
-        Objects.equals(entityConnection, other.entityConnection))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__entity === entityDefault) entityDefault else entity,
+      if (__entityConnection === entityConnectionDefault) entityConnectionDefault else
+      entityConnection,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__entity === entityDefault) entityDefault else
-      entity,
-  if (__entityConnection === entityConnectionDefault) entityConnectionDefault else entityConnection)
+  override fun equals(other: Any?): Boolean = this === other || (other is Query &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__entity === entityDefault) null else
-      "entity=" + entity, if (__entityConnection === entityConnectionDefault) null else
-      "entityConnection=" + entityConnection).joinToString(prefix = "Query(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__entity === entityDefault) null else "entity=" + entity,
+      if (__entityConnection === entityConnectionDefault) null else "entityConnection=" +
+      entityConnection,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Query(", postfix =
+      ")")
 
   @Generated
   public companion object {

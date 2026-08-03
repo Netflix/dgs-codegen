@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionWithExtendedType.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -26,17 +26,21 @@ public class Rating(
   public val stars: Int?
     get() = __stars.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Rating) return false
-    return (__stars === starsDefault) == (other.__stars === starsDefault) && (__stars ===
-        starsDefault || Objects.equals(stars, other.stars))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__stars === starsDefault) starsDefault else stars,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__stars === starsDefault) starsDefault else stars)
+  override fun equals(other: Any?): Boolean = this === other || (other is Rating &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__stars === starsDefault) null else "stars=" +
-      stars).joinToString(prefix = "Rating(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__stars === starsDefault) null else "stars=" + stars,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Rating(", postfix =
+      ")")
 
   @Generated
   public companion object {

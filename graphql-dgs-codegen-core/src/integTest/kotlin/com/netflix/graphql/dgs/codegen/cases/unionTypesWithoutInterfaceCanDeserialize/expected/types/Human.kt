@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -40,24 +40,25 @@ public class Human(
   public val totalCredits: Int?
     get() = __totalCredits.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Human) return false
-    return (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault ||
-        Objects.equals(id, other.id)) &&
-    (__name === nameDefault) == (other.__name === nameDefault) && (__name === nameDefault ||
-        Objects.equals(name, other.name)) &&
-    (__totalCredits === totalCreditsDefault) == (other.__totalCredits === totalCreditsDefault) &&
-        (__totalCredits === totalCreditsDefault || Objects.equals(totalCredits, other.totalCredits))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__id === idDefault) idDefault else id,
+      if (__name === nameDefault) nameDefault else name,
+      if (__totalCredits === totalCreditsDefault) totalCreditsDefault else totalCredits,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__id === idDefault) idDefault else id,
-  if (__name === nameDefault) nameDefault else name,
-  if (__totalCredits === totalCreditsDefault) totalCreditsDefault else totalCredits)
+  override fun equals(other: Any?): Boolean = this === other || (other is Human &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__id === idDefault) null else "id=" + id, if
-      (__name === nameDefault) null else "name=" + name, if (__totalCredits === totalCreditsDefault)
-      null else "totalCredits=" + totalCredits).joinToString(prefix = "Human(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__id === idDefault) null else "id=" + id,
+      if (__name === nameDefault) null else "name=" + name,
+      if (__totalCredits === totalCreditsDefault) null else "totalCredits=" + totalCredits,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Human(", postfix =
+      ")")
 
   @Generated
   public companion object {

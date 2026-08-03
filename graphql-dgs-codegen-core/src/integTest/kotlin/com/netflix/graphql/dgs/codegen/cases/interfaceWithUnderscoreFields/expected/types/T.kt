@@ -7,12 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceWithUnderscoreFields.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -35,20 +35,22 @@ public class T(
   public val id: String?
     get() = __id.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is T) return false
-    return (___id === _idDefault) == (other.___id === _idDefault) && (___id === _idDefault ||
-        Objects.equals(_id, other._id)) &&
-    (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault || Objects.equals(id,
-        other.id))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (___id === _idDefault) _idDefault else _id,
+      if (__id === idDefault) idDefault else id,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (___id === _idDefault) _idDefault else _id,
-  if (__id === idDefault) idDefault else id)
+  override fun equals(other: Any?): Boolean = this === other || (other is T && `__$fieldValues`() ==
+      other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (___id === _idDefault) null else "_id=" + _id,
-      if (__id === idDefault) null else "id=" + id).joinToString(prefix = "T(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (___id === _idDefault) null else "_id=" + _id,
+      if (__id === idDefault) null else "id=" + id,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "T(", postfix = ")")
 
   @Generated
   public companion object {

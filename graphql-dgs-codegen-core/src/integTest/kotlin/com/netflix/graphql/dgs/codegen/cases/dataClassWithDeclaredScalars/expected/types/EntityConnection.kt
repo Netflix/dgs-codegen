@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
@@ -34,22 +33,23 @@ public class EntityConnection(
   public val edges: List<EntityEdge?>?
     get() = __edges.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is EntityConnection) return false
-    return (__pageInfo === pageInfoDefault) == (other.__pageInfo === pageInfoDefault) && (__pageInfo
-        === pageInfoDefault || Objects.equals(pageInfo, other.pageInfo)) &&
-    (__edges === edgesDefault) == (other.__edges === edgesDefault) && (__edges === edgesDefault ||
-        Objects.equals(edges, other.edges))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__pageInfo === pageInfoDefault) pageInfoDefault else pageInfo,
+      if (__edges === edgesDefault) edgesDefault else edges,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__pageInfo === pageInfoDefault) pageInfoDefault
-      else pageInfo,
-  if (__edges === edgesDefault) edgesDefault else edges)
+  override fun equals(other: Any?): Boolean = this === other || (other is EntityConnection &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__pageInfo === pageInfoDefault) null else
-      "pageInfo=" + pageInfo, if (__edges === edgesDefault) null else "edges=" +
-      edges).joinToString(prefix = "EntityConnection(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__pageInfo === pageInfoDefault) null else "pageInfo=" + pageInfo,
+      if (__edges === edgesDefault) null else "edges=" + edges,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "EntityConnection(",
+      postfix = ")")
 
   @Generated
   public companion object {

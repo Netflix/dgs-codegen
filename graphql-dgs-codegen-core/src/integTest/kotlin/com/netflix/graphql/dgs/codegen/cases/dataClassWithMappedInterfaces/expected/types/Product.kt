@@ -8,12 +8,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedInterfaces.expected.Generated
 import com.netflix.graphql.dgs.codegen.fixtures.Node
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -30,17 +30,21 @@ public class Product(
   override val id: String
     get() = __id.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Product) return false
-    return (__id === idDefault) == (other.__id === idDefault) && (__id === idDefault ||
-        Objects.equals(id, other.id))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__id === idDefault) idDefault else id,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__id === idDefault) idDefault else id)
+  override fun equals(other: Any?): Boolean = this === other || (other is Product &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__id === idDefault) null else "id=" +
-      id).joinToString(prefix = "Product(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__id === idDefault) null else "id=" + id,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Product(", postfix =
+      ")")
 
   @Generated
   public companion object {

@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithBooleanField.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -26,18 +26,21 @@ public class RequiredTestType(
   public val isRequired: Boolean
     get() = __isRequired.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is RequiredTestType) return false
-    return (__isRequired === isRequiredDefault) == (other.__isRequired === isRequiredDefault) &&
-        (__isRequired === isRequiredDefault || Objects.equals(isRequired, other.isRequired))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__isRequired === isRequiredDefault) isRequiredDefault else isRequired,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__isRequired === isRequiredDefault)
-      isRequiredDefault else isRequired)
+  override fun equals(other: Any?): Boolean = this === other || (other is RequiredTestType &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__isRequired === isRequiredDefault) null else
-      "isRequired=" + isRequired).joinToString(prefix = "RequiredTestType(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__isRequired === isRequiredDefault) null else "isRequired=" + isRequired,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "RequiredTestType(",
+      postfix = ")")
 
   @Generated
   public companion object {

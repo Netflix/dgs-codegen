@@ -7,11 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -40,24 +40,24 @@ public class Car(
   public val engine: Engine?
     get() = __engine.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Car) return false
-    return (__make === makeDefault) == (other.__make === makeDefault) && (__make === makeDefault ||
-        Objects.equals(make, other.make)) &&
-    (__model === modelDefault) == (other.__model === modelDefault) && (__model === modelDefault ||
-        Objects.equals(model, other.model)) &&
-    (__engine === engineDefault) == (other.__engine === engineDefault) && (__engine ===
-        engineDefault || Objects.equals(engine, other.engine))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__make === makeDefault) makeDefault else make,
+      if (__model === modelDefault) modelDefault else model,
+      if (__engine === engineDefault) engineDefault else engine,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__make === makeDefault) makeDefault else make,
-  if (__model === modelDefault) modelDefault else model,
-  if (__engine === engineDefault) engineDefault else engine)
+  override fun equals(other: Any?): Boolean = this === other || (other is Car && `__$fieldValues`()
+      == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__make === makeDefault) null else "make=" +
-      make, if (__model === modelDefault) null else "model=" + model, if (__engine ===
-      engineDefault) null else "engine=" + engine).joinToString(prefix = "Car(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__make === makeDefault) null else "make=" + make,
+      if (__model === modelDefault) null else "model=" + model,
+      if (__engine === engineDefault) null else "engine=" + engine,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Car(", postfix = ")")
 
   @Generated
   public companion object {

@@ -7,7 +7,6 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceWithUnderscoreFields.expected.Generated
 import java.lang.IllegalStateException
-import java.util.Objects
 import kotlin.Any
 import kotlin.Boolean
 import kotlin.Int
@@ -27,17 +26,21 @@ public class Query(
   public val `is`: List<I?>?
     get() = __is.invoke()
 
-  override fun equals(other: Any?): Boolean {
-    if (this === other) return true
-    if (other !is Query) return false
-    return (__is === isDefault) == (other.__is === isDefault) && (__is === isDefault ||
-        Objects.equals(`is`, other.`is`))
-  }
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__is === isDefault) isDefault else `is`,
+  )
 
-  override fun hashCode(): Int = Objects.hash(if (__is === isDefault) isDefault else `is`)
+  override fun equals(other: Any?): Boolean = this === other || (other is Query &&
+      `__$fieldValues`() == other.`__$fieldValues`())
 
-  override fun toString(): String = listOfNotNull(if (__is === isDefault) null else "is=" +
-      `is`).joinToString(prefix = "Query(", postfix = ")")
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__is === isDefault) null else "is=" + `is`,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Query(", postfix =
+      ")")
 
   @Generated
   public companion object {
