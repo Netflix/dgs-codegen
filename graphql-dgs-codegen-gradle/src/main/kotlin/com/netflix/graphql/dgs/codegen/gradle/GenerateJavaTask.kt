@@ -24,6 +24,7 @@ import com.netflix.graphql.dgs.codegen.JacksonVersion
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.ListProperty
@@ -48,8 +49,22 @@ open class GenerateJavaTask
                 .get()
                 .asFile.absolutePath
 
-        @InputFiles
-        var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
+        @get:InputFiles
+        @get:PathSensitive(PathSensitivity.RELATIVE)
+        val schemaPaths: ConfigurableFileCollection =
+            objectFactory.fileCollection().from("${project.projectDir}/src/main/resources/schema")
+
+        fun setSchemaPaths(paths: Iterable<Any>) {
+            schemaPaths.setFrom(paths)
+        }
+
+        fun setSchemaPaths(paths: Provider<out Iterable<Any>>) {
+            schemaPaths.setFrom(paths)
+        }
+
+        fun setSchemaPaths(paths: FileCollection) {
+            schemaPaths.setFrom(paths)
+        }
 
         @Input
         var packageName = "com.netflix.dgs.codegen.generated"
@@ -207,7 +222,7 @@ open class GenerateJavaTask
         @TaskAction
         fun generate() {
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
-            val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
+            val schemaPaths = schemaPaths.files.sorted().toSet()
             schemaPaths.filter { !it.exists() }.forEach {
                 logger.warn("Schema location ${it.absolutePath} does not exist")
             }
