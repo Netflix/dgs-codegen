@@ -6011,6 +6011,83 @@ It takes a title and such.
     }
 
     @Test
+    fun `annotateOnTypesWithTargetsOnTypeUse annotates the list type argument instead of the container`() {
+        // https://github.com/Netflix/dgs-codegen/issues/954
+        val schema =
+            """
+            input EmployeeInput {
+                name: String
+            }
+            input WorkplaceInput {
+                employees: [EmployeeInput!] @annotate(name: "jakarta.validation.Valid", target: "type_use")
+            }
+            """.trimIndent()
+
+        val (dataTypes) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateCustomAnnotations = true,
+                ),
+            ).generate()
+
+        val workplace = dataTypes.single { it.typeSpec().name() == "WorkplaceInput" }.typeSpec()
+
+        // The annotation must NOT be a declaration annotation on the field/getter/setter/constructor param...
+        val employeesField = workplace.fieldSpecs().single { it.name() == "employees" }
+        assertThat(employeesField.annotations()).isEmpty()
+
+        // ...it must be woven into the type itself, on the type argument: List<@Valid EmployeeInput>
+        assertThat(employeesField.type().toString())
+            .isEqualTo("java.util.List<${BASE_PACKAGE_NAME}.types. @jakarta.validation.Valid EmployeeInput>")
+
+        val allArgsConstructor =
+            workplace.methodSpecs().find { it.isConstructor && it.parameters().isNotEmpty() }
+                ?: Assertions.fail("Unable to find all args constructor")
+        val employeesParameter = allArgsConstructor.parameters().single { it.name() == "employees" }
+        assertThat(employeesParameter.annotations()).isEmpty()
+        assertThat(employeesParameter.type().toString())
+            .isEqualTo("java.util.List<${BASE_PACKAGE_NAME}.types. @jakarta.validation.Valid EmployeeInput>")
+
+        val methodSpecs = workplace.methodSpecs().associateBy { it.name() }
+        val getter = methodSpecs["getEmployees"]!!
+        assertThat(getter.annotations()).isEmpty()
+        assertThat(getter.returnType().toString())
+            .isEqualTo("java.util.List<${BASE_PACKAGE_NAME}.types. @jakarta.validation.Valid EmployeeInput>")
+
+        val setterParameter = methodSpecs["setEmployees"]!!.parameters()[0]
+        assertThat(setterParameter.annotations()).isEmpty()
+        assertThat(setterParameter.type().toString())
+            .isEqualTo("java.util.List<${BASE_PACKAGE_NAME}.types. @jakarta.validation.Valid EmployeeInput>")
+    }
+
+    @Test
+    fun `annotateOnTypesWithTargetsOnTypeUse annotates a non-container field type directly`() {
+        val schema =
+            """
+            input EmployeeInput {
+                name: String @annotate(name: "jakarta.validation.constraints.NotNull", target: "type_use")
+            }
+            """.trimIndent()
+
+        val (dataTypes) =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateCustomAnnotations = true,
+                ),
+            ).generate()
+
+        val employee = dataTypes.single().typeSpec()
+        val nameField = employee.fieldSpecs().single { it.name() == "name" }
+        assertThat(nameField.annotations()).isEmpty()
+        assertThat(nameField.type().toString())
+            .isEqualTo("java.lang. @jakarta.validation.constraints.NotNull String")
+    }
+
+    @Test
     fun `Use schema type when type name clashes with commonScalars`() {
         val schema =
             """

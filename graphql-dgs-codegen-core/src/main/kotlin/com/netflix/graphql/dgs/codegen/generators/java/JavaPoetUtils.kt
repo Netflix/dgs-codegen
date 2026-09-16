@@ -29,6 +29,7 @@ import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.CodeBlock
+import com.palantir.javapoet.ParameterizedTypeName
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.WildcardTypeName
@@ -122,6 +123,27 @@ fun jspecifyNullableAnnotation(): AnnotationSpec = AnnotationSpec.builder(ClassN
  * Generate a JSpecify `@NullMarked` annotation.
  */
 fun jspecifyNullMarkedAnnotation(): AnnotationSpec = AnnotationSpec.builder(ClassName.get("org.jspecify.annotations", "NullMarked")).build()
+
+/**
+ * Applies the given annotations as Java type-use annotations (JSR 308), rather than as declaration
+ * annotations. For a container type such as `List<Employee>`, the annotations are placed on the type
+ * argument, producing `List<@Valid Employee>`, instead of on the container itself
+ * (`@Valid List<Employee>`), since annotating a container directly is deprecated by newer versions of
+ * Hibernate Validator. For any other (non-parameterized) type, the annotations are applied to the type
+ * itself, e.g. `@NotNull String`.
+ */
+fun applyTypeUseAnnotations(
+    type: TypeName,
+    typeUseAnnotations: List<AnnotationSpec>,
+): TypeName =
+    if (type is ParameterizedTypeName) {
+        ParameterizedTypeName.get(
+            type.rawType(),
+            *type.typeArguments().map { it.annotated(typeUseAnnotations) }.toTypedArray(),
+        )
+    } else {
+        type.annotated(typeUseAnnotations)
+    }
 
 fun String.toTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()

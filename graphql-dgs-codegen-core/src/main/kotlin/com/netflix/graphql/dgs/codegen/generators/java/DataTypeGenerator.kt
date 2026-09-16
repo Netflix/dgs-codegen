@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 import com.netflix.graphql.dgs.codegen.*
 import com.netflix.graphql.dgs.codegen.generators.shared.SiteTarget
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesJava
+import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.FieldSpec
@@ -613,18 +614,25 @@ abstract class BaseDataTypeGenerator(
         val constructorBuilder = MethodSpec.constructorBuilder()
         for (fieldDefinition in fieldDefinitions) {
             val sanitizedName = javaReservedKeywordSanitizer.sanitize(fieldDefinition.name)
-            val parameterBuilder = ParameterSpec.builder(fieldDefinition.type, sanitizedName)
+            var parameterType = fieldDefinition.type
+
+            var parameterAnnotations: List<AnnotationSpec>? = null
+            if (fieldDefinition.directives.isNotEmpty()) {
+                val (annotations, _) = applyDirectivesJava(fieldDefinition.directives, config)
+                annotations[SiteTarget.TYPE_USE.name]?.let { typeUseAnnotations ->
+                    parameterType = applyTypeUseAnnotations(parameterType, typeUseAnnotations)
+                }
+                parameterAnnotations = annotations[SiteTarget.PARAM.name]
+            }
+
+            val parameterBuilder = ParameterSpec.builder(parameterType, sanitizedName)
 
             if (config.generateJSpecifyAnnotations && fieldDefinition.nullable) {
                 parameterBuilder.addAnnotation(jspecifyNullableAnnotation())
             }
 
-            if (fieldDefinition.directives.isNotEmpty()) {
-                val (annotations, _) = applyDirectivesJava(fieldDefinition.directives, config)
-                val parameterAnnotations = annotations[SiteTarget.PARAM.name]
-                if (parameterAnnotations != null) {
-                    parameterBuilder.addAnnotations(parameterAnnotations)
-                }
+            if (parameterAnnotations != null) {
+                parameterBuilder.addAnnotations(parameterAnnotations)
             }
             constructorBuilder
                 .addParameter(parameterBuilder.build())
@@ -674,6 +682,21 @@ abstract class BaseDataTypeGenerator(
         annotateField: Boolean,
     ) {
         var fieldType = fieldDefinition.type
+
+        val annotations: MutableMap<String, MutableList<AnnotationSpec>>
+        val comments: String?
+        if (fieldDefinition.directives.isNotEmpty()) {
+            val result = applyDirectivesJava(fieldDefinition.directives, config)
+            annotations = result.first
+            comments = result.second
+            annotations[SiteTarget.TYPE_USE.name]?.let { typeUseAnnotations ->
+                fieldType = applyTypeUseAnnotations(fieldType, typeUseAnnotations)
+            }
+        } else {
+            annotations = mutableMapOf()
+            comments = null
+        }
+
         if (fieldDefinition.trackFieldSet) {
             fieldType = ParameterizedTypeName.get(ClassName.get(Optional::class.java), fieldType)
         }
@@ -700,17 +723,14 @@ abstract class BaseDataTypeGenerator(
             fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content)
         }
 
-        if (fieldDefinition.directives.isNotEmpty()) {
-            val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
-            if (!comments.isNullOrBlank()) {
-                fieldBuilder.addJavadoc("\$L", comments)
-            }
-            for ((key, value) in annotations) {
-                when (SiteTarget.valueOf(key)) {
-                    SiteTarget.FIELD -> fieldBuilder.addAnnotations(value)
-                    SiteTarget.GET, SiteTarget.SET, SiteTarget.SETPARAM, SiteTarget.PARAM -> continue
-                    else -> fieldBuilder.addAnnotations(value)
-                }
+        if (!comments.isNullOrBlank()) {
+            fieldBuilder.addJavadoc("\$L", comments)
+        }
+        for ((key, value) in annotations) {
+            when (SiteTarget.valueOf(key)) {
+                SiteTarget.FIELD -> fieldBuilder.addAnnotations(value)
+                SiteTarget.TYPE_USE, SiteTarget.GET, SiteTarget.SET, SiteTarget.SETPARAM, SiteTarget.PARAM -> continue
+                else -> fieldBuilder.addAnnotations(value)
             }
         }
 
@@ -721,7 +741,18 @@ abstract class BaseDataTypeGenerator(
         fieldDefinition: Field,
         javaType: TypeSpec.Builder,
     ) {
-        val returnType = fieldDefinition.type
+        var returnType = fieldDefinition.type
+
+        val annotations: MutableMap<String, MutableList<AnnotationSpec>> =
+            if (fieldDefinition.directives.isNotEmpty()) {
+                applyDirectivesJava(fieldDefinition.directives, config).first
+            } else {
+                mutableMapOf()
+            }
+        annotations[SiteTarget.TYPE_USE.name]?.let { typeUseAnnotations ->
+            returnType = applyTypeUseAnnotations(returnType, typeUseAnnotations)
+        }
+
         val getterPrefix =
             if (returnType == JavaTypeName.BOOLEAN &&
                 config.generateIsGetterForPrimitiveBooleanFields
@@ -795,7 +826,6 @@ abstract class BaseDataTypeGenerator(
         }
 
         if (fieldDefinition.directives.isNotEmpty()) {
-            val (annotations, _) = applyDirectivesJava(fieldDefinition.directives, config)
             for ((key, value) in annotations) {
                 when (SiteTarget.valueOf(key)) {
                     SiteTarget.GET -> getterMethodBuilder.addAnnotations(value)
