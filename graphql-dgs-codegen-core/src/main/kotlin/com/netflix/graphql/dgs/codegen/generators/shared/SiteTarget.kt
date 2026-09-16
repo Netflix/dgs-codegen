@@ -30,11 +30,5 @@ enum class SiteTarget {
     PARAM,
     SETPARAM,
     DELEGATE,
-
-    // Not a Kotlin use-site target. Applies the annotation to the type itself (JSR 308 style), so that
-    // for container types (e.g. List<T>) it lands on the type argument, e.g. `List<@Valid T>`, instead
-    // of on the field/property/parameter declaration, e.g. `@Valid List<T>`. This is the recommended
-    // placement for annotations such as jakarta.validation.Valid, since applying them directly on a
-    // container is deprecated in newer versions of Hibernate Validator.
     TYPE_USE,
 }
