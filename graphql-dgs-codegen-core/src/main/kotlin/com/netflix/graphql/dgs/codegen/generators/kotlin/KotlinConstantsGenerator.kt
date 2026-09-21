@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils
@@ -32,10 +33,14 @@ import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.*
 
-class KotlinConstantsGenerator(
+class KotlinConstantsGenerator internal constructor(
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
+    private val document = schemaIndex.document
+
     fun generate(): CodeGenResult {
         val baseConstantsType =
             TypeSpec
@@ -51,7 +56,7 @@ class KotlinConstantsGenerator(
                 val constantsType =
                     getOrCreateConstantsType(types, it.name)
 
-                val extensions = findTypeExtensions(it.name, document.definitions)
+                val extensions = findTypeExtensions(it.name, schemaIndex)
                 val fields =
                     (it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions })
                         .distinctBy { def -> def.name }
@@ -81,7 +86,7 @@ class KotlinConstantsGenerator(
                 val constantsType =
                     getOrCreateConstantsType(types, it.name)
 
-                val extensions = findInputExtensions(it.name, document.definitions)
+                val extensions = findInputExtensions(it.name, schemaIndex)
                 val fields = it.inputValueDefinitions + extensions.flatMap { ext -> ext.inputValueDefinitions }
                 if (!types.contains(it.name)) {
                     constantsType.addProperty(
@@ -116,7 +121,7 @@ class KotlinConstantsGenerator(
                     )
                 }
 
-                val extensions = SchemaExtensionsUtils.findInterfaceExtensions(it.name, document.definitions)
+                val extensions = SchemaExtensionsUtils.findInterfaceExtensions(it.name, schemaIndex)
                 val fields = it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions }
 
                 fields.filter(ReservedKeywordFilter.filterInvalidNames).forEach { field ->

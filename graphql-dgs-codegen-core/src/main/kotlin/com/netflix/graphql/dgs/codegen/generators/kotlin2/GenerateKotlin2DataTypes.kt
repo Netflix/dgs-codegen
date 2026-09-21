@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addControlFlow
@@ -68,8 +69,15 @@ fun generateKotlin2DataTypes(
     config: CodeGenConfig,
     document: Document,
     requiredTypes: Set<String>,
+): List<FileSpec> = generateKotlin2DataTypes(config, SchemaIndex(document), requiredTypes)
+
+internal fun generateKotlin2DataTypes(
+    config: CodeGenConfig,
+    schemaIndex: SchemaIndex,
+    requiredTypes: Set<String>,
 ): List<FileSpec> {
-    val typeLookup = Kotlin2TypeLookup(config, document)
+    val document = schemaIndex.document
+    val typeLookup = Kotlin2TypeLookup(config, schemaIndex)
 
     return document
         .getDefinitionsOfType(ObjectTypeDefinition::class.java)
@@ -85,7 +93,7 @@ fun generateKotlin2DataTypes(
             val superInterfaces = implementedInterfaces + implementedUnionTypes
 
             // get any fields defined via schema extensions
-            val extensionTypes = findTypeExtensions(typeDefinition.name, document.definitions)
+            val extensionTypes = findTypeExtensions(typeDefinition.name, schemaIndex)
 
             // get all fields defined on the type itself or any extension types
             val fieldDefinitions =

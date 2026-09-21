@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLInput
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
@@ -39,14 +40,21 @@ fun generateKotlin2InputTypes(
     config: CodeGenConfig,
     document: Document,
     requiredTypes: Set<String>,
+): List<FileSpec> = generateKotlin2InputTypes(config, SchemaIndex(document), requiredTypes)
+
+internal fun generateKotlin2InputTypes(
+    config: CodeGenConfig,
+    schemaIndex: SchemaIndex,
+    requiredTypes: Set<String>,
 ): List<FileSpec> {
-    val typeLookup = Kotlin2TypeLookup(config, document)
+    val document = schemaIndex.document
+    val typeLookup = Kotlin2TypeLookup(config, schemaIndex)
 
     val typeUtils =
         KotlinTypeUtils(
             packageName = config.packageName,
             config = config,
-            document = document,
+            schemaIndex = schemaIndex,
         )
 
     return document
@@ -59,7 +67,7 @@ fun generateKotlin2InputTypes(
             logger.info("Generating input type ${inputDefinition.name}")
 
             // get any fields defined via schema extensions
-            val extensionTypes = findInputExtensions(inputDefinition.name, document.definitions)
+            val extensionTypes = findInputExtensions(inputDefinition.name, schemaIndex)
 
             // get all fields defined on the type itself or any extension types
             val fields =

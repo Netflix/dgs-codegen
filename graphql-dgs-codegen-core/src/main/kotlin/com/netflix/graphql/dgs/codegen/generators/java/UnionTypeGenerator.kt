@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.JavaFile
@@ -30,12 +31,14 @@ import graphql.language.UnionTypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
 import javax.lang.model.element.Modifier
 
-class UnionTypeGenerator(
+class UnionTypeGenerator internal constructor(
     private val config: CodeGenConfig,
-    private val document: Document,
+    schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     val packageName = config.packageNameTypes
-    private val typeUtils = TypeUtils(packageName, config, document)
+    private val typeUtils = TypeUtils(packageName, config, schemaIndex)
 
     fun generate(
         definition: UnionTypeDefinition,

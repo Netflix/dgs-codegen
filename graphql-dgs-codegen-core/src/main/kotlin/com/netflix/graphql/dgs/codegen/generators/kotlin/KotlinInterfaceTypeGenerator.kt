@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.*
@@ -28,16 +29,19 @@ import graphql.language.TypeName
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class KotlinInterfaceTypeGenerator(
+class KotlinInterfaceTypeGenerator internal constructor(
     private val config: CodeGenConfig,
-    private val document: Document,
+    schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(KotlinInterfaceTypeGenerator::class.java)
     }
 
+    private val document = schemaIndex.document
     private val packageName = config.packageNameTypes
-    private val typeUtils = KotlinTypeUtils(packageName, config, document)
+    private val typeUtils = KotlinTypeUtils(packageName, config, schemaIndex)
 
     fun generate(
         definition: InterfaceTypeDefinition,

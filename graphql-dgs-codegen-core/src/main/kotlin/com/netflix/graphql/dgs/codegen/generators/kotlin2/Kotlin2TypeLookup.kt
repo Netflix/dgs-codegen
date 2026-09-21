@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.JAVA_TYPE_DIRECTIVE_NAME
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
@@ -55,10 +56,14 @@ import com.squareup.kotlinpoet.TypeName as KtTypeName
 /**
  * Builds multiple indexes over types defined in the document and config. Used to resolve GQL types to kotlin types during codegen
  */
-class Kotlin2TypeLookup(
+class Kotlin2TypeLookup internal constructor(
     config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
+    private val document = schemaIndex.document
+
     /**
      * GQL defined operations
      */
@@ -185,7 +190,7 @@ class Kotlin2TypeLookup(
     fun implementedInterfaces(typeDefinition: ImplementingTypeDefinition<*>): List<String> =
         (
             typeDefinition.implements +
-                findTypeExtensions(typeDefinition.name, document.definitions).flatMap { it.implements }
+                findTypeExtensions(typeDefinition.name, schemaIndex).flatMap { it.implements }
         ).filterIsInstance<NamedNode<*>>()
             .filter { it.name != typeDefinition.name }
             .map { it.name }
