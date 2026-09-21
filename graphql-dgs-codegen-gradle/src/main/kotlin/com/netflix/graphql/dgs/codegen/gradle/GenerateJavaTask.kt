@@ -24,6 +24,7 @@ import com.netflix.graphql.dgs.codegen.JacksonVersion
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.ListProperty
@@ -39,7 +40,7 @@ import javax.inject.Inject
 open class GenerateJavaTask
     @Inject
     constructor(
-        objectFactory: ObjectFactory,
+        private val objectFactory: ObjectFactory,
         private val providerFactory: ProviderFactory,
     ) : DefaultTask() {
         @Input
@@ -48,8 +49,16 @@ open class GenerateJavaTask
                 .get()
                 .asFile.absolutePath
 
-        @InputFiles
-        var schemaPaths = mutableListOf<Any>("${project.projectDir}/src/main/resources/schema")
+        @get:InputFiles
+        var schemaPaths: MutableList<Any> = mutableListOf("${project.projectDir}/src/main/resources/schema")
+
+        fun setSchemaPaths(paths: FileCollection) {
+            schemaPaths = mutableListOf(paths)
+        }
+
+        fun setSchemaPaths(paths: Provider<out Iterable<Any>>) {
+            schemaPaths = mutableListOf(paths)
+        }
 
         @Input
         var packageName = "com.netflix.dgs.codegen.generated"
@@ -207,19 +216,25 @@ open class GenerateJavaTask
         @TaskAction
         fun generate() {
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
-            val schemaPaths = schemaPaths.map { Paths.get(it.toString()).toFile() }.sorted().toSet()
-            schemaPaths.filter { !it.exists() }.forEach {
+            val resolvedSchemaFiles =
+                objectFactory
+                    .fileCollection()
+                    .from(schemaPaths)
+                    .files
+                    .sorted()
+                    .toSet()
+            resolvedSchemaFiles.filter { !it.exists() }.forEach {
                 logger.warn("Schema location ${it.absolutePath} does not exist")
             }
             logger.info("Processing schema files:")
-            schemaPaths.forEach {
+            resolvedSchemaFiles.forEach {
                 logger.info("Processing $it")
             }
 
             val config =
                 CodeGenConfig(
                     schemas = emptySet(),
-                    schemaFiles = schemaPaths,
+                    schemaFiles = resolvedSchemaFiles,
                     schemaJarFilesFromDependencies = schemaJarFilesFromDependencies,
                     outputDir = getOutputDir().toPath(),
                     examplesOutputDir = getExampleOutputDir().toPath(),
