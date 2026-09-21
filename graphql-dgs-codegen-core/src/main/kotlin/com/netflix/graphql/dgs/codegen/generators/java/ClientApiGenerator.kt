@@ -523,11 +523,10 @@ class ClientApiGenerator(
             }
         }
 
-        val concreteTypesResult = createConcreteTypes(type, javaType.build(), javaType, mutableSetOf(), 0)
-        val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), mutableSetOf(), 0)
+        val fragmentTypesResult = addFragmentProjectionMethods(type, javaType.build(), javaType, mutableSetOf(), 0)
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
-        return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
+        return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(fragmentTypesResult)
     }
 
     private fun addFieldSelectionMethodWithArguments(
@@ -674,44 +673,17 @@ class ClientApiGenerator(
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
-    private fun createConcreteTypes(
+    private fun addFragmentProjectionMethods(
         type: TypeDefinition<*>,
         root: TypeSpec,
         javaType: TypeSpec.Builder,
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
     ): CodeGenResult =
-        if (type is InterfaceTypeDefinition) {
-            val concreteTypes =
-                document
-                    .getDefinitionsOfType(ObjectTypeDefinition::class.java)
-                    .filter {
-                        it.implements.filterIsInstance<NamedNode<*>>().any { iface -> iface.name == type.name }
-                    }.distinctBy { it.name }
-            concreteTypes
-                .map {
-                    addFragmentProjectionMethod(javaType, root, it, processedEdges, queryDepth)
-                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
-        } else {
-            CodeGenResult.EMPTY
-        }
-
-    private fun createUnionTypes(
-        type: TypeDefinition<*>,
-        javaType: TypeSpec.Builder,
-        rootType: TypeSpec,
-        processedEdges: Set<Pair<String, String>>,
-        queryDepth: Int,
-    ): CodeGenResult =
-        if (type is UnionTypeDefinition) {
-            val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document, true) }.toList()
-            memberTypes
-                .map {
-                    addFragmentProjectionMethod(javaType, rootType, it, processedEdges, queryDepth)
-                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
-        } else {
-            CodeGenResult.EMPTY
-        }
+        getFragmentTypes(type)
+            .map {
+                addFragmentProjectionMethod(javaType, root, it, processedEdges, queryDepth)
+            }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
 
     private fun addFragmentProjectionMethod(
         javaType: TypeSpec.Builder,
@@ -740,18 +712,18 @@ class ClientApiGenerator(
                 ).build(),
         )
 
-        return createFragment(it as ObjectTypeDefinition, rootType, projectionName, processedEdges, queryDepth)
+        return createFragment(it, rootType, projectionName, processedEdges, queryDepth)
     }
 
     private fun createFragment(
-        type: ObjectTypeDefinition,
+        type: TypeDefinition<*>,
         root: TypeSpec,
         prefix: String,
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
     ): CodeGenResult {
         val subProjection =
-            createSubProjectionType(type, root, prefix, processedEdges, queryDepth)
+            createSubProjectionType(type, root, prefix, processedEdges, queryDepth, fragment = true)
                 ?: return CodeGenResult.EMPTY
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
@@ -794,6 +766,27 @@ class ClientApiGenerator(
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
+    private fun getFragmentTypes(type: TypeDefinition<*>): List<TypeDefinition<*>> =
+        when (type) {
+            is InterfaceTypeDefinition -> {
+                document
+                    .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
+                    .plus(document.getDefinitionsOfType(ObjectTypeDefinition::class.java))
+                    .filter {
+                        it.implements.filterIsInstance<NamedNode<*>>().any { iface -> iface.name == type.name }
+                    }.distinctBy { it.name }
+            }
+
+            is UnionTypeDefinition -> {
+                type.memberTypes
+                    .mapNotNull { it.findTypeDefinition(document, true) }
+            }
+
+            else -> {
+                emptyList()
+            }
+        }
+
     private fun createSubProjection(
         type: TypeDefinition<*>,
         root: TypeSpec,
@@ -817,6 +810,7 @@ class ClientApiGenerator(
         prefix: String,
         processedEdges: Set<Pair<String, String>>,
         queryDepth: Int,
+        fragment: Boolean = false,
     ): Pair<TypeSpec.Builder, CodeGenResult>? {
         val className = ClassName.get(BaseSubProjectionNode::class.java)
         val clazzName = "${prefix}Projection"
@@ -959,10 +953,14 @@ class ClientApiGenerator(
                 }
             }
 
-        val concreteTypesResult = createConcreteTypes(type, root, javaType, processedEdges, queryDepth)
-        val unionTypesResult = createUnionTypes(type, javaType, root, processedEdges, queryDepth)
+        val fragmentTypesResult =
+            if (!fragment) {
+                addFragmentProjectionMethods(type, root, javaType, processedEdges, queryDepth)
+            } else {
+                CodeGenResult.EMPTY
+            }
 
-        return javaType to codeGenResult.merge(concreteTypesResult).merge(unionTypesResult)
+        return javaType to codeGenResult.merge(fragmentTypesResult)
     }
 
     private fun getDeprecateDirective(node: DirectivesContainer<*>): Directive? {

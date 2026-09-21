@@ -146,6 +146,66 @@ class ClientApiGenFragmentTest {
     }
 
     @Test
+    fun interfaceFragmentWithInterfaceHierarchy() {
+        val schema =
+            """
+            type Query {
+                searchForSeries(title: String): [Series]
+            }
+            
+            interface Show {
+                title: String
+                relatedShows: [Show]
+            }
+            
+            interface Series implements Show {
+                title: String
+                relatedShows: [Show]
+            }
+            
+            interface MiniSeries implements Series & Show {
+                title: String
+                relatedShows: [Show]
+                episodes: Int
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        assertThat(codeGenResult.clientProjections.size).isEqualTo(4)
+        assertThat(codeGenResult.clientProjections[0].typeSpec().name()).isEqualTo("SearchForSeriesProjectionRoot")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("__typename")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").contains("onMiniSeries")
+        assertThat(codeGenResult.clientProjections[0].typeSpec().methodSpecs()).extracting("name").doesNotContain("onSeries")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().name()).isEqualTo("ShowProjection")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("relatedShows")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("onSeries")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").contains("onMiniSeries")
+        assertThat(codeGenResult.clientProjections[1].typeSpec().methodSpecs()).extracting("name").doesNotContain("onShow")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().name()).isEqualTo("SeriesFragmentProjection")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").contains("relatedShows")
+        assertThat(codeGenResult.clientProjections[2].typeSpec().methodSpecs()).extracting("name").doesNotContain("onMiniSeries")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().name()).isEqualTo("MiniSeriesFragmentProjection")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs()).extracting("name").contains("title")
+        assertThat(codeGenResult.clientProjections[3].typeSpec().methodSpecs()).extracting("name").contains("relatedShows")
+
+        assertCompilesJava(
+            codeGenResult.clientProjections + codeGenResult.javaQueryTypes + codeGenResult.javaEnumTypes + codeGenResult.javaDataTypes +
+                codeGenResult.javaInterfaces,
+        )
+    }
+
+    @Test
     fun unionFragment() {
         val schema =
             """
