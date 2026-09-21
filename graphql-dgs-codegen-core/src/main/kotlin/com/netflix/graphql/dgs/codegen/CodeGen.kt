@@ -673,7 +673,10 @@ data class CodeGenResult(
             javaEnumTypes = javaEnumTypes.concat(current.javaEnumTypes),
             javaDataFetchers = javaDataFetchers.concat(current.javaDataFetchers),
             javaQueryTypes = javaQueryTypes.concat(current.javaQueryTypes),
-            clientProjections = clientProjections.concat(current.clientProjections).distinct(),
+            clientProjections =
+                clientProjections
+                    .concat(current.clientProjections)
+                    .distinctBy { it.packageName() to it.typeSpec().name() },
             javaConstants = javaConstants.concat(current.javaConstants),
             kotlinDataTypes = kotlinDataTypes.concat(current.kotlinDataTypes),
             kotlinInputTypes = kotlinInputTypes.concat(current.kotlinInputTypes),
