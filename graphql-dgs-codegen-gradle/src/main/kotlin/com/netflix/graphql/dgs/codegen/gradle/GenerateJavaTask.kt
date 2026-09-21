@@ -49,7 +49,7 @@ open class GenerateJavaTask
                 .get()
                 .asFile.absolutePath
 
-        @get:Internal
+        @get:InputFiles
         var schemaPaths: MutableList<Any> = mutableListOf("${project.projectDir}/src/main/resources/schema")
 
         fun setSchemaPaths(paths: FileCollection) {
@@ -59,12 +59,6 @@ open class GenerateJavaTask
         fun setSchemaPaths(paths: Provider<out Iterable<Any>>) {
             schemaPaths = mutableListOf(paths)
         }
-
-        /** The actual Gradle-tracked input: built fresh from schemaPaths every time. */
-        @get:InputFiles
-        @get:PathSensitive(PathSensitivity.RELATIVE)
-        val schemaFiles: FileCollection
-            get() = objectFactory.fileCollection().from(schemaPaths)
 
         @Input
         var packageName = "com.netflix.dgs.codegen.generated"
@@ -222,7 +216,13 @@ open class GenerateJavaTask
         @TaskAction
         fun generate() {
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
-            val resolvedSchemaFiles = schemaFiles.files.sorted().toSet()
+            val resolvedSchemaFiles =
+                objectFactory
+                    .fileCollection()
+                    .from(schemaPaths)
+                    .files
+                    .sorted()
+                    .toSet()
             resolvedSchemaFiles.filter { !it.exists() }.forEach {
                 logger.warn("Schema location ${it.absolutePath} does not exist")
             }

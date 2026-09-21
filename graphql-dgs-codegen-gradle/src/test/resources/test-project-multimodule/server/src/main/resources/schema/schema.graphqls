@@ -1,0 +1,8 @@
+type Query {
+    result: Result!
+}
+
+type Result {
+    isSuccessful: Boolean
+    result: String
+}
