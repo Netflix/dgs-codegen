@@ -42,6 +42,7 @@ generateJava {
     generateDocs = true
 }
 
+// Configuration-cache storage resolves file inputs; this checks ordinary configuration only.
 gradle.projectsEvaluated {
     assert configurations.schemaFiles.state.name() == 'UNRESOLVED'
 }

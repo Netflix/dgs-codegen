@@ -33,7 +33,7 @@ generateJava {
     generateDocs = true
 }
 
-// Exercises the mutable-list API used by downstream convention plugins.
-generateJava.schemaPaths.addAll(["${projectDir}/src/main/resources/schema"])
+// A non-default path makes a no-op addAll observable.
+generateJava.schemaPaths.addAll(["${projectDir}/src/main/resources/schema-extra"])
 
 codegen.clientCoreConventionsEnabled = false

@@ -38,6 +38,7 @@ generateJava {
     generateDocs = true
 }
 
+// Evaluation is deferred past project configuration, but not until task execution.
 gradle.projectsEvaluated {
     assert !schemaPathsResolved
 }
