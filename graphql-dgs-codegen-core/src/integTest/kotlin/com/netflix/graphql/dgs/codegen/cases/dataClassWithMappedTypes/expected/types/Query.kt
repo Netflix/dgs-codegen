@@ -53,8 +53,7 @@ public class Query(
     }
 
     @JsonProperty("entityConnection")
-    public fun withEntityConnection(entityConnection: SimpleListConnection<EntityEdge>?): Builder =
-        this.apply {
+    public fun withEntityConnection(entityConnection: SimpleListConnection<EntityEdge>?): Builder = this.apply {
       this.entityConnection = { entityConnection }
     }
 
