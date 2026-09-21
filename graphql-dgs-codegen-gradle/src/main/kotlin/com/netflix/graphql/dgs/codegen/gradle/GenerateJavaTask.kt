@@ -125,6 +125,9 @@ open class GenerateJavaTask
         @Input
         var javaGenerateAllConstructor = true
 
+        @Internal
+        var fileWriteParallelism = CodeGenConfig.DEFAULT_FILE_WRITE_PARALLELISM
+
         @OutputDirectory
         fun getOutputDir(): File = Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
 
@@ -215,6 +218,8 @@ open class GenerateJavaTask
 
         @TaskAction
         fun generate() {
+            require(fileWriteParallelism > 0) { "fileWriteParallelism must be greater than zero" }
+
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
             val resolvedSchemaFiles =
                 objectFactory
@@ -275,7 +280,7 @@ open class GenerateJavaTask
                     trackInputFieldSet = trackInputFieldSet,
                     generateJSpecifyAnnotations = generateJSpecifyAnnotations,
                     jacksonVersions = effectiveJacksonVersions.get(),
-                )
+                ).apply { fileWriteParallelism = this@GenerateJavaTask.fileWriteParallelism }
 
             logger.info("Codegen config: {}", config)
 
