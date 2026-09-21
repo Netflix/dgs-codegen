@@ -254,39 +254,12 @@ class CodegenGradlePluginTest {
 
     @Test
     fun generateJavaIsConfigurationCacheCompatible() {
-        val projectDir = File("src/test/resources/test-project/")
-
         // generateKotlinNullableClasses is enabled so Jackson version detection (the lazy
         // rootComponent classpath walk) actually runs under the configuration cache.
-        fun run() =
-            GradleRunner
-                .create()
-                .withProjectDir(projectDir)
-                .withPluginClasspath()
-                .withArguments(
-                    "--stacktrace",
-                    "--configuration-cache",
-                    "--configuration-cache-problems=fail",
-                    "-c",
-                    "smoke_test_settings_nullable.gradle",
-                    "-b",
-                    "build_with_nullable_classes.gradle",
-                    "clean",
-                    "generateJava",
-                ).forwardOutput()
-                .build()
-
-        // Clear Gradle configuration cache before test run.
-        File(projectDir, ".gradle/configuration-cache").deleteRecursively()
-
-        // First run stores the configuration cache.
-        val first = run()
-        assertThat(first.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(first.output).contains("Configuration cache entry stored.")
-
-        // Second run must reload and reuse the stored entry.
-        val second = run()
-        assertThat(second.output).contains("Reusing configuration cache.")
+        assertConfigurationCacheRoundTrip(
+            settingsFile = "smoke_test_settings_nullable.gradle",
+            buildFile = "build_with_nullable_classes.gradle",
+        )
     }
 
     @Test
@@ -379,7 +352,10 @@ class CodegenGradlePluginTest {
         assertConfigurationCacheRoundTrip("smoke_test_settings_schema_paths_provider.gradle")
     }
 
-    private fun assertConfigurationCacheRoundTrip(settingsFile: String) {
+    private fun assertConfigurationCacheRoundTrip(
+        settingsFile: String,
+        buildFile: String? = null,
+    ) {
         val projectDir = File("src/test/resources/test-project/")
 
         fun run() =
@@ -388,13 +364,19 @@ class CodegenGradlePluginTest {
                 .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
-                    "--stacktrace",
-                    "--configuration-cache",
-                    "--configuration-cache-problems=fail",
-                    "-c",
-                    settingsFile,
-                    "clean",
-                    "generateJava",
+                    buildList {
+                        add("--stacktrace")
+                        add("--configuration-cache")
+                        add("--configuration-cache-problems=fail")
+                        add("-c")
+                        add(settingsFile)
+                        if (buildFile != null) {
+                            add("-b")
+                            add(buildFile)
+                        }
+                        add("clean")
+                        add("generateJava")
+                    },
                 ).forwardOutput()
                 .build()
 
