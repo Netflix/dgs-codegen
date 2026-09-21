@@ -31,12 +31,14 @@ import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.*
+import org.gradle.work.DisableCachingByDefault
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.nio.file.Paths
 import java.util.*
 import javax.inject.Inject
 
+@DisableCachingByDefault(because = "Generated sources may contain timestamps and are not always reproducible")
 open class GenerateJavaTask
     @Inject
     constructor(
@@ -50,6 +52,7 @@ open class GenerateJavaTask
                 .asFile.absolutePath
 
         @get:InputFiles
+        @get:PathSensitive(PathSensitivity.RELATIVE)
         var schemaPaths: MutableList<Any> = mutableListOf("${project.projectDir}/src/main/resources/schema")
 
         fun setSchemaPaths(paths: FileCollection) {

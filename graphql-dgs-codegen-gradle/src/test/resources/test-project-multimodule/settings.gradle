@@ -18,3 +18,7 @@
 
 rootProject.name = 'multimodule-root'
 include 'server'
+
+if (gradle.startParameter.projectProperties.containsKey('testServerBuildFile')) {
+    project(':server').buildFileName = gradle.startParameter.projectProperties['testServerBuildFile']
+}
