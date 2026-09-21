@@ -365,7 +365,50 @@ class CodegenGradlePluginTest {
                 .build()
 
         assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(File(EXPECTED_PATH + "Result.java").exists()).isTrue
+        assertThat(File(EXPECTED_PATH + "Result.java")).exists()
+        assertThat(File(EXPECTED_PATH + "AppendedViaAddAll.java")).exists()
+    }
+
+    @Test
+    fun schemaPathsFileCollectionIsConfigurationCacheCompatible() {
+        assertConfigurationCacheRoundTrip("smoke_test_settings_schema_paths_filecollection.gradle")
+    }
+
+    @Test
+    fun schemaPathsProviderIsConfigurationCacheCompatible() {
+        assertConfigurationCacheRoundTrip("smoke_test_settings_schema_paths_provider.gradle")
+    }
+
+    private fun assertConfigurationCacheRoundTrip(settingsFile: String) {
+        val projectDir = File("src/test/resources/test-project/")
+
+        fun run() =
+            GradleRunner
+                .create()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "--configuration-cache",
+                    "--configuration-cache-problems=fail",
+                    "-c",
+                    settingsFile,
+                    "clean",
+                    "generateJava",
+                ).forwardOutput()
+                .build()
+
+        File(projectDir, ".gradle/configuration-cache").deleteRecursively()
+
+        val first = run()
+        assertThat(first.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        assertThat(first.output).contains("Configuration cache entry stored.")
+        assertThat(File(EXPECTED_PATH + "Result.java")).exists()
+
+        val second = run()
+        assertThat(second.output).contains("Reusing configuration cache.")
+        assertThat(second.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        assertThat(File(EXPECTED_PATH + "Result.java")).exists()
     }
 
     @Test

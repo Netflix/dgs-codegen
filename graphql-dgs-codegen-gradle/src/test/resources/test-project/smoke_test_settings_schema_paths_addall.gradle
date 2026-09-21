@@ -16,5 +16,4 @@
  *
  */
 
-include 'smoke_test_settings.gradle'
 rootProject.buildFileName = 'build_with_schema_paths_addall.gradle'

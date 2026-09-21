@@ -1,2 +1,1 @@
-include 'smoke_test_settings.gradle'
 rootProject.buildFileName = 'build_with_nested_schema_paths.gradle'
