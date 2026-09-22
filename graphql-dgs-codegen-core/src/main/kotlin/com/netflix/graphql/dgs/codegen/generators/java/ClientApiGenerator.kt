@@ -345,7 +345,7 @@ class ClientApiGenerator(
                 .build(),
         )
         javaType.addType(builderClass.build())
-        return JavaFile.builder(getPackageName(), javaType.build()).build()
+        return JavaFile.builder(getPackageName(), javaType.build()).skipJavaLangImports(true).build()
     }
 
     private fun getVariableDefinitionType(inputValueType: Type<*>): String =
@@ -526,7 +526,7 @@ class ClientApiGenerator(
         val concreteTypesResult = createConcreteTypes(type, javaType.build(), javaType, mutableSetOf(), 0)
         val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), mutableSetOf(), 0)
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).skipJavaLangImports(true).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
     }
 
@@ -670,7 +670,7 @@ class ClientApiGenerator(
                     )
                 }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).skipJavaLangImports(true).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
@@ -790,7 +790,7 @@ class ClientApiGenerator(
                 ).build(),
         )
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).skipJavaLangImports(true).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 
@@ -807,7 +807,7 @@ class ClientApiGenerator(
         val javaType = subProjection.first
         val codeGenResult = subProjection.second
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).skipJavaLangImports(true).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
     }
 

@@ -212,7 +212,7 @@ class ConstantsGenerator(
             )
         }
 
-        val javaFile = JavaFile.builder(config.packageName, javaType.build()).build()
+        val javaFile = JavaFile.builder(config.packageName, javaType.build()).skipJavaLangImports(true).build()
         return CodeGenResult(javaConstants = listOf(javaFile))
     }
 

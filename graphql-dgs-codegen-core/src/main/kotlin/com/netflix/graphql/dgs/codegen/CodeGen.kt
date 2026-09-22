@@ -358,7 +358,7 @@ class CodeGen(
                     .addModifiers(Modifier.PUBLIC)
                     .addAnnotation(retention)
                     .build()
-            val generatedFile = JavaFile.builder(config.packageName, generated).build()
+            val generatedFile = JavaFile.builder(config.packageName, generated).skipJavaLangImports(true).build()
             CodeGenResult(javaInterfaces = listOf(generatedFile))
         } else {
             CodeGenResult.EMPTY

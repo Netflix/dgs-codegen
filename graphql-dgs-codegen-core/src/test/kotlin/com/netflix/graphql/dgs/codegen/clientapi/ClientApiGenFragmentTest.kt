@@ -302,7 +302,13 @@ class ClientApiGenFragmentTest {
 
         val searchResult = codeGenResult.javaInterfaces[0].typeSpec()
 
-        assertThat(JavaFile.builder("$BASE_PACKAGE_NAME.types", searchResult).build().toString()).isEqualTo(
+        assertThat(
+            JavaFile
+                .builder("$BASE_PACKAGE_NAME.types", searchResult)
+                .skipJavaLangImports(true)
+                .build()
+                .toString(),
+        ).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |

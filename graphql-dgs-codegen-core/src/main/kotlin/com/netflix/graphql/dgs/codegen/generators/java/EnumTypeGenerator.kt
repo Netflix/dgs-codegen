@@ -81,7 +81,7 @@ class EnumTypeGenerator(
             javaType.addEnumConstant(javaReservedKeywordSanitizer.sanitize(it.name), typeSpec.build())
         }
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).skipJavaLangImports(true).build()
 
         return CodeGenResult(javaEnumTypes = listOf(javaFile))
     }

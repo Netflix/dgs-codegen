@@ -118,7 +118,7 @@ class InterfaceGenerator(
             javaType.addAnnotation(jsonSubTypeAnnotation(implementations))
         }
 
-        val javaFile = JavaFile.builder(packageName, javaType.build()).build()
+        val javaFile = JavaFile.builder(packageName, javaType.build()).skipJavaLangImports(true).build()
 
         return CodeGenResult(javaInterfaces = listOf(javaFile))
     }

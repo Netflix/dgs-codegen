@@ -66,7 +66,7 @@ class UnionTypeGenerator(
             javaType.addAnnotation(jsonSubTypeAnnotation(memberTypes))
         }
 
-        val javaFile = JavaFile.builder(packageName, javaType.build()).build()
+        val javaFile = JavaFile.builder(packageName, javaType.build()).skipJavaLangImports(true).build()
         return CodeGenResult(javaInterfaces = listOf(javaFile))
     }
 }

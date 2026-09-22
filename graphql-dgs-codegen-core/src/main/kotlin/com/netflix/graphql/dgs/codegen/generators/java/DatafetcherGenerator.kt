@@ -84,7 +84,7 @@ class DatafetcherGenerator(
                 .addAnnotation(DgsComponent::class.java)
                 .addMethod(methodSpec.build())
 
-        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
+        val javaFile = JavaFile.builder(getPackageName(), javaType.build()).skipJavaLangImports(true).build()
 
         return CodeGenResult(javaDataFetchers = listOf(javaFile))
     }

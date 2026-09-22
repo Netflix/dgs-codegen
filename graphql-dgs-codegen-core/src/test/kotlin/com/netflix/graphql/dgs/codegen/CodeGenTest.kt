@@ -811,7 +811,6 @@ class CodeGenTest {
                |import com.fasterxml.jackson.annotation.JsonSubTypes;
                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-               |import java.lang.String;
                |
                |@Generated
                |@JsonTypeInfo(
@@ -883,7 +882,6 @@ class CodeGenTest {
                |import com.fasterxml.jackson.annotation.JsonSubTypes;
                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-               |import java.lang.Boolean;
                |
                |@Generated
                |@JsonTypeInfo(
@@ -964,7 +962,6 @@ class CodeGenTest {
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                 |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-                |import java.lang.String;
                 |import java.util.List;
                 |
                 |@Generated
@@ -1041,7 +1038,6 @@ class CodeGenTest {
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                 |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-                |import java.lang.String;
                 |
                 |@Generated
                 |@JsonTypeInfo(
@@ -1111,7 +1107,6 @@ class CodeGenTest {
                |import com.fasterxml.jackson.annotation.JsonSubTypes;
                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-               |import java.lang.String;
                |
                |@Generated
                |@JsonTypeInfo(
@@ -1412,7 +1407,6 @@ class CodeGenTest {
                 package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 
                 import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-                import java.lang.Deprecated;
                 
                 @Generated
                 public enum EmployeeTypes {
@@ -1763,7 +1757,6 @@ class CodeGenTest {
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                 |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-                |import java.lang.String;
                 |import mypackage.Cat;
                 |
                 |@Generated
@@ -3130,7 +3123,6 @@ class CodeGenTest {
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-               |import java.lang.String;
                |
                |@Generated
                |public interface Person {
@@ -3154,7 +3146,6 @@ class CodeGenTest {
                |import com.fasterxml.jackson.annotation.JsonSubTypes;
                |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-               |import java.lang.String;
                |
                |@Generated
                |@JsonTypeInfo(
@@ -3180,15 +3171,18 @@ class CodeGenTest {
             """.trimMargin(),
         )
 
-        assertThat(JavaFile.builder("$BASE_PACKAGE_NAME.types", talent).build().toString()).isEqualTo(
+        assertThat(
+            JavaFile
+                .builder("$BASE_PACKAGE_NAME.types", talent)
+                .skipJavaLangImports(true)
+                .build()
+                .toString(),
+        ).isEqualTo(
             """
                 |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                 |
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                 |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-                |import java.lang.Object;
-                |import java.lang.Override;
-                |import java.lang.String;
                 |import java.util.Objects;
                 |
                 |@Generated
@@ -3366,8 +3360,6 @@ class CodeGenTest {
             |package com.netflix.graphql.dgs.codegen.tests.generated.types;
             |
             |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-            |import java.lang.Integer;
-            |import java.lang.String;
             |
             |@Generated
             |public interface Person {
@@ -3391,8 +3383,6 @@ class CodeGenTest {
             |import com.fasterxml.jackson.annotation.JsonSubTypes;
             |import com.fasterxml.jackson.annotation.JsonTypeInfo;
             |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-            |import java.lang.Integer;
-            |import java.lang.String;
             |
             |@Generated
             |@JsonTypeInfo(
@@ -3466,8 +3456,6 @@ class CodeGenTest {
             |package com.netflix.graphql.dgs.codegen.tests.generated.types;
             |
             |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-            |import java.lang.Integer;
-            |import java.lang.String;
             |import java.util.List;
             |
             |@Generated
@@ -3500,8 +3488,6 @@ class CodeGenTest {
             |import com.fasterxml.jackson.annotation.JsonSubTypes;
             |import com.fasterxml.jackson.annotation.JsonTypeInfo;
             |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-            |import java.lang.Integer;
-            |import java.lang.String;
             |import java.util.List;
             |
             |@Generated
@@ -3568,7 +3554,6 @@ class CodeGenTest {
                |package com.netflix.graphql.dgs.codegen.tests.generated.types;
                |
                |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-               |import java.lang.String;
                |
                |@Generated
                |public interface Person {
@@ -3798,7 +3783,6 @@ class CodeGenTest {
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                 |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-                |import java.lang.String;
                 |
                 |@Generated
                 |@JsonTypeInfo(
@@ -3975,7 +3959,6 @@ class CodeGenTest {
                 |import com.fasterxml.jackson.annotation.JsonSubTypes;
                 |import com.fasterxml.jackson.annotation.JsonTypeInfo;
                 |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-                |import java.lang.String;
                 |import java.util.List;
                 |
                 |@Generated
@@ -4049,8 +4032,6 @@ class CodeGenTest {
             |package com.netflix.graphql.dgs.codegen.tests.generated.types;
             |
             |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-            |import java.lang.Integer;
-            |import java.lang.String;
             |import java.util.List;
             |
             |@Generated
@@ -4075,8 +4056,6 @@ class CodeGenTest {
             |import com.fasterxml.jackson.annotation.JsonSubTypes;
             |import com.fasterxml.jackson.annotation.JsonTypeInfo;
             |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
-            |import java.lang.Integer;
-            |import java.lang.String;
             |import java.util.List;
             |
             |@Generated

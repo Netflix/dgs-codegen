@@ -488,7 +488,7 @@ abstract class BaseDataTypeGenerator(
         addHashcode(javaType)
         addBuilder(name, fields, javaType)
 
-        val javaFile = JavaFile.builder(packageName, javaType.build()).build()
+        val javaFile = JavaFile.builder(packageName, javaType.build()).skipJavaLangImports(true).build()
 
         return CodeGenResult(javaDataTypes = listOf(javaFile))
     }
@@ -516,7 +516,7 @@ abstract class BaseDataTypeGenerator(
             addAbstractGetter(it.type, it, javaType)
         }
 
-        val javaFile = JavaFile.builder(packageName, javaType.build()).build()
+        val javaFile = JavaFile.builder(packageName, javaType.build()).skipJavaLangImports(true).build()
 
         return CodeGenResult(javaInterfaces = listOf(javaFile))
     }
