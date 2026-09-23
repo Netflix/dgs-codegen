@@ -90,6 +90,64 @@ class ClientApiGenProjectionTest {
     }
 
     @Test
+    fun generateProjectionCyclesWithoutRecursionState() {
+        val schema =
+            """
+            type Query {
+              cycle: DirectCycle
+            }
+
+            type DirectCycle {
+              name: String
+              self: DirectCycle
+              mutual: MutualA
+            }
+
+            type MutualA {
+              value: String
+              other: MutualB
+            }
+
+            type MutualB {
+              value: String
+              other: MutualA
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        val projections = codeGenResult.clientProjections.associateBy { it.typeSpec().name() }
+        assertThat(projections.keys)
+            .containsExactlyInAnyOrder(
+                "CycleProjectionRoot",
+                "DirectCycleProjection",
+                "MutualAProjection",
+                "MutualBProjection",
+            )
+        assertThat(projections.getValue("CycleProjectionRoot").typeSpec().methodSpecs())
+            .extracting("name")
+            .contains("name", "self", "mutual")
+        assertThat(projections.getValue("DirectCycleProjection").typeSpec().methodSpecs())
+            .extracting("name")
+            .contains("name", "self", "mutual")
+        assertThat(projections.getValue("MutualAProjection").typeSpec().methodSpecs())
+            .extracting("name")
+            .contains("value", "other")
+        assertThat(projections.getValue("MutualBProjection").typeSpec().methodSpecs())
+            .extracting("name")
+            .contains("value", "other")
+
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
     fun generateInterfaceProjectionsWithCycles() {
         val schema =
             """
