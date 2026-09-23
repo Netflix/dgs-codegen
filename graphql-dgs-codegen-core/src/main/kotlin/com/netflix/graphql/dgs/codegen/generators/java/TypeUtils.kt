@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.shared.findSchemaTypeMapping
 import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.palantir.javapoet.ClassName
@@ -33,11 +34,15 @@ import java.time.*
 import java.util.*
 import com.palantir.javapoet.TypeName as JavaTypeName
 
-class TypeUtils(
+class TypeUtils internal constructor(
     private val packageName: String,
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(packageName: String, config: CodeGenConfig, document: Document) : this(packageName, config, SchemaIndex(document))
+
+    private val document = schemaIndex.document
+
     companion object {
         private val commonScalars =
             mapOf<String, JavaTypeName>(
@@ -202,7 +207,7 @@ class TypeUtils(
             )
         }
 
-        val schemaType = findSchemaTypeMapping(document, name)
+        val schemaType = findSchemaTypeMapping(schemaIndex, name)
         if (schemaType != null) {
             return schemaType.toTypeName()
         }

@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils.findType
@@ -36,10 +37,12 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 @Suppress("UNCHECKED_CAST")
-class EntitiesRepresentationTypeGenerator(
+class EntitiesRepresentationTypeGenerator internal constructor(
     config: CodeGenConfig,
-    document: Document,
-) : BaseDataTypeGenerator(config.packageNameClient, config, document) {
+    schemaIndex: SchemaIndex,
+) : BaseDataTypeGenerator(config.packageNameClient, config, schemaIndex) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     fun generate(
         definition: ObjectTypeDefinition,
         generatedRepresentations: MutableMap<String, Any>,

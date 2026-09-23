@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addEnumConstants
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
@@ -36,8 +37,14 @@ fun generateKotlin2EnumTypes(
     config: CodeGenConfig,
     document: Document,
     requiredTypes: Set<String>,
+): List<FileSpec> = generateKotlin2EnumTypes(config, SchemaIndex(document), requiredTypes)
+
+internal fun generateKotlin2EnumTypes(
+    config: CodeGenConfig,
+    schemaIndex: SchemaIndex,
+    requiredTypes: Set<String>,
 ): List<FileSpec> =
-    document
+    schemaIndex.document
         .getDefinitionsOfType(EnumTypeDefinition::class.java)
         .excludeSchemaTypeExtension()
         .filter { config.generateDataTypes || it.name in requiredTypes }
@@ -47,7 +54,7 @@ fun generateKotlin2EnumTypes(
             logger.info("Generating enum type ${enumDefinition.name}")
 
             // get any fields defined via schema extensions
-            val extensionTypes = findEnumExtensions(enumDefinition.name, document.definitions)
+            val extensionTypes = findEnumExtensions(enumDefinition.name, schemaIndex)
 
             // get all fields defined on the type itself or any extension types
             val fields =

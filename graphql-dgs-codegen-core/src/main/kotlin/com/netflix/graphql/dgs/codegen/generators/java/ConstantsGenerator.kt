@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
@@ -33,10 +34,13 @@ import com.palantir.javapoet.TypeSpec
 import graphql.language.*
 import javax.lang.model.element.Modifier
 
-class ConstantsGenerator(
+class ConstantsGenerator internal constructor(
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
+    private val document = schemaIndex.document
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
 
     class TypeSpecBuilderWrapper(
@@ -80,7 +84,7 @@ class ConstantsGenerator(
                 val constantsType =
                     getOrCreateConstantsType(types, it.name)
 
-                val extensions = findTypeExtensions(it.name, document.definitions)
+                val extensions = findTypeExtensions(it.name, schemaIndex)
                 val fields = it.fieldDefinitions + extensions.flatMap { ext -> ext.fieldDefinitions }
 
                 if (!types.contains(it.name)) {
@@ -123,7 +127,7 @@ class ConstantsGenerator(
                     addFieldNameConstant(constantsType, definition.name)
                 }
 
-                val extensions = findInputExtensions(it.name, document.definitions)
+                val extensions = findInputExtensions(it.name, schemaIndex)
                 for (extension in extensions) {
                     for (definition in extension.inputValueDefinitions) {
                         addFieldNameConstant(constantsType, definition.name)
@@ -155,7 +159,7 @@ class ConstantsGenerator(
                     addFieldNameConstant(constantsType, definition.name)
                 }
 
-                val extensions = findInterfaceExtensions(it.name, document.definitions)
+                val extensions = findInterfaceExtensions(it.name, schemaIndex)
                 for (extension in extensions) {
                     for (definition in extension.fieldDefinitions) {
                         addFieldNameConstant(constantsType, definition.name)

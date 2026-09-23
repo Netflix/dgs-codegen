@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.shouldSkip
@@ -33,17 +34,20 @@ import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import javax.lang.model.element.Modifier
 
-class InterfaceGenerator(
+class InterfaceGenerator internal constructor(
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(InterfaceGenerator::class.java)
     }
 
+    private val document = schemaIndex.document
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
     private val packageName = config.packageNameTypes
-    private val typeUtils = TypeUtils(packageName, config, document)
+    private val typeUtils = TypeUtils(packageName, config, schemaIndex)
     private val useInterfaceType = config.generateInterfaces
 
     fun generate(
@@ -103,10 +107,9 @@ class InterfaceGenerator(
         }
 
         val implementations =
-            document
-                .getDefinitionsOfType(ObjectTypeDefinition::class.java)
+            schemaIndex
+                .implementations(definition.name)
                 .asSequence()
-                .filter { node -> node.implements.any { it.isEqualTo(TypeName(definition.name)) } }
                 .map { node ->
                     typeUtils.findJavaInterfaceName(node.name, packageName)
                 }.filterIsInstance<ClassName>()

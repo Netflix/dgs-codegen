@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
@@ -40,19 +41,23 @@ import com.squareup.kotlinpoet.TypeSpec
 import graphql.language.Document
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.NamedNode
-import graphql.language.ObjectTypeDefinition
-import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 
 fun generateKotlin2Interfaces(
     config: CodeGenConfig,
     document: Document,
+): List<FileSpec> = generateKotlin2Interfaces(config, SchemaIndex(document))
+
+internal fun generateKotlin2Interfaces(
+    config: CodeGenConfig,
+    schemaIndex: SchemaIndex,
 ): List<FileSpec> {
     if (!config.generateDataTypes) {
         return emptyList()
     }
 
-    val typeLookup = Kotlin2TypeLookup(config, document)
+    val document = schemaIndex.document
+    val typeLookup = Kotlin2TypeLookup(config, schemaIndex)
 
     val interfaceClasses =
         document
@@ -65,16 +70,15 @@ fun generateKotlin2Interfaces(
 
                 // get all types that implement this interface
                 val implementations =
-                    document
-                        .getDefinitionsOfType(ObjectTypeDefinition::class.java)
-                        .filter { node -> node.implements.any { it.isEqualTo(TypeName(interfaceDefinition.name)) } }
+                    schemaIndex
+                        .implementations(interfaceDefinition.name)
                         .map { node -> ClassName(config.packageNameTypes, node.name) }
 
                 // get all interfaces that this interface implements
                 val implementedInterfaces = typeLookup.implementedInterfaces(interfaceDefinition)
 
                 // get any fields defined via schema extensions
-                val extensionTypes = findInterfaceExtensions(interfaceDefinition.name, document.definitions)
+                val extensionTypes = findInterfaceExtensions(interfaceDefinition.name, schemaIndex)
 
                 // get all fields defined on the type itself or any extension types
                 val fields =
@@ -146,7 +150,7 @@ fun generateKotlin2Interfaces(
                 logger.info("Generating union type ${unionDefinition.name}")
 
                 // get any members defined via schema extensions
-                val extensionTypes = findUnionExtensions(unionDefinition.name, document.definitions)
+                val extensionTypes = findUnionExtensions(unionDefinition.name, schemaIndex)
 
                 // get all types that implement this union
                 val implementations =

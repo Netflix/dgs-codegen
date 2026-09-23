@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode
 import com.netflix.graphql.dgs.client.codegen.GraphQLQuery
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.filterIncludedInConfig
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.findTypeDefinition
@@ -44,7 +45,6 @@ import graphql.language.FieldDefinition
 import graphql.language.InputValueDefinition
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.ListType
-import graphql.language.NamedNode
 import graphql.language.NonNullType
 import graphql.language.ObjectTypeDefinition
 import graphql.language.ScalarTypeDefinition
@@ -62,12 +62,15 @@ import kotlin.String
 import kotlin.let
 import kotlin.to
 
-class ClientApiGenerator(
+class ClientApiGenerator internal constructor(
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
+    private val document = schemaIndex.document
     private val generatedClasses = mutableSetOf<String>()
-    private val typeUtils = TypeUtils(getDatatypesPackageName(), config, document)
+    private val typeUtils = TypeUtils(getDatatypesPackageName(), config, schemaIndex)
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
 
     fun generate(
@@ -81,7 +84,7 @@ class ClientApiGenerator(
                 val javaFile = createQueryClass(it, definition.name, methodNames)
 
                 val rootProjection =
-                    it.type.findTypeDefinition(document, true)?.let { typeDefinition ->
+                    it.type.findTypeDefinition(schemaIndex, true)?.let { typeDefinition ->
                         createRootProjection(typeDefinition, it.name.capitalized())
                     }
                         ?: CodeGenResult.EMPTY
@@ -110,7 +113,11 @@ class ClientApiGenerator(
         val setType = ClassName.get(Set::class.java)
         val stringType = ClassName.get(String::class.java)
         val setOfStringType = ParameterizedTypeName.get(setType, stringType)
-        val listOfVariablesType = ParameterizedTypeName.get(ClassName.get(List::class.java), ClassName.get(VariableDefinition::class.java))
+        val listOfVariablesType =
+            ParameterizedTypeName.get(
+                ClassName.get(List::class.java),
+                ClassName.get(VariableDefinition::class.java),
+            )
         val mapOfStringsType = ParameterizedTypeName.get(ClassName.get(Map::class.java), stringType, stringType)
 
         val methodName = generateMethodName(it.name.capitalized(), operation.lowercase(), methodNames)
@@ -213,7 +220,7 @@ class ClientApiGenerator(
         legacyConstructorBuilder.addStatement("super(\$S, queryName)", operation.lowercase())
 
         it.inputValueDefinitions.forEach { inputValue ->
-            val findReturnType = TypeUtils(getDatatypesPackageName(), config, document).findReturnType(inputValue.type)
+            val findReturnType = TypeUtils(getDatatypesPackageName(), config, schemaIndex).findReturnType(inputValue.type)
             val sanitizedInputName = javaReservedKeywordSanitizer.sanitize(inputValue.name)
 
             val deprecatedDirective = getDeprecateDirective(inputValue)
@@ -454,7 +461,7 @@ class ClientApiGenerator(
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult.EMPTY else generatedClasses.add(clazzName)
 
-        val fieldDefinitions = collectAllFieldDefinitions(type, document.definitions)
+        val fieldDefinitions = collectAllFieldDefinitions(type, schemaIndex)
 
         val codeGenResult =
             fieldDefinitions
@@ -462,7 +469,7 @@ class ClientApiGenerator(
                 .mapNotNull {
                     val typeDefinition =
                         it.type.findTypeDefinition(
-                            document,
+                            schemaIndex,
                             excludeExtensions = true,
                             includeBaseTypes = it.inputValueDefinitions.isNotEmpty(),
                             includeScalarTypes = it.inputValueDefinitions.isNotEmpty(),
@@ -506,7 +513,7 @@ class ClientApiGenerator(
                 }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
 
         fieldDefinitions.filterSkipped().forEach {
-            val objectTypeDefinition = it.type.findTypeDefinition(document)
+            val objectTypeDefinition = it.type.findTypeDefinition(schemaIndex)
             if (objectTypeDefinition == null) {
                 javaType.addMethod(
                     MethodSpec
@@ -527,7 +534,9 @@ class ClientApiGenerator(
         val unionTypesResult = createUnionTypes(type, javaType, javaType.build(), mutableSetOf(), 0)
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
-        return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
+        return CodeGenResult(
+            clientProjections = listOf(javaFile),
+        ).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
     }
 
     private fun addFieldSelectionMethodWithArguments(
@@ -682,12 +691,7 @@ class ClientApiGenerator(
         queryDepth: Int,
     ): CodeGenResult =
         if (type is InterfaceTypeDefinition) {
-            val concreteTypes =
-                document
-                    .getDefinitionsOfType(ObjectTypeDefinition::class.java)
-                    .filter {
-                        it.implements.filterIsInstance<NamedNode<*>>().any { iface -> iface.name == type.name }
-                    }.distinctBy { it.name }
+            val concreteTypes = schemaIndex.implementations(type.name).distinctBy { it.name }
             concreteTypes
                 .map {
                     addFragmentProjectionMethod(javaType, root, it, processedEdges, queryDepth)
@@ -704,7 +708,7 @@ class ClientApiGenerator(
         queryDepth: Int,
     ): CodeGenResult =
         if (type is UnionTypeDefinition) {
-            val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(document, true) }.toList()
+            val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(schemaIndex, true) }.toList()
             memberTypes
                 .map {
                     addFragmentProjectionMethod(javaType, rootType, it, processedEdges, queryDepth)
@@ -865,13 +869,13 @@ class ClientApiGenerator(
                 .build(),
         )
 
-        val fieldDefinitions = collectAllFieldDefinitions(type, document.definitions)
+        val fieldDefinitions = collectAllFieldDefinitions(type, schemaIndex)
 
         val codeGenResult =
             fieldDefinitions
                 .filterSkipped()
                 .mapNotNull {
-                    val typeDefinition = it.type.findTypeDefinition(document, true)
+                    val typeDefinition = it.type.findTypeDefinition(schemaIndex, true)
                     if (typeDefinition != null) it to typeDefinition else null
                 }.map { (fieldDef, typeDef) ->
                     val projectionName = "${typeDef.name.capitalized()}Projection"
@@ -910,7 +914,7 @@ class ClientApiGenerator(
         fieldDefinitions
             .filterSkipped()
             .forEach {
-                val objectTypeDefinition = it.type.findTypeDefinition(document)
+                val objectTypeDefinition = it.type.findTypeDefinition(schemaIndex)
                 if (objectTypeDefinition == null) {
                     javaType.addMethod(
                         MethodSpec

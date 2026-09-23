@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.shared
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.findTypeDefinition
 import graphql.language.*
 import graphql.parser.Parser
@@ -28,10 +29,13 @@ import kotlinx.serialization.json.*
 import java.math.BigDecimal
 import java.math.BigInteger
 
-class DocGenerator(
+class DocGenerator internal constructor(
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
+    private val document = schemaIndex.document
     private val gqlParser = Parser()
 
     fun generate(definition: Definition<*>): CodeGenResult {
@@ -107,7 +111,7 @@ class DocGenerator(
     }
 
     private fun getExampleQuery(definition: FieldDefinition): String? {
-        val selectionSet: List<String> = getSelectionSet(definition.type.findTypeDefinition(document))
+        val selectionSet: List<String> = getSelectionSet(definition.type.findTypeDefinition(schemaIndex))
         val gql: String =
             """
             {
@@ -132,7 +136,7 @@ class DocGenerator(
                 entities(representations: ${'$'}representations) { 
                     ... on ${definition.name} {
                         ${definition.fieldDefinitions.map {
-                val selectionSet: List<String> = getSelectionSet(it.type.findTypeDefinition(document))
+                val selectionSet: List<String> = getSelectionSet(it.type.findTypeDefinition(schemaIndex))
                 """
                             ${it.name}${if (it.inputValueDefinitions.size > 0) {
                     "(${it.inputValueDefinitions.map{

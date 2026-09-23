@@ -22,6 +22,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.JavaFile
@@ -34,10 +35,12 @@ import graphql.language.ObjectTypeDefinition
 import graphql.schema.DataFetchingEnvironment
 import javax.lang.model.element.Modifier
 
-class DatafetcherGenerator(
+class DatafetcherGenerator internal constructor(
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     fun generate(query: ObjectTypeDefinition): CodeGenResult =
         query.fieldDefinitions
             .asSequence()
@@ -49,7 +52,7 @@ class DatafetcherGenerator(
         val fieldName = field.name.capitalized()
         val clazzName = fieldName + "Datafetcher"
 
-        val returnType = TypeUtils(config.packageNameTypes, config, document).findReturnType(field.type)
+        val returnType = TypeUtils(config.packageNameTypes, config, schemaIndex).findReturnType(field.type)
 
         val returnValue: Any =
             when (returnType.toString()) {

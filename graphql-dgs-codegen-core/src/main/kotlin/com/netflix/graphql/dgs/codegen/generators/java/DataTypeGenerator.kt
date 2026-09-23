@@ -64,10 +64,12 @@ import java.util.Optional
 import javax.lang.model.element.Modifier
 import com.palantir.javapoet.TypeName as JavaTypeName
 
-class DataTypeGenerator(
+class DataTypeGenerator internal constructor(
     config: CodeGenConfig,
-    document: Document,
-) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+    schemaIndex: SchemaIndex,
+) : BaseDataTypeGenerator(config.packageNameTypes, config, schemaIndex) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(DataTypeGenerator::class.java)
     }
@@ -180,10 +182,12 @@ class DataTypeGenerator(
     }
 }
 
-class InputTypeGenerator(
+class InputTypeGenerator internal constructor(
     config: CodeGenConfig,
-    document: Document,
-) : BaseDataTypeGenerator(config.packageNameTypes, config, document) {
+    schemaIndex: SchemaIndex,
+) : BaseDataTypeGenerator(config.packageNameTypes, config, schemaIndex) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
         private val BIG_DECIMAL: ClassName = ClassName.get(BigDecimal::class.java)
@@ -392,16 +396,19 @@ internal data class Field(
     val trackFieldSet: Boolean = false,
 )
 
-abstract class BaseDataTypeGenerator(
+abstract class BaseDataTypeGenerator internal constructor(
     internal val packageName: String,
     internal val config: CodeGenConfig,
-    internal val document: Document,
+    schemaIndex: SchemaIndex,
 ) {
+    constructor(packageName: String, config: CodeGenConfig, document: Document) : this(packageName, config, SchemaIndex(document))
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(BaseDataTypeGenerator::class.java)
     }
 
-    internal val typeUtils = TypeUtils(packageName, config, document)
+    internal val document = schemaIndex.document
+    internal val typeUtils = TypeUtils(packageName, config, schemaIndex)
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
 
     internal fun generate(

@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
@@ -44,10 +45,12 @@ import org.slf4j.LoggerFactory
 import java.io.Serializable
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
-class KotlinDataTypeGenerator(
+class KotlinDataTypeGenerator internal constructor(
     config: CodeGenConfig,
-    document: Document,
-) : AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
+    schemaIndex: SchemaIndex,
+) : AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, schemaIndex = schemaIndex) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(KotlinDataTypeGenerator::class.java)
     }
@@ -96,10 +99,12 @@ class KotlinDataTypeGenerator(
     }
 }
 
-class KotlinInputTypeGenerator(
+class KotlinInputTypeGenerator internal constructor(
     config: CodeGenConfig,
-    document: Document,
-) : AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, document = document) {
+    schemaIndex: SchemaIndex,
+) : AbstractKotlinDataTypeGenerator(packageName = config.packageNameTypes, config = config, schemaIndex = schemaIndex) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(InputTypeGenerator::class.java)
     }
@@ -166,16 +171,19 @@ internal data class Field(
     val directives: List<Directive> = emptyList(),
 )
 
-abstract class AbstractKotlinDataTypeGenerator(
+abstract class AbstractKotlinDataTypeGenerator internal constructor(
     packageName: String,
     protected val config: CodeGenConfig,
-    protected val document: Document,
+    schemaIndex: SchemaIndex,
 ) {
+    constructor(packageName: String, config: CodeGenConfig, document: Document) : this(packageName, config, SchemaIndex(document))
+
+    protected val document = schemaIndex.document
     protected val typeUtils =
         KotlinTypeUtils(
             packageName = packageName,
             config = config,
-            document = document,
+            schemaIndex = schemaIndex,
         )
 
     internal fun generate(

@@ -21,6 +21,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLProjection
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
@@ -51,12 +52,18 @@ import graphql.language.UnionTypeDefinition
 fun generateKotlin2ClientTypes(
     config: CodeGenConfig,
     document: Document,
+): List<FileSpec> = generateKotlin2ClientTypes(config, SchemaIndex(document))
+
+internal fun generateKotlin2ClientTypes(
+    config: CodeGenConfig,
+    schemaIndex: SchemaIndex,
 ): List<FileSpec> {
     if (!config.generateClientApi) {
         return emptyList()
     }
 
-    val typeLookup = Kotlin2TypeLookup(config, document)
+    val document = schemaIndex.document
+    val typeLookup = Kotlin2TypeLookup(config, schemaIndex)
 
     val ivsParameter =
         ParameterSpec
@@ -78,7 +85,7 @@ fun generateKotlin2ClientTypes(
 
                 // get all fields defined on the type itself, extension types, and duplicate types
                 val fields =
-                    collectAllFieldDefinitions(typeDefinition, document.definitions)
+                    collectAllFieldDefinitions(typeDefinition, schemaIndex)
                         .filterSkipped()
                         .filter(ReservedKeywordFilter.filterInvalidNames)
                         .map { field ->
@@ -199,7 +206,7 @@ fun generateKotlin2ClientTypes(
                 val typeName = ClassName(config.packageNameClient, "${unionDefinition.name}Projection")
 
                 // get any members defined via schema extensions
-                val extensionTypes = SchemaExtensionsUtils.findUnionExtensions(unionDefinition.name, document.definitions)
+                val extensionTypes = SchemaExtensionsUtils.findUnionExtensions(unionDefinition.name, schemaIndex)
 
                 val implementations =
                     unionDefinition.memberTypes
