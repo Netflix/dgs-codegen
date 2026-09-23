@@ -41,8 +41,6 @@ class TypeUtils internal constructor(
 ) {
     constructor(packageName: String, config: CodeGenConfig, document: Document) : this(packageName, config, SchemaIndex(document))
 
-    private val document = schemaIndex.document
-
     companion object {
         private val commonScalars =
             mapOf<String, JavaTypeName>(
@@ -99,15 +97,11 @@ class TypeUtils internal constructor(
                     var canUseWildcardType = false
                     if (useWildcardType) {
                         if (typeName is ClassName) {
-                            if (document.definitions
-                                    .filterIsInstance<ObjectTypeDefinition>()
-                                    .any { e -> "I${e.name}" == typeName.simpleName() } ||
+                            val simpleName = typeName.simpleName()
+                            if ((simpleName.startsWith("I") && schemaIndex.hasObjectType(simpleName.drop(1))) ||
                                 (
                                     config.generateInterfaces &&
-                                        document.definitions.filterIsInstance<InterfaceTypeDefinition>().any { e ->
-                                            "${e.name}" ==
-                                                typeName.simpleName()
-                                        }
+                                        schemaIndex.hasInterfaceType(simpleName)
                                 )
                             ) {
                                 canUseWildcardType = true
@@ -230,8 +224,8 @@ class TypeUtils internal constructor(
             else -> {
                 var simpleName = name
                 if (useInterfaceType &&
-                    !document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name } &&
-                    !document.definitions.filterIsInstance<UnionTypeDefinition>().any { e -> e.name == name } &&
+                    !schemaIndex.hasEnumType(name) &&
+                    !schemaIndex.hasUnionType(name) &&
                     !isFieldTypeAnInterface(this)
                 ) {
                     simpleName = "I$name"
@@ -281,9 +275,7 @@ class TypeUtils internal constructor(
     }
 
     private fun isFieldTypeAnInterface(fieldDefinitionType: TypeName): Boolean =
-        document
-            .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
-            .any { node -> node.name == findInnerType(fieldDefinitionType).name }
+        schemaIndex.hasInterfaceType(findInnerType(fieldDefinitionType).name)
 
     fun transformIfDefaultClassMethodExists(
         originName: String,
@@ -295,7 +287,5 @@ class TypeUtils internal constructor(
             originName
         }
 
-    private fun isFieldTypeDefinedInDocument(name: String): Boolean =
-        document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||
-            document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name }
+    private fun isFieldTypeDefinedInDocument(name: String): Boolean = schemaIndex.hasObjectType(name) || schemaIndex.hasEnumType(name)
 }

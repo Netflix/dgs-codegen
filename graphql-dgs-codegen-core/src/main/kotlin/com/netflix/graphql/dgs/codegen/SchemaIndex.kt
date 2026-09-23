@@ -19,8 +19,10 @@ package com.netflix.graphql.dgs.codegen
 import com.netflix.graphql.dgs.codegen.generators.shared.JAVA_TYPE_DIRECTIVE_NAME
 import graphql.language.Definition
 import graphql.language.Document
+import graphql.language.EnumTypeDefinition
 import graphql.language.EnumTypeExtensionDefinition
 import graphql.language.InputObjectTypeExtensionDefinition
+import graphql.language.InterfaceTypeDefinition
 import graphql.language.InterfaceTypeExtensionDefinition
 import graphql.language.NamedNode
 import graphql.language.ObjectTypeDefinition
@@ -28,6 +30,7 @@ import graphql.language.ObjectTypeExtensionDefinition
 import graphql.language.ScalarTypeDefinition
 import graphql.language.StringValue
 import graphql.language.TypeDefinition
+import graphql.language.UnionTypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
 
 /** Immutable, document-order-preserving indexes over a parsed schema. */
@@ -69,6 +72,14 @@ internal class SchemaIndex(
     fun unionExtensions(name: String): List<UnionTypeExtensionDefinition> = unionExtensions[name].orEmpty()
 
     fun implementations(interfaceName: String): List<ObjectTypeDefinition> = implementationsByInterface[interfaceName].orEmpty()
+
+    fun hasObjectType(name: String): Boolean = definitions(name).any { it is ObjectTypeDefinition }
+
+    fun hasInterfaceType(name: String): Boolean = definitions(name).any { it is InterfaceTypeDefinition }
+
+    fun hasEnumType(name: String): Boolean = definitions(name).any { it is EnumTypeDefinition }
+
+    fun hasUnionType(name: String): Boolean = definitions(name).any { it is UnionTypeDefinition }
 
     fun schemaTypeMapping(typeName: String): String? {
         val scalar =

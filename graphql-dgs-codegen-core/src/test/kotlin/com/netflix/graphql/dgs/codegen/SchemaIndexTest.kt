@@ -120,6 +120,19 @@ class SchemaIndexTest {
     }
 
     @Test
+    fun `definition names are indexed by type`() {
+        assertThat(index.hasObjectType("Product")).isTrue()
+        assertThat(index.hasInterfaceType("Node")).isTrue()
+        assertThat(index.hasEnumType("Color")).isTrue()
+        assertThat(index.hasUnionType("Result")).isTrue()
+
+        assertThat(index.hasObjectType("Node")).isFalse()
+        assertThat(index.hasInterfaceType("Color")).isFalse()
+        assertThat(index.hasEnumType("Result")).isFalse()
+        assertThat(index.hasUnionType("Product")).isFalse()
+    }
+
+    @Test
     fun `implementation is indexed once when an interface is repeated`() {
         val duplicateImplementsDocument =
             Parser.parse(
