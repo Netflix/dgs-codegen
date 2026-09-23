@@ -85,26 +85,25 @@ class CodeGen(
             }
 
         if (config.writeToFiles) {
-            codeGenResult.javaDataTypes.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.javaInterfaces.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.javaEnumTypes.forEach { it.writeTo(config.outputDir) }
+            GeneratedFileWriter(config.fileWriteParallelism).write(
+                javaFiles =
+                    codeGenResult.javaDataTypes +
+                        codeGenResult.javaInterfaces +
+                        codeGenResult.javaEnumTypes +
+                        codeGenResult.javaQueryTypes +
+                        codeGenResult.clientProjections +
+                        codeGenResult.javaConstants,
+                kotlinFiles =
+                    codeGenResult.kotlinDataTypes +
+                        codeGenResult.kotlinInputTypes +
+                        codeGenResult.kotlinInterfaces +
+                        codeGenResult.kotlinEnumTypes +
+                        codeGenResult.kotlinConstants +
+                        codeGenResult.kotlinClientTypes,
+                outputDirectory = config.outputDir,
+            )
             codeGenResult.javaDataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
-            codeGenResult.javaQueryTypes.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.clientProjections.forEach {
-                try {
-                    it.writeTo(config.outputDir)
-                } catch (ex: Exception) {
-                    println(ex.message)
-                }
-            }
-            codeGenResult.javaConstants.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.kotlinDataTypes.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.kotlinInputTypes.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.kotlinInterfaces.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.kotlinEnumTypes.forEach { it.writeTo(config.outputDir) }
             codeGenResult.kotlinDataFetchers.forEach { it.writeTo(config.examplesOutputDir) }
-            codeGenResult.kotlinConstants.forEach { it.writeTo(config.outputDir) }
-            codeGenResult.kotlinClientTypes.forEach { it.writeTo(config.outputDir) }
             codeGenResult.docFiles.forEach { it.writeTo(config.generatedDocsFolder) }
         }
 
@@ -590,6 +589,14 @@ class CodeGenConfig(
     var generateJSpecifyAnnotations: Boolean = false,
     var jacksonVersions: Set<JacksonVersion> = emptySet(),
 ) {
+    companion object {
+        @JvmField
+        val DEFAULT_FILE_WRITE_PARALLELISM: Int = Runtime.getRuntime().availableProcessors().coerceAtMost(8)
+    }
+
+    /** Maximum number of generated source files written concurrently. Set to 1 for serial writes. */
+    var fileWriteParallelism: Int = DEFAULT_FILE_WRITE_PARALLELISM
+
     val packageNameClient: String = "$packageName.$subPackageNameClient"
 
     val packageNameDatafetchers: String = "$packageName.$subPackageNameDatafetchers"
