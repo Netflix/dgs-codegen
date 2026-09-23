@@ -58,9 +58,18 @@ import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
 import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
-class CodeGen(
+class CodeGen internal constructor(
     private val config: CodeGenConfig,
+    collectRequiredTypes: (SchemaIndex, CodeGenConfig) -> Set<String>,
 ) {
+    constructor(config: CodeGenConfig) :
+        this(
+            config,
+            { schemaIndex, collectorConfig ->
+                RequiredTypeCollector(schemaIndex, collectorConfig).requiredTypes
+            },
+        )
+
     companion object {
         private const val SDL_MAX_ALLOWED_SCHEMA_TOKENS: Int = Int.MAX_VALUE
         private const val SDL_MAX_CHARACTERS: Int = Int.MAX_VALUE
@@ -69,11 +78,21 @@ class CodeGen(
 
     private val document = buildDocument()
     private val schemaIndex = SchemaIndex(document)
-    private val requiredTypeCollector =
-        RequiredTypeCollector(
-            schemaIndex = schemaIndex,
-            config = config,
-        )
+    private val requiredTypes: Set<String> by lazy {
+        if (config.generateDataTypes) {
+            emptySet()
+        } else {
+            collectRequiredTypes(schemaIndex, config)
+        }
+    }
+
+    private fun shouldGenerateType(
+        typeName: String,
+        whenGeneratingInterfaces: Boolean = false,
+    ): Boolean =
+        config.generateDataTypes ||
+            (whenGeneratingInterfaces && config.generateInterfaces) ||
+            typeName in requiredTypes
 
     fun generate(): CodeGenResult {
         loadTypeMappingsFromDependencies()
@@ -270,7 +289,7 @@ class CodeGen(
             .asSequence()
             .filterIsInstance<EnumTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
+            .filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
             .map { EnumTypeGenerator(config).generate(it, findEnumExtensions(it.name, schemaIndex)) }
             .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
 
@@ -279,7 +298,7 @@ class CodeGen(
             .asSequence()
             .filterIsInstance<UnionTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
+            .filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
             .map { UnionTypeGenerator(config, schemaIndex).generate(it, findUnionExtensions(it.name, schemaIndex)) }
             .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
 
@@ -288,7 +307,7 @@ class CodeGen(
             .asSequence()
             .filterIsInstance<InterfaceTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { config.generateDataTypes || config.generateInterfaces || it.name in requiredTypeCollector.requiredTypes }
+            .filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
             .map {
                 val extensions = findInterfaceExtensions(it.name, schemaIndex)
                 InterfaceGenerator(config, schemaIndex).generate(it, extensions)
@@ -370,7 +389,7 @@ class CodeGen(
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
             .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
-            .filter { config.generateInterfaces || config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
+            .filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
             .map {
                 DataTypeGenerator(config, schemaIndex).generate(it, findTypeExtensions(it.name, schemaIndex))
             }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
@@ -383,7 +402,7 @@ class CodeGen(
             inputTypeDefinitions
                 .asSequence()
                 .excludeSchemaTypeExtension()
-                .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
+                .filter { shouldGenerateType(it.name) }
 
         return inputTypes
             .map { d ->
@@ -396,13 +415,6 @@ class CodeGen(
 
     private fun generateKotlin(): CodeGenResult {
         val definitions = document.definitions
-
-        val requiredTypeCollector =
-            RequiredTypeCollector(
-                schemaIndex = schemaIndex,
-                config = config,
-            )
-        val requiredTypes = requiredTypeCollector.requiredTypes
 
         val dataTypes =
             if (config.generateKotlinNullableClasses) {
@@ -433,7 +445,7 @@ class CodeGen(
                         .asSequence()
                         .filterIsInstance<EnumTypeDefinition>()
                         .excludeSchemaTypeExtension()
-                        .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
+                        .filter { shouldGenerateType(it.name) }
                         .map {
                             val extensions = findEnumExtensions(it.name, schemaIndex)
                             KotlinEnumTypeGenerator(config).generate(it, extensions)
@@ -495,7 +507,7 @@ class CodeGen(
         return inputTypeDefinitions
             .asSequence()
             .excludeSchemaTypeExtension()
-            .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
+            .filter { shouldGenerateType(it.name) }
             .map {
                 KotlinInputTypeGenerator(config, schemaIndex).generate(it, findInputExtensions(it.name, schemaIndex), inputTypeDefinitions)
             }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
@@ -507,7 +519,7 @@ class CodeGen(
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
             .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
-            .filter { config.generateDataTypes || it.name in requiredTypeCollector.requiredTypes }
+            .filter { shouldGenerateType(it.name) }
             .map {
                 val extensions = findTypeExtensions(it.name, schemaIndex)
                 KotlinDataTypeGenerator(config, schemaIndex).generate(it, extensions)
