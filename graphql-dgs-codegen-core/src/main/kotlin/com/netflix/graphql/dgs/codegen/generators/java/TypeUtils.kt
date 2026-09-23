@@ -99,7 +99,9 @@ class TypeUtils internal constructor(
                     var canUseWildcardType = false
                     if (useWildcardType) {
                         if (typeName is ClassName) {
-                            if (document.definitions
+                            if (isFieldTypeAnInterface(node.type)) {
+                                canUseWildcardType = true
+                            } else if (document.definitions
                                     .filterIsInstance<ObjectTypeDefinition>()
                                     .any { e -> "I${e.name}" == typeName.simpleName() } ||
                                 (
@@ -112,6 +114,8 @@ class TypeUtils internal constructor(
                             ) {
                                 canUseWildcardType = true
                             }
+                        } else if (typeName is ParameterizedTypeName && typeName.rawType().canonicalName() == "java.util.List") {
+                            canUseWildcardType = true
                         }
                     }
 
@@ -280,7 +284,7 @@ class TypeUtils internal constructor(
         return NodeTraverser().postOrder(visitor, fieldType) as TypeName
     }
 
-    private fun isFieldTypeAnInterface(fieldDefinitionType: TypeName): Boolean =
+    private fun isFieldTypeAnInterface(fieldDefinitionType: Type<*>): Boolean =
         document
             .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
             .any { node -> node.name == findInnerType(fieldDefinitionType).name }

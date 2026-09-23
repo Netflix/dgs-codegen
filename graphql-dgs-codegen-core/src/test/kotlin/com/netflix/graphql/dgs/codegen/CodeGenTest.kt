@@ -993,6 +993,12 @@ class CodeGenTest {
                 |  Pet getMother();
                 |
                 |  Pet getFather();
+                |
+                |  List<? extends Pet> getParents();
+                |
+                |  List<? extends List<? extends Pet>> getFriends();
+                |
+                |  List<? extends Pet> getSiblings();
                 |}
             |
             """.trimMargin(),
@@ -3393,6 +3399,7 @@ class CodeGenTest {
             |import com.netflix.graphql.dgs.codegen.tests.generated.Generated;
             |import java.lang.Integer;
             |import java.lang.String;
+            |import java.util.List;
             |
             |@Generated
             |@JsonTypeInfo(
@@ -3414,6 +3421,8 @@ class CodeGenTest {
             |  void setAge(Integer age);
             |
             |  Employee getBoss();
+            |
+            |  List<? extends Employee> getTeam();
             |}
             |
             """.trimMargin(),
@@ -3480,9 +3489,9 @@ class CodeGenTest {
             |
             |  void setAge(Integer age);
             |
-            |  List<Person> getParents();
+            |  List<? extends Person> getParents();
             |
-            |  void setParents(List<Person> parents);
+            |  void setParents(List<? extends Person> parents);
             |
             |  Person getFriend();
             |
@@ -3520,9 +3529,9 @@ class CodeGenTest {
             |
             |  void setAge(Integer age);
             |
-            |  List<Person> getParents();
+            |  List<? extends Person> getParents();
             |
-            |  void setParents(List<Person> parents);
+            |  void setParents(List<? extends Person> parents);
             |
             |  Person getFriend();
             |
@@ -3993,10 +4002,23 @@ class CodeGenTest {
                 |
                 |  void setName(String name);
                 |
-                |  List<Pet> getFriends();
+                |  List<? extends Pet> getFriends();
                 |
-                |  void setFriends(List<Pet> friends);
+                |  void setFriends(List<? extends Pet> friends);
                 |}
+            |
+            """.trimMargin(),
+        )
+
+        assertThat(dataTypes[0].toString()).contains(
+            """
+                |  public List<? extends Pet> getFriends() {
+                |    return friends;
+                |  }
+                |
+                |  public void setFriends(List<? extends Pet> friends) {
+                |    this.friends = friends;
+                |  }
             |
             """.trimMargin(),
         )
@@ -4059,7 +4081,7 @@ class CodeGenTest {
             |
             |  Integer getAge();
             |
-            |  List<Person> getParents();
+            |  List<? extends Person> getParents();
             |
             |  Person getFriend();
             |}
@@ -4091,7 +4113,7 @@ class CodeGenTest {
             |
             |  Integer getAge();
             |
-            |  List<Person> getParents();
+            |  List<? extends Person> getParents();
             |
             |  Person getFriend();
             |}
