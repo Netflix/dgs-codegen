@@ -43,11 +43,98 @@ import org.junit.jupiter.params.provider.ArgumentsProvider
 import org.junit.jupiter.params.provider.ArgumentsSource
 import org.junit.jupiter.params.provider.MethodSource
 import org.junit.jupiter.params.provider.ValueSource
+import java.io.File
+import java.io.FilterReader
+import java.io.Reader
 import java.io.Serializable
+import java.nio.file.Files
 import java.nio.file.Paths
+import java.util.jar.JarFile
+import java.util.jar.JarOutputStream
 import java.util.stream.Stream
+import java.util.zip.ZipEntry
 
 class CodeGenTest {
+    @Test
+    fun `Successful schema parsing opens and closes each schema file once`() {
+        val schemaFile = Files.createTempFile("codegen-schema", ".graphqls").toFile()
+        schemaFile.writeText("type Query { greeting: String }")
+        val readerTracker = ReaderTracker()
+
+        CodeGen
+            .withSchemaSources(
+                CodeGenConfig(schemaFiles = setOf(schemaFile), packageName = BASE_PACKAGE_NAME),
+                readerTracker::open,
+                ::JarFile,
+            ).generate()
+
+        assertThat(readerTracker.opened).isEqualTo(1)
+        assertThat(readerTracker.closed).isEqualTo(1)
+    }
+
+    @Test
+    fun `Failed schema parsing reopens files for diagnostics and closes both readers`() {
+        val schemaFile = Files.createTempFile("invalid-codegen-schema", ".graphqls").toFile()
+        schemaFile.writeText("type Query { greeting: String")
+        val readerTracker = ReaderTracker()
+
+        assertThatThrownBy {
+            CodeGen.withSchemaSources(
+                CodeGenConfig(schemaFiles = setOf(schemaFile), packageName = BASE_PACKAGE_NAME),
+                readerTracker::open,
+                ::JarFile,
+            )
+        }.isInstanceOf(CodeGenSchemaParsingException::class.java)
+            .hasMessageContaining("Full Schema:", "type Query { greeting: String")
+
+        assertThat(readerTracker.opened).isEqualTo(2)
+        assertThat(readerTracker.closed).isEqualTo(2)
+    }
+
+    @Test
+    fun `Dependency jar schema is included in diagnostics and the jar is closed`() {
+        val schema = "type Query { greeting: String"
+        val schemaJar = createSchemaJar(schema)
+        var jarCloses = 0
+
+        assertThatThrownBy {
+            CodeGen.withSchemaSources(
+                CodeGenConfig(schemaJarFilesFromDependencies = listOf(schemaJar), packageName = BASE_PACKAGE_NAME),
+                File::reader,
+                { file -> TrackingJarFile(file) { jarCloses++ } },
+            )
+        }.isInstanceOf(CodeGenSchemaParsingException::class.java)
+            .hasMessageContaining("Full Schema:", schema)
+
+        assertThat(jarCloses).isEqualTo(1)
+    }
+
+    @Test
+    fun `Dependency schemas and type mappings are loaded in one closed jar pass`() {
+        val schemaJar =
+            createSchemaJar(
+                """
+                scalar BigDecimal
+                type Person { value: BigDecimal }
+                """.trimIndent(),
+                "BigDecimal=java.math.BigDecimal",
+            )
+        var jarCloses = 0
+
+        val result =
+            CodeGen
+                .withSchemaSources(
+                    CodeGenConfig(schemaJarFilesFromDependencies = listOf(schemaJar), packageName = BASE_PACKAGE_NAME),
+                    File::reader,
+                    { file -> TrackingJarFile(file) { jarCloses++ } },
+                ).generate()
+
+        assertThat(jarCloses).isEqualTo(1)
+        val generatedType = result.javaDataTypes.single()
+        val generatedField = generatedType.typeSpec().fieldSpecs().single()
+        assertThat(generatedField.type().toString()).isEqualTo("java.math.BigDecimal")
+    }
+
     @Test
     fun `When the schema fails to parse, is able to print the error message along with the schema`() {
         val schema =
@@ -7340,4 +7427,65 @@ It takes a title and such.
 
         assertCompilesJava(result)
     }
+}
+
+private class ReaderTracker {
+    var opened = 0
+        private set
+    var closed = 0
+        private set
+
+    fun open(file: File): Reader {
+        opened++
+        return object : FilterReader(file.reader()) {
+            private var isClosed = false
+
+            override fun close() {
+                try {
+                    super.close()
+                } finally {
+                    if (!isClosed) {
+                        isClosed = true
+                        closed++
+                    }
+                }
+            }
+        }
+    }
+}
+
+private class TrackingJarFile(
+    file: File,
+    private val onClose: () -> Unit,
+) : JarFile(file) {
+    private var isClosed = false
+
+    override fun close() {
+        try {
+            super.close()
+        } finally {
+            if (!isClosed) {
+                isClosed = true
+                onClose()
+            }
+        }
+    }
+}
+
+private fun createSchemaJar(
+    schema: String,
+    typeMappings: String? = null,
+): File {
+    val schemaJar = Files.createTempFile("codegen-schema", ".jar").toFile()
+    JarOutputStream(schemaJar.outputStream()).use { jar ->
+        jar.putNextEntry(ZipEntry("META-INF/schema.graphqls"))
+        jar.write(schema.toByteArray())
+        jar.closeEntry()
+        if (typeMappings != null) {
+            jar.putNextEntry(ZipEntry("META-INF/dgs.codegen.typemappings"))
+            jar.write(typeMappings.toByteArray())
+            jar.closeEntry()
+        }
+    }
+    return schemaJar
 }

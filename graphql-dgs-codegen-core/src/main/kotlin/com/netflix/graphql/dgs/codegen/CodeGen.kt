@@ -52,15 +52,62 @@ import java.nio.file.Path
 import java.nio.file.Paths
 import java.util.*
 import java.util.jar.JarFile
-import java.util.zip.ZipFile
 import javax.lang.model.element.Modifier
 import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
 import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
-class CodeGen internal constructor(
+private fun String.hasGraphQLSchemaExtension(): Boolean = endsWith(".graphqls") || endsWith(".graphql") || endsWith(".gqls")
+
+private fun Reader.closeAfterFailure(failure: Throwable) {
+    try {
+        close()
+    } catch (closeFailure: Throwable) {
+        failure.addSuppressed(closeFailure)
+    }
+}
+
+private fun interface SchemaSource {
+    fun addTo(readerBuilder: MultiSourceReader.Builder): Reader?
+}
+
+private class FileSchemaSource(
+    private val file: File,
+    private val openReader: (File) -> Reader,
+) : SchemaSource {
+    override fun addTo(readerBuilder: MultiSourceReader.Builder): Reader {
+        val reader = openReader(file)
+        try {
+            readerBuilder.reader(reader, file.name)
+            return reader
+        } catch (failure: Throwable) {
+            reader.closeAfterFailure(failure)
+            throw failure
+        }
+    }
+}
+
+private class InMemorySchemaSource(
+    private val schema: String,
+    private val sourceName: String?,
+) : SchemaSource {
+    override fun addTo(readerBuilder: MultiSourceReader.Builder): Reader? {
+        readerBuilder.string(schema, sourceName)
+        return null
+    }
+}
+
+private data class DependencySchemaSource(
+    val file: File,
+    val entryIndex: Int,
+    val schema: String,
+)
+
+class CodeGen private constructor(
     private val config: CodeGenConfig,
     collectRequiredTypes: (SchemaIndex, CodeGenConfig) -> Set<String>,
+    private val schemaFileReader: (File) -> Reader,
+    private val dependencyJarFile: (File) -> JarFile,
 ) {
     constructor(config: CodeGenConfig) :
         this(
@@ -68,12 +115,34 @@ class CodeGen internal constructor(
             { schemaIndex, collectorConfig ->
                 RequiredTypeCollector(schemaIndex, collectorConfig).requiredTypes
             },
+            { it.reader() },
+            ::JarFile,
         )
+
+    internal constructor(
+        config: CodeGenConfig,
+        collectRequiredTypes: (SchemaIndex, CodeGenConfig) -> Set<String>,
+    ) : this(config, collectRequiredTypes, { it.reader() }, ::JarFile)
 
     companion object {
         private const val SDL_MAX_ALLOWED_SCHEMA_TOKENS: Int = Int.MAX_VALUE
         private const val SDL_MAX_CHARACTERS: Int = Int.MAX_VALUE
         private val logger: Logger = LoggerFactory.getLogger(CodeGen::class.java)
+
+        @JvmSynthetic
+        internal fun withSchemaSources(
+            config: CodeGenConfig,
+            schemaFileReader: (File) -> Reader,
+            dependencyJarFile: (File) -> JarFile,
+        ): CodeGen =
+            CodeGen(
+                config,
+                { schemaIndex, collectorConfig ->
+                    RequiredTypeCollector(schemaIndex, collectorConfig).requiredTypes
+                },
+                schemaFileReader,
+                dependencyJarFile,
+            )
     }
 
     private val document = buildDocument()
@@ -95,8 +164,6 @@ class CodeGen internal constructor(
             typeName in requiredTypes
 
     fun generate(): CodeGenResult {
-        loadTypeMappingsFromDependencies()
-
         val codeGenResult =
             when (config.language) {
                 Language.JAVA -> generateJava()
@@ -143,25 +210,10 @@ class CodeGen internal constructor(
             }
         val parser = Parser()
 
-        val readerBuilder = MultiSourceReader.newMultiSourceReader()
-        val debugReaderBuilder = MultiSourceReader.newMultiSourceReader()
-
-        loadSchemaReaders(readerBuilder, debugReaderBuilder)
-        // process schema from dependencies
-        config.schemaJarFilesFromDependencies.sorted().forEach { file ->
-            val zipFile = ZipFile(file)
-            for (entry in zipFile.entries()) {
-                if (!entry.isDirectory &&
-                    (entry.name.endsWith(".graphqls") || entry.name.endsWith(".graphql") || entry.name.endsWith(".gqls"))
-                ) {
-                    logger.info("Generating schema from {}: {}", file.name, entry.name)
-                    readerBuilder.reader(zipFile.getInputStream(entry).reader(), "codegen")
-                }
-            }
-        }
+        val schemaSources = discoverSchemaSources()
 
         val document =
-            readerBuilder.build().use { reader ->
+            buildSchemaReader(schemaSources).use { reader ->
                 try {
                     val parserEnv =
                         ParserEnvironment
@@ -177,7 +229,7 @@ class CodeGen internal constructor(
                         // return an empty document
                         return Document.newDocument().build()
                     } else {
-                        throw CodeGenSchemaParsingException(debugReaderBuilder.build(), exception)
+                        throw CodeGenSchemaParsingException(buildSchemaReader(schemaSources), exception)
                     }
                 }
             }
@@ -185,10 +237,29 @@ class CodeGen internal constructor(
         return document
     }
 
-    private fun loadTypeMappingsFromDependencies() {
-        // process type mappings from dependencies
+    private fun discoverSchemaSources(): List<SchemaSource> {
+        validateNoOverlappingPaths(config.schemaFiles)
+
+        val schemaSources = mutableListOf<SchemaSource>()
+        val schemaFiles =
+            config.schemaFiles
+                .asSequence()
+                .flatMap { it.walkTopDown() }
+                .filter { it.isFile }
+                .filter { it.name.endsWith(".graphql") || it.name.endsWith(".graphqls") }
+                .sorted()
+                .toList()
+        for (schemaFile in schemaFiles) {
+            schemaSources += InMemorySchemaSource("\n", "codegen")
+            schemaSources += FileSchemaSource(schemaFile, schemaFileReader)
+        }
+        for (schema in config.schemas) {
+            schemaSources += InMemorySchemaSource(schema, null)
+        }
+
+        val dependencySchemaSources = mutableListOf<DependencySchemaSource>()
         config.schemaJarFilesFromDependencies.forEach { file ->
-            JarFile(file).use { jarFile ->
+            dependencyJarFile(file).use { jarFile ->
                 val typeMappingsFile = jarFile.getJarEntry("META-INF/dgs.codegen.typemappings")
                 if (typeMappingsFile != null) {
                     jarFile.getInputStream(typeMappingsFile).use { typeMappingInput ->
@@ -201,32 +272,32 @@ class CodeGen internal constructor(
                         config.typeMapping = (props as Map<String, String>).plus(config.typeMapping)
                     }
                 }
+
+                jarFile.entries().asSequence().forEachIndexed { index, entry ->
+                    if (!entry.isDirectory && entry.name.hasGraphQLSchemaExtension()) {
+                        logger.info("Generating schema from {}: {}", file.name, entry.name)
+                        val schema = jarFile.getInputStream(entry).bufferedReader().use { it.readText() }
+                        dependencySchemaSources += DependencySchemaSource(file, index, schema)
+                    }
+                }
             }
         }
+
+        dependencySchemaSources
+            .sortedWith(compareBy<DependencySchemaSource> { it.file }.thenBy { it.entryIndex })
+            .mapTo(schemaSources) { InMemorySchemaSource(it.schema, "codegen") }
+        return schemaSources
     }
 
-    /**
-     * Loads the given [MultiSourceReader.Builder] references with the sources that will be used to provide
-     * the schema information for the parser.
-     */
-    private fun loadSchemaReaders(vararg readerBuilders: MultiSourceReader.Builder) {
-        validateNoOverlappingPaths(config.schemaFiles)
-
-        readerBuilders.forEach { rb ->
-            val schemaFiles =
-                config.schemaFiles
-                    .asSequence()
-                    .flatMap { it.walkTopDown() }
-                    .filter { it.isFile }
-                    .filter { it.name.endsWith(".graphql") || it.name.endsWith(".graphqls") }
-                    .sorted()
-            for (schemaFile in schemaFiles) {
-                rb.string("\n", "codegen")
-                rb.reader(schemaFile.reader(), schemaFile.name)
-            }
-            for (schema in config.schemas) {
-                rb.string(schema, null)
-            }
+    private fun buildSchemaReader(schemaSources: List<SchemaSource>): MultiSourceReader {
+        val readerBuilder = MultiSourceReader.newMultiSourceReader()
+        val openedReaders = mutableListOf<Reader>()
+        try {
+            schemaSources.mapNotNullTo(openedReaders) { it.addTo(readerBuilder) }
+            return readerBuilder.build()
+        } catch (failure: Throwable) {
+            openedReaders.asReversed().forEach { it.closeAfterFailure(failure) }
+            throw failure
         }
     }
 
