@@ -37,8 +37,6 @@ class CodegenGradlePluginTest {
                 .withProjectDir(File("src/test/resources/test-project/"))
                 .withPluginClasspath()
                 .withArguments(
-                    "-c",
-                    "smoke_test_settings.gradle",
                     "tasks",
                     "--all",
                 ).forwardOutput()
@@ -56,8 +54,6 @@ class CodegenGradlePluginTest {
                 .withProjectDir(File("src/test/resources/test-project/"))
                 .withPluginClasspath()
                 .withArguments(
-                    "-c",
-                    "smoke_test_settings.gradle",
                     "clean",
                     "copyMainSources",
                 ).forwardOutput()
@@ -78,8 +74,6 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings.gradle",
                     "clean",
                     "build",
                 ).forwardOutput()
@@ -102,10 +96,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_with_default_dir.gradle",
-                    "-b",
-                    "build_with_default_dir.gradle",
+                    "-PtestBuildFile=build_with_default_dir.gradle",
                     "clean",
                     "build",
                 ).forwardOutput()
@@ -128,10 +119,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_with_default_dir.gradle",
-                    "-b",
-                    "build_with_default_dir.gradle",
+                    "-PtestBuildFile=build_with_default_dir.gradle",
                     "clean",
                     "build",
                 ).forwardOutput()
@@ -155,10 +143,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_with_default_dir.gradle",
-                    "-b",
-                    "build_with_default_dir.gradle",
+                    "-PtestBuildFile=build_with_default_dir.gradle",
                     "clean",
                     "build",
                 ).forwardOutput()
@@ -184,10 +169,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_jackson_override.gradle",
-                    "-b",
-                    "build_with_jackson_override.gradle",
+                    "-PtestBuildFile=build_with_jackson_override.gradle",
                     "clean",
                     "generateJava",
                 ).forwardOutput()
@@ -206,10 +188,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_invalid_jackson.gradle",
-                    "-b",
-                    "build_with_invalid_jackson_version.gradle",
+                    "-PtestBuildFile=build_with_invalid_jackson_version.gradle",
                     "clean",
                     "generateJava",
                 ).forwardOutput()
@@ -231,10 +210,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_jackson3.gradle",
-                    "-b",
-                    "build_with_jackson3.gradle",
+                    "-PtestBuildFile=build_with_jackson3.gradle",
                     "clean",
                     "generateJava",
                 ).forwardOutput()
@@ -257,7 +233,6 @@ class CodegenGradlePluginTest {
         // generateKotlinNullableClasses is enabled so Jackson version detection (the lazy
         // rootComponent classpath walk) actually runs under the configuration cache.
         assertConfigurationCacheRoundTrip(
-            settingsFile = "smoke_test_settings_nullable.gradle",
             buildFile = "build_with_nullable_classes.gradle",
         )
     }
@@ -272,8 +247,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_schema_paths_provider.gradle",
+                    "-PtestBuildFile=build_with_schema_paths_provider.gradle",
                     "clean",
                     "generateJava",
                 ).forwardOutput()
@@ -293,8 +267,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_schema_paths_filecollection.gradle",
+                    "-PtestBuildFile=build_with_schema_paths_filecollection.gradle",
                     "clean",
                     "generateJava",
                 ).forwardOutput()
@@ -311,7 +284,7 @@ class CodegenGradlePluginTest {
                 .create()
                 .withProjectDir(File("src/test/resources/test-project/"))
                 .withPluginClasspath()
-                .withArguments("-c", "smoke_test_settings_nested_schema_paths.gradle", "clean", "generateJava")
+                .withArguments("-PtestBuildFile=build_with_nested_schema_paths.gradle", "clean", "generateJava")
                 .build()
 
         assertThat(result.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
@@ -330,8 +303,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "smoke_test_settings_schema_paths_addall.gradle",
+                    "-PtestBuildFile=build_with_schema_paths_addall.gradle",
                     "clean",
                     "generateJava",
                 ).forwardOutput()
@@ -344,18 +316,15 @@ class CodegenGradlePluginTest {
 
     @Test
     fun schemaPathsFileCollectionIsConfigurationCacheCompatible() {
-        assertConfigurationCacheRoundTrip("smoke_test_settings_schema_paths_filecollection.gradle")
+        assertConfigurationCacheRoundTrip("build_with_schema_paths_filecollection.gradle")
     }
 
     @Test
     fun schemaPathsProviderIsConfigurationCacheCompatible() {
-        assertConfigurationCacheRoundTrip("smoke_test_settings_schema_paths_provider.gradle")
+        assertConfigurationCacheRoundTrip("build_with_schema_paths_provider.gradle")
     }
 
-    private fun assertConfigurationCacheRoundTrip(
-        settingsFile: String,
-        buildFile: String? = null,
-    ) {
+    private fun assertConfigurationCacheRoundTrip(buildFile: String) {
         val projectDir = File("src/test/resources/test-project/")
 
         fun run() =
@@ -364,19 +333,12 @@ class CodegenGradlePluginTest {
                 .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
-                    buildList {
-                        add("--stacktrace")
-                        add("--configuration-cache")
-                        add("--configuration-cache-problems=fail")
-                        add("-c")
-                        add(settingsFile)
-                        if (buildFile != null) {
-                            add("-b")
-                            add(buildFile)
-                        }
-                        add("clean")
-                        add("generateJava")
-                    },
+                    "--stacktrace",
+                    "--configuration-cache",
+                    "--configuration-cache-problems=fail",
+                    "-PtestBuildFile=$buildFile",
+                    "clean",
+                    "generateJava",
                 ).forwardOutput()
                 .build()
 
@@ -401,7 +363,7 @@ class CodegenGradlePluginTest {
         // @InputFiles after changing how schemaPaths accepts and resolves inputs.
         val sourceDir = File("src/test/resources/test-project")
         File(sourceDir, "build.gradle").copyTo(File(tempDir, "build.gradle"))
-        File(sourceDir, "smoke_test_settings.gradle").copyTo(File(tempDir, "smoke_test_settings.gradle"))
+        File(sourceDir, "settings.gradle").copyTo(File(tempDir, "settings.gradle"))
         File(sourceDir, "src").copyRecursively(File(tempDir, "src"))
 
         fun run(vararg tasks: String) =
@@ -409,7 +371,7 @@ class CodegenGradlePluginTest {
                 .create()
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("--stacktrace", "-c", "smoke_test_settings.gradle", *tasks)
+                .withArguments("--stacktrace", *tasks)
                 .forwardOutput()
                 .build()
 
@@ -456,8 +418,7 @@ class CodegenGradlePluginTest {
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-c",
-                    "settings_relative_file.gradle",
+                    "-PtestServerBuildFile=build_with_relative_file.gradle",
                     "clean",
                     ":server:generateJava",
                 ).forwardOutput()

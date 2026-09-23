@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompilationTask
+
 /*
  *
  *  Copyright 2020 Netflix, Inc.
@@ -21,6 +23,13 @@ plugins {
 }
 
 apply plugin: 'java-gradle-plugin'
+
+// Gradle 9.4.1 exposes newer Kotlin metadata; tolerate it here to keep consumers on Kotlin 2.0.21 and detangle from the Kotlin upgrade.
+tasks.withType(KotlinCompilationTask).configureEach {
+    compilerOptions {
+        freeCompilerArgs.add('-Xskip-metadata-version-check')
+    }
+}
 
 dependencies {
     api project(':graphql-dgs-codegen-core')
