@@ -1,0 +1,9 @@
+scalar Currency
+
+type Query {
+  orders(filter: OrderFilter): String
+}
+
+input OrderFilter {
+  value: Currency! = "USD"
+}

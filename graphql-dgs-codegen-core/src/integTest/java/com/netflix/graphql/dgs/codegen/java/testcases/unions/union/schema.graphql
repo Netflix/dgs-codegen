@@ -1,0 +1,13 @@
+type Query {
+  search: [SearchResult]
+}
+
+union SearchResult = Movie | Actor
+
+type Movie {
+  title: String
+}
+
+type Actor {
+  name: String
+}

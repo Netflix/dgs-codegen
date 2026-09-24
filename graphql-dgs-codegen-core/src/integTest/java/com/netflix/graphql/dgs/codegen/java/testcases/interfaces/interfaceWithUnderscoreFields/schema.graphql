@@ -1,0 +1,12 @@
+type Query {
+  is: [I]
+}
+
+interface I {
+  _id: ID
+}
+
+type T implements I {
+  _id: ID
+  id: ID
+}

@@ -1,0 +1,24 @@
+interface Pet {
+  id: ID!
+  name: String
+  address: [String!]!
+  mother: Pet!
+  father: Pet
+  parents: [Pet]
+}
+type Dog implements Pet {
+  id: ID!
+  name: String
+  address: [String!]!
+  mother: Dog!
+  father: Dog
+  parents: [Dog]
+}
+type Bird implements Pet {
+  id: ID!
+  name: String
+  address: [String!]!
+  mother: Bird!
+  father: Bird
+  parents: [Bird]
+}

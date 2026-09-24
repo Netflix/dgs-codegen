@@ -1,0 +1,7 @@
+type Query {
+  string(a1: String, a2: String!, a3: I): String
+}
+
+input I {
+  arg: String
+}

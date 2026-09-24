@@ -1,0 +1,7 @@
+type Query {
+  test: RequiredTestType
+}
+
+type RequiredTestType {
+  isRequired: Boolean!
+}
