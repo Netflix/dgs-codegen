@@ -32,15 +32,17 @@ import graphql.language.UnionTypeDefinition
 import graphql.util.TraversalControl
 import graphql.util.TraverserContext
 
-class RequiredTypeCollector(
-    private val document: Document,
+class RequiredTypeCollector internal constructor(
+    private val schemaIndex: SchemaIndex,
     config: CodeGenConfig,
 ) {
+    constructor(document: Document, config: CodeGenConfig) : this(SchemaIndex(document), config)
+
     val requiredTypes: Set<String> = LinkedHashSet()
 
     init {
         val fieldDefinitions = mutableListOf<FieldDefinition>()
-        for (definition in document.definitions.asSequence().filterIsInstance<ObjectTypeDefinition>()) {
+        for (definition in schemaIndex.definitions.asSequence().filterIsInstance<ObjectTypeDefinition>()) {
             when (definition.name) {
                 "Query" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeQueries }
                 "Mutation" -> definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeMutations }
@@ -66,14 +68,14 @@ class RequiredTypeCollector(
                     node.fieldDefinitions
                         .flatMap { it.inputValueDefinitions }
                         .forEach {
-                            it.type.findTypeDefinition(document)?.accept(context, this)
+                            it.type.findTypeDefinition(schemaIndex)?.accept(context, this)
                         }
 
                     node.fieldDefinitions
                         .filter { !visitedTypes.contains("${node.name}.${it.name}") }
                         .forEach {
                             visitedTypes.add("${node.name}.${it.name}")
-                            it.type.findTypeDefinition(document)?.accept(context, this)
+                            it.type.findTypeDefinition(schemaIndex)?.accept(context, this)
                         }
                     return TraversalControl.CONTINUE
                 }
@@ -83,7 +85,7 @@ class RequiredTypeCollector(
                     context: TraverserContext<Node<*>>,
                 ): TraversalControl {
                     node.memberTypes.forEach {
-                        it.findTypeDefinition(document)?.accept(context, this)
+                        it.findTypeDefinition(schemaIndex)?.accept(context, this)
                     }
                     return TraversalControl.CONTINUE
                 }
@@ -92,7 +94,7 @@ class RequiredTypeCollector(
                     node: TypeName,
                     context: TraverserContext<Node<*>>,
                 ): TraversalControl {
-                    node.findTypeDefinition(document)?.accept(context, this)
+                    node.findTypeDefinition(schemaIndex)?.accept(context, this)
                     return TraversalControl.CONTINUE
                 }
 
@@ -106,7 +108,7 @@ class RequiredTypeCollector(
                         .filter { !visitedTypes.contains("${node.name}.${it.name}") }
                         .forEach {
                             visitedTypes.add("${node.name}.${it.name}")
-                            it.type.findTypeDefinition(document)?.accept(context, this)
+                            it.type.findTypeDefinition(schemaIndex)?.accept(context, this)
                         }
                     return TraversalControl.CONTINUE
                 }
@@ -123,7 +125,7 @@ class RequiredTypeCollector(
                     node: InputValueDefinition,
                     context: TraverserContext<Node<Node<*>>>,
                 ): TraversalControl {
-                    node.type.findTypeDefinition(document)?.accept(context, this)
+                    node.type.findTypeDefinition(schemaIndex)?.accept(context, this)
                     return TraversalControl.CONTINUE
                 }
             },

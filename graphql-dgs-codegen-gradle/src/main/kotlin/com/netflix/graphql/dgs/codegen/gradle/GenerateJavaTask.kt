@@ -24,46 +24,69 @@ import com.netflix.graphql.dgs.codegen.JacksonVersion
 import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
+import org.gradle.api.file.Directory
 import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.provider.ListProperty
+import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
 import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
-import java.nio.file.Paths
 import java.util.*
 import javax.inject.Inject
 
+@CacheableTask
 open class GenerateJavaTask
     @Inject
     constructor(
-        objectFactory: ObjectFactory,
+        private val objectFactory: ObjectFactory,
         private val providerFactory: ProviderFactory,
     ) : DefaultTask() {
-        @Input
-        var generatedSourcesDir: String =
-            project.layout.buildDirectory
-                .get()
-                .asFile.absolutePath
+        private val generatedSourcesRoot: Property<String> =
+            objectFactory
+                .property(String::class.java)
+                .convention(project.layout.buildDirectory.map { it.asFile.absolutePath })
+
+        @get:Internal
+        var generatedSourcesDir: String
+            get() = generatedSourcesRoot.get()
+            set(value) {
+                generatedSourcesRoot.set(value)
+            }
+
+        @get:OutputDirectory
+        val generatedSourcesDirectory: Provider<Directory> =
+            project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen") })
+
+        @get:OutputDirectory
+        val generatedExamplesDirectory: Provider<Directory> =
+            project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen-generated-examples") })
+
+        @get:Internal
+        var schemaPaths: MutableList<Any> = mutableListOf("${project.projectDir}/src/main/resources/schema")
 
         @get:InputFiles
         @get:PathSensitive(PathSensitivity.RELATIVE)
-        val schemaPaths: ConfigurableFileCollection =
-            objectFactory.fileCollection().from("${project.projectDir}/src/main/resources/schema")
+        val schemaFiles: ConfigurableFileCollection =
+            objectFactory.fileCollection().from(providerFactory.provider { schemaPaths })
 
-        fun setSchemaPaths(paths: Iterable<Any>) {
-            schemaPaths.setFrom(paths)
-        }
-
-        fun setSchemaPaths(paths: Provider<out Iterable<Any>>) {
-            schemaPaths.setFrom(paths)
+        init {
+            outputs.doNotCacheIf("Generated sources contain timestamps") {
+                addGeneratedAnnotation &&
+                    generatedAnnotationType == "jakarta.annotation.Generated" &&
+                    !disableDatesInGeneratedAnnotation
+            }
         }
 
         fun setSchemaPaths(paths: FileCollection) {
-            schemaPaths.setFrom(paths)
+            schemaPaths = mutableListOf(paths)
+        }
+
+        fun setSchemaPaths(paths: Provider<out Iterable<Any>>) {
+            schemaPaths = mutableListOf(paths)
         }
 
         @Input
@@ -131,11 +154,14 @@ open class GenerateJavaTask
         @Input
         var javaGenerateAllConstructor = true
 
-        @OutputDirectory
-        fun getOutputDir(): File = Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen").toFile()
+        @Internal
+        var fileWriteParallelism = CodeGenConfig.DEFAULT_FILE_WRITE_PARALLELISM
 
-        @OutputDirectory
-        fun getExampleOutputDir(): File = Paths.get("$generatedSourcesDir/generated/sources/dgs-codegen-generated-examples").toFile()
+        @Internal
+        fun getOutputDir(): File = generatedSourcesDirectory.get().asFile
+
+        @Internal
+        fun getExampleOutputDir(): File = generatedExamplesDirectory.get().asFile
 
         @Input
         var includeQueries = mutableListOf<String>()
@@ -221,20 +247,25 @@ open class GenerateJavaTask
 
         @TaskAction
         fun generate() {
+            require(fileWriteParallelism > 0) { "fileWriteParallelism must be greater than zero" }
+
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
-            val schemaPaths = schemaPaths.files.sorted().toSet()
-            schemaPaths.filter { !it.exists() }.forEach {
+            val resolvedSchemaFiles =
+                schemaFiles.files
+                    .sorted()
+                    .toSet()
+            resolvedSchemaFiles.filter { !it.exists() }.forEach {
                 logger.warn("Schema location ${it.absolutePath} does not exist")
             }
             logger.info("Processing schema files:")
-            schemaPaths.forEach {
+            resolvedSchemaFiles.forEach {
                 logger.info("Processing $it")
             }
 
             val config =
                 CodeGenConfig(
                     schemas = emptySet(),
-                    schemaFiles = schemaPaths,
+                    schemaFiles = resolvedSchemaFiles,
                     schemaJarFilesFromDependencies = schemaJarFilesFromDependencies,
                     outputDir = getOutputDir().toPath(),
                     examplesOutputDir = getExampleOutputDir().toPath(),
@@ -275,7 +306,7 @@ open class GenerateJavaTask
                     trackInputFieldSet = trackInputFieldSet,
                     generateJSpecifyAnnotations = generateJSpecifyAnnotations,
                     jacksonVersions = effectiveJacksonVersions.get(),
-                )
+                ).apply { fileWriteParallelism = this@GenerateJavaTask.fileWriteParallelism }
 
             logger.info("Codegen config: {}", config)
 

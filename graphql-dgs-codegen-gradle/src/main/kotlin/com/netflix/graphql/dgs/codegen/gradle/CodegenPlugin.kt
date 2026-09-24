@@ -52,7 +52,7 @@ class CodegenPlugin : Plugin<Project> {
                 throw RuntimeException("Gradle versions < 7.4 are no longer supported by DGS Codegen. Please upgrade your Gradle version.")
             }
         val mainSourceSet = sourceSets.getByName(SourceSet.MAIN_SOURCE_SET_NAME)
-        val outputDir = generateJavaTaskProvider.map(GenerateJavaTask::getOutputDir)
+        val outputDir = generateJavaTaskProvider.flatMap(GenerateJavaTask::generatedSourcesDirectory)
         mainSourceSet.java.srcDirs(project.files(outputDir).builtBy(generateJavaTaskProvider))
 
         project.configurations.create("dgsCodegen")

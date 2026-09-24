@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.shared.findSchemaTypeMapping
 import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.palantir.javapoet.ClassName
@@ -33,11 +34,13 @@ import java.time.*
 import java.util.*
 import com.palantir.javapoet.TypeName as JavaTypeName
 
-class TypeUtils(
+class TypeUtils internal constructor(
     private val packageName: String,
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(packageName: String, config: CodeGenConfig, document: Document) : this(packageName, config, SchemaIndex(document))
+
     companion object {
         private val commonScalars =
             mapOf<String, JavaTypeName>(
@@ -94,15 +97,11 @@ class TypeUtils(
                     var canUseWildcardType = false
                     if (useWildcardType) {
                         if (typeName is ClassName) {
-                            if (document.definitions
-                                    .filterIsInstance<ObjectTypeDefinition>()
-                                    .any { e -> "I${e.name}" == typeName.simpleName() } ||
+                            val simpleName = typeName.simpleName()
+                            if ((simpleName.startsWith("I") && schemaIndex.hasObjectType(simpleName.drop(1))) ||
                                 (
                                     config.generateInterfaces &&
-                                        document.definitions.filterIsInstance<InterfaceTypeDefinition>().any { e ->
-                                            "${e.name}" ==
-                                                typeName.simpleName()
-                                        }
+                                        schemaIndex.hasInterfaceType(simpleName)
                                 )
                             ) {
                                 canUseWildcardType = true
@@ -202,7 +201,7 @@ class TypeUtils(
             )
         }
 
-        val schemaType = findSchemaTypeMapping(document, name)
+        val schemaType = findSchemaTypeMapping(schemaIndex, name)
         if (schemaType != null) {
             return schemaType.toTypeName()
         }
@@ -225,8 +224,8 @@ class TypeUtils(
             else -> {
                 var simpleName = name
                 if (useInterfaceType &&
-                    !document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name } &&
-                    !document.definitions.filterIsInstance<UnionTypeDefinition>().any { e -> e.name == name } &&
+                    !schemaIndex.hasEnumType(name) &&
+                    !schemaIndex.hasUnionType(name) &&
                     !isFieldTypeAnInterface(this)
                 ) {
                     simpleName = "I$name"
@@ -276,9 +275,7 @@ class TypeUtils(
     }
 
     private fun isFieldTypeAnInterface(fieldDefinitionType: TypeName): Boolean =
-        document
-            .getDefinitionsOfType(InterfaceTypeDefinition::class.java)
-            .any { node -> node.name == findInnerType(fieldDefinitionType).name }
+        schemaIndex.hasInterfaceType(findInnerType(fieldDefinitionType).name)
 
     fun transformIfDefaultClassMethodExists(
         originName: String,
@@ -290,7 +287,5 @@ class TypeUtils(
             originName
         }
 
-    private fun isFieldTypeDefinedInDocument(name: String): Boolean =
-        document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||
-            document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name }
+    private fun isFieldTypeDefinedInDocument(name: String): Boolean = schemaIndex.hasObjectType(name) || schemaIndex.hasEnumType(name)
 }

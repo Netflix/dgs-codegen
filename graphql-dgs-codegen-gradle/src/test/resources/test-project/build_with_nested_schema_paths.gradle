@@ -1,0 +1,16 @@
+plugins {
+    id 'java'
+    id 'com.netflix.dgs.codegen'
+}
+
+configurations {
+    CodeGenConfiguration.exclude group: "com.netflix.graphql.dgs.codegen", module: "graphql-dgs-codegen-core"
+}
+
+generateJava {
+    schemaPaths = [[file('src/main/resources/schema')] as Set]
+    packageName = 'com.netflix.testproject.graphql'
+    generatedSourcesDir = "${projectDir}/build/graphql"
+}
+
+codegen.clientCoreConventionsEnabled = false

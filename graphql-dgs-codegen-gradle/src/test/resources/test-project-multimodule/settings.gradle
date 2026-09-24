@@ -16,5 +16,9 @@
  *
  */
 
-include 'smoke_test_settings.gradle'
-rootProject.buildFileName = 'build_with_jackson_override.gradle'
+rootProject.name = 'multimodule-root'
+include 'server'
+
+if (gradle.startParameter.projectProperties.containsKey('testServerBuildFile')) {
+    project(':server').buildFileName = gradle.startParameter.projectProperties['testServerBuildFile']
+}

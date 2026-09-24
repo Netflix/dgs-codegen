@@ -19,6 +19,7 @@
 package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.shared.findSchemaTypeMapping
 import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.kotlinpoet.*
@@ -32,11 +33,14 @@ import java.time.*
 import java.util.*
 import com.squareup.kotlinpoet.TypeName as KtTypeName
 
-class KotlinTypeUtils(
+class KotlinTypeUtils internal constructor(
     private val packageName: String,
     private val config: CodeGenConfig,
-    private val document: Document,
+    private val schemaIndex: SchemaIndex,
 ) {
+    constructor(packageName: String, config: CodeGenConfig, document: Document) : this(packageName, config, SchemaIndex(document))
+
+    private val document = schemaIndex.document
     private val commonScalars =
         mapOf(
             "LocalTime" to LocalTime::class.asTypeName(),
@@ -148,7 +152,7 @@ class KotlinTypeUtils(
             )
         }
 
-        val schemaType = findSchemaTypeMapping(document, name)
+        val schemaType = findSchemaTypeMapping(schemaIndex, name)
         if (schemaType != null) {
             return schemaType.toKtTypeName()
         }

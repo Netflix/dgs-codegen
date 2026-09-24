@@ -16,5 +16,21 @@
  *
  */
 
-include 'smoke_test_settings.gradle'
-rootProject.buildFileName = 'build_with_default_dir.gradle'
+plugins {
+    id 'java'
+    id 'com.netflix.dgs.codegen'
+}
+
+configurations {
+    // injected by Gradle Runner through test configuration, see CodegenGradlePluginTest
+    CodeGenConfiguration.exclude group: "com.netflix.graphql.dgs.codegen", module: "graphql-dgs-codegen-core"
+}
+
+generateJava {
+    // A relative File is resolved against this subproject's own directory.
+    schemaPaths = [new File("src/main/resources/schema")]
+    packageName = 'com.netflix.testproject.graphql'
+    generatedSourcesDir = "${projectDir}/build/graphql"
+}
+
+codegen.clientCoreConventionsEnabled = false

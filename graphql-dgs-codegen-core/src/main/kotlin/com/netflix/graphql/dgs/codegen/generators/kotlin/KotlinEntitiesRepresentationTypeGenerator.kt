@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils
 import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils.findType
@@ -38,10 +39,12 @@ import graphql.language.ObjectTypeDefinition
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class KotlinEntitiesRepresentationTypeGenerator(
+class KotlinEntitiesRepresentationTypeGenerator internal constructor(
     config: CodeGenConfig,
-    document: Document,
-) : AbstractKotlinDataTypeGenerator(packageName = config.packageNameClient, config = config, document = document) {
+    schemaIndex: SchemaIndex,
+) : AbstractKotlinDataTypeGenerator(packageName = config.packageNameClient, config = config, schemaIndex = schemaIndex) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     fun generate(
         definition: ObjectTypeDefinition,
         generatedRepresentations: MutableMap<String, Any>,

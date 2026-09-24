@@ -25,6 +25,8 @@ import com.github.ajalt.clikt.parameters.arguments.multiple
 import com.github.ajalt.clikt.parameters.options.*
 import com.github.ajalt.clikt.parameters.types.choice
 import com.github.ajalt.clikt.parameters.types.file
+import com.github.ajalt.clikt.parameters.types.int
+import com.github.ajalt.clikt.parameters.types.restrictTo
 import java.io.File
 import java.nio.file.Paths
 
@@ -70,6 +72,10 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
     private val shortProjectionNames by option("--short-projection-names").flag()
     private val generateInterfaceSetters by option("--generate-interface-setters").flag()
     private val generateDocs by option("--generate-docs").flag()
+    private val fileWriteParallelism by option(
+        "--file-write-parallelism",
+        help = "Maximum number of generated files to write concurrently",
+    ).int().restrictTo(min = 1).default(CodeGenConfig.DEFAULT_FILE_WRITE_PARALLELISM)
 
     override fun run() {
         val inputSchemas =
@@ -108,7 +114,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                         generateInterfaces = generateInterfaces,
                         generateInterfaceSetters = generateInterfaceSetters,
                         generateDocs = generateDocs,
-                    )
+                    ).apply { fileWriteParallelism = this@CodeGenCli.fileWriteParallelism }
                 } else {
                     CodeGenConfig(
                         schemaFiles = inputSchemas,
@@ -129,7 +135,7 @@ class CodeGenCli : CliktCommand("Generate Java sources for SCHEMA file(s)") {
                         generateInterfaces = generateInterfaces,
                         generateInterfaceSetters = generateInterfaceSetters,
                         generateDocs = generateDocs,
-                    )
+                    ).apply { fileWriteParallelism = this@CodeGenCli.fileWriteParallelism }
                 },
             ).generate()
 

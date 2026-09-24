@@ -17,3 +17,7 @@
  */
 
 rootProject.name = 'test-project'
+
+if (gradle.startParameter.projectProperties.containsKey('testBuildFile')) {
+    rootProject.buildFileName = gradle.startParameter.projectProperties['testBuildFile']
+}

@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.shouldSkip
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
@@ -29,12 +30,14 @@ import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
 
-class KotlinUnionTypeGenerator(
+class KotlinUnionTypeGenerator internal constructor(
     private val config: CodeGenConfig,
-    document: Document,
+    schemaIndex: SchemaIndex,
 ) {
+    constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
+
     private val packageName = config.packageNameTypes
-    private val typeUtils = KotlinTypeUtils(packageName, config, document)
+    private val typeUtils = KotlinTypeUtils(packageName, config, schemaIndex)
 
     fun generate(
         definition: UnionTypeDefinition,

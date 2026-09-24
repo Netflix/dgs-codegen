@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.generators.shared
 
+import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.kotlin2.logger
 import graphql.language.Document
 import graphql.language.ScalarTypeDefinition
@@ -175,6 +176,11 @@ internal fun findSchemaTypeMapping(
     }
     return null
 }
+
+internal fun findSchemaTypeMapping(
+    schemaIndex: SchemaIndex,
+    typeName: String,
+): String? = schemaIndex.schemaTypeMapping(typeName)
 
 internal val generatedDate: String = Instant.now().toString()
 
