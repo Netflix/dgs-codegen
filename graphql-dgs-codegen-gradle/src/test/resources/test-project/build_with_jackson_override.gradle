@@ -30,6 +30,7 @@ generateJava {
     schemaPaths = ["${projectDir}/src/main/resources/schema"]
     packageName = 'com.netflix.testproject.graphql'
     generatedSourcesDir = "${projectDir}/build/graphql"
+    language = 'KOTLIN'
     jacksonVersionOverride = ["2", "3"]
     generateKotlinNullableClasses = true
 }
