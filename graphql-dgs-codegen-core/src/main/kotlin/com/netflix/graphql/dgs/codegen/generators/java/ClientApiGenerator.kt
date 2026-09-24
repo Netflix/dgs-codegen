@@ -67,7 +67,6 @@ class ClientApiGenerator internal constructor(
 ) {
     constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
 
-    private val document = schemaIndex.document
     private val generatedClasses = mutableSetOf<String>()
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, schemaIndex)
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
@@ -412,37 +411,37 @@ class ClientApiGenerator internal constructor(
             originalMethodName.plus("GraphQLQuery")
         }
 
+    private fun createProjectionClass(clazzName: String): TypeSpec.Builder {
+        val baseProjectionClass = ClassName.get(BaseSubProjectionNode::class.java)
+        val baseProjectionType =
+            ParameterizedTypeName.get(baseProjectionClass, TypeVariableName.get("?"), TypeVariableName.get("?"))
+        val parentType = TypeVariableName.get("PARENT").withBounds(baseProjectionType)
+        val rootType = TypeVariableName.get("ROOT").withBounds(baseProjectionType)
+
+        return TypeSpec
+            .classBuilder(clazzName)
+            .addOptionalGeneratedAnnotation(config)
+            .addTypeVariable(parentType)
+            .addTypeVariable(rootType)
+            .addModifiers(Modifier.PUBLIC)
+            .superclass(ParameterizedTypeName.get(baseProjectionClass, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+    }
+
+    private fun createRootProjectionConstructor(typeName: String): MethodSpec =
+        MethodSpec
+            .constructorBuilder()
+            .addModifiers(Modifier.PUBLIC)
+            .addCode("""super(null, null, java.util.Optional.of("$typeName"));""")
+            .build()
+
     private fun createRootProjection(
         type: TypeDefinition<*>,
         prefix: String,
     ): CodeGenResult {
         val clazzName = "${prefix}ProjectionRoot"
-        val className = ClassName.get(BaseSubProjectionNode::class.java)
-        val parentJavaType =
-            TypeVariableName
-                .get(
-                    "PARENT",
-                ).withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
-        val rootJavaType =
-            TypeVariableName
-                .get(
-                    "ROOT",
-                ).withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType =
-            TypeSpec
-                .classBuilder(clazzName)
-                .addOptionalGeneratedAnnotation(config)
-                .addTypeVariable(parentJavaType)
-                .addTypeVariable(rootJavaType)
-                .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
-                .addMethod(
-                    MethodSpec
-                        .constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addCode("""super(null, null, java.util.Optional.of("${type.name}"));""")
-                        .build(),
-                )
+            createProjectionClass(clazzName)
+                .addMethod(createRootProjectionConstructor(type.name))
 
         val typeVariable = TypeVariableName.get("$clazzName<PARENT, ROOT>")
         javaType.addMethod(
@@ -617,32 +616,9 @@ class ClientApiGenerator internal constructor(
 
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
         val clazzName = "EntitiesProjectionRoot"
-        val className = ClassName.get(BaseSubProjectionNode::class.java)
-        val parentType =
-            TypeVariableName
-                .get(
-                    "PARENT",
-                ).withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
-        val rootType =
-            TypeVariableName
-                .get(
-                    "ROOT",
-                ).withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType =
-            TypeSpec
-                .classBuilder(clazzName)
-                .addOptionalGeneratedAnnotation(config)
-                .addTypeVariable(parentType)
-                .addTypeVariable(rootType)
-                .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
-                .addMethod(
-                    MethodSpec
-                        .constructorBuilder()
-                        .addModifiers(Modifier.PUBLIC)
-                        .addCode("""super(null, null, java.util.Optional.of("${"_entities"}"));""")
-                        .build(),
-                )
+            createProjectionClass(clazzName)
+                .addMethod(createRootProjectionConstructor("_entities"))
 
         if (generatedClasses.contains(clazzName)) return CodeGenResult.EMPTY else generatedClasses.add(clazzName)
 
@@ -802,28 +778,11 @@ class ClientApiGenerator internal constructor(
         root: TypeSpec,
         prefix: String,
     ): Pair<TypeSpec.Builder, CodeGenResult>? {
-        val className = ClassName.get(BaseSubProjectionNode::class.java)
         val clazzName = "${prefix}Projection"
         if (generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
 
-        val parentJavaType =
-            TypeVariableName
-                .get(
-                    "PARENT",
-                ).withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
-        val rootJavaType =
-            TypeVariableName
-                .get(
-                    "ROOT",
-                ).withBounds(ParameterizedTypeName.get(className, TypeVariableName.get("?"), TypeVariableName.get("?")))
         val javaType =
-            TypeSpec
-                .classBuilder(clazzName)
-                .addOptionalGeneratedAnnotation(config)
-                .addTypeVariable(parentJavaType)
-                .addTypeVariable(rootJavaType)
-                .addModifiers(Modifier.PUBLIC)
-                .superclass(ParameterizedTypeName.get(className, TypeVariableName.get("PARENT"), TypeVariableName.get("ROOT")))
+            createProjectionClass(clazzName)
                 .addMethod(
                     MethodSpec
                         .constructorBuilder()

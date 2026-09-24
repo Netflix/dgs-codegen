@@ -79,7 +79,7 @@ open class InputValueSerializer(
         val objectFields =
             propertyValues
                 .asSequence()
-                .filter { (_, value) -> value != null }
+                .filter { (_, value) -> shouldSerializeProperty(value) }
                 .map { (name, value) -> ObjectField(InputReservedKeywordSanitizer().desanitize(name), toValue(value)) }
                 .toList()
         return ObjectValue
@@ -87,6 +87,8 @@ open class InputValueSerializer(
             .objectFields(objectFields)
             .build()
     }
+
+    protected open fun shouldSerializeProperty(value: Any?): Boolean = value != null
 
     protected fun getOptionalValue(input: Any): Optional<Value<*>> {
         if (input is Value<*>) {
