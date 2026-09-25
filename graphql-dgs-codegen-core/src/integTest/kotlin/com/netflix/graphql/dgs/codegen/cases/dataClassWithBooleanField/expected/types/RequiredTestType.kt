@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithBooleanField.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
 import kotlin.Boolean
+import kotlin.Int
+import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -21,6 +25,22 @@ public class RequiredTestType(
   @get:JvmName("getIsRequired")
   public val isRequired: Boolean
     get() = __isRequired.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__isRequired === isRequiredDefault) isRequiredDefault else isRequired,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is RequiredTestType &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__isRequired === isRequiredDefault) null else "isRequired=" + isRequired,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "RequiredTestType(",
+      postfix = ")")
 
   @Generated
   public companion object {

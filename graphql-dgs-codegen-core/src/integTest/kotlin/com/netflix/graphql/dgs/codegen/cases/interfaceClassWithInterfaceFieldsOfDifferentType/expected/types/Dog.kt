@@ -7,8 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFieldsOfDifferentType.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -31,6 +35,23 @@ public class Dog(
   @get:JvmName("getDiet")
   override val diet: Vegetarian?
     get() = __diet.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__name === nameDefault) nameDefault else name,
+      if (__diet === dietDefault) dietDefault else diet,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Dog && `__$fieldValues`()
+      == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__name === nameDefault) null else "name=" + name,
+      if (__diet === dietDefault) null else "diet=" + diet,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Dog(", postfix = ")")
 
   @Generated
   public companion object {

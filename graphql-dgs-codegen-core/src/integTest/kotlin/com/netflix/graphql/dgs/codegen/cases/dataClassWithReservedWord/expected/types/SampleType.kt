@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithReservedWord.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -21,6 +25,22 @@ public class SampleType(
   @get:JvmName("getReturn")
   public val `return`: String
     get() = __return.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__return === returnDefault) returnDefault else `return`,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is SampleType &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__return === returnDefault) null else "return=" + `return`,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "SampleType(", postfix
+      = ")")
 
   @Generated
   public companion object {
