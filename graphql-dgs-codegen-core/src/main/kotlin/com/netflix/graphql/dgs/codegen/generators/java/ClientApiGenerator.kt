@@ -74,6 +74,16 @@ class ClientApiGenerator internal constructor(
     fun generate(
         definition: ObjectTypeDefinition,
         methodNames: MutableSet<String>,
+    ): CodeGenResult = generate(definition, methodNames, mutableMapOf())
+
+    /**
+     * [rootProjectionTypes] maps each root projection class name to the type it projects.
+     * Share it across operations, like [methodNames], or same-named fields returning different types collide.
+     */
+    internal fun generate(
+        definition: ObjectTypeDefinition,
+        methodNames: MutableSet<String>,
+        rootProjectionTypes: MutableMap<String, String>,
     ): CodeGenResult =
         definition.fieldDefinitions
             .filterIncludedInConfig(definition.name, config)
@@ -83,7 +93,8 @@ class ClientApiGenerator internal constructor(
 
                 val rootProjection =
                     it.type.findTypeDefinition(schemaIndex, true)?.let { typeDefinition ->
-                        createRootProjection(typeDefinition, it.name.capitalized())
+                        val prefix = rootProjectionPrefix(it.name.capitalized(), definition.name, typeDefinition, rootProjectionTypes)
+                        createRootProjection(typeDefinition, prefix)
                     }
                         ?: CodeGenResult.EMPTY
                 CodeGenResult(javaQueryTypes = listOf(javaFile)).merge(rootProjection)
@@ -433,6 +444,24 @@ class ClientApiGenerator internal constructor(
             .addModifiers(Modifier.PUBLIC)
             .addCode("""super(null, null, java.util.Optional.of("$typeName"));""")
             .build()
+
+    /**
+     * Root projections are named after the operation field, so `Query.result: QueryResult` and
+     * `Mutation.result: MutationResult` both want `ResultProjectionRoot`, and one would silently replace the other.
+     * Same-named fields returning the same type keep sharing one root.
+     * A field returning a different type gets an operation-qualified root such as `ResultGraphQLMutationProjectionRoot`,
+     * mirroring the query class name from [generateMethodName].
+     */
+    private fun rootProjectionPrefix(
+        fieldName: String,
+        operation: String,
+        type: TypeDefinition<*>,
+        rootProjectionTypes: MutableMap<String, String>,
+    ): String {
+        val claimedType = rootProjectionTypes.putIfAbsent("${fieldName}ProjectionRoot", type.name)
+        if (claimedType == null || claimedType == type.name) return fieldName
+        return "${fieldName}GraphQL${operation.capitalized()}"
+    }
 
     private fun createRootProjection(
         type: TypeDefinition<*>,

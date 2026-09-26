@@ -386,6 +386,7 @@ class CodeGen private constructor(
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
         val methodNames = mutableSetOf<String>()
+        val rootProjectionTypes = mutableMapOf<String, String>()
         return if (config.generateClientApi) {
             definitions
                 .asSequence()
@@ -393,7 +394,7 @@ class CodeGen private constructor(
                 .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
                 .sortedBy { it.name.length }
                 .map {
-                    ClientApiGenerator(config, schemaIndex).generate(it, methodNames)
+                    ClientApiGenerator(config, schemaIndex).generate(it, methodNames, rootProjectionTypes)
                 }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
         } else {
             CodeGenResult.EMPTY
