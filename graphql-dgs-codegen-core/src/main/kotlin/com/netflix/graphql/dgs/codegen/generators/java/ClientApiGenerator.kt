@@ -451,15 +451,27 @@ class ClientApiGenerator internal constructor(
      * one written replaced the rest on disk.
      * The type that won there keeps the unqualified name, so clients compiled against it still compile:
      * `distinct()` reproduces the deduplication and `toMap()` the last write.
+     * [generateEntities] writes `EntitiesProjectionRoot` after every operation, so a Query field named `entities` loses
+     * it to [federatedTypes].
      */
-    internal fun rootProjectionTypes(operations: List<ObjectTypeDefinition>): Map<String, String> =
-        operations
-            .flatMap { operation ->
-                rootFields(operation).mapNotNull { field ->
-                    field.type.findTypeDefinition(schemaIndex, true)?.let { "${field.name.capitalized()}ProjectionRoot" to it.name }
-                }
-            }.distinct()
-            .toMap()
+    internal fun rootProjectionTypes(
+        operations: List<ObjectTypeDefinition>,
+        federatedTypes: List<ObjectTypeDefinition> = emptyList(),
+    ): Map<String, String> {
+        val rootProjectionTypes =
+            operations
+                .flatMap { operation ->
+                    rootFields(operation).mapNotNull { field ->
+                        field.type.findTypeDefinition(schemaIndex, true)?.let { "${field.name.capitalized()}ProjectionRoot" to it.name }
+                    }
+                }.distinct()
+                .toMap()
+        return if (!config.skipEntityQueries && federatedTypes.isNotEmpty()) {
+            rootProjectionTypes + (ENTITIES_PROJECTION_ROOT to "_entities")
+        } else {
+            rootProjectionTypes
+        }
+    }
 
     private fun rootFields(definition: ObjectTypeDefinition): List<FieldDefinition> =
         definition.fieldDefinitions
@@ -663,7 +675,7 @@ class ClientApiGenerator internal constructor(
     }
 
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
-        val clazzName = "EntitiesProjectionRoot"
+        val clazzName = ENTITIES_PROJECTION_ROOT
         val javaType =
             createProjectionClass(clazzName)
                 .addMethod(createRootProjectionConstructor("_entities"))
@@ -970,4 +982,8 @@ class ClientApiGenerator internal constructor(
     private fun getPackageName(): String = config.packageNameClient
 
     private fun getDatatypesPackageName(): String = config.packageNameTypes
+
+    private companion object {
+        const val ENTITIES_PROJECTION_ROOT = "EntitiesProjectionRoot"
+    }
 }

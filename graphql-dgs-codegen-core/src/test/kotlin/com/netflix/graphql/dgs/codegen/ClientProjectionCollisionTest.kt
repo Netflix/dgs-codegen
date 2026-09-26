@@ -19,9 +19,11 @@ package com.netflix.graphql.dgs.codegen
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
+import java.nio.file.Path
 import java.util.stream.Stream
 
 class ClientProjectionCollisionTest {
@@ -114,6 +116,84 @@ class ClientProjectionCollisionTest {
             .doesNotContain("ResultGraphQLMutationProjectionRoot")
         assertThat(rootProjectionMethods(codeGenResult, "ResultProjectionRoot")).contains("other")
         assertThat(rootProjectionMethods(codeGenResult, "ResultGraphQLQueryProjectionRoot")).contains("value")
+    }
+
+    // Up to 8.7.0 the federation root was written after the client one and won on disk
+    @Test
+    fun `keeps EntitiesProjectionRoot for federated entities when a query field is named entities`() {
+        val codeGenResult =
+            generate(
+                """
+                type Query {
+                    entities: [Movie]
+                }
+
+                type Movie @key(fields: "id") {
+                    id: ID
+                    title: String
+                }
+                """.trimIndent(),
+                Language.JAVA,
+            )
+
+        assertThat(rootProjectionMethods(codeGenResult, "EntitiesProjectionRoot")).contains("onMovie")
+        assertThat(rootProjectionMethods(codeGenResult, "EntitiesGraphQLQueryProjectionRoot"))
+            .contains("title")
+            .doesNotContain("onMovie")
+    }
+
+    // Query generates MovieFragmentProjection for the union fragment, Mutation for the MovieFragment type;
+    // 8.7.0 wrote both and the Mutation one won
+    @Test
+    fun `writes the last of same-named projections from different operations`(
+        @TempDir outputDir: Path,
+    ) {
+        CodeGen(
+            CodeGenConfig(
+                schemas =
+                    setOf(
+                        """
+                        type Query {
+                            search: SearchResult
+                        }
+
+                        type Mutation {
+                            wrap: Wrapper
+                        }
+
+                        union SearchResult = Movie | Show
+
+                        type Movie {
+                            title: String
+                        }
+
+                        type Show {
+                            name: String
+                        }
+
+                        type Wrapper {
+                            movieFragment: MovieFragment
+                        }
+
+                        type MovieFragment {
+                            fragmentOnly: String
+                        }
+                        """.trimIndent(),
+                    ),
+                packageName = "com.netflix.test",
+                generateClientApi = true,
+                addGeneratedAnnotation = false,
+                writeToFiles = true,
+                outputDir = outputDir,
+                examplesOutputDir = outputDir.resolve("examples"),
+                generatedDocsFolder = outputDir.resolve("docs"),
+            ),
+        ).generate()
+
+        assertThat(outputDir.resolve("com/netflix/test/client/MovieFragmentProjection.java"))
+            .content()
+            .contains("fragmentOnly()")
+            .doesNotContain("title()")
     }
 
     private fun generate(
