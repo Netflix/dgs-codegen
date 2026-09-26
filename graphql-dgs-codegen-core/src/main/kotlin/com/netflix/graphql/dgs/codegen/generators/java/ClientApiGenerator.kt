@@ -74,16 +74,24 @@ class ClientApiGenerator internal constructor(
     fun generate(
         definition: ObjectTypeDefinition,
         methodNames: MutableSet<String>,
+    ): CodeGenResult = generate(definition, methodNames, rootProjectionTypes(listOf(definition)))
+
+    /**
+     * Pass [rootProjectionTypes] computed over every operation, or same-named fields returning different types collide.
+     */
+    internal fun generate(
+        definition: ObjectTypeDefinition,
+        methodNames: MutableSet<String>,
+        rootProjectionTypes: Map<String, String>,
     ): CodeGenResult =
-        definition.fieldDefinitions
-            .filterIncludedInConfig(definition.name, config)
-            .filterSkipped()
+        rootFields(definition)
             .map {
                 val javaFile = createQueryClass(it, definition.name, methodNames)
 
                 val rootProjection =
                     it.type.findTypeDefinition(schemaIndex, true)?.let { typeDefinition ->
-                        createRootProjection(typeDefinition, it.name.capitalized())
+                        val prefix = rootProjectionPrefix(it.name.capitalized(), definition.name, typeDefinition, rootProjectionTypes)
+                        createRootProjection(typeDefinition, prefix)
                     }
                         ?: CodeGenResult.EMPTY
                 CodeGenResult(javaQueryTypes = listOf(javaFile)).merge(rootProjection)
@@ -434,6 +442,58 @@ class ClientApiGenerator internal constructor(
             .addCode("""super(null, null, java.util.Optional.of("$typeName"));""")
             .build()
 
+    /**
+     * Maps each unqualified root projection class name to the type it projects, given [operations] in generation order.
+     *
+     * Root projections are named after the operation field, so `Query.result: QueryResult` and
+     * `Mutation.result: MutationResult` both want `ResultProjectionRoot`.
+     * Up to 8.7.0 each operation generated its own, identical ones were deduplicated keeping the first and the last
+     * one written replaced the rest on disk.
+     * The type that won there keeps the unqualified name, so clients compiled against it still compile:
+     * `distinct()` reproduces the deduplication and `toMap()` the last write.
+     * [generateEntities] writes `EntitiesProjectionRoot` after every operation, so a Query field named `entities` loses
+     * it to [federatedTypes].
+     */
+    internal fun rootProjectionTypes(
+        operations: List<ObjectTypeDefinition>,
+        federatedTypes: List<ObjectTypeDefinition> = emptyList(),
+    ): Map<String, String> {
+        val rootProjectionTypes =
+            operations
+                .flatMap { operation ->
+                    rootFields(operation).mapNotNull { field ->
+                        field.type.findTypeDefinition(schemaIndex, true)?.let { "${field.name.capitalized()}ProjectionRoot" to it.name }
+                    }
+                }.distinct()
+                .toMap()
+        return if (!config.skipEntityQueries && federatedTypes.isNotEmpty()) {
+            rootProjectionTypes + (ENTITIES_PROJECTION_ROOT to "_entities")
+        } else {
+            rootProjectionTypes
+        }
+    }
+
+    private fun rootFields(definition: ObjectTypeDefinition): List<FieldDefinition> =
+        definition.fieldDefinitions
+            .filterIncludedInConfig(definition.name, config)
+            .filterSkipped()
+
+    /**
+     * A field returning a different type than the unqualified root gets an operation-qualified one such as
+     * `ResultGraphQLQueryProjectionRoot`, mirroring the query class name from [generateMethodName].
+     */
+    private fun rootProjectionPrefix(
+        fieldName: String,
+        operation: String,
+        type: TypeDefinition<*>,
+        rootProjectionTypes: Map<String, String>,
+    ): String =
+        if (rootProjectionTypes["${fieldName}ProjectionRoot"] == type.name) {
+            fieldName
+        } else {
+            "${fieldName}GraphQL${operation.capitalized()}"
+        }
+
     private fun createRootProjection(
         type: TypeDefinition<*>,
         prefix: String,
@@ -615,7 +675,7 @@ class ClientApiGenerator internal constructor(
     }
 
     private fun createEntitiesRootProjection(federatedTypes: List<ObjectTypeDefinition>): CodeGenResult {
-        val clazzName = "EntitiesProjectionRoot"
+        val clazzName = ENTITIES_PROJECTION_ROOT
         val javaType =
             createProjectionClass(clazzName)
                 .addMethod(createRootProjectionConstructor("_entities"))
@@ -922,4 +982,8 @@ class ClientApiGenerator internal constructor(
     private fun getPackageName(): String = config.packageNameClient
 
     private fun getDatatypesPackageName(): String = config.packageNameTypes
+
+    private companion object {
+        const val ENTITIES_PROJECTION_ROOT = "EntitiesProjectionRoot"
+    }
 }

@@ -177,7 +177,7 @@ class CodeGen private constructor(
                         codeGenResult.javaInterfaces +
                         codeGenResult.javaEnumTypes +
                         codeGenResult.javaQueryTypes +
-                        codeGenResult.clientProjections +
+                        lastProjectionPerPath(codeGenResult.clientProjections) +
                         codeGenResult.javaConstants,
                 kotlinFiles =
                     codeGenResult.kotlinDataTypes +
@@ -195,6 +195,13 @@ class CodeGen private constructor(
 
         return codeGenResult
     }
+
+    /**
+     * Up to 8.7.0 files were written one after another, so of two same-named projections the last one won on disk.
+     * The parallel writer rejects duplicate destinations instead, so resolve them up front.
+     */
+    private fun lastProjectionPerPath(projections: List<JavaFile>): List<JavaFile> =
+        projections.associateBy { it.packageName() to it.typeSpec().name() }.values.toList()
 
     /**
      * Build a [Document] containing the combined schemas from
@@ -387,13 +394,17 @@ class CodeGen private constructor(
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
         val methodNames = mutableSetOf<String>()
         return if (config.generateClientApi) {
-            definitions
+            val operations =
+                definitions
+                    .filterIsInstance<ObjectTypeDefinition>()
+                    .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
+                    .sortedBy { it.name.length }
+            val rootProjectionTypes =
+                ClientApiGenerator(config, schemaIndex).rootProjectionTypes(operations, federatedDefinitions(definitions))
+            operations
                 .asSequence()
-                .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
-                .sortedBy { it.name.length }
                 .map {
-                    ClientApiGenerator(config, schemaIndex).generate(it, methodNames)
+                    ClientApiGenerator(config, schemaIndex).generate(it, methodNames, rootProjectionTypes)
                 }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
         } else {
             CodeGenResult.EMPTY
@@ -402,16 +413,15 @@ class CodeGen private constructor(
 
     private fun generateJavaClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult =
         if (config.generateClientApi) {
-            val federatedDefinitions =
-                definitions
-                    .asSequence()
-                    .filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.hasDirective("key") }
-                    .toList()
-            ClientApiGenerator(config, schemaIndex).generateEntities(federatedDefinitions)
+            ClientApiGenerator(config, schemaIndex).generateEntities(federatedDefinitions(definitions))
         } else {
             CodeGenResult.EMPTY
         }
+
+    private fun federatedDefinitions(definitions: Collection<Definition<*>>): List<ObjectTypeDefinition> =
+        definitions
+            .filterIsInstance<ObjectTypeDefinition>()
+            .filter { it.hasDirective("key") }
 
     private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult =
         if (config.generateClientApi) {
@@ -767,10 +777,7 @@ data class CodeGenResult(
             javaEnumTypes = javaEnumTypes.concat(current.javaEnumTypes),
             javaDataFetchers = javaDataFetchers.concat(current.javaDataFetchers),
             javaQueryTypes = javaQueryTypes.concat(current.javaQueryTypes),
-            clientProjections =
-                clientProjections
-                    .concat(current.clientProjections)
-                    .distinctBy { it.packageName() to it.typeSpec().name() },
+            clientProjections = clientProjections.concat(current.clientProjections).distinctProjections(),
             javaConstants = javaConstants.concat(current.javaConstants),
             kotlinDataTypes = kotlinDataTypes.concat(current.kotlinDataTypes),
             kotlinInputTypes = kotlinInputTypes.concat(current.kotlinInputTypes),
@@ -803,6 +810,28 @@ data class CodeGenResult(
             .plus(kotlinConstants)
             .plus(kotlinClientTypes)
             .toList()
+
+    /**
+     * Drops projections identical to an earlier one, like the `distinct()` used up to 8.7.0, but only renders files
+     * whose names collide: equality renders the source, and rendering every accumulated file on every merge made
+     * merging quadratic.
+     * The package is part of the key, so comparing the rendered type skips `JavaFile`'s import pass.
+     * Same-named projections that differ are kept; `CodeGen` writes the last one, as 8.7.0 did.
+     */
+    private fun List<JavaFile>.distinctProjections(): List<JavaFile> {
+        val byName = HashMap<Pair<String, String>, MutableList<JavaFile>>()
+        val rendered = IdentityHashMap<JavaFile, String>()
+        val source = { file: JavaFile -> rendered.getOrPut(file) { file.typeSpec().toString() } }
+        return filter { file ->
+            val sameName = byName.getOrPut(file.packageName() to file.typeSpec().name()) { mutableListOf() }
+            if (sameName.any { it === file || source(it) == source(file) }) {
+                false
+            } else {
+                sameName.add(file)
+                true
+            }
+        }
+    }
 
     private fun <T> List<T>.concat(other: List<T>): List<T> {
         if (other.isEmpty()) {

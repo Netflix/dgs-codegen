@@ -27,17 +27,19 @@ import java.time.Duration
 import javax.lang.model.element.Modifier
 
 class CodeGenResultTest {
+    // Same-named projections that differ must survive the merge: 8.7.0 wrote both and the last one won on disk
     @Test
-    fun `client projections are distinct by their generated type`() {
+    fun `client projections drop only identical duplicates`() {
         val original = projection("example.client", "MovieProjection", methodCount = 1)
-        val duplicateType = projection("example.client", "MovieProjection", methodCount = 2)
+        val identical = projection("example.client", "MovieProjection", methodCount = 1)
+        val differentContent = projection("example.client", "MovieProjection", methodCount = 2)
         val sameNameInAnotherPackage = projection("example.admin", "MovieProjection", methodCount = 1)
 
         val merged =
             CodeGenResult(clientProjections = listOf(original))
-                .merge(CodeGenResult(clientProjections = listOf(duplicateType, sameNameInAnotherPackage)))
+                .merge(CodeGenResult(clientProjections = listOf(identical, differentContent, sameNameInAnotherPackage)))
 
-        assertThat(merged.clientProjections).containsExactly(original, sameNameInAnotherPackage)
+        assertThat(merged.clientProjections).containsExactly(original, differentContent, sameNameInAnotherPackage)
     }
 
     @Test
