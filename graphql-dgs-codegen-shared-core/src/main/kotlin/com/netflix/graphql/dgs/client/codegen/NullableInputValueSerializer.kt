@@ -16,38 +16,10 @@
 
 package com.netflix.graphql.dgs.client.codegen
 
-import graphql.language.NullValue
-import graphql.language.ObjectField
-import graphql.language.ObjectValue
-import graphql.language.Value
 import graphql.schema.Coercing
-import kotlin.reflect.full.allSuperclasses
 
 class NullableInputValueSerializer(
     scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
 ) : InputValueSerializer(scalars) {
-    override fun toValue(input: Any?): Value<*> {
-        if (input == null) {
-            return NullValue.newNullValue().build()
-        }
-
-        val optionalValue = getOptionalValue(input)
-
-        if (optionalValue.isPresent) {
-            return optionalValue.get()
-        }
-
-        val classes = (sequenceOf(input::class) + input::class.allSuperclasses.asSequence()) - Any::class
-        val propertyValues = getPropertyValues(classes, input)
-
-        val objectFields =
-            propertyValues
-                .asSequence()
-                .map { (name, value) -> ObjectField(InputReservedKeywordSanitizer().desanitize(name), toValue(value)) }
-                .toList()
-        return ObjectValue
-            .newObjectValue()
-            .objectFields(objectFields)
-            .build()
-    }
+    override fun shouldSerializeProperty(value: Any?): Boolean = true
 }
