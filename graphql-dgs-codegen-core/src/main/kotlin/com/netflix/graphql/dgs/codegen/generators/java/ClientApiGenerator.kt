@@ -74,20 +74,17 @@ class ClientApiGenerator internal constructor(
     fun generate(
         definition: ObjectTypeDefinition,
         methodNames: MutableSet<String>,
-    ): CodeGenResult = generate(definition, methodNames, mutableMapOf())
+    ): CodeGenResult = generate(definition, methodNames, rootProjectionTypes(listOf(definition)))
 
     /**
-     * [rootProjectionTypes] maps each root projection class name to the type it projects.
-     * Share it across operations, like [methodNames], or same-named fields returning different types collide.
+     * Pass [rootProjectionTypes] computed over every operation, or same-named fields returning different types collide.
      */
     internal fun generate(
         definition: ObjectTypeDefinition,
         methodNames: MutableSet<String>,
-        rootProjectionTypes: MutableMap<String, String>,
+        rootProjectionTypes: Map<String, String>,
     ): CodeGenResult =
-        definition.fieldDefinitions
-            .filterIncludedInConfig(definition.name, config)
-            .filterSkipped()
+        rootFields(definition)
             .map {
                 val javaFile = createQueryClass(it, definition.name, methodNames)
 
@@ -446,22 +443,44 @@ class ClientApiGenerator internal constructor(
             .build()
 
     /**
+     * Maps each unqualified root projection class name to the type it projects, given [operations] in generation order.
+     *
      * Root projections are named after the operation field, so `Query.result: QueryResult` and
-     * `Mutation.result: MutationResult` both want `ResultProjectionRoot`, and one would silently replace the other.
-     * Same-named fields returning the same type keep sharing one root.
-     * A field returning a different type gets an operation-qualified root such as `ResultGraphQLMutationProjectionRoot`,
-     * mirroring the query class name from [generateMethodName].
+     * `Mutation.result: MutationResult` both want `ResultProjectionRoot`.
+     * Up to 8.7.0 each operation generated its own, identical ones were deduplicated keeping the first and the last
+     * one written replaced the rest on disk.
+     * The type that won there keeps the unqualified name, so clients compiled against it still compile:
+     * `distinct()` reproduces the deduplication and `toMap()` the last write.
+     */
+    internal fun rootProjectionTypes(operations: List<ObjectTypeDefinition>): Map<String, String> =
+        operations
+            .flatMap { operation ->
+                rootFields(operation).mapNotNull { field ->
+                    field.type.findTypeDefinition(schemaIndex, true)?.let { "${field.name.capitalized()}ProjectionRoot" to it.name }
+                }
+            }.distinct()
+            .toMap()
+
+    private fun rootFields(definition: ObjectTypeDefinition): List<FieldDefinition> =
+        definition.fieldDefinitions
+            .filterIncludedInConfig(definition.name, config)
+            .filterSkipped()
+
+    /**
+     * A field returning a different type than the unqualified root gets an operation-qualified one such as
+     * `ResultGraphQLQueryProjectionRoot`, mirroring the query class name from [generateMethodName].
      */
     private fun rootProjectionPrefix(
         fieldName: String,
         operation: String,
         type: TypeDefinition<*>,
-        rootProjectionTypes: MutableMap<String, String>,
-    ): String {
-        val claimedType = rootProjectionTypes.putIfAbsent("${fieldName}ProjectionRoot", type.name)
-        if (claimedType == null || claimedType == type.name) return fieldName
-        return "${fieldName}GraphQL${operation.capitalized()}"
-    }
+        rootProjectionTypes: Map<String, String>,
+    ): String =
+        if (rootProjectionTypes["${fieldName}ProjectionRoot"] == type.name) {
+            fieldName
+        } else {
+            "${fieldName}GraphQL${operation.capitalized()}"
+        }
 
     private fun createRootProjection(
         type: TypeDefinition<*>,

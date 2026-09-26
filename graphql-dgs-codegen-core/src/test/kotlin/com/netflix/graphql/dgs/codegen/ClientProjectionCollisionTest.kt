@@ -34,19 +34,53 @@ class ClientProjectionCollisionTest {
     ) {
         val codeGenResult = generate(schema, language)
 
-        assertThat(rootProjectionMethods(codeGenResult, "ResultProjectionRoot"))
+        assertThat(rootProjectionMethods(codeGenResult, "ResultGraphQLQueryProjectionRoot"))
             .contains("queryOnly")
             .doesNotContain("mutationOnly", "subscriptionOnly")
         assertThat(rootProjectionMethods(codeGenResult, "ResultGraphQLMutationProjectionRoot"))
             .contains("mutationOnly")
             .doesNotContain("queryOnly", "subscriptionOnly")
-        assertThat(rootProjectionMethods(codeGenResult, "ResultGraphQLSubscriptionProjectionRoot"))
+        assertThat(rootProjectionMethods(codeGenResult, "ResultProjectionRoot"))
             .contains("subscriptionOnly")
             .doesNotContain("queryOnly", "mutationOnly")
 
         assertCompilesJava(codeGenResult)
     }
 
+    // Up to 8.7.0 the last operation's ResultProjectionRoot overwrote the others on disk; clients compiled against it
+    @Test
+    fun `keeps the unqualified root projection for the last operation`() {
+        val codeGenResult =
+            generate(
+                """
+                type Query {
+                    result: QueryResult
+                }
+
+                type Mutation {
+                    result: MutationResult
+                }
+
+                type QueryResult {
+                    queryOnly: String
+                }
+
+                type MutationResult {
+                    mutationOnly: String
+                }
+                """.trimIndent(),
+                Language.JAVA,
+            )
+
+        assertThat(rootProjectionMethods(codeGenResult, "ResultProjectionRoot"))
+            .contains("mutationOnly")
+            .doesNotContain("queryOnly")
+        assertThat(rootProjectionMethods(codeGenResult, "ResultGraphQLQueryProjectionRoot"))
+            .contains("queryOnly")
+            .doesNotContain("mutationOnly")
+    }
+
+    // Up to 8.7.0 the Subscription copy of the Query projection was dropped as a duplicate, so the Mutation one won
     @Test
     fun `shares one root projection when same-named fields return the same type`() {
         val codeGenResult =
@@ -57,19 +91,29 @@ class ClientProjectionCollisionTest {
                 }
 
                 type Mutation {
+                    result: OtherResult
+                }
+
+                type Subscription {
                     result: Result
                 }
 
                 type Result {
                     value: String
                 }
+
+                type OtherResult {
+                    other: String
+                }
                 """.trimIndent(),
                 Language.JAVA,
             )
 
         assertThat(codeGenResult.clientProjections.map { it.typeSpec().name() })
-            .containsOnlyOnce("ResultProjectionRoot")
-            .noneMatch { it.startsWith("ResultGraphQL") }
+            .containsOnlyOnce("ResultProjectionRoot", "ResultGraphQLQueryProjectionRoot", "ResultGraphQLSubscriptionProjectionRoot")
+            .doesNotContain("ResultGraphQLMutationProjectionRoot")
+        assertThat(rootProjectionMethods(codeGenResult, "ResultProjectionRoot")).contains("other")
+        assertThat(rootProjectionMethods(codeGenResult, "ResultGraphQLQueryProjectionRoot")).contains("value")
     }
 
     private fun generate(
