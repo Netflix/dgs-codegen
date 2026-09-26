@@ -22,25 +22,45 @@ import org.assertj.core.api.Assertions.assertThat
 import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 
 /** Functional tests for the DGS codegen Gradle plugin. */
 class CodegenGradlePluginTest {
+    @TempDir
+    lateinit var tempDir: File
+
+    private val projectDir by lazy { copyFixture("test-project") }
+    private val noSchemaProjectDir by lazy { copyFixture("test-project-no-schema-files") }
+    private val multiModuleProjectDir by lazy { copyFixture("test-project-multimodule") }
+
+    @AfterEach
+    fun checkedInFixturesRemainClean() {
+        val generatedDirectories =
+            File("src/test/resources")
+                .walkTopDown()
+                .filter { it.isDirectory && (it.name == ".gradle" || it.name == "build") }
+                .toList()
+
+        assertThat(generatedDirectories).isEmpty()
+    }
+
     @Test
     fun taskRegisteredSuccessfully() {
         // get a list of Gradle tasks
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "tasks",
                     "--all",
-                ).forwardOutput()
-                .build()
+                ).build()
 
         // Verify the result
         assertThat(result.output).contains("generateJava")
@@ -49,106 +69,91 @@ class CodegenGradlePluginTest {
     @Test
     fun taskDependenciesRegisteredSuccessfully() {
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
-                    "clean",
                     "copyMainSources",
-                ).forwardOutput()
-                .build()
+                ).build()
 
         // Verify the result
         assertThat(result.task(":generateJava")).isNotNull
         assertThat(result.task(":generateJava")!!.outcome).isEqualTo(SUCCESS)
     }
 
-    @Test
-    fun sourcesGenerated() {
-        // build a project
+    @ParameterizedTest
+    @CsvSource(
+        "build.gradle,build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types",
+        "build_with_default_dir.gradle,build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types",
+    )
+    fun sourcesGenerated(
+        buildFile: String,
+        outputPath: String,
+    ) {
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "clean",
+                    "-PtestBuildFile=$buildFile",
                     "build",
-                ).forwardOutput()
-                .withDebug(true)
-                .build()
+                ).build()
 
-        // Verify the result
         assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        // Verify that POJOs are generated in the configured directory
-        assertThat(File(EXPECTED_PATH + "Result.java").exists()).isTrue
+        assertThat(File(projectDir, "$outputPath/Result.java")).isFile()
     }
 
-    @Test
-    fun sourcesGenerated_UsingDefaultPath() {
+    @ParameterizedTest
+    @CsvSource(
+        "build.gradle,build/graphql/generated/sources/dgs-codegen",
+        "build_with_default_dir.gradle,build/generated/sources/dgs-codegen",
+    )
+    fun onlySupportFilesAreGeneratedForNoSchema(
+        buildFile: String,
+        generatedSourcesPath: String,
+    ) {
         // build a project
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(noSchemaProjectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-PtestBuildFile=build_with_default_dir.gradle",
-                    "clean",
+                    "-PtestBuildFile=$buildFile",
                     "build",
-                ).forwardOutput()
-                .withDebug(true)
-                .build()
+                ).build()
 
         // Verify the result
         assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        // Verify that POJOs are generated in the configured directory
-        assertThat(File(EXPECTED_DEFAULT_PATH + "Result.java").exists()).isTrue
-    }
+        assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
 
-    @Test
-    fun nothingIsGeneratedForNoSchema() {
-        // build a project
-        val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project-no-schema-files/"))
-                .withPluginClasspath()
-                .withArguments(
-                    "--stacktrace",
-                    "-PtestBuildFile=build_with_default_dir.gradle",
-                    "clean",
-                    "build",
-                ).forwardOutput()
-                .withDebug(true)
-                .build()
-
-        // Verify the result
-        assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-
-        // Check that the generated directory is empty
-        assertThat(File(EXPECTED_PATH_EMPTY_SCHEMA).walk().count()).isEqualTo(0)
+        val generatedSourcesDir = File(noSchemaProjectDir, generatedSourcesPath)
+        val generatedFiles =
+            generatedSourcesDir
+                .walkTopDown()
+                .filter { it.isFile }
+                .map { it.relativeTo(generatedSourcesDir).invariantSeparatorsPath }
+                .toList()
+        assertThat(generatedFiles)
+            .containsExactlyInAnyOrder(
+                "com/netflix/testproject/graphql/DgsConstants.java",
+                "com/netflix/testproject/graphql/Generated.java",
+            )
     }
 
     @Test
     fun nonGraphQLFilesInSchemaDirectoryAreIgnored() {
         // build a project
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
                     "-PtestBuildFile=build_with_default_dir.gradle",
-                    "clean",
                     "build",
-                ).forwardOutput()
-                .withDebug(true)
-                .build()
+                ).build()
 
         // Verify that the build succeeded.
         // This means there was no parsing error caused by the incorrect syntax in the schema.graphqlconfig file
@@ -156,43 +161,40 @@ class CodegenGradlePluginTest {
 
         // Verify that a NotSchema POJO has not been created
         // NotSchema is defined in notSchema.notgraphql, which has a non-GraphQL file extension but is a valid schema
-        assertThat(File(EXPECTED_DEFAULT_PATH + "NotSchema.java").exists()).isFalse()
+        assertThat(File(defaultOutputDir, "Result.java")).exists()
+        assertThat(File(defaultOutputDir, "NotSchema.java")).doesNotExist()
     }
 
     @Test
     fun jacksonVersionOverrideIsApplied() {
         // A valid override (["2", "3"]) should be accepted and supersede classpath detection.
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
                     "-PtestBuildFile=build_with_jackson_override.gradle",
-                    "clean",
                     "generateJava",
-                ).forwardOutput()
-                .build()
+                ).build()
 
         assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        assertThat(generatedKotlinTypes())
+            .contains("com.fasterxml.jackson.databind", "tools.jackson.databind")
     }
 
     @Test
     fun invalidJacksonVersionOverrideFailsTheBuild() {
         // An unsupported override value should fail the build with a clear message.
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
                     "-PtestBuildFile=build_with_invalid_jackson_version.gradle",
-                    "clean",
                     "generateJava",
-                ).forwardOutput()
-                .buildAndFail()
+                ).buildAndFail()
 
         assertThat(result.output).contains("Invalid 'jacksonVersionOverride' value")
         assertThat(result.output).contains("Invalid Jackson version '4'")
@@ -202,93 +204,45 @@ class CodegenGradlePluginTest {
     fun detectsJackson3FromCompileClasspath() {
         // End-to-end detection: Jackson 3 is the only Jackson on the compile classpath
         // and the generated Kotlin must use the tools.jackson annotation packages.
-        val projectDir = File("src/test/resources/test-project/")
         val result =
-            GradleRunner
-                .create()
+            newGradleRunner()
                 .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
                     "-PtestBuildFile=build_with_jackson3.gradle",
-                    "clean",
                     "generateJava",
-                ).forwardOutput()
-                .build()
+                ).build()
 
         assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
 
-        val generatedTypes =
-            File(projectDir, "build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types")
-                .walk()
-                .filter { it.extension == "kt" }
-                .joinToString("\n") { it.readText() }
+        val generatedTypes = generatedKotlinTypes()
 
         assertThat(generatedTypes).contains("tools.jackson.databind")
         assertThat(generatedTypes).doesNotContain("com.fasterxml.jackson.databind.`annotation`.JsonDeserialize")
     }
 
-    @Test
-    fun generateJavaIsConfigurationCacheCompatible() {
-        // generateKotlinNullableClasses is enabled so Jackson version detection (the lazy
-        // rootComponent classpath walk) actually runs under the configuration cache.
-        assertConfigurationCacheRoundTrip(
-            buildFile = "build_with_nullable_classes.gradle",
-        )
-    }
-
-    @Test
-    fun schemaPathsAcceptsAProvider() {
-        // setSchemaPaths(Provider<out Iterable<Any>>) must resolve lazily and still produce sources.
+    @ParameterizedTest
+    @ValueSource(
+        strings = [
+            "build_with_schema_paths_provider.gradle",
+            "build_with_schema_paths_filecollection.gradle",
+            "build_with_nested_schema_paths.gradle",
+        ],
+    )
+    fun schemaPathsAcceptsConfiguredInputs(buildFile: String) {
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "-PtestBuildFile=build_with_schema_paths_provider.gradle",
-                    "clean",
+                    "-PtestBuildFile=$buildFile",
                     "generateJava",
-                ).forwardOutput()
-                .build()
+                ).build()
 
         assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(File(EXPECTED_PATH + "Result.java").exists()).isTrue
-    }
-
-    @Test
-    fun schemaPathsAcceptsAFileCollection() {
-        // The fixture asserts that its Configuration is still unresolved after configuration.
-        val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
-                .withPluginClasspath()
-                .withArguments(
-                    "--stacktrace",
-                    "-PtestBuildFile=build_with_schema_paths_filecollection.gradle",
-                    "clean",
-                    "generateJava",
-                ).forwardOutput()
-                .build()
-
-        assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(File(EXPECTED_PATH + "Result.java").exists()).isTrue
-    }
-
-    @Test
-    fun schemaPathsFlattensNestedFileSets() {
-        val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
-                .withPluginClasspath()
-                .withArguments("-PtestBuildFile=build_with_nested_schema_paths.gradle", "clean", "generateJava")
-                .build()
-
-        assertThat(result.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
-        assertThat(File(EXPECTED_PATH + "Result.java")).exists()
+        assertThat(File(configuredOutputDir, "Result.java")).exists()
     }
 
     @Test
@@ -297,39 +251,35 @@ class CodegenGradlePluginTest {
         assertThat(GenerateJavaTask::class.java.getMethod("getSchemaPaths").returnType).isEqualTo(List::class.java)
 
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project/"))
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
                     "-PtestBuildFile=build_with_schema_paths_addall.gradle",
-                    "clean",
                     "generateJava",
-                ).forwardOutput()
-                .build()
+                ).build()
 
         assertThat(result.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(File(EXPECTED_PATH + "Result.java")).exists()
-        assertThat(File(EXPECTED_PATH + "AppendedViaAddAll.java")).exists()
+        assertThat(File(configuredOutputDir, "Result.java")).exists()
+        assertThat(File(configuredOutputDir, "AppendedViaAddAll.java")).exists()
     }
 
-    @Test
-    fun schemaPathsFileCollectionIsConfigurationCacheCompatible() {
-        assertConfigurationCacheRoundTrip("build_with_schema_paths_filecollection.gradle")
-    }
-
-    @Test
-    fun schemaPathsProviderIsConfigurationCacheCompatible() {
-        assertConfigurationCacheRoundTrip("build_with_schema_paths_provider.gradle")
+    @ParameterizedTest
+    @ValueSource(
+        strings = [
+            "build_with_nullable_classes.gradle",
+            "build_with_schema_paths_filecollection.gradle",
+            "build_with_schema_paths_provider.gradle",
+        ],
+    )
+    fun generateJavaIsConfigurationCacheCompatible(buildFile: String) {
+        assertConfigurationCacheRoundTrip(buildFile)
     }
 
     private fun assertConfigurationCacheRoundTrip(buildFile: String) {
-        val projectDir = File("src/test/resources/test-project/")
-
         fun run() =
-            GradleRunner
-                .create()
+            newGradleRunner()
                 .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments(
@@ -339,106 +289,85 @@ class CodegenGradlePluginTest {
                     "-PtestBuildFile=$buildFile",
                     "clean",
                     "generateJava",
-                ).forwardOutput()
-                .build()
+                ).build()
 
         File(projectDir, ".gradle/configuration-cache").deleteRecursively()
 
         val first = run()
         assertThat(first.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
         assertThat(first.output).contains("Configuration cache entry stored.")
-        assertThat(File(EXPECTED_PATH + "Result.java")).exists()
+        assertThat(File(configuredOutputDir, "Result.java")).exists()
 
         val second = run()
         assertThat(second.output).contains("Reusing configuration cache.")
         assertThat(second.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(File(EXPECTED_PATH + "Result.java")).exists()
+        assertThat(File(configuredOutputDir, "Result.java")).exists()
     }
 
     @Test
-    fun generateJavaIsUpToDateWhenSchemaIsUnchanged(
-        @TempDir tempDir: File,
-    ) {
+    fun generateJavaIsUpToDateWhenSchemaIsUnchanged() {
         // Keep verifying the content-based task avoidance provided by
         // @InputFiles after changing how schemaPaths accepts and resolves inputs.
-        val sourceDir = File("src/test/resources/test-project")
-        File(sourceDir, "build.gradle").copyTo(File(tempDir, "build.gradle"))
-        File(sourceDir, "settings.gradle").copyTo(File(tempDir, "settings.gradle"))
-        File(sourceDir, "src").copyRecursively(File(tempDir, "src"))
-
         fun run(vararg tasks: String) =
-            GradleRunner
-                .create()
-                .withProjectDir(tempDir)
+            newGradleRunner()
+                .withProjectDir(projectDir)
                 .withPluginClasspath()
                 .withArguments("--stacktrace", *tasks)
-                .forwardOutput()
                 .build()
 
         run("generateJava")
         assertThat(run("generateJava").task(":generateJava")).extracting { it?.outcome }.isEqualTo(UP_TO_DATE)
 
         // Modifying a schema file must invalidate the cached input snapshot.
-        File(tempDir, "src/main/resources/schema/schema.graphqls").appendText("\n# touch\n")
+        File(projectDir, "src/main/resources/schema/schema.graphqls").appendText("\n# touch\n")
 
         assertThat(run("generateJava").task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
     }
 
-    @Test
-    fun schemaPathsResolvesRelativeStringsAgainstTheOwningProjectDirectory() {
-        // Gradle resolves a relative String against the subproject that owns the task.
+    @ParameterizedTest
+    @ValueSource(strings = ["build.gradle", "build_with_relative_file.gradle"])
+    fun schemaPathsResolveAgainstTheOwningProjectDirectory(buildFile: String) {
         val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project-multimodule/"))
+            newGradleRunner()
+                .withProjectDir(multiModuleProjectDir)
                 .withPluginClasspath()
                 .withArguments(
                     "--stacktrace",
-                    "clean",
+                    "-PtestServerBuildFile=$buildFile",
                     ":server:generateJava",
-                ).forwardOutput()
-                .build()
+                ).build()
 
         assertThat(result.task(":server:generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(
-            File(
-                "src/test/resources/test-project-multimodule/server/build/graphql/generated/sources/dgs-codegen/" +
-                    "com/netflix/testproject/graphql/types/Result.java",
-            ).exists(),
-        ).isTrue
+        assertThat(File(multiModuleProjectDir, "server/$CONFIGURED_OUTPUT_PATH/Result.java")).isFile()
     }
 
-    @Test
-    fun schemaPathsResolvesRelativeFilesAgainstTheOwningProjectDirectory() {
-        // Gradle resolves a relative File against the subproject that owns the task.
-        val result =
-            GradleRunner
-                .create()
-                .withProjectDir(File("src/test/resources/test-project-multimodule/"))
-                .withPluginClasspath()
-                .withArguments(
-                    "--stacktrace",
-                    "-PtestServerBuildFile=build_with_relative_file.gradle",
-                    "clean",
-                    ":server:generateJava",
-                ).forwardOutput()
-                .build()
+    private val configuredOutputDir: File
+        get() = File(projectDir, CONFIGURED_OUTPUT_PATH)
 
-        assertThat(result.task(":server:generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
-        assertThat(
-            File(
-                "src/test/resources/test-project-multimodule/server/build/graphql/generated/sources/dgs-codegen/" +
-                    "com/netflix/testproject/graphql/types/Result.java",
-            ).exists(),
-        ).isTrue
+    private val defaultOutputDir: File
+        get() = File(projectDir, DEFAULT_OUTPUT_PATH)
+
+    private fun generatedKotlinTypes(): String =
+        configuredOutputDir
+            .walkTopDown()
+            .filter { it.isFile && it.extension == "kt" }
+            .joinToString("\n") { it.readText() }
+
+    private fun newGradleRunner(): GradleRunner =
+        GradleRunner
+            .create()
+            .withTestKitDir(File("build/tmp/test-kit", tempDir.name).absoluteFile)
+
+    private fun copyFixture(name: String): File {
+        val target = File(tempDir, name)
+        check(File("src/test/resources", name).copyRecursively(target))
+        return target
     }
 
     companion object {
-        const val EXPECTED_PATH =
-            "src/test/resources/test-project/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
-        const val EXPECTED_DEFAULT_PATH =
-            "src/test/resources/test-project/build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
-        const val EXPECTED_PATH_EMPTY_SCHEMA =
-            "src/test/resources/test-project-no-schema-files/build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types/"
+        const val CONFIGURED_OUTPUT_PATH =
+            "build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types"
+        const val DEFAULT_OUTPUT_PATH =
+            "build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types"
     }
 }
