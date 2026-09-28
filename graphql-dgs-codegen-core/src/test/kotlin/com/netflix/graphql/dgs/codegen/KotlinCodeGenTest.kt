@@ -4387,11 +4387,15 @@ It takes a title and such.
                 shows: [String]
                 movie(id: ID!, title: String): Movie
                 foo: String
+                shared: Shared
+                result: MutationResult
             }
             
             type Query {
                 shows: [Show]
                 movie: Movie
+                shared: Shared
+                result: QueryResult
             }
             type Show {
                 id: Int
@@ -4402,6 +4406,18 @@ It takes a title and such.
                 title: String
                 duration: Int
                 related: Related
+            }
+
+            type Shared {
+                value: String
+            }
+
+            type QueryResult {
+                queryOnly: String
+            }
+
+            type MutationResult {
+                mutationOnly: String
             }
             """.trimIndent()
 
@@ -4416,20 +4432,31 @@ It takes a title and such.
                 ),
             ).generate()
 
-        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(9)
+        assertThat(codeGenResult.javaQueryTypes.size).isEqualTo(13)
         assertThat(codeGenResult.javaQueryTypes[0].typeSpec().name()).isEqualTo("ShowsGraphQLQuery")
         assertThat(codeGenResult.javaQueryTypes[1].typeSpec().name()).isEqualTo("MovieGraphQLQuery")
 
-        assertThat(codeGenResult.javaQueryTypes[2].typeSpec().name()).isEqualTo("ShowsGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[3].typeSpec().name()).isEqualTo("MovieGraphQLMutation")
-        assertThat(codeGenResult.javaQueryTypes[4].typeSpec().name()).isEqualTo("FooGraphQLQuery")
+        assertThat(codeGenResult.clientProjections.map { it.typeSpec().name() })
+            .containsOnlyOnce("SharedProjectionRoot")
+            .containsOnlyOnce("ResultProjectionRoot")
+        val resultProjection =
+            codeGenResult.clientProjections.single { it.typeSpec().name() == "ResultProjectionRoot" }.typeSpec()
+        assertThat(resultProjection.methodSpecs()).extracting("name").contains("queryOnly").doesNotContain("mutationOnly")
 
-        assertThat(codeGenResult.javaQueryTypes[5].typeSpec().name()).isEqualTo("ShowsGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[6].typeSpec().name()).isEqualTo("MovieGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[7].typeSpec().name()).isEqualTo("FooGraphQLSubscription")
-        assertThat(codeGenResult.javaQueryTypes[8].typeSpec().name()).isEqualTo("BarGraphQLQuery")
+        assertThat(codeGenResult.javaQueryTypes.map { it.typeSpec().name() })
+            .contains(
+                "ShowsGraphQLMutation",
+                "MovieGraphQLMutation",
+                "FooGraphQLQuery",
+                "SharedGraphQLMutation",
+                "ResultGraphQLMutation",
+                "ShowsGraphQLSubscription",
+                "MovieGraphQLSubscription",
+                "FooGraphQLSubscription",
+                "BarGraphQLQuery",
+            )
 
-        assertCompilesJava(codeGenResult.javaQueryTypes)
+        assertCompilesJava(codeGenResult.clientProjections + codeGenResult.javaQueryTypes)
     }
 
     @Test
