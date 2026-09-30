@@ -18,9 +18,16 @@ To get started with the DGS Framework the [getting started guide](https://netfli
 great starting place. Documentation for DGS Code Generation can be
 found [here](https://netflix.github.io/dgs/generating-code-from-schema/).
 
+## Generated documentation
+
+The Gradle plugin can generate Markdown documentation by setting `generateDocs = true` in the `generateJava` task
+configuration. It writes the files to `<generatedSourcesDir>/generated/docs/dgs-codegen`; with the default
+`generatedSourcesDir` of `build`, that is `build/generated/docs/dgs-codegen`. Changing `generatedSourcesDir` moves the
+documentation along with generated source output. When documentation generation is disabled, this directory is not
+created.
+
 # Contributing, asking questions and reporting issues.
 
 Please read our [contributor guide](CONTRIBUTING.md)!
-
 
 

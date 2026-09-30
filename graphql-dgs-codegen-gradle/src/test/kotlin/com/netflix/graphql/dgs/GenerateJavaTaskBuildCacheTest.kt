@@ -43,6 +43,7 @@ class GenerateJavaTaskBuildCacheTest {
                     def codegen = tasks.named('generateJava').get()
                     assert codegen.generatedSourcesDirectory.get().asFile == file('$outputRoot/generated/sources/dgs-codegen')
                     assert codegen.generatedExamplesDirectory.get().asFile == file('$outputRoot/generated/sources/dgs-codegen-generated-examples')
+                    assert codegen.generatedDocsDirectory.get().asFile == file('$outputRoot/generated/docs/dgs-codegen')
                 }
             }
             """.trimIndent(),
@@ -61,11 +62,95 @@ class GenerateJavaTaskBuildCacheTest {
 
         assertThat(run(firstProject, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
         val firstOutput = generatedOutput(firstProject, "build/first-output")
+        val firstDocs = generatedDocsOutput(firstProject, "build/first-output")
+        assertThat(firstDocs).isDirectory
+        assertThat(outputFingerprints(firstDocs)).isNotEmpty
 
         assertThat(run(secondProject, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(FROM_CACHE)
         val secondOutput = generatedOutput(secondProject, "build/second-output")
+        val secondDocs = generatedDocsOutput(secondProject, "build/second-output")
 
         assertThat(outputFingerprints(firstOutput)).isEqualTo(outputFingerprints(secondOutput))
+        assertThat(secondDocs).isDirectory
+        assertThat(outputFingerprints(firstDocs)).isEqualTo(outputFingerprints(secondDocs))
+    }
+
+    @Test
+    fun doesNotCreateGeneratedDocsDirectoryWhenDocsAreDisabled(
+        @TempDir tempDir: File,
+    ) {
+        val outputRoot = "build/output"
+        val projectDir = createProject(tempDir, "docs-disabled", outputRoot, File(tempDir, "unused-cache"))
+        File(projectDir, "build.gradle").appendText(
+            """
+
+            generateJava {
+                generateDocs = false
+            }
+            """.trimIndent(),
+        )
+
+        assertSuccessfulExecution(run(projectDir, "--no-build-cache", "generateJava"))
+
+        assertThat(generatedDocsOutput(projectDir, outputRoot)).doesNotExist()
+    }
+
+    @Test
+    fun resolvesGeneratedDocsDirectoryWhenDocsAreDisabled(
+        @TempDir tempDir: File,
+    ) {
+        val outputRoot = "build/output"
+        val projectDir = createProject(tempDir, "docs-disabled-provider", outputRoot, File(tempDir, "unused-cache"))
+        File(projectDir, "build.gradle").appendText(
+            """
+
+            generateJava {
+                generateDocs = false
+            }
+
+            def docsDirectory = tasks.named('generateJava').get().generatedDocsDirectory
+            def expectedDocsDirectory = file('$outputRoot/generated/docs/dgs-codegen')
+            tasks.register('verifyDocsDirectory') {
+                doLast {
+                    assert docsDirectory.get().asFile == expectedDocsDirectory
+                }
+            }
+            """.trimIndent(),
+        )
+
+        assertThat(run(projectDir, "verifyDocsDirectory").task(":verifyDocsDirectory")?.outcome).isEqualTo(SUCCESS)
+        assertThat(generatedDocsOutput(projectDir, outputRoot)).doesNotExist()
+    }
+
+    @Test
+    fun removesStaleDocsWhenDocsAreToggledOffAndRestoresThemWhenToggledBackOn(
+        @TempDir tempDir: File,
+    ) {
+        val outputRoot = "build/output"
+        val projectDir = createProject(tempDir, "docs-toggle", outputRoot, File(tempDir, "toggle-cache"))
+        File(projectDir, "build.gradle").appendText(
+            """
+
+            generateJava {
+                generateDocs = !providers.gradleProperty('docsOff').isPresent()
+            }
+            """.trimIndent(),
+        )
+        val docs = generatedDocsOutput(projectDir, outputRoot)
+
+        assertSuccessfulExecution(run(projectDir, "--build-cache", "generateJava"))
+        assertThat(docs).isDirectory
+        val fingerprints = outputFingerprints(docs)
+        assertThat(fingerprints).isNotEmpty
+
+        assertSuccessfulExecution(run(projectDir, "--build-cache", "-PdocsOff=true", "generateJava"))
+        assertThat(docs).doesNotExist()
+
+        val restored = run(projectDir, "--build-cache", "generateJava")
+        assertThat(restored.task(":generateJava")?.outcome).isEqualTo(FROM_CACHE)
+        assertThat(restored.output).doesNotContain("Gradle does not know how file")
+        assertThat(docs).isDirectory
+        assertThat(outputFingerprints(docs)).isEqualTo(fingerprints)
     }
 
     @Test
@@ -199,6 +284,11 @@ class GenerateJavaTaskBuildCacheTest {
         projectDir: File,
         outputRoot: String,
     ): File = File(projectDir, "$outputRoot/generated/sources/dgs-codegen")
+
+    private fun generatedDocsOutput(
+        projectDir: File,
+        outputRoot: String,
+    ): File = File(projectDir, "$outputRoot/generated/docs/dgs-codegen")
 
     private fun outputFingerprints(directory: File): Map<String, String> =
         directory
