@@ -22,6 +22,7 @@ import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.PropertySpec
 import org.assertj.core.api.Assertions.assertThat
@@ -32,6 +33,12 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.EnumSource
 import java.nio.file.Files
 import java.nio.file.Path
+import java.util.concurrent.AbstractExecutorService
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.RejectedExecutionException
+import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicInteger
 
 class ParallelFileWritingTest {
     @TempDir
@@ -69,6 +76,76 @@ class ParallelFileWritingTest {
             .hasMessageContaining("broken/Failure.java")
 
         assertThat(writerThreads()).isEmpty()
+    }
+
+    @Test
+    fun `Kotlin render failures retain their original exception`() {
+        val failingFile =
+            FileSpec
+                .builder("example", "Broken")
+                .addProperty(
+                    PropertySpec
+                        .builder("value", ClassName("java.lang", "String[]"))
+                        .initializer("TODO()")
+                        .build(),
+                ).build()
+        val anotherFile =
+            FileSpec
+                .builder("example", "Another")
+                .addProperty(PropertySpec.builder("value", Int::class).initializer("0").build())
+                .build()
+
+        assertThatThrownBy {
+            GeneratedFileWriter(4).write(
+                javaFiles = emptyList(),
+                kotlinFiles = listOf(failingFile, anotherFile),
+                outputDirectory = temporaryDirectory,
+            )
+        }.isInstanceOf(IllegalArgumentException::class.java)
+            .hasMessageContaining("Can't escape identifier")
+            .hasMessageContaining("String[]")
+            .satisfies({ failure ->
+                assertThat(failure.suppressed.filterIsInstance<GeneratedFileDestination>().map { it.destination })
+                    .containsExactly(temporaryDirectory.resolve("example/Broken.kt"))
+            })
+    }
+
+    @Test
+    fun `pre-interrupted caller writes serially and keeps its interrupt flag`() {
+        val currentThread = Thread.currentThread()
+        currentThread.interrupt()
+
+        try {
+            GeneratedFileWriter(4) { _, _ ->
+                throw AssertionError("A pre-interrupted caller should not create a writer executor")
+            }.write(
+                javaFiles = listOf(javaFile("First"), javaFile("Second")),
+                kotlinFiles = emptyList(),
+                outputDirectory = temporaryDirectory,
+            )
+
+            assertThat(currentThread.isInterrupted).isTrue()
+            assertThat(Files.exists(temporaryDirectory.resolve("example/First.java"))).isTrue()
+            assertThat(Files.exists(temporaryDirectory.resolve("example/Second.java"))).isTrue()
+        } finally {
+            Thread.interrupted()
+        }
+    }
+
+    @Test
+    fun `rejected submissions shut down the writer executor`() {
+        val executor = RejectAfterFirstSubmission(Executors.newFixedThreadPool(4))
+
+        assertThatThrownBy {
+            GeneratedFileWriter(4) { _, _ -> executor }.write(
+                javaFiles = listOf(javaFile("First"), javaFile("Second")),
+                kotlinFiles = emptyList(),
+                outputDirectory = temporaryDirectory,
+            )
+        }.isInstanceOf(RejectedExecutionException::class.java)
+
+        assertThat(executor.isShutdown).isTrue()
+        assertThat(executor.isTerminated).isTrue()
     }
 
     @Test
@@ -175,6 +252,32 @@ class ParallelFileWritingTest {
 
     private fun writerThreads(): List<Thread> =
         Thread.getAllStackTraces().keys.filter { it.isAlive && it.name.startsWith("dgs-codegen-writer-") }
+
+    private class RejectAfterFirstSubmission(
+        private val delegate: ExecutorService,
+    ) : AbstractExecutorService() {
+        private val submissions = AtomicInteger()
+
+        override fun execute(command: Runnable) {
+            if (submissions.incrementAndGet() == 2) {
+                throw RejectedExecutionException("Rejected second writer task")
+            }
+            delegate.execute(command)
+        }
+
+        override fun shutdown() = delegate.shutdown()
+
+        override fun shutdownNow(): List<Runnable> = delegate.shutdownNow()
+
+        override fun isShutdown(): Boolean = delegate.isShutdown
+
+        override fun isTerminated(): Boolean = delegate.isTerminated
+
+        override fun awaitTermination(
+            timeout: Long,
+            unit: TimeUnit,
+        ): Boolean = delegate.awaitTermination(timeout, unit)
+    }
 
     companion object {
         private val SCHEMA =
