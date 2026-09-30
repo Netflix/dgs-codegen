@@ -333,6 +333,68 @@ class Kotlin2CodeGenTest {
         assertCompilesKotlin(result)
     }
 
+    @Test
+    fun `equals and hashCode compare requested fields by value, at runtime`() {
+        val schema =
+            """
+            type Item {
+                name: String
+                age: Int
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = "com.netflix.test.equalshashcode",
+                    language = Language.KOTLIN,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                ),
+            ).generate()
+
+        val buildDir = assertCompilesKotlin(result)
+        val classLoader = URLClassLoader(arrayOf(buildDir.toUri().toURL()), this.javaClass.classLoader)
+        val builderClass = classLoader.loadClass("com.netflix.test.equalshashcode.types.Item\$Builder")
+        val withNameMethod = builderClass.getMethod("withName", String::class.java)
+        val withAgeMethod = builderClass.getMethod("withAge", Integer::class.java)
+        val buildMethod = builderClass.getMethod("build")
+
+        fun newItem(
+            name: String?,
+            requestName: Boolean,
+            age: Int?,
+            requestAge: Boolean,
+        ): Any {
+            val builder = builderClass.getDeclaredConstructor().newInstance()
+            if (requestName) withNameMethod.invoke(builder, name)
+            if (requestAge) withAgeMethod.invoke(builder, age)
+            return buildMethod.invoke(builder)
+        }
+
+        // Same projection, same values -> equal, and hashCode is consistent with equals.
+        val sameProjectionA = newItem("Alice", requestName = true, age = 30, requestAge = true)
+        val sameProjectionB = newItem("Alice", requestName = true, age = 30, requestAge = true)
+        assertThat(sameProjectionA).isEqualTo(sameProjectionB)
+        assertThat(sameProjectionA.hashCode()).isEqualTo(sameProjectionB.hashCode())
+
+        // `age` requested on only one side -> not equal, in both directions, and does not throw.
+        val onlyNameRequested = newItem("Alice", requestName = true, age = null, requestAge = false)
+        assertThat(sameProjectionA).isNotEqualTo(onlyNameRequested)
+        assertThat(onlyNameRequested).isNotEqualTo(sameProjectionA)
+
+        // `age` unrequested on both sides -> equal without invoking the throwing supplier.
+        val onlyNameRequestedTwin = newItem("Alice", requestName = true, age = null, requestAge = false)
+        assertThat(onlyNameRequested).isEqualTo(onlyNameRequestedTwin)
+        assertThat(onlyNameRequested.hashCode()).isEqualTo(onlyNameRequestedTwin.hashCode())
+
+        // `age` requested-but-null vs. `age` absent -> not equal.
+        val nameRequestedNullAge = newItem("Alice", requestName = true, age = null, requestAge = true)
+        assertThat(onlyNameRequested).isNotEqualTo(nameRequestedNullAge)
+        assertThat(nameRequestedNullAge).isNotEqualTo(onlyNameRequested)
+    }
+
     companion object {
         @Suppress("unused")
         @JvmStatic

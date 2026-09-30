@@ -7,7 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Double
+import kotlin.Int
+import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -28,6 +33,24 @@ public class Performance(
   @get:JvmName("getQuarterMile")
   public val quarterMile: Double?
     get() = __quarterMile.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__zeroToSixty === zeroToSixtyDefault) zeroToSixtyDefault else zeroToSixty,
+      if (__quarterMile === quarterMileDefault) quarterMileDefault else quarterMile,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Performance &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__zeroToSixty === zeroToSixtyDefault) null else "zeroToSixty=" + zeroToSixty,
+      if (__quarterMile === quarterMileDefault) null else "quarterMile=" + quarterMile,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Performance(",
+      postfix = ")")
 
   @Generated
   public companion object {

@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFields.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.collections.List
@@ -64,6 +67,31 @@ public class Dog(
   @get:JvmName("getParents")
   override val parents: List<Dog?>?
     get() = __parents.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__id === idDefault) idDefault else id,
+      if (__name === nameDefault) nameDefault else name,
+      if (__address === addressDefault) addressDefault else address,
+      if (__mother === motherDefault) motherDefault else mother,
+      if (__father === fatherDefault) fatherDefault else father,
+      if (__parents === parentsDefault) parentsDefault else parents,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Dog && `__$fieldValues`()
+      == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__id === idDefault) null else "id=" + id,
+      if (__name === nameDefault) null else "name=" + name,
+      if (__address === addressDefault) null else "address=" + address,
+      if (__mother === motherDefault) null else "mother=" + mother,
+      if (__father === fatherDefault) null else "father=" + father,
+      if (__parents === parentsDefault) null else "parents=" + parents,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Dog(", postfix = ")")
 
   @Generated
   public companion object {
