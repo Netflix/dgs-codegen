@@ -27,8 +27,217 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import java.io.File
 import java.security.MessageDigest
+import java.util.jar.JarOutputStream
+import java.util.zip.ZipEntry
 
 class GenerateJavaTaskBuildCacheTest {
+    @Test
+    fun schemaContentSwapsAcrossSameNamedRootsDoNotReuseStaleOutput(
+        @TempDir tempDir: File,
+    ) {
+        val cacheDir = File(tempDir, "shared-build-cache")
+        val projectDir = createRootsProject(tempDir, "swapped-roots", cacheDir)
+        writeRoots(projectDir, FIRST_EXTENSION, SECOND_EXTENSION)
+
+        assertThat(run(projectDir, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fa", "fb")
+
+        writeRoots(projectDir, SECOND_EXTENSION, FIRST_EXTENSION)
+        assertThat(run(projectDir, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fb", "fa")
+
+        val freshProject = createRootsProject(tempDir, "swapped-roots-fresh", File(tempDir, "unused-cache"))
+        writeRoots(freshProject, SECOND_EXTENSION, FIRST_EXTENSION)
+        assertThat(run(freshProject, "--no-build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(outputFingerprints(generatedSources(projectDir))).isEqualTo(outputFingerprints(generatedSources(freshProject)))
+    }
+
+    @Test
+    fun workspacesWithADifferentAbsolutePathOrderDoNotShareCachedOutput(
+        @TempDir tempDir: File,
+    ) {
+        val cacheDir = File(tempDir, "shared-build-cache")
+        // The same relative layout: the project's own schema plus a sibling `m-ext` root. `a-proj` sorts before
+        // `m-ext` and `z-proj` sorts after it, so CodeGen concatenates the two roots in opposite order.
+        val aProject = createWorkspace(File(tempDir, "ws-a"), "a-proj", cacheDir)
+        val zProject = createWorkspace(File(tempDir, "ws-z"), "z-proj", cacheDir)
+        val zFresh = createWorkspace(File(tempDir, "ws-z-fresh"), "z-proj", File(tempDir, "unused-cache"))
+
+        assertThat(run(aProject, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(aProject)).containsExactly("id", "fp", "fe")
+
+        assertThat(run(zProject, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(zProject)).containsExactly("id", "fe", "fp")
+
+        assertThat(run(zFresh, "--no-build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(outputFingerprints(generatedSources(zProject))).isEqualTo(outputFingerprints(generatedSources(zFresh)))
+    }
+
+    @Test
+    fun reversingConfiguredSchemaRootsDoesNotChangeTheOutput(
+        @TempDir tempDir: File,
+    ) {
+        val cacheDir = File(tempDir, "shared-build-cache")
+        val projectDir = createRootsProject(tempDir, "reversed-roots", cacheDir)
+        writeRoots(projectDir, FIRST_EXTENSION, SECOND_EXTENSION)
+
+        assertThat(run(projectDir, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        val original = outputFingerprints(generatedSources(projectDir))
+        assertThat(fooFields(projectDir)).containsExactly("base", "fa", "fb")
+
+        run(projectDir, "--build-cache", "-PreverseRoots=true", "generateJava")
+        assertThat(fooFields(projectDir)).containsExactly("base", "fa", "fb")
+        assertThat(outputFingerprints(generatedSources(projectDir))).isEqualTo(original)
+
+        val freshProject = createRootsProject(tempDir, "reversed-roots-fresh", File(tempDir, "unused-cache"))
+        writeRoots(freshProject, FIRST_EXTENSION, SECOND_EXTENSION)
+        run(freshProject, "--no-build-cache", "-PreverseRoots=true", "generateJava")
+        assertThat(outputFingerprints(generatedSources(freshProject))).isEqualTo(original)
+    }
+
+    @Test
+    fun dependencyJarEntryOrderDoesNotChangeTheOutput(
+        @TempDir tempDir: File,
+    ) {
+        val cacheDir = File(tempDir, "shared-build-cache")
+        val projectDir = createJarProject(tempDir, "jar-entry-order", cacheDir)
+        writeSchemaJar(File(projectDir, "schemas.jar"), listOf("c-extension.graphqls", "a-base.graphqls", "b-extension.graphqls"))
+
+        assertThat(run(projectDir, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fb", "fc")
+
+        writeSchemaJar(File(projectDir, "schemas.jar"), listOf("a-base.graphqls", "b-extension.graphqls", "c-extension.graphqls"))
+        run(projectDir, "--build-cache", "generateJava")
+        assertThat(fooFields(projectDir)).containsExactly("base", "fb", "fc")
+
+        val freshProject = createJarProject(tempDir, "jar-entry-order-fresh", File(tempDir, "unused-cache"))
+        writeSchemaJar(File(freshProject, "schemas.jar"), listOf("a-base.graphqls", "b-extension.graphqls", "c-extension.graphqls"))
+        assertThat(run(freshProject, "--no-build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(outputFingerprints(generatedSources(projectDir))).isEqualTo(outputFingerprints(generatedSources(freshProject)))
+    }
+
+    @Test
+    fun dependencyJarsWithADifferentAbsolutePathOrderDoNotShareCachedOutput(
+        @TempDir tempDir: File,
+    ) {
+        val cacheDir = File(tempDir, "shared-build-cache")
+
+        // The classpath order is always base.jar, then ext.jar. `a-proj/base.jar` sorts before `m-lib/ext.jar`,
+        // and `m-lib/ext.jar` sorts before `z-proj/base.jar`, so CodeGen reads the jars in opposite order.
+        fun workspace(
+            name: String,
+            projectName: String,
+            cache: File,
+        ): File {
+            val projectDir = createJarProject(File(tempDir, name), projectName, cache, "base.jar", "../m-lib/ext.jar")
+            writeJar(File(projectDir, "base.jar"), "a-base.graphqls" to BASE_SCHEMA + " extend type Foo { fp: String }")
+            writeJar(File(projectDir, "../m-lib/ext.jar"), "ext.graphqls" to "extend type Foo { fe: String }")
+            return projectDir
+        }
+
+        val aProject = workspace("ws-a", "a-proj", cacheDir)
+        val zProject = workspace("ws-z", "z-proj", cacheDir)
+        val zFresh = workspace("ws-z-fresh", "z-proj", File(tempDir, "unused-cache"))
+
+        assertThat(run(aProject, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(aProject)).containsExactly("base", "fp", "fe")
+
+        assertThat(run(zProject, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(zProject)).containsExactly("base", "fe", "fp")
+
+        assertThat(run(zFresh, "--no-build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(outputFingerprints(generatedSources(zProject))).isEqualTo(outputFingerprints(generatedSources(zFresh)))
+    }
+
+    @Test
+    fun schemaProducedByAnEarlierTaskIsGeneratedUnderTheConfigurationCache(
+        @TempDir tempDir: File,
+    ) {
+        val projectDir = createProducerProject(tempDir, "producer")
+        File(projectDir, "swap.txt").writeText("plain")
+
+        val first = runWithConfigurationCache(projectDir, "generateJava")
+        assertThat(first.output).contains("Configuration cache entry stored.")
+        assertThat(first.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fa", "fb")
+
+        val second = runWithConfigurationCache(projectDir, "generateJava")
+        assertThat(second.output).contains("Reusing configuration cache.")
+        assertThat(second.task(":generateJava")?.outcome).isEqualTo(UP_TO_DATE)
+    }
+
+    @Test
+    fun schemaFileAddedBetweenConfigurationCacheRunsIsPickedUp(
+        @TempDir tempDir: File,
+    ) {
+        val projectDir = createRootsProject(tempDir, "added-file", File(tempDir, "unused-cache"))
+        writeRoots(projectDir, FIRST_EXTENSION, SECOND_EXTENSION)
+
+        assertThat(runWithConfigurationCache(projectDir, "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fa", "fb")
+
+        File(projectDir, "schemas/base/added.graphqls").writeText("extend type Foo { fz: String }")
+        val second = runWithConfigurationCache(projectDir, "generateJava")
+        assertThat(second.output).contains("Reusing configuration cache.")
+        assertThat(second.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fa", "fb", "fz")
+    }
+
+    @Test
+    fun swapOfSameNamedFilesFromAProducerTaskReexecutesUnderTheConfigurationCache(
+        @TempDir tempDir: File,
+    ) {
+        val projectDir = createProducerProject(tempDir, "producer-swap")
+        File(projectDir, "swap.txt").writeText("plain")
+
+        assertThat(runWithConfigurationCache(projectDir, "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fa", "fb")
+
+        File(projectDir, "swap.txt").writeText("swap")
+        val second = runWithConfigurationCache(projectDir, "generateJava")
+        assertThat(second.output).contains("Reusing configuration cache.")
+        assertThat(second.task(":produce")?.outcome).isEqualTo(SUCCESS)
+        assertThat(second.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fb", "fa")
+    }
+
+    @Test
+    fun unbuiltSchemaProjectDependencyWorksUnderTheConfigurationCache(
+        @TempDir tempDir: File,
+    ) {
+        val projectDir = File(tempDir, "project-dependency").also { it.mkdirs() }
+        File(projectDir, "settings.gradle").writeText("include 'schemas'")
+        File(projectDir, "build.gradle").writeText(
+            """
+            plugins {
+                id 'java'
+                id 'com.netflix.dgs.codegen'
+            }
+
+            codegen.clientCoreConventionsEnabled = false
+
+            dependencies {
+                dgsCodegen project(':schemas')
+            }
+
+            generateJava {
+                schemaPaths = []
+                packageName = 'com.netflix.testproject.graphql'
+                generatedSourcesDir = file('build/graphql').absolutePath
+            }
+            """.trimIndent(),
+        )
+        File(projectDir, "schemas/src/main/resources").mkdirs()
+        File(projectDir, "schemas/build.gradle").writeText("plugins { id 'java' }")
+        File(projectDir, "schemas/src/main/resources/schema.graphqls").writeText(BASE_SCHEMA)
+
+        val first = runWithConfigurationCache(projectDir, "generateJava")
+        assertThat(first.output).contains("Configuration cache entry stored.")
+        assertThat(first.task(":schemas:jar")?.outcome).isEqualTo(SUCCESS)
+        assertThat(first.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(projectDir)).containsExactly("base")
+    }
+
     @Test
     fun derivesOutputProvidersFromGeneratedSourcesDir(
         @TempDir tempDir: File,
@@ -180,6 +389,195 @@ class GenerateJavaTaskBuildCacheTest {
         return projectDir
     }
 
+    private fun settingsFile(cacheDir: File): String =
+        """
+        buildCache {
+            local {
+                directory = file('${cacheDir.invariantSeparatorsPath}')
+            }
+        }
+        """.trimIndent()
+
+    private fun createRootsProject(
+        parent: File,
+        name: String,
+        cacheDir: File,
+    ): File {
+        val projectDir = File(parent, name).also { it.mkdirs() }
+        File(projectDir, "settings.gradle").writeText(settingsFile(cacheDir))
+        File(projectDir, "build.gradle").writeText(
+            """
+            plugins {
+                id 'com.netflix.dgs.codegen'
+            }
+
+            codegen.clientCoreConventionsEnabled = false
+
+            generateJava {
+                schemaPaths = project.hasProperty('reverseRoots') ?
+                    [file('schemas/b'), file('schemas/a'), file('schemas/base')] :
+                    [file('schemas/base'), file('schemas/a'), file('schemas/b')]
+                packageName = 'com.netflix.testproject.graphql'
+                generatedSourcesDir = file('build/graphql').absolutePath
+            }
+            """.trimIndent(),
+        )
+        return projectDir
+    }
+
+    private fun writeRoots(
+        projectDir: File,
+        aSchema: String,
+        bSchema: String,
+    ) {
+        listOf("a" to aSchema, "b" to bSchema, "base" to BASE_SCHEMA).forEach { (root, schema) ->
+            File(projectDir, "schemas/$root").mkdirs()
+            File(projectDir, "schemas/$root/${if (root == "base") "base" else "same"}.graphqls").writeText(schema)
+        }
+    }
+
+    private fun createWorkspace(
+        workspace: File,
+        projectName: String,
+        cacheDir: File,
+    ): File {
+        val projectDir = File(workspace, projectName).also { it.mkdirs() }
+        File(projectDir, "settings.gradle").writeText(settingsFile(cacheDir))
+        File(projectDir, "build.gradle").writeText(
+            """
+            plugins {
+                id 'com.netflix.dgs.codegen'
+            }
+
+            codegen.clientCoreConventionsEnabled = false
+
+            generateJava {
+                schemaPaths = [file('schema'), file('../m-ext')]
+                packageName = 'com.netflix.testproject.graphql'
+                generatedSourcesDir = file('build/graphql').absolutePath
+            }
+            """.trimIndent(),
+        )
+        File(projectDir, "schema").mkdirs()
+        File(projectDir, "schema/base.graphqls").writeText("type Query { foo: Foo } type Foo { id: ID } extend type Foo { fp: String }")
+        File(workspace, "m-ext").mkdirs()
+        File(workspace, "m-ext/ext.graphqls").writeText("extend type Foo { fe: String }")
+        return projectDir
+    }
+
+    private fun createJarProject(
+        parent: File,
+        name: String,
+        cacheDir: File,
+        vararg jars: String = arrayOf("schemas.jar"),
+    ): File {
+        val projectDir = File(parent, name).also { it.mkdirs() }
+        File(projectDir, "settings.gradle").writeText(settingsFile(cacheDir))
+        File(projectDir, "build.gradle").writeText(
+            """
+            plugins {
+                id 'com.netflix.dgs.codegen'
+            }
+
+            codegen.clientCoreConventionsEnabled = false
+
+            dependencies {
+                dgsCodegen files(${jars.joinToString { "'$it'" }})
+            }
+
+            generateJava {
+                schemaPaths = []
+                packageName = 'com.netflix.testproject.graphql'
+                generatedSourcesDir = file('build/graphql').absolutePath
+            }
+            """.trimIndent(),
+        )
+        return projectDir
+    }
+
+    /** The schema roots are written by `produce`, so they do not exist until generateJava's first execution. */
+    private fun createProducerProject(
+        parent: File,
+        name: String,
+    ): File {
+        val projectDir = File(parent, name).also { it.mkdirs() }
+        File(projectDir, "settings.gradle").writeText("")
+        File(projectDir, "build.gradle").writeText(
+            """
+            plugins {
+                id 'com.netflix.dgs.codegen'
+            }
+
+            codegen.clientCoreConventionsEnabled = false
+
+            def swapFile = layout.projectDirectory.file('swap.txt')
+            def gen = layout.buildDirectory.dir('gen')
+            tasks.register('produce') {
+                inputs.file(swapFile)
+                outputs.dir(gen)
+                doLast {
+                    def swap = swapFile.asFile.text.trim() == 'swap'
+                    def dir = gen.get().asFile
+                    ['a', 'b', 'base'].each { new File(dir, it).mkdirs() }
+                    new File(dir, 'base/base.graphqls').text = '$BASE_SCHEMA'
+                    new File(dir, 'a/same.graphqls').text = swap ? '$SECOND_EXTENSION' : '$FIRST_EXTENSION'
+                    new File(dir, 'b/same.graphqls').text = swap ? '$FIRST_EXTENSION' : '$SECOND_EXTENSION'
+                }
+            }
+
+            generateJava {
+                dependsOn 'produce'
+                schemaPaths = ['base', 'a', 'b'].collect { gen.get().dir(it).asFile }
+                packageName = 'com.netflix.testproject.graphql'
+                generatedSourcesDir = file('build/graphql').absolutePath
+            }
+            """.trimIndent(),
+        )
+        return projectDir
+    }
+
+    private fun writeSchemaJar(
+        jar: File,
+        entryOrder: List<String>,
+    ) {
+        val schemas =
+            mapOf(
+                "a-base.graphqls" to BASE_SCHEMA,
+                "b-extension.graphqls" to SECOND_EXTENSION,
+                "c-extension.graphqls" to THIRD_EXTENSION,
+            )
+        writeJar(jar, *entryOrder.map { it to schemas.getValue(it) }.toTypedArray())
+    }
+
+    private fun writeJar(
+        jar: File,
+        vararg entries: Pair<String, String>,
+    ) {
+        jar.parentFile.mkdirs()
+        JarOutputStream(jar.outputStream()).use { out ->
+            entries.forEach { (name, content) ->
+                out.putNextEntry(ZipEntry(name))
+                out.write(content.toByteArray())
+                out.closeEntry()
+            }
+        }
+    }
+
+    private fun generatedSources(projectDir: File): File = File(projectDir, "build/graphql/generated/sources/dgs-codegen")
+
+    /** The field names of the generated `Foo`, in declaration order (the nested builder repeats them). */
+    private fun fooFields(projectDir: File): List<String> =
+        Regex("""private \w+ (\w+);""")
+            .findAll(File(generatedSources(projectDir), "com/netflix/testproject/graphql/types/Foo.java").readText())
+            .map { it.groupValues[1] }
+            .distinct()
+            .toList()
+
+    private fun runWithConfigurationCache(
+        projectDir: File,
+        vararg arguments: String,
+    ): BuildResult = run(projectDir, "--configuration-cache", "--configuration-cache-problems=fail", *arguments)
+
     private fun run(
         projectDir: File,
         vararg arguments: String,
@@ -211,4 +609,11 @@ class GenerateJavaTaskBuildCacheTest {
                         .digest(file.readBytes())
                         .joinToString("") { "%02x".format(it) }
             }
+
+    private companion object {
+        const val BASE_SCHEMA = "type Query { foo: Foo } type Foo { base: String }"
+        const val FIRST_EXTENSION = "extend type Foo { fa: String }"
+        const val SECOND_EXTENSION = "extend type Foo { fb: String }"
+        const val THIRD_EXTENSION = "extend type Foo { fc: String }"
+    }
 }

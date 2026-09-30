@@ -73,6 +73,28 @@ open class GenerateJavaTask
         val schemaFiles: ConfigurableFileCollection =
             objectFactory.fileCollection().from(providerFactory.provider { schemaPaths })
 
+        /**
+         * The schema roots in the order `CodeGen` reads them. `CodeGen` sorts the files under all roots by absolute
+         * path, so the roots come out in path order, with `/` appended to a directory because its files continue
+         * with that separator. A root is taken for a file by its name, so that the order does not probe the file
+         * system, which would make the configuration cache entry depend on the roots' existence. `schemaFiles` fingerprints each root separately and with relative paths, so it cannot
+         * see this order. Two layouts with the same files but a different absolute sort order (swapped roots, a
+         * workspace moved to a path that sorts differently) would share a cache key and produce different output.
+         * `@Classpath` keeps the order and ignores the paths. Nested roots are not modeled: their files are read
+         * twice, interleaved by path.
+         *
+         * Only the root paths are listed, never the files under them. The files are fingerprinted when the task
+         * executes. A list of files would be evaluated when the configuration cache entry is stored, before an
+         * earlier task has produced the schema, and frozen from then on.
+         */
+        @get:Classpath
+        val orderedSchemaRoots: ConfigurableFileCollection =
+            objectFactory.fileCollection().from(
+                providerFactory.provider { schemaFiles.files.sortedBy { if (it.isSchemaFileName()) it.path else it.path + "/" } },
+            )
+
+        private fun File.isSchemaFileName(): Boolean = name.endsWith(".graphql") || name.endsWith(".graphqls")
+
         init {
             outputs.doNotCacheIf("Generated sources contain timestamps") {
                 addGeneratedAnnotation &&
@@ -220,6 +242,15 @@ open class GenerateJavaTask
             objectFactory.fileCollection().from(
                 project.configurations.findByName("dgsCodegen"),
             )
+
+        /**
+         * `CodeGen` orders dependency jars by absolute path, which `dgsCodegenClasspath` (classpath order, no paths)
+         * cannot see. Same reasoning as [orderedSchemaRoots]. Type mapping precedence follows classpath order and is
+         * already covered by `dgsCodegenClasspath`.
+         */
+        @get:Classpath
+        val sortedDgsCodegenJars: ConfigurableFileCollection =
+            objectFactory.fileCollection().from(providerFactory.provider { dgsCodegenClasspath.files.sorted() })
 
         @Input
         val jacksonVersionOverride: ListProperty<String> =
