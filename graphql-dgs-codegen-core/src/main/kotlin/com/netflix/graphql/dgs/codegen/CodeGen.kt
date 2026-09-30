@@ -164,11 +164,12 @@ class CodeGen private constructor(
             typeName in requiredTypes
 
     fun generate(): CodeGenResult {
-        val codeGenResult =
+        val generated =
             when (config.language) {
                 Language.JAVA -> generateJava()
                 Language.KOTLIN -> generateKotlin()
             }
+        val codeGenResult = generated.copy(clientProjections = generated.lastClientProjectionsPerPath())
 
         if (config.writeToFiles) {
             GeneratedFileWriter(config.fileWriteParallelism).write(
@@ -388,14 +389,19 @@ class CodeGen private constructor(
         val methodNames = mutableSetOf<String>()
         return if (config.generateClientApi) {
             val clientApiGenerator = ClientApiGenerator(config, schemaIndex)
-            definitions
+            val operations =
+                definitions
+                    .filterIsInstance<ObjectTypeDefinition>()
+                    .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
+                    .sortedBy { it.name.length }
+            val rootProjectionNames =
+                clientApiGenerator.rootProjectionNames(operations, federatedDefinitions(definitions))
+            operations
                 .asSequence()
-                .filterIsInstance<ObjectTypeDefinition>()
-                .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
-                .sortedBy { it.name.length }
                 .map {
-                    clientApiGenerator.generate(it, methodNames)
+                    clientApiGenerator.generate(it, methodNames, rootProjectionNames)
                 }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+                .merge(clientApiGenerator.generateDeferredRoots())
         } else {
             CodeGenResult.EMPTY
         }
@@ -403,16 +409,15 @@ class CodeGen private constructor(
 
     private fun generateJavaClientEntitiesApi(definitions: Collection<Definition<*>>): CodeGenResult =
         if (config.generateClientApi) {
-            val federatedDefinitions =
-                definitions
-                    .asSequence()
-                    .filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.hasDirective("key") }
-                    .toList()
-            ClientApiGenerator(config, schemaIndex).generateEntities(federatedDefinitions)
+            ClientApiGenerator(config, schemaIndex).generateEntities(federatedDefinitions(definitions))
         } else {
             CodeGenResult.EMPTY
         }
+
+    private fun federatedDefinitions(definitions: Collection<Definition<*>>): List<ObjectTypeDefinition> =
+        definitions
+            .filterIsInstance<ObjectTypeDefinition>()
+            .filter { it.hasDirective("key") }
 
     private fun generateJavaClientEntitiesRepresentations(definitions: Collection<Definition<*>>): CodeGenResult =
         if (config.generateClientApi) {
@@ -768,10 +773,7 @@ data class CodeGenResult(
             javaEnumTypes = javaEnumTypes.concat(current.javaEnumTypes),
             javaDataFetchers = javaDataFetchers.concat(current.javaDataFetchers),
             javaQueryTypes = javaQueryTypes.concat(current.javaQueryTypes),
-            clientProjections =
-                clientProjections
-                    .concat(current.clientProjections)
-                    .distinctBy { it.packageName() to it.typeSpec().name() },
+            clientProjections = clientProjections.concat(current.clientProjections).distinctProjections(),
             javaConstants = javaConstants.concat(current.javaConstants),
             kotlinDataTypes = kotlinDataTypes.concat(current.kotlinDataTypes),
             kotlinInputTypes = kotlinInputTypes.concat(current.kotlinInputTypes),
@@ -791,9 +793,13 @@ data class CodeGenResult(
             .plus(javaEnumTypes)
             .plus(javaDataFetchers)
             .plus(javaQueryTypes)
-            .plus(clientProjections)
+            .plus(lastClientProjectionsPerPath())
             .plus(javaConstants)
             .toList()
+
+    /** Resolve duplicate destinations only after all merges, so a later 8.7.0-compatible winner is retained. */
+    internal fun lastClientProjectionsPerPath(): List<JavaFile> =
+        clientProjections.associateBy { it.packageName() to it.typeSpec().name() }.values.toList()
 
     fun kotlinSources(): List<FileSpec> =
         kotlinDataTypes
@@ -804,6 +810,28 @@ data class CodeGenResult(
             .plus(kotlinConstants)
             .plus(kotlinClientTypes)
             .toList()
+
+    /**
+     * Drops projections identical to an earlier one, like the `distinct()` used up to 8.7.0, but only renders files
+     * whose names collide: equality renders the source, and rendering every accumulated file on every merge made
+     * merging quadratic.
+     * The package is part of the key, so comparing the rendered type skips `JavaFile`'s import pass.
+     * Same-named projections that differ are kept; `CodeGen` writes the last one, as 8.7.0 did.
+     */
+    private fun List<JavaFile>.distinctProjections(): List<JavaFile> {
+        val byName = HashMap<Pair<String, String>, MutableList<JavaFile>>()
+        val rendered = IdentityHashMap<JavaFile, String>()
+        val source = { file: JavaFile -> rendered.getOrPut(file) { file.typeSpec().toString() } }
+        return filter { file ->
+            val sameName = byName.getOrPut(file.packageName() to file.typeSpec().name()) { mutableListOf() }
+            if (sameName.any { it === file || source(it) == source(file) }) {
+                false
+            } else {
+                sameName.add(file)
+                true
+            }
+        }
+    }
 
     private fun <T> List<T>.concat(other: List<T>): List<T> {
         if (other.isEmpty()) {

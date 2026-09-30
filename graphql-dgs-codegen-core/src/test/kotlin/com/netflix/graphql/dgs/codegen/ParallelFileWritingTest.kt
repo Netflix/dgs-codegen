@@ -22,6 +22,8 @@ import com.palantir.javapoet.FieldSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.TypeName
 import com.palantir.javapoet.TypeSpec
+import com.squareup.kotlinpoet.FileSpec
+import com.squareup.kotlinpoet.PropertySpec
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
@@ -70,17 +72,44 @@ class ParallelFileWritingTest {
     }
 
     @Test
-    fun `duplicate destinations fail before writing`() {
-        assertThatThrownBy {
-            GeneratedFileWriter(4).write(
-                javaFiles = listOf(javaFile("Duplicate"), javaFile("Duplicate")),
-                kotlinFiles = emptyList(),
-                outputDirectory = temporaryDirectory,
-            )
-        }.isInstanceOf(IllegalArgumentException::class.java)
-            .hasMessageContaining("example/Duplicate.java")
+    fun `exact duplicate destinations keep the last source`() {
+        GeneratedFileWriter(4).write(
+            javaFiles = listOf(javaFile("Duplicate", field = "first"), javaFile("Duplicate", field = "last")),
+            kotlinFiles = emptyList(),
+            outputDirectory = temporaryDirectory,
+        )
 
-        assertThat(Files.exists(temporaryDirectory.resolve("example/Duplicate.java"))).isFalse()
+        assertThat(Files.readString(temporaryDirectory.resolve("example/Duplicate.java")))
+            .contains("last")
+            .doesNotContain("first")
+    }
+
+    @Test
+    fun `exact duplicate Kotlin destinations keep the last source`() {
+        val first =
+            FileSpec
+                .builder(
+                    "example",
+                    "Duplicate",
+                ).addProperty(PropertySpec.builder("first", Int::class).initializer("1").build())
+                .build()
+        val last =
+            FileSpec
+                .builder(
+                    "example",
+                    "Duplicate",
+                ).addProperty(PropertySpec.builder("last", Int::class).initializer("2").build())
+                .build()
+
+        GeneratedFileWriter(4).write(
+            javaFiles = emptyList(),
+            kotlinFiles = listOf(first, last),
+            outputDirectory = temporaryDirectory,
+        )
+
+        assertThat(Files.readString(temporaryDirectory.resolve("example/Duplicate.kt")))
+            .contains("last")
+            .doesNotContain("first")
     }
 
     @Test
@@ -129,7 +158,12 @@ class ParallelFileWritingTest {
     private fun javaFile(
         name: String,
         packageName: String = "example",
-    ): JavaFile = JavaFile.builder(packageName, TypeSpec.classBuilder(name).build()).build()
+        field: String? = null,
+    ): JavaFile {
+        val type = TypeSpec.classBuilder(name)
+        if (field != null) type.addField(FieldSpec.builder(TypeName.INT, field).build())
+        return JavaFile.builder(packageName, type.build()).build()
+    }
 
     private fun largeJavaFile(name: String): JavaFile {
         val type = TypeSpec.classBuilder(name)

@@ -55,6 +55,7 @@ import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 import graphql.language.VariableDefinition
 import java.lang.Deprecated
+import java.util.Locale
 import javax.lang.model.element.Modifier
 import kotlin.Pair
 import kotlin.String
@@ -67,27 +68,66 @@ class ClientApiGenerator internal constructor(
 ) {
     constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))
 
-    private val generatedClasses = mutableSetOf<String>()
+    private enum class ProjectionKind { ROOT, PROJECTION, FRAGMENT, ENTITIES }
+
+    private data class ProjectionSource(
+        val kind: ProjectionKind,
+        val type: String,
+        val className: String,
+    )
+
+    private val claimedNames = mutableSetOf<String>()
+    private val allClaimedNames = mutableSetOf<String>()
+    private val builtSources = mutableSetOf<ProjectionSource>()
+    private val deferredRoots = mutableListOf<Pair<TypeDefinition<*>, String>>()
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, schemaIndex)
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
 
     fun generate(
         definition: ObjectTypeDefinition,
         methodNames: MutableSet<String>,
-    ): CodeGenResult =
-        definition.fieldDefinitions
-            .filterIncludedInConfig(definition.name, config)
-            .filterSkipped()
+    ): CodeGenResult = generate(definition, methodNames, rootProjectionNames(listOf(definition))).merge(generateDeferredRoots())
+
+    /**
+     * Pass [rootProjectionNames] computed over every operation, or same-named fields returning different types collide.
+     */
+    internal fun generate(
+        definition: ObjectTypeDefinition,
+        methodNames: MutableSet<String>,
+        rootProjectionNames: Map<Pair<String, String>, String>,
+    ): CodeGenResult {
+        claimedNames.clear()
+        val legacyNames = mutableSetOf<String>()
+        return rootFields(definition)
             .map {
                 val javaFile = createQueryClass(it, definition.name, methodNames)
 
                 val rootProjection =
                     it.type.findTypeDefinition(schemaIndex, true)?.let { typeDefinition ->
-                        createRootProjection(typeDefinition, it.name.capitalized())
+                        val className = rootProjectionNames.getValue(definition.name to it.name)
+                        val legacyName = "${it.name.capitalized()}ProjectionRoot"
+                        if (legacyNames.add(legacyName)) {
+                            createRootProjection(typeDefinition, className)
+                        } else {
+                            deferredRoots.add(typeDefinition to className)
+                            CodeGenResult.EMPTY
+                        }
                     }
                         ?: CodeGenResult.EMPTY
                 CodeGenResult(javaQueryTypes = listOf(javaFile)).merge(rootProjection)
             }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+    }
+
+    internal fun generateDeferredRoots(): CodeGenResult {
+        claimedNames.clear()
+        claimedNames.addAll(allClaimedNames)
+        val result =
+            deferredRoots
+                .map { (type, name) -> createRootProjection(type, name) }
+                .fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+        deferredRoots.clear()
+        return result
+    }
 
     fun generateEntities(definitions: List<ObjectTypeDefinition>): CodeGenResult {
         if (config.skipEntityQueries) {
@@ -434,11 +474,129 @@ class ClientApiGenerator internal constructor(
             .addCode("""super(null, null, java.util.Optional.of("$typeName"));""")
             .build()
 
+    private data class RootProjectionField(
+        val operation: String,
+        val definition: Int,
+        val fieldName: String,
+        val type: String,
+    ) {
+        val legacyName: String get() = "${fieldName.capitalized()}ProjectionRoot"
+    }
+
+    /**
+     * In 8.7.0 the first field claiming a name won within each operation definition, then the last distinct source won on disk.
+     * Reserve legacy names before allocating additive roots. Federation wrote its root after client operations, so
+     * `EntitiesProjectionRoot` must stay with federation.
+     */
+    internal fun rootProjectionNames(
+        operations: List<ObjectTypeDefinition>,
+        federatedTypes: List<ObjectTypeDefinition> = emptyList(),
+    ): Map<Pair<String, String>, String> {
+        val fields =
+            operations
+                .flatMapIndexed { index, operation ->
+                    rootFields(operation).mapNotNull { field ->
+                        field.type.findTypeDefinition(schemaIndex, true)?.let {
+                            RootProjectionField(operation.name, index, field.name, it.name)
+                        }
+                    }
+                }
+        val firstFields = fields.distinctBy { it.definition to it.legacyName }
+        val legacyWinners =
+            firstFields
+                .map { it.legacyName to it.type }
+                .distinct()
+                .toMap()
+                .toMutableMap()
+        val reservedNames = fields.mapTo(mutableSetOf()) { it.legacyName.lowercase(Locale.ROOT) }
+        if (!config.skipEntityQueries && federatedTypes.isNotEmpty()) {
+            legacyWinners.remove("EntitiesProjectionRoot")
+            reservedNames.add("EntitiesProjectionRoot".lowercase(Locale.ROOT))
+        }
+
+        val firstInDefinition = mutableSetOf<Pair<Int, String>>()
+        return fields.associate { field ->
+            val className =
+                if (firstInDefinition.add(field.definition to field.legacyName) && legacyWinners[field.legacyName] == field.type) {
+                    field.legacyName
+                } else {
+                    val prefix = "${field.fieldName.capitalized()}GraphQL${field.operation.capitalized()}"
+                    var candidate = "${prefix}ProjectionRoot"
+                    var suffix = 2
+                    while (!reservedNames.add(candidate.lowercase(Locale.ROOT))) {
+                        candidate = "${prefix}${suffix++}ProjectionRoot"
+                    }
+                    candidate
+                }
+            (field.operation to field.fieldName) to className
+        }
+    }
+
+    private fun rootFields(definition: ObjectTypeDefinition): List<FieldDefinition> =
+        definition.fieldDefinitions
+            .filterIncludedInConfig(definition.name, config)
+            .filterSkipped()
+
+    private fun claimSource(
+        name: String,
+        source: ProjectionSource,
+    ): Boolean? {
+        if (!claimedNames.add(name)) return null
+        allClaimedNames.add(name)
+        return builtSources.add(source)
+    }
+
+    private fun walkProjectionDescendants(
+        type: TypeDefinition<*>,
+        root: TypeSpec,
+        isRoot: Boolean,
+    ): CodeGenResult {
+        val fields =
+            collectAllFieldDefinitions(type, schemaIndex)
+                .filterSkipped()
+                .mapNotNull { field ->
+                    val child =
+                        if (isRoot) {
+                            field.type.findTypeDefinition(
+                                schemaIndex,
+                                excludeExtensions = true,
+                                includeBaseTypes = field.inputValueDefinitions.isNotEmpty(),
+                                includeScalarTypes = field.inputValueDefinitions.isNotEmpty(),
+                            )
+                        } else {
+                            field.type.findTypeDefinition(schemaIndex, true)
+                        }
+                    child?.let { createSubProjection(it, root, it.name.capitalized()) }
+                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+        val concrete =
+            if (type is InterfaceTypeDefinition) {
+                schemaIndex
+                    .implementations(type.name)
+                    .distinctBy { it.name }
+                    .map { createFragment(it, root, "${it.name.capitalized()}Fragment") }
+                    .fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+            } else {
+                CodeGenResult.EMPTY
+            }
+        val union =
+            if (type is UnionTypeDefinition) {
+                type.memberTypes
+                    .mapNotNull { it.findTypeDefinition(schemaIndex, true) }
+                    .map { createFragment(it as ObjectTypeDefinition, root, "${it.name.capitalized()}Fragment") }
+                    .fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+            } else {
+                CodeGenResult.EMPTY
+            }
+        return fields.merge(concrete).merge(union)
+    }
+
     private fun createRootProjection(
         type: TypeDefinition<*>,
-        prefix: String,
+        clazzName: String,
     ): CodeGenResult {
-        val clazzName = "${prefix}ProjectionRoot"
+        val isNew = claimSource(clazzName, ProjectionSource(ProjectionKind.ROOT, type.name, clazzName)) ?: return CodeGenResult.EMPTY
+        if (!isNew) return walkProjectionDescendants(type, TypeSpec.classBuilder(clazzName).build(), isRoot = true)
+
         val javaType =
             createProjectionClass(clazzName)
                 .addMethod(createRootProjectionConstructor(type.name))
@@ -457,54 +615,45 @@ class ClientApiGenerator internal constructor(
                 .build(),
         )
 
-        if (generatedClasses.contains(clazzName)) return CodeGenResult.EMPTY else generatedClasses.add(clazzName)
-
         val fieldDefinitions = collectAllFieldDefinitions(type, schemaIndex)
 
-        val codeGenResult =
-            fieldDefinitions
-                .filterSkipped()
-                .mapNotNull {
-                    val typeDefinition =
-                        it.type.findTypeDefinition(
-                            schemaIndex,
-                            excludeExtensions = true,
-                            includeBaseTypes = it.inputValueDefinitions.isNotEmpty(),
-                            includeScalarTypes = it.inputValueDefinitions.isNotEmpty(),
+        fieldDefinitions
+            .filterSkipped()
+            .mapNotNull {
+                val typeDefinition =
+                    it.type.findTypeDefinition(
+                        schemaIndex,
+                        excludeExtensions = true,
+                        includeBaseTypes = it.inputValueDefinitions.isNotEmpty(),
+                        includeScalarTypes = it.inputValueDefinitions.isNotEmpty(),
+                    )
+                if (typeDefinition != null) it to typeDefinition else null
+            }.forEach { (fieldDef, typeDef) ->
+                val projectionName = "${typeDef.name.capitalized()}Projection"
+                if (typeDef !is ScalarTypeDefinition) {
+                    val projectionTypeVariable =
+                        TypeVariableName.get(
+                            "$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>>",
                         )
-                    if (typeDefinition != null) it to typeDefinition else null
-                }.map { (fieldDef, typeDef) ->
-                    val projectionName = "${typeDef.name.capitalized()}Projection"
-                    if (typeDef !is ScalarTypeDefinition) {
-                        val projectionTypeVariable =
-                            TypeVariableName.get(
-                                "$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>>",
-                            )
-                        val noArgMethodBuilder =
-                            MethodSpec
-                                .methodBuilder(javaReservedKeywordSanitizer.sanitize(fieldDef.name))
-                                .returns(projectionTypeVariable)
-                                .addCode(
-                                    """
+                    val noArgMethodBuilder =
+                        MethodSpec
+                            .methodBuilder(javaReservedKeywordSanitizer.sanitize(fieldDef.name))
+                            .returns(projectionTypeVariable)
+                            .addCode(
+                                """
                             |$projectionName<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>> projection = new $projectionName<>(this, this);    
                             |getFields().put("${fieldDef.name}", projection);
                             |return projection;
-                                    """.trimMargin(),
-                                ).addModifiers(Modifier.PUBLIC)
-                        javaType.addMethod(noArgMethodBuilder.build())
-                    }
+                                """.trimMargin(),
+                            ).addModifiers(Modifier.PUBLIC)
+                    javaType.addMethod(noArgMethodBuilder.build())
+                }
 
-                    if (fieldDef.inputValueDefinitions.isNotEmpty()) {
-                        addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "this")
-                        addFieldSelectionMethodWithArgumentsReferences(fieldDef, projectionName, javaType, projectionRoot = "this")
-                    }
-
-                    createSubProjection(
-                        typeDef,
-                        javaType.build(),
-                        typeDef.name.capitalized(),
-                    )
-                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+                if (fieldDef.inputValueDefinitions.isNotEmpty()) {
+                    addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "this")
+                    addFieldSelectionMethodWithArgumentsReferences(fieldDef, projectionName, javaType, projectionRoot = "this")
+                }
+            }
 
         fieldDefinitions.filterSkipped().forEach {
             val objectTypeDefinition = it.type.findTypeDefinition(schemaIndex)
@@ -524,13 +673,13 @@ class ClientApiGenerator internal constructor(
             }
         }
 
-        val concreteTypesResult = createConcreteTypes(type, javaType.build(), javaType)
-        val unionTypesResult = createUnionTypes(type, javaType, javaType.build())
+        createConcreteTypes(type, javaType.build(), javaType)
+        createUnionTypes(type, javaType, javaType.build())
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(
             clientProjections = listOf(javaFile),
-        ).merge(codeGenResult).merge(concreteTypesResult).merge(unionTypesResult)
+        ).merge(walkProjectionDescendants(type, javaType.build(), isRoot = true))
     }
 
     private fun addFieldSelectionMethodWithArguments(
@@ -620,7 +769,7 @@ class ClientApiGenerator internal constructor(
             createProjectionClass(clazzName)
                 .addMethod(createRootProjectionConstructor("_entities"))
 
-        if (generatedClasses.contains(clazzName)) return CodeGenResult.EMPTY else generatedClasses.add(clazzName)
+        if (claimSource(clazzName, ProjectionSource(ProjectionKind.ENTITIES, "_entities", clazzName)) != true) return CodeGenResult.EMPTY
 
         val codeGenResult =
             federatedTypes
@@ -655,37 +804,32 @@ class ClientApiGenerator internal constructor(
         type: TypeDefinition<*>,
         root: TypeSpec,
         javaType: TypeSpec.Builder,
-    ): CodeGenResult =
+    ) {
         if (type is InterfaceTypeDefinition) {
-            val concreteTypes = schemaIndex.implementations(type.name).distinctBy { it.name }
-            concreteTypes
-                .map {
-                    addFragmentProjectionMethod(javaType, root, it)
-                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
-        } else {
-            CodeGenResult.EMPTY
+            schemaIndex
+                .implementations(type.name)
+                .distinctBy { it.name }
+                .forEach { addFragmentProjectionMethod(javaType, root, it) }
         }
+    }
 
     private fun createUnionTypes(
         type: TypeDefinition<*>,
         javaType: TypeSpec.Builder,
         rootType: TypeSpec,
-    ): CodeGenResult =
+    ) {
         if (type is UnionTypeDefinition) {
-            val memberTypes = type.memberTypes.mapNotNull { it.findTypeDefinition(schemaIndex, true) }.toList()
-            memberTypes
-                .map {
-                    addFragmentProjectionMethod(javaType, rootType, it)
-                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
-        } else {
-            CodeGenResult.EMPTY
+            type.memberTypes
+                .mapNotNull { it.findTypeDefinition(schemaIndex, true) }
+                .forEach { addFragmentProjectionMethod(javaType, rootType, it) }
         }
+    }
 
     private fun addFragmentProjectionMethod(
         javaType: TypeSpec.Builder,
         rootType: TypeSpec,
         it: TypeDefinition<*>,
-    ): CodeGenResult {
+    ) {
         val rootRef = if (javaType.build().name() == rootType.name()) "this" else "getRoot()"
         val rootTypeName = if (javaType.build().name() == rootType.name()) "${rootType.name()}<PARENT, ROOT>" else "ROOT"
         val parentRef = javaType.build().name()
@@ -705,8 +849,6 @@ class ClientApiGenerator internal constructor(
                     """.trimMargin(),
                 ).build(),
         )
-
-        return createFragment(it as ObjectTypeDefinition, rootType, projectionName)
     }
 
     private fun createFragment(
@@ -715,10 +857,10 @@ class ClientApiGenerator internal constructor(
         prefix: String,
     ): CodeGenResult {
         val subProjection =
-            createSubProjectionType(type, root, prefix)
+            createSubProjectionType(type, root, prefix, ProjectionKind.FRAGMENT)
                 ?: return CodeGenResult.EMPTY
-        val javaType = subProjection.first
         val codeGenResult = subProjection.second
+        val javaType = subProjection.first ?: return codeGenResult
 
         // We don't need the typename added for fragments in the entities' projection.
         // This affects deserialization when use directly with generated classes
@@ -764,10 +906,10 @@ class ClientApiGenerator internal constructor(
         prefix: String,
     ): CodeGenResult {
         val subProjection =
-            createSubProjectionType(type, root, prefix)
+            createSubProjectionType(type, root, prefix, ProjectionKind.PROJECTION)
                 ?: return CodeGenResult.EMPTY
-        val javaType = subProjection.first
         val codeGenResult = subProjection.second
+        val javaType = subProjection.first ?: return codeGenResult
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)
@@ -777,9 +919,11 @@ class ClientApiGenerator internal constructor(
         type: TypeDefinition<*>,
         root: TypeSpec,
         prefix: String,
-    ): Pair<TypeSpec.Builder, CodeGenResult>? {
+        kind: ProjectionKind,
+    ): Pair<TypeSpec.Builder?, CodeGenResult>? {
         val clazzName = "${prefix}Projection"
-        if (generatedClasses.contains(clazzName)) return null else generatedClasses.add(clazzName)
+        val isNew = claimSource(clazzName, ProjectionSource(kind, type.name, clazzName)) ?: return null
+        if (!isNew) return null to walkProjectionDescendants(type, root, isRoot = false)
 
         val javaType =
             createProjectionClass(clazzName)
@@ -810,41 +954,34 @@ class ClientApiGenerator internal constructor(
 
         val fieldDefinitions = collectAllFieldDefinitions(type, schemaIndex)
 
-        val codeGenResult =
-            fieldDefinitions
-                .filterSkipped()
-                .mapNotNull {
-                    val typeDefinition = it.type.findTypeDefinition(schemaIndex, true)
-                    if (typeDefinition != null) it to typeDefinition else null
-                }.map { (fieldDef, typeDef) ->
-                    val projectionName = "${typeDef.name.capitalized()}Projection"
-                    val methodName = javaReservedKeywordSanitizer.sanitize(fieldDef.name)
-                    val projectionTypeVariable = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, ROOT>")
-                    javaType.addMethod(
-                        MethodSpec
-                            .methodBuilder(methodName)
-                            .returns(projectionTypeVariable)
-                            .addCode(
-                                """
+        fieldDefinitions
+            .filterSkipped()
+            .mapNotNull {
+                val typeDefinition = it.type.findTypeDefinition(schemaIndex, true)
+                if (typeDefinition != null) it to typeDefinition else null
+            }.forEach { (fieldDef, typeDef) ->
+                val projectionName = "${typeDef.name.capitalized()}Projection"
+                val methodName = javaReservedKeywordSanitizer.sanitize(fieldDef.name)
+                val projectionTypeVariable = TypeVariableName.get("$projectionName<$clazzName<PARENT, ROOT>, ROOT>")
+                javaType.addMethod(
+                    MethodSpec
+                        .methodBuilder(methodName)
+                        .returns(projectionTypeVariable)
+                        .addCode(
+                            """
                                     | $projectionName<$clazzName<PARENT, ROOT>, ROOT> projection = new $projectionName<>(this, getRoot());
                                     | getFields().put("${fieldDef.name}", projection);
                                     | return projection;
-                                """.trimMargin(),
-                            ).addModifiers(Modifier.PUBLIC)
-                            .build(),
-                    )
+                            """.trimMargin(),
+                        ).addModifiers(Modifier.PUBLIC)
+                        .build(),
+                )
 
-                    if (fieldDef.inputValueDefinitions.isNotEmpty()) {
-                        addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
-                        addFieldSelectionMethodWithArgumentsReferences(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
-                    }
-
-                    createSubProjection(
-                        typeDef,
-                        root,
-                        typeDef.name.capitalized(),
-                    )
-                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+                if (fieldDef.inputValueDefinitions.isNotEmpty()) {
+                    addFieldSelectionMethodWithArguments(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
+                    addFieldSelectionMethodWithArgumentsReferences(fieldDef, projectionName, javaType, projectionRoot = "getRoot()")
+                }
+            }
 
         fieldDefinitions
             .filterSkipped()
@@ -898,10 +1035,10 @@ class ClientApiGenerator internal constructor(
                 }
             }
 
-        val concreteTypesResult = createConcreteTypes(type, root, javaType)
-        val unionTypesResult = createUnionTypes(type, javaType, root)
+        createConcreteTypes(type, root, javaType)
+        createUnionTypes(type, javaType, root)
 
-        return javaType to codeGenResult.merge(concreteTypesResult).merge(unionTypesResult)
+        return javaType to walkProjectionDescendants(type, root, isRoot = false)
     }
 
     private fun getDeprecateDirective(node: DirectivesContainer<*>): Directive? {

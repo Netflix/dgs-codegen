@@ -44,18 +44,23 @@ internal class GeneratedFileWriter(
         kotlinFiles: List<FileSpec>,
         outputDirectory: Path,
     ) {
+        // Sequential writes through 8.7.0 left the last source at an exact destination.
         val files =
-            javaFiles.map { javaFile ->
-                val relativePath =
-                    Path
-                        .of(javaFile.packageName().replace('.', '/'))
-                        .resolve("${javaFile.typeSpec().name()}.java")
-                GeneratedFile(relativePath) { javaFile.writeTo(outputDirectory) }
-            } +
-                kotlinFiles.map { kotlinFile ->
-                    val relativePath = Path.of(kotlinFile.relativePath)
-                    GeneratedFile(relativePath) { kotlinFile.writeTo(outputDirectory) }
-                }
+            (
+                javaFiles.map { javaFile ->
+                    val relativePath =
+                        Path
+                            .of(javaFile.packageName().replace('.', '/'))
+                            .resolve("${javaFile.typeSpec().name()}.java")
+                    GeneratedFile(relativePath) { javaFile.writeTo(outputDirectory) }
+                } +
+                    kotlinFiles.map { kotlinFile ->
+                        val relativePath = Path.of(kotlinFile.relativePath)
+                        GeneratedFile(relativePath) { kotlinFile.writeTo(outputDirectory) }
+                    }
+            ).associateBy { it.relativePath.normalize() }
+                .values
+                .toList()
 
         validateUniqueDestinations(files)
         if (parallelism == 1 || files.size < 2) {

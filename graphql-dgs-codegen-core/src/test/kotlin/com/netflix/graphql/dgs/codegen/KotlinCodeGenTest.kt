@@ -4438,10 +4438,13 @@ It takes a title and such.
 
         assertThat(codeGenResult.clientProjections.map { it.typeSpec().name() })
             .containsOnlyOnce("SharedProjectionRoot")
-            .containsOnlyOnce("ResultProjectionRoot")
+            .containsOnlyOnce("ResultProjectionRoot", "ResultGraphQLQueryProjectionRoot")
         val resultProjection =
             codeGenResult.clientProjections.single { it.typeSpec().name() == "ResultProjectionRoot" }.typeSpec()
-        assertThat(resultProjection.methodSpecs()).extracting("name").contains("queryOnly").doesNotContain("mutationOnly")
+        assertThat(resultProjection.methodSpecs()).extracting("name").contains("mutationOnly").doesNotContain("queryOnly")
+        val queryResultProjection =
+            codeGenResult.clientProjections.single { it.typeSpec().name() == "ResultGraphQLQueryProjectionRoot" }.typeSpec()
+        assertThat(queryResultProjection.methodSpecs()).extracting("name").contains("queryOnly").doesNotContain("mutationOnly")
 
         assertThat(codeGenResult.javaQueryTypes.map { it.typeSpec().name() })
             .contains(
