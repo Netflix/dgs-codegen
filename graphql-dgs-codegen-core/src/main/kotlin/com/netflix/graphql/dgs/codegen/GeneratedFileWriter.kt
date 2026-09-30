@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen
 
 import com.palantir.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
+import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Path
 import java.util.Locale
@@ -29,11 +30,15 @@ import java.util.concurrent.ExecutorCompletionService
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.ThreadFactory
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicInteger
 
 internal class GeneratedFileWriter(
     private val parallelism: Int,
+    private val executorFactory: (Int, ThreadFactory) -> ExecutorService = { poolSize, threadFactory ->
+        Executors.newFixedThreadPool(poolSize, threadFactory)
+    },
 ) {
     init {
         require(parallelism > 0) { "File write parallelism must be greater than zero" }
@@ -68,6 +73,15 @@ internal class GeneratedFileWriter(
             return
         }
 
+        if (Thread.interrupted()) {
+            try {
+                files.forEach { write(it, outputDirectory) }
+            } finally {
+                Thread.currentThread().interrupt()
+            }
+            return
+        }
+
         writeInParallel(files, outputDirectory)
     }
 
@@ -77,34 +91,37 @@ internal class GeneratedFileWriter(
     ) {
         val threadNumber = AtomicInteger()
         val executor =
-            Executors.newFixedThreadPool(minOf(parallelism, files.size)) { runnable ->
+            executorFactory(minOf(parallelism, files.size)) { runnable ->
                 Thread(runnable, "dgs-codegen-writer-${threadNumber.incrementAndGet()}")
             }
         val completionService = ExecutorCompletionService<Unit>(executor)
-        val futures =
-            files.map { file ->
-                completionService.submit(Callable { write(file, outputDirectory) })
-            }
+        val futures = mutableListOf<Future<Unit>>()
 
         try {
+            files.forEach { file ->
+                futures += completionService.submit(Callable { write(file, outputDirectory) })
+            }
             repeat(files.size) {
                 completionService.take().get()
             }
             executor.shutdown()
-        } catch (exception: InterruptedException) {
-            cancel(futures)
+        } catch (exception: Throwable) {
+            futures.forEach { it.cancel(true) }
             executor.shutdownNow()
             awaitTermination(executor)
-            Thread.currentThread().interrupt()
-            throw CodeGenFileWriteException(outputDirectory, exception)
-        } catch (exception: ExecutionException) {
-            cancel(futures)
-            executor.shutdownNow()
-            awaitTermination(executor)
-            throw exception.cause ?: exception
-        } finally {
-            if (!executor.isShutdown) {
-                executor.shutdownNow()
+            when (exception) {
+                is InterruptedException -> {
+                    Thread.currentThread().interrupt()
+                    throw CodeGenFileWriteException.interrupted(outputDirectory, exception)
+                }
+
+                is ExecutionException -> {
+                    throw exception.cause ?: exception
+                }
+
+                else -> {
+                    throw exception
+                }
             }
         }
     }
@@ -117,8 +134,12 @@ internal class GeneratedFileWriter(
         try {
             Files.createDirectories(destination.parent)
             file.write()
-        } catch (exception: Exception) {
+        } catch (exception: IOException) {
             throw CodeGenFileWriteException(destination, exception)
+        } catch (exception: Exception) {
+            // Keep the original type, as 8.7.0 did, and make the destination reachable.
+            exception.addSuppressed(GeneratedFileDestination(destination))
+            throw exception
         }
     }
 
@@ -148,6 +169,7 @@ internal class GeneratedFileWriter(
                     return
                 }
                 try {
+                    // shutdownNow() requests interruption, it does not guarantee a blocked writer exits.
                     executor.awaitTermination(remaining, TimeUnit.NANOSECONDS)
                 } catch (_: InterruptedException) {
                     interrupted = true
@@ -160,17 +182,33 @@ internal class GeneratedFileWriter(
         }
     }
 
-    private fun cancel(futures: List<Future<Unit>>) {
-        futures.forEach { it.cancel(true) }
-    }
-
     private data class GeneratedFile(
         val relativePath: Path,
         val write: () -> Unit,
     )
 }
 
-class CodeGenFileWriteException(
+/** Suppressed onto a non-IO write failure so the original exception type is kept and the destination stays reachable. */
+internal class GeneratedFileDestination(
+    val destination: Path,
+) : RuntimeException("Failed while writing '$destination'", null, false, false)
+
+class CodeGenFileWriteException internal constructor(
     val generatedFile: Path,
+    message: String,
     cause: Throwable,
-) : RuntimeException("Failed to write generated source '$generatedFile'", cause)
+) : RuntimeException(message, cause) {
+    constructor(generatedFile: Path, cause: Throwable) :
+        this(generatedFile, "Failed to write generated source '$generatedFile'", cause)
+
+    internal companion object {
+        fun interrupted(
+            outputDirectory: Path,
+            cause: InterruptedException,
+        ) = CodeGenFileWriteException(
+            outputDirectory,
+            "Writing generated files was interrupted, files in '$outputDirectory' may be incomplete",
+            cause,
+        )
+    }
+}
