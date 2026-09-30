@@ -99,7 +99,7 @@ private class InMemorySchemaSource(
 
 private data class DependencySchemaSource(
     val file: File,
-    val entryName: String,
+    val entryIndex: Int,
     val schema: String,
 )
 
@@ -282,20 +282,18 @@ class CodeGen private constructor(
                     }
                 }
 
-                jarFile.entries().asSequence().forEach { entry ->
+                jarFile.entries().asSequence().forEachIndexed { index, entry ->
                     if (!entry.isDirectory && entry.name.hasGraphQLSchemaExtension()) {
                         logger.info("Generating schema from {}: {}", file.name, entry.name)
                         val schema = jarFile.getInputStream(entry).bufferedReader().use { it.readText() }
-                        dependencySchemaSources += DependencySchemaSource(file, entry.name, schema)
+                        dependencySchemaSources += DependencySchemaSource(file, index, schema)
                     }
                 }
             }
         }
 
-        // Jars are ordered by path, as in 8.7.0. Entries within a jar are ordered by name, not by position in the
-        // archive: Gradle's classpath fingerprint ignores entry order, so the zip order must not affect the output.
         dependencySchemaSources
-            .sortedWith(compareBy<DependencySchemaSource> { it.file }.thenBy { it.entryName })
+            .sortedWith(compareBy<DependencySchemaSource> { it.file }.thenBy { it.entryIndex })
             .mapTo(schemaSources) { InMemorySchemaSource(it.schema, "codegen") }
         return schemaSources
     }

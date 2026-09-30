@@ -76,7 +76,7 @@ class SchemaMergingTest {
     }
 
     @Test
-    fun `dependency jar schemas are ordered by entry name instead of zip order`(
+    fun `dependency jar schemas retain zip entry order`(
         @TempDir tempDir: Path,
     ) {
         val schemaJar =
@@ -98,10 +98,30 @@ class SchemaMergingTest {
                 ),
             )
 
-        listOf(schemaJar, reorderedJar).forEach {
+        listOf(
+            schemaJar to listOf("first", "third", "second"),
+            reorderedJar to listOf("first", "second", "third"),
+        ).forEach { (jar, expectedFields) ->
+            val fooType =
+                CodeGen(CodeGenConfig(schemaJarFilesFromDependencies = listOf(jar), packageName = "com.example"))
+                    .generate()
+                    .javaDataTypes
+                    .single { type -> type.typeSpec().name() == "Foo" }
+                    .typeSpec()
             Assertions
-                .assertThat(fooFields(CodeGenConfig(schemaJarFilesFromDependencies = listOf(it), packageName = "com.example")))
-                .containsExactly("first", "second", "third")
+                .assertThat(fooType.fieldSpecs().map { field -> field.name() })
+                .containsExactlyElementsOf(expectedFields)
+            Assertions
+                .assertThat(
+                    fooType
+                        .methodSpecs()
+                        .single { constructor ->
+                            constructor.isConstructor && constructor.parameters().isNotEmpty()
+                        }.parameters()
+                        .map { parameter ->
+                            parameter.name()
+                        },
+                ).containsExactlyElementsOf(expectedFields)
         }
     }
 
