@@ -20,7 +20,9 @@ package com.netflix.graphql.dgs.codegen
 
 import com.palantir.javapoet.JavaFile
 import com.squareup.kotlinpoet.FileSpec
+import java.io.IOException
 import java.nio.file.Files
+import java.nio.file.NoSuchFileException
 import java.nio.file.Path
 import java.util.Locale
 import java.util.concurrent.Callable
@@ -43,6 +45,7 @@ internal class GeneratedFileWriter(
         javaFiles: List<JavaFile>,
         kotlinFiles: List<FileSpec>,
         outputDirectory: Path,
+        isCaseInsensitiveDirectory: (Path) -> Boolean = this::probeCaseInsensitivity,
     ) {
         // Sequential writes through 8.7.0 left the last source at an exact destination.
         val files =
@@ -62,7 +65,7 @@ internal class GeneratedFileWriter(
                 .values
                 .toList()
 
-        validateUniqueDestinations(files)
+        validateUniqueDestinations(files, outputDirectory, isCaseInsensitiveDirectory)
         if (parallelism == 1 || files.size < 2) {
             files.forEach { write(it, outputDirectory) }
             return
@@ -122,20 +125,61 @@ internal class GeneratedFileWriter(
         }
     }
 
-    private fun validateUniqueDestinations(files: List<GeneratedFile>) {
-        val duplicate =
-            files
-                .groupBy {
-                    it.relativePath
-                        .normalize()
-                        .toString()
-                        .lowercase(Locale.ROOT)
-                }.entries
-                .firstOrNull { it.value.size > 1 }
-                ?.value
-                ?.first()
-                ?.relativePath
-        require(duplicate == null) { "Multiple generated sources target the same path: $duplicate" }
+    private fun validateUniqueDestinations(
+        files: List<GeneratedFile>,
+        outputDirectory: Path,
+        isCaseInsensitiveDirectory: (Path) -> Boolean,
+    ) {
+        // A directory below the output root can sit on another filesystem, so each destination directory is probed.
+        val insensitiveByDirectory = mutableMapOf<Path, Boolean>()
+        files
+            .groupBy {
+                it.relativePath
+                    .normalize()
+                    .toString()
+                    .lowercase(Locale.ROOT)
+            }.values
+            .filter { it.size > 1 }
+            .forEach { collision ->
+                val directories = collision.map { outputDirectory.resolve(it.relativePath).normalize().parent }.distinct()
+                val insensitive =
+                    directories.any { directory ->
+                        insensitiveByDirectory.getOrPut(directory) {
+                            try {
+                                isCaseInsensitiveDirectory(directory)
+                            } catch (exception: IOException) {
+                                throw CodeGenFileWriteException(directory, exception)
+                            }
+                        }
+                    }
+                if (insensitive) {
+                    throw IllegalArgumentException(
+                        "Multiple generated sources target the same path: ${collision.first().relativePath}",
+                    )
+                }
+            }
+    }
+
+    /**
+     * Probes the nearest existing ancestor of [directory], so the probe creates no directories and leaves none behind.
+     * The probe file is deleted before returning.
+     */
+    private fun probeCaseInsensitivity(directory: Path): Boolean {
+        var existing = directory.toAbsolutePath()
+        while (!Files.isDirectory(existing)) {
+            existing = existing.parent ?: break
+        }
+        val probe = Files.createTempFile(existing, ".dgs-case-probe-", ".tmp")
+        try {
+            val uppercaseProbe = probe.resolveSibling(probe.fileName.toString().uppercase(Locale.ROOT))
+            return try {
+                Files.isSameFile(probe, uppercaseProbe)
+            } catch (_: NoSuchFileException) {
+                false
+            }
+        } finally {
+            Files.deleteIfExists(probe)
+        }
     }
 
     private fun awaitTermination(executor: ExecutorService) {
