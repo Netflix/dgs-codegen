@@ -22,7 +22,6 @@ import com.netflix.graphql.dgs.codegen.BASE_PACKAGE_NAME
 import com.netflix.graphql.dgs.codegen.CodeGen
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.assertCompilesJava
-import com.palantir.javapoet.TypeVariableName
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.fail
@@ -925,8 +924,7 @@ class ClientApiGenProjectionTest {
         val methodWithArgs =
             methodSpecs.find { !it.isConstructor && it.parameters().isNotEmpty() }
                 ?: fail("Method not found")
-        assertThat(methodWithArgs.returnType())
-            .extracting { (it as TypeVariableName).name() }
+        assertThat(methodWithArgs.returnType().toString().replace("$BASE_PACKAGE_NAME.client.", ""))
             .isEqualTo("AwardProjection<ActorProjection<PARENT, ROOT>, ROOT>")
         assertThat(methodWithArgs.parameters()[0].name()).isEqualTo("oscarsOnly")
         assertThat(methodWithArgs.parameters()[0].type().toString()).isEqualTo("java.lang.Boolean")
@@ -968,8 +966,7 @@ class ClientApiGenProjectionTest {
         val methodWithArgs =
             methodSpecs.find { !it.isConstructor && it.parameters().isNotEmpty() && it.name() == "awardsWithVariableReferences" }
                 ?: fail("Method not found")
-        assertThat(methodWithArgs.returnType())
-            .extracting { (it as TypeVariableName).name() }
+        assertThat(methodWithArgs.returnType().toString().replace("$BASE_PACKAGE_NAME.client.", ""))
             .isEqualTo("AwardProjection<ActorProjection<PARENT, ROOT>, ROOT>")
         assertThat(methodWithArgs.parameters()[0].name()).isEqualTo("oscarsOnlyReference")
         assertThat(methodWithArgs.parameters()[0].type().toString()).isEqualTo("java.lang.String")
@@ -1011,8 +1008,7 @@ class ClientApiGenProjectionTest {
                 it.name() == "permissions" && it.parameters().isNotEmpty()
             } ?: fail("Method not found")
 
-        assertThat(permissionsMethod.returnType())
-            .extracting { (it as TypeVariableName).name() }
+        assertThat(permissionsMethod.returnType().toString().replace("$BASE_PACKAGE_NAME.client.", ""))
             .isEqualTo("AccountProjection<PARENT, ROOT>")
         assertThat(permissionsMethod.parameters()[0].name()).isEqualTo("filter")
         assertThat(permissionsMethod.parameters()[0].type().toString()).isEqualTo("java.util.List<java.lang.String>")
