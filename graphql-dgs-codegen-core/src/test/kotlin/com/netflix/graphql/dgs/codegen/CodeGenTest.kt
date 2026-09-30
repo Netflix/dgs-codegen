@@ -6884,6 +6884,138 @@ It takes a title and such.
     }
 
     @Test
+    fun `Codegen should apply dependency type mappings after caller changes config`() {
+        val typeMappingDependency =
+            createSchemaJar(
+                """
+                type Query { invoice: Invoice }
+                type Invoice { money: Money }
+                type Money { amount: Int }
+                """.trimIndent(),
+                "Money=com.acme.Money",
+            )
+        val config =
+            CodeGenConfig(
+                schemaJarFilesFromDependencies = listOf(typeMappingDependency),
+                packageName = BASE_PACKAGE_NAME,
+            )
+        val codeGen = CodeGen(config)
+
+        assertThat(config.typeMapping).isEmpty()
+
+        config.typeMapping = mapOf("Other" to "x.Other")
+
+        val result = codeGen.generate()
+
+        assertThat(config.typeMapping)
+            .containsEntry("Money", "com.acme.Money")
+            .containsEntry("Other", "x.Other")
+        assertThat(result.javaDataTypes).noneMatch { it.typeSpec().name() == "Money" }
+        assertThat(
+            result.javaDataTypes
+                .single { it.typeSpec().name() == "Invoice" }
+                .typeSpec()
+                .fieldSpecs()
+                .single()
+                .type()
+                .toString(),
+        ).isEqualTo("com.acme.Money")
+
+        val repeatedResult = codeGen.generate()
+
+        assertThat(config.typeMapping)
+            .containsEntry("Money", "com.acme.Money")
+            .containsEntry("Other", "x.Other")
+        assertThat(repeatedResult.javaDataTypes.map { it.typeSpec().toString() })
+            .isEqualTo(result.javaDataTypes.map { it.typeSpec().toString() })
+    }
+
+    @Test
+    fun `Codegen should honor caller map mutations between generate calls without dependency mappings`() {
+        val schema =
+            """
+            type Query { invoice: Invoice }
+            type Invoice { money: Money }
+            type Money { amount: Int }
+            """.trimIndent()
+        val callerMap = mutableMapOf<String, String>()
+        val config = CodeGenConfig(schemas = setOf(schema), packageName = BASE_PACKAGE_NAME, typeMapping = callerMap)
+        val codeGen = CodeGen(config)
+
+        assertThat(invoiceMoneyType(codeGen.generate())).isEqualTo("$BASE_PACKAGE_NAME.types.Money")
+
+        callerMap["Money"] = "com.acme.Money"
+
+        assertThat(invoiceMoneyType(codeGen.generate())).isEqualTo("com.acme.Money")
+        assertThat(config.typeMapping).isSameAs(callerMap)
+    }
+
+    @Test
+    fun `Codegen should honor caller map mutations when dependency jar has no type mappings`() {
+        val schemaJar =
+            createSchemaJar(
+                """
+                type Query { invoice: Invoice }
+                type Invoice { money: Money }
+                type Money { amount: Int }
+                """.trimIndent(),
+            )
+        val callerMap = mutableMapOf<String, String>()
+        val config =
+            CodeGenConfig(
+                schemaJarFilesFromDependencies = listOf(schemaJar),
+                packageName = BASE_PACKAGE_NAME,
+                typeMapping = callerMap,
+            )
+        val codeGen = CodeGen(config)
+
+        assertThat(invoiceMoneyType(codeGen.generate())).isEqualTo("$BASE_PACKAGE_NAME.types.Money")
+
+        callerMap["Money"] = "com.acme.Money"
+
+        assertThat(invoiceMoneyType(codeGen.generate())).isEqualTo("com.acme.Money")
+        assertThat(config.typeMapping).isSameAs(callerMap)
+    }
+
+    private fun invoiceMoneyType(result: CodeGenResult): String =
+        result.javaDataTypes
+            .single { it.typeSpec().name() == "Invoice" }
+            .typeSpec()
+            .fieldSpecs()
+            .single()
+            .type()
+            .toString()
+
+    @Test
+    fun `Codegen should preserve earlier dependency type mapping precedence`() {
+        val firstDependency =
+            createSchemaJar(
+                """
+                type Query { item: Item }
+                type Item { amount: Int }
+                """.trimIndent(),
+                "Item=com.acme.FirstItem",
+            )
+        val secondDependency =
+            createSchemaJar(
+                """
+                extend type Query { other: Other }
+                type Other { amount: Int }
+                """.trimIndent(),
+                "Item=com.acme.SecondItem",
+            )
+        val config =
+            CodeGenConfig(
+                schemaJarFilesFromDependencies = listOf(firstDependency, secondDependency),
+                packageName = BASE_PACKAGE_NAME,
+            )
+
+        CodeGen(config).generate()
+
+        assertThat(config.typeMapping).containsEntry("Item", "com.acme.FirstItem")
+    }
+
+    @Test
     fun `Codegen should generate schema with unsigned int`() {
         val schema =
             """
