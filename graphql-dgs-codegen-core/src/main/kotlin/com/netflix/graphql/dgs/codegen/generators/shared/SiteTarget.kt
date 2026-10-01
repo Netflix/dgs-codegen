@@ -30,4 +30,5 @@ enum class SiteTarget {
     PARAM,
     SETPARAM,
     DELEGATE,
+    TYPE_USE,
 }
