@@ -8,8 +8,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedInterfaces.expected.Generated
 import com.netflix.graphql.dgs.codegen.fixtures.Node
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -25,6 +29,22 @@ public class Product(
   @get:JvmName("getId")
   override val id: String
     get() = __id.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__id === idDefault) idDefault else id,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Product &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__id === idDefault) null else "id=" + id,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Product(", postfix =
+      ")")
 
   @Generated
   public companion object {

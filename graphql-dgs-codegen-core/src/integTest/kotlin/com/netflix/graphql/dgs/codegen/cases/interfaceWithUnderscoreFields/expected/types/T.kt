@@ -7,8 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceWithUnderscoreFields.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -30,6 +34,23 @@ public class T(
   @get:JvmName("getId")
   public val id: String?
     get() = __id.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (___id === _idDefault) _idDefault else _id,
+      if (__id === idDefault) idDefault else id,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is T && `__$fieldValues`() ==
+      other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (___id === _idDefault) null else "_id=" + _id,
+      if (__id === idDefault) null else "id=" + id,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "T(", postfix = ")")
 
   @Generated
   public companion object {

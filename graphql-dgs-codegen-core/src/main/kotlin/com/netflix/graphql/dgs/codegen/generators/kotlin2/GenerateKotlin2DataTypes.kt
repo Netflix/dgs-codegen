@@ -38,14 +38,20 @@ import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capi
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
 import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.kotlinpoet.ANY
+import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.INT
 import com.squareup.kotlinpoet.KModifier
+import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.LambdaTypeName
 import com.squareup.kotlinpoet.ParameterSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.PropertySpec
+import com.squareup.kotlinpoet.STRING
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
 import com.squareup.kotlinpoet.buildCodeBlock
@@ -135,6 +141,8 @@ internal fun generateKotlin2DataTypes(
                                 ).build()
                         },
                     ).build()
+
+            val className = ClassName(config.packageNameTypes, typeDefinition.name)
 
             // create a builder for this class; default to lambda that throws if accessed
             val builderClassName = ClassName(config.packageNameTypes, typeDefinition.name, "Builder")
@@ -266,9 +274,195 @@ internal fun generateKotlin2DataTypes(
                                         .build(),
                                 ).build()
                         },
-                    ).build()
+                    )
+                    // add value-based equals/hashCode over the requested fields
+                    .addFunctions(equalsAndHashCodeFunctions(className, fields))
+                    // add a toString rendering only the requested fields
+                    .addFunctions(toStringFunctions(className, fields))
+                    .build()
 
             // return a file per type
             FileSpec.get(config.packageNameTypes, typeSpec)
         }
+}
+
+private class GeneratedFieldNames(
+    field: KotlinFieldInfo,
+) {
+    // Computed as whole identifiers (not "__" + %N) so KotlinPoet's keyword-escaping of a single
+    // %N argument (e.g. `interface` -> `` `interface` ``) can't land in the middle of a token
+    // like "__`interface`", which isn't valid Kotlin.
+    val backing = "__${field.kotlinName}"
+    val default = "${field.kotlinName}Default"
+    val getter = field.kotlinName
+}
+
+// "$"-containing and backtick-escaped (KotlinPoet escapes automatically) so these names can
+// never collide with a member derived from a GraphQL field: GraphQL Names only ever contain
+// letters, digits, and "_" (never "$"), so no field's backing property ("__name"), companion
+// default ("nameDefault"), or getter ("name") can ever equal one of these, however the field
+// is named.
+private const val FIELD_VALUES_FUN = "__\$fieldValues"
+private const val FIELD_STRINGS_FUN = "__\$fieldStrings"
+
+/**
+ * Builds a `listOf(...)` / `listOfNotNull(...)` literal, one item per line, using plain
+ * literal "\n" text rather than KotlinPoet's `indent()`/`unindent()`. Those two, paired with a
+ * function body that's collapsed into a single-expression `= ...` (as every caller here is),
+ * leave the CodeWriter's indent level unbalanced for every class member declared afterward -
+ * confirmed by reproducing it in isolation before picking this approach. Literal text sidesteps
+ * that indent-tracking machinery entirely.
+ */
+private fun multilineListLiteral(
+    invocation: String,
+    items: List<CodeBlock>,
+): CodeBlock =
+    buildCodeBlock {
+        add("%L(\n", invocation)
+        items.forEach { item ->
+            add("    ")
+            add(item)
+            add(",\n")
+        }
+        add(")")
+    }
+
+/**
+ * Generates `equals`/`hashCode` for a kotlin2 data type by delegating to a private
+ * [FIELD_VALUES_FUN] helper: a `List<Any?>` snapshot of every field, in declaration order.
+ *
+ * These classes have no fixed value per field: a field's backing lambda is either the one
+ * supplied by the caller (the field was "requested") or the shared `${name}Default` lambda from
+ * the companion object, which throws when invoked (the field was not requested).
+ * [FIELD_VALUES_FUN] represents an unrequested field with that same default-lambda object
+ * rather than invoking it, so:
+ *  - same requested-field set + equal requested values -> the two `List<Any?>` snapshots are
+ *    structurally equal (via `List.equals`), so `equals` is true and `hashCode` matches;
+ *  - a field requested on only one side puts a real value at that index on one side and the
+ *    (distinct) default-lambda object on the other, so the lists - and therefore the
+ *    instances - compare unequal; this also covers requested-null vs. absent, since `null` is
+ *    never equal to the default-lambda object;
+ *  - a field left unrequested on both sides contributes the same default-lambda object to both
+ *    lists without either supplier ever being invoked.
+ * This keeps the relation symmetric and transitive - comparing only the intersection of
+ * requested fields would not - with no separate "same requested set" check needed: a mismatched
+ * requested set already forces a mismatched entry at that field's list index.
+ *
+ * Whether a field was requested is detected by reference-comparing its backing lambda against
+ * the companion's default lambda, never by invoking it or matching the exception message.
+ */
+private fun equalsAndHashCodeFunctions(
+    className: ClassName,
+    fields: List<KotlinFieldInfo>,
+): List<FunSpec> {
+    if (fields.isEmpty()) {
+        return emptyList()
+    }
+
+    val names = fields.map(::GeneratedFieldNames)
+
+    val fieldValuesFun =
+        FunSpec
+            .builder(FIELD_VALUES_FUN)
+            .addModifiers(KModifier.PRIVATE)
+            .returns(LIST.parameterizedBy(ANY.copy(nullable = true)))
+            .addStatement(
+                "return %L",
+                multilineListLiteral(
+                    "listOf",
+                    names.map { n ->
+                        CodeBlock.of(
+                            "if (%N === %N) %N else %N",
+                            n.backing,
+                            n.default,
+                            n.default,
+                            n.getter,
+                        )
+                    },
+                ),
+            ).build()
+
+    val equalsFun =
+        FunSpec
+            .builder("equals")
+            .addModifiers(KModifier.OVERRIDE)
+            .addParameter("other", ANY.copy(nullable = true))
+            .returns(BOOLEAN)
+            .addStatement(
+                "return this === other || (other is %T && %N() == other.%N())",
+                className,
+                FIELD_VALUES_FUN,
+                FIELD_VALUES_FUN,
+            ).build()
+
+    val hashCodeFun =
+        FunSpec
+            .builder("hashCode")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(INT)
+            .addStatement("return %N().hashCode()", FIELD_VALUES_FUN)
+            .build()
+
+    return listOf(fieldValuesFun, equalsFun, hashCodeFun)
+}
+
+/**
+ * Generates a `toString` for a kotlin2 data type that renders only the fields that were
+ * requested, in declaration order - not the full, possibly-throwing set of fields a fixed-field
+ * data class would show. See [Netflix/dgs-codegen#638](https://github.com/Netflix/dgs-codegen/issues/638).
+ *
+ * `toString` needs field *names*, not just values, so it can't reuse [FIELD_VALUES_FUN]; it gets
+ * its own private [FIELD_STRINGS_FUN] helper instead, built the same way.
+ */
+private fun toStringFunctions(
+    className: ClassName,
+    fields: List<KotlinFieldInfo>,
+): List<FunSpec> {
+    if (fields.isEmpty()) {
+        return listOf(
+            FunSpec
+                .builder("toString")
+                .addModifiers(KModifier.OVERRIDE)
+                .returns(STRING)
+                .addStatement("return %S", "${className.simpleName}()")
+                .build(),
+        )
+    }
+
+    val names = fields.map(::GeneratedFieldNames)
+
+    val fieldStringsFun =
+        FunSpec
+            .builder(FIELD_STRINGS_FUN)
+            .addModifiers(KModifier.PRIVATE)
+            .returns(LIST.parameterizedBy(STRING))
+            .addStatement(
+                "return %L",
+                multilineListLiteral(
+                    "listOfNotNull",
+                    names.map { n ->
+                        CodeBlock.of(
+                            "if (%N === %N) null else %S + %N",
+                            n.backing,
+                            n.default,
+                            "${n.getter}=",
+                            n.getter,
+                        )
+                    },
+                ),
+            ).build()
+
+    val toStringFun =
+        FunSpec
+            .builder("toString")
+            .addModifiers(KModifier.OVERRIDE)
+            .returns(STRING)
+            .addStatement(
+                "return %N().joinToString(prefix = %S, postfix = %S)",
+                FIELD_STRINGS_FUN,
+                "${className.simpleName}(",
+                ")",
+            ).build()
+
+    return listOf(fieldStringsFun, toStringFun)
 }

@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.interfaceClassWithInterfaceFieldsOfDifferentType.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
 import kotlin.collections.List
@@ -31,6 +34,24 @@ public class Vegetarian(
   @get:JvmName("getVegetables")
   public val vegetables: List<String?>?
     get() = __vegetables.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__calories === caloriesDefault) caloriesDefault else calories,
+      if (__vegetables === vegetablesDefault) vegetablesDefault else vegetables,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Vegetarian &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__calories === caloriesDefault) null else "calories=" + calories,
+      if (__vegetables === vegetablesDefault) null else "vegetables=" + vegetables,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Vegetarian(", postfix
+      = ")")
 
   @Generated
   public companion object {

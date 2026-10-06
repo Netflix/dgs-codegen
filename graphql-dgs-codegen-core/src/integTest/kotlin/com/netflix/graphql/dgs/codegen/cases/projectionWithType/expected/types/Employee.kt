@@ -7,8 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.projectionWithType.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -30,6 +34,24 @@ public class Employee(
   @get:JvmName("getCompany")
   public val company: String?
     get() = __company.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__firstname === firstnameDefault) firstnameDefault else firstname,
+      if (__company === companyDefault) companyDefault else company,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Employee &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__firstname === firstnameDefault) null else "firstname=" + firstname,
+      if (__company === companyDefault) null else "company=" + company,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Employee(", postfix =
+      ")")
 
   @Generated
   public companion object {
