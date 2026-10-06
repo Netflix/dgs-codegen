@@ -96,7 +96,7 @@ class GenerateJavaTaskBuildCacheTest {
     }
 
     @Test
-    fun dependencyJarEntryOrderDoesNotChangeTheOutput(
+    fun dependencyJarEntryOrderChangesOutputWithoutReusingStaleCache(
         @TempDir tempDir: File,
     ) {
         val cacheDir = File(tempDir, "shared-build-cache")
@@ -104,16 +104,20 @@ class GenerateJavaTaskBuildCacheTest {
         writeSchemaJar(File(projectDir, "schemas.jar"), listOf("c-extension.graphqls", "a-base.graphqls", "b-extension.graphqls"))
 
         assertThat(run(projectDir, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
-        assertThat(fooFields(projectDir)).containsExactly("base", "fb", "fc")
+        assertThat(fooFields(projectDir)).containsExactly("base", "fc", "fb")
 
         writeSchemaJar(File(projectDir, "schemas.jar"), listOf("a-base.graphqls", "b-extension.graphqls", "c-extension.graphqls"))
-        run(projectDir, "--build-cache", "generateJava")
+        assertThat(run(projectDir, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
         assertThat(fooFields(projectDir)).containsExactly("base", "fb", "fc")
 
         val freshProject = createJarProject(tempDir, "jar-entry-order-fresh", File(tempDir, "unused-cache"))
         writeSchemaJar(File(freshProject, "schemas.jar"), listOf("a-base.graphqls", "b-extension.graphqls", "c-extension.graphqls"))
         assertThat(run(freshProject, "--no-build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(SUCCESS)
         assertThat(outputFingerprints(generatedSources(projectDir))).isEqualTo(outputFingerprints(generatedSources(freshProject)))
+
+        writeSchemaJar(File(projectDir, "schemas.jar"), listOf("c-extension.graphqls", "a-base.graphqls", "b-extension.graphqls"))
+        assertThat(run(projectDir, "--build-cache", "generateJava").task(":generateJava")?.outcome).isEqualTo(FROM_CACHE)
+        assertThat(fooFields(projectDir)).containsExactly("base", "fc", "fb")
     }
 
     @Test

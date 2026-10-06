@@ -36,6 +36,7 @@ import org.gradle.api.tasks.*
 import org.jetbrains.kotlin.gradle.plugin.KotlinPluginWrapper
 import java.io.File
 import java.util.*
+import java.util.jar.JarFile
 import javax.inject.Inject
 
 @CacheableTask
@@ -263,6 +264,26 @@ open class GenerateJavaTask
         @get:Classpath
         val sortedDgsCodegenJars: ConfigurableFileCollection =
             objectFactory.fileCollection().from(providerFactory.provider { dgsCodegenClasspath.files.sorted() })
+
+        /**
+         * `CodeGen` reads schema entries in ZIP order, which Gradle's classpath fingerprint ignores.
+         * Record that order separately so jars with the same entries in a different order cannot share cached output.
+         */
+        @get:Input
+        val dependencySchemaEntryOrder: List<String>
+            get() =
+                dgsCodegenClasspath.files.sorted().flatMapIndexed { jarIndex, file ->
+                    JarFile(file).use { jar ->
+                        jar
+                            .entries()
+                            .asSequence()
+                            .filter { !it.isDirectory && it.name.isDependencySchemaEntryName() }
+                            .map { "$jarIndex:${it.name}" }
+                            .toList()
+                    }
+                }
+
+        private fun String.isDependencySchemaEntryName(): Boolean = endsWith(".graphqls") || endsWith(".graphql") || endsWith(".gqls")
 
         @Input
         val jacksonVersionOverride: ListProperty<String> =
