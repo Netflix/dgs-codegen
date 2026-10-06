@@ -145,6 +145,7 @@ class CodeGen private constructor(
             )
     }
 
+    private val dependencyTypeMappings = mutableMapOf<String, String>()
     private val document = buildDocument()
     private val schemaIndex = SchemaIndex(document)
     private val requiredTypes: Set<String> by lazy {
@@ -164,6 +165,13 @@ class CodeGen private constructor(
             typeName in requiredTypes
 
     fun generate(): CodeGenResult {
+        // Apply dependency mappings at generation time so callers can change their mappings after
+        // constructing CodeGen. User-provided mappings take precedence over dependency mappings.
+        // Without dependency mappings the caller's map is left untouched, as in 8.7.0.
+        if (dependencyTypeMappings.isNotEmpty()) {
+            config.typeMapping = dependencyTypeMappings + config.typeMapping
+        }
+
         val generated =
             when (config.language) {
                 Language.JAVA -> generateJava()
@@ -267,10 +275,10 @@ class CodeGen private constructor(
                         val props = Properties()
                         props.load(typeMappingInput)
 
-                        // Add the new type mappings from dependencies to existing type mappings.
-                        // The user provided config overrides mappings from the dependencies.
-                        @Suppress("UNCHECKED_CAST")
-                        config.typeMapping = (props as Map<String, String>).plus(config.typeMapping)
+                        // Earlier dependencies take precedence over later ones, matching the
+                        // previous merge order. User mappings are applied in generate().
+                        val mappings = props.stringPropertyNames().associateWith(props::getProperty)
+                        dependencyTypeMappings.putAll(mappings + dependencyTypeMappings)
                     }
                 }
 
