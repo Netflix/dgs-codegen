@@ -66,6 +66,18 @@ open class GenerateJavaTask
             project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen-generated-examples") })
 
         @get:Internal
+        val generatedDocsDirectory: Provider<Directory> =
+            project.layout.dir(generatedSourcesRoot.map { File(it, "generated/docs/dgs-codegen") })
+
+        private val absentDocsDirectory: Provider<Directory> = project.objects.directoryProperty()
+
+        // Declared as an output only while docs are on, so Gradle neither creates the directory nor tracks it otherwise.
+        @get:OutputDirectory
+        @get:org.gradle.api.tasks.Optional
+        protected val trackedGeneratedDocsDirectory: Provider<Directory>
+            get() = if (generateDocs) generatedDocsDirectory else absentDocsDirectory
+
+        @get:Internal
         var schemaPaths: MutableList<Any> = mutableListOf("${project.projectDir}/src/main/resources/schema")
 
         @get:InputFiles
@@ -249,6 +261,11 @@ open class GenerateJavaTask
         fun generate() {
             require(fileWriteParallelism > 0) { "fileWriteParallelism must be greater than zero" }
 
+            if (!generateDocs) {
+                // Docs from an earlier run with docs on would otherwise linger, untracked by Gradle.
+                generatedDocsDirectory.get().asFile.deleteRecursively()
+            }
+
             val schemaJarFilesFromDependencies = dgsCodegenClasspath.files.toList()
             val resolvedSchemaFiles =
                 schemaFiles.files
@@ -284,6 +301,7 @@ open class GenerateJavaTask
                     generateInterfaceSetters = generateInterfaceSetters,
                     generateInterfaceMethodsForInterfaceFields = generateInterfaceMethodsForInterfaceFields,
                     generateDocs = generateDocs,
+                    generatedDocsFolder = generatedDocsDirectory.get().asFile.toPath(),
                     typeMapping = typeMapping,
                     includeQueries = includeQueries.toSet(),
                     includeMutations = includeMutations.toSet(),
