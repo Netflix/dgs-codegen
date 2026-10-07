@@ -25,12 +25,108 @@ import org.gradle.testkit.runner.TaskOutcome.SUCCESS
 import org.gradle.testkit.runner.TaskOutcome.UP_TO_DATE
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import java.io.File
 import java.security.MessageDigest
 import java.util.jar.JarOutputStream
 import java.util.zip.ZipEntry
 
 class GenerateJavaTaskBuildCacheTest {
+    @ParameterizedTest
+    @CsvSource(".graphql,false", ".graphql,true", ".graphqls,false", ".graphqls,true")
+    fun schemaDirectoriesWithSchemaSuffixesReuseCachedOutputAcrossWorkspaces(
+        suffix: String,
+        produced: Boolean,
+        @TempDir tempDir: File,
+    ) {
+        val cacheDir = File(tempDir, "shared-build-cache")
+        val original = createSuffixRootsProject(File(tempDir, "original"), "project", cacheDir, suffix, produced)
+        val relocated = createSuffixRootsProject(File(tempDir, "relocated"), "project", cacheDir, suffix, produced)
+
+        assertThat(runWithConfigurationCache(original, "--build-cache", "generateJava").task(":generateJava")?.outcome)
+            .isEqualTo(SUCCESS)
+        assertThat(fooFields(original)).containsExactly("base", "fb", "fa")
+        assertThat(fooConstructorParameters(original)).containsExactly("base", "fb", "fa")
+        val expected = outputFingerprints(generatedSources(original))
+
+        assertThat(runWithConfigurationCache(relocated, "--build-cache", "generateJava").task(":generateJava")?.outcome)
+            .isEqualTo(FROM_CACHE)
+        assertThat(fooFields(relocated)).containsExactly("base", "fb", "fa")
+        assertThat(fooConstructorParameters(relocated)).containsExactly("base", "fb", "fa")
+        assertThat(outputFingerprints(generatedSources(relocated))).isEqualTo(expected)
+
+        File(relocated, "build/graphql").deleteRecursively()
+        val reversed = runWithConfigurationCache(relocated, "--build-cache", "-PreverseRoots=true", "generateJava")
+        assertThat(reversed.task(":generateJava")?.outcome).isEqualTo(FROM_CACHE)
+        assertThat(outputFingerprints(generatedSources(relocated))).isEqualTo(expected)
+
+        File(relocated, "build/graphql").deleteRecursively()
+        val restored = runWithConfigurationCache(relocated, "--build-cache", "-PreverseRoots=true", "generateJava")
+        assertThat(restored.output).contains("Reusing configuration cache.")
+        assertThat(restored.task(":generateJava")?.outcome).isEqualTo(FROM_CACHE)
+        assertThat(outputFingerprints(generatedSources(relocated))).isEqualTo(expected)
+    }
+
+    @ParameterizedTest
+    @CsvSource(
+        ".graphql,false,false",
+        ".graphql,true,false",
+        ".graphqls,false,false",
+        ".graphqls,true,false",
+        ".graphql,false,true",
+        ".graphql,true,true",
+        ".graphqls,false,true",
+        ".graphqls,true,true",
+    )
+    fun schemaRootsWithSchemaSuffixesDoNotShareIncompatibleCachedOutput(
+        suffix: String,
+        produced: Boolean,
+        secondRootIsFile: Boolean,
+        @TempDir tempDir: File,
+    ) {
+        val cacheDir = File(tempDir, "shared-build-cache")
+        // Keep `0-base` first in both layouts so it cannot hide the extension roots' cache-key collision.
+        val suffixProject =
+            createSuffixRootsProject(tempDir, "suffix-roots", cacheDir, suffix, produced, secondRootIsFile = secondRootIsFile)
+        val ordinaryProject =
+            createSuffixRootsProject(
+                tempDir,
+                "ordinary-roots",
+                cacheDir,
+                suffix,
+                produced,
+                ordinary = true,
+                secondRootIsFile = secondRootIsFile,
+            )
+
+        assertThat(runWithConfigurationCache(suffixProject, "--build-cache", "generateJava").task(":generateJava")?.outcome)
+            .isEqualTo(SUCCESS)
+        assertThat(fooFields(suffixProject)).containsExactly("base", "fb", "fa")
+        assertThat(fooConstructorParameters(suffixProject)).containsExactly("base", "fb", "fa")
+
+        val unchanged = runWithConfigurationCache(suffixProject, "--build-cache", "generateJava")
+        assertThat(unchanged.output).contains("Reusing configuration cache.")
+        assertThat(unchanged.task(":generateJava")?.outcome).isEqualTo(UP_TO_DATE)
+
+        val ordinary = runWithConfigurationCache(ordinaryProject, "--build-cache", "-PordinaryRoots=true", "generateJava")
+        assertThat(ordinary.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(fooFields(ordinaryProject)).containsExactly("base", "fa", "fb")
+        assertThat(fooConstructorParameters(ordinaryProject)).containsExactly("base", "fa", "fb")
+        val expected = outputFingerprints(generatedSources(ordinaryProject))
+
+        val fresh = runWithConfigurationCache(ordinaryProject, "--no-build-cache", "--rerun-tasks", "-PordinaryRoots=true", "generateJava")
+        assertThat(fresh.output).contains("Reusing configuration cache.")
+        assertThat(fresh.task(":generateJava")?.outcome).isEqualTo(SUCCESS)
+        assertThat(outputFingerprints(generatedSources(ordinaryProject))).isEqualTo(expected)
+
+        File(ordinaryProject, "build/graphql").deleteRecursively()
+        val restored = runWithConfigurationCache(ordinaryProject, "--build-cache", "-PordinaryRoots=true", "generateJava")
+        assertThat(restored.output).contains("Reusing configuration cache.")
+        assertThat(restored.task(":generateJava")?.outcome).isEqualTo(FROM_CACHE)
+        assertThat(outputFingerprints(generatedSources(ordinaryProject))).isEqualTo(expected)
+    }
+
     @Test
     fun schemaContentSwapsAcrossSameNamedRootsDoNotReuseStaleOutput(
         @TempDir tempDir: File,
@@ -525,6 +621,78 @@ class GenerateJavaTaskBuildCacheTest {
         }
     }
 
+    private fun createSuffixRootsProject(
+        parent: File,
+        name: String,
+        cacheDir: File,
+        suffix: String,
+        produced: Boolean,
+        ordinary: Boolean = false,
+        secondRootIsFile: Boolean = false,
+    ): File {
+        val projectDir = File(parent, name).also { it.mkdirs() }
+        // Keep the file root's name identical across layouts so relative input paths do not hide the order collision.
+        val secondSuffixRoot = if (secondRootIsFile) "x$suffix$suffix" else "x$suffix!"
+        val secondOrdinaryRoot = if (secondRootIsFile) secondSuffixRoot else "b"
+        File(projectDir, "settings.gradle").writeText(settingsFile(cacheDir))
+        File(projectDir, "build.gradle").writeText(
+            """
+            plugins {
+                id 'com.netflix.dgs.codegen'
+            }
+
+            codegen.clientCoreConventionsEnabled = false
+
+            def roots = providers.gradleProperty('ordinaryRoots').isPresent() ?
+                ['a', '$secondOrdinaryRoot', '0-base'] : ['x$suffix', '$secondSuffixRoot', '0-base']
+            def schemaDirectory = layout.projectDirectory.dir('schemas')
+
+            generateJava {
+                schemaPaths = (providers.gradleProperty('reverseRoots').isPresent() ? roots.reverse() : roots)
+                    .collect { schemaDirectory.dir(it).asFile }
+                packageName = 'com.netflix.testproject.graphql'
+                generatedSourcesDir = file('build/graphql').absolutePath
+            }
+            """.trimIndent(),
+        )
+        if (produced) {
+            File(projectDir, "build.gradle").appendText(
+                """
+
+                def producer = tasks.register('produce') {
+                    outputs.dir(schemaDirectory)
+                    doLast {
+                        ['$FIRST_EXTENSION', '$SECOND_EXTENSION', '$BASE_SCHEMA'].eachWithIndex { schema, index ->
+                            def root = schemaDirectory.dir(roots[index]).asFile
+                            if ($secondRootIsFile && index == 1) {
+                                root.parentFile.mkdirs()
+                                root.text = schema
+                            } else {
+                                root.mkdirs()
+                                new File(root, 'same.graphqls').text = schema
+                            }
+                        }
+                    }
+                }
+                generateJava.dependsOn(producer)
+                """.trimIndent(),
+            )
+        } else {
+            val roots = if (ordinary) listOf("a", secondOrdinaryRoot, "0-base") else listOf("x$suffix", secondSuffixRoot, "0-base")
+            roots.zip(listOf(FIRST_EXTENSION, SECOND_EXTENSION, BASE_SCHEMA)).forEachIndexed { index, (root, schema) ->
+                val rootFile = File(projectDir, "schemas/$root")
+                if (secondRootIsFile && index == 1) {
+                    rootFile.parentFile.mkdirs()
+                    rootFile.writeText(schema)
+                } else {
+                    rootFile.mkdirs()
+                    File(rootFile, "same.graphqls").writeText(schema)
+                }
+            }
+        }
+        return projectDir
+    }
+
     private fun createWorkspace(
         workspace: File,
         projectName: String,
@@ -661,6 +829,13 @@ class GenerateJavaTaskBuildCacheTest {
             .map { it.groupValues[1] }
             .distinct()
             .toList()
+
+    private fun fooConstructorParameters(projectDir: File): List<String> =
+        Regex("""public Foo\(([^)]+)\)""")
+            .find(File(generatedSources(projectDir), "com/netflix/testproject/graphql/types/Foo.java").readText())!!
+            .groupValues[1]
+            .split(',')
+            .map { it.trim().substringAfterLast(' ') }
 
     private fun runWithConfigurationCache(
         projectDir: File,

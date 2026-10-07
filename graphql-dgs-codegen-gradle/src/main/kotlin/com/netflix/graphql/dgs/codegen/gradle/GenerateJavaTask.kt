@@ -87,18 +87,10 @@ open class GenerateJavaTask
             objectFactory.fileCollection().from(providerFactory.provider { schemaPaths })
 
         /**
-         * The schema roots in the order `CodeGen` reads them. `CodeGen` sorts the files under all roots by absolute
-         * path, so the roots come out in path order, with `/` appended to a directory because its files continue
-         * with that separator. A root is taken for a file by its name, so that the order does not probe the file
-         * system, which would make the configuration cache entry depend on the roots' existence. `schemaFiles` fingerprints each root separately and with relative paths, so it cannot
-         * see this order. Two layouts with the same files but a different absolute sort order (swapped roots, a
-         * workspace moved to a path that sorts differently) would share a cache key and produce different output.
-         * `@Classpath` keeps the order and ignores the paths. Nested roots are not modeled: their files are read
-         * twice, interleaved by path.
-         *
-         * Only the root paths are listed, never the files under them. The files are fingerprinted when the task
-         * executes. A list of files would be evaluated when the configuration cache entry is stored, before an
-         * earlier task has produced the schema, and frozen from then on.
+         * Fingerprints root contents in a path-based heuristic order without their absolute paths.
+         * The name-based heuristic avoids filesystem probes while the configuration cache is stored.
+         * [schemaRootOrder] corrects this order at execution time for directories with schema-file suffixes.
+         * Nested roots are not modeled because their files can interleave and be read more than once.
          */
         @get:Classpath
         val orderedSchemaRoots: ConfigurableFileCollection =
@@ -107,6 +99,18 @@ open class GenerateJavaTask
             )
 
         private fun File.isSchemaFileName(): Boolean = name.endsWith(".graphql") || name.endsWith(".graphqls")
+
+        /**
+         * Records the root permutation using actual directory types without putting paths in the cache key.
+         * A scalar input is read after producer tasks run, so directory probes do not make the roots' initial absence a configuration cache input.
+         */
+        @get:Input
+        protected val schemaRootOrder: List<Int>
+            get() =
+                orderedSchemaRoots.files
+                    .withIndex()
+                    .sortedBy { (_, root) -> if (root.isDirectory) root.path + File.separator else root.path }
+                    .map { it.index }
 
         init {
             outputs.doNotCacheIf("Generated sources contain timestamps") {
