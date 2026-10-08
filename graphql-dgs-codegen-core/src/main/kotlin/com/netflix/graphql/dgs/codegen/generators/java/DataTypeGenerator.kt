@@ -247,7 +247,12 @@ class InputTypeGenerator internal constructor(
             LOCALE -> localeCodeBlock(value, type)
             JAVA_URI -> uriCodeBlock(value, type)
             ClassName.LONG.box() -> longCodeBlock(value, type)
-            else -> defaultCodeBlock(value, type, inputTypeDefinitions)
+            else ->
+                if (value is ObjectValue && type.isMapLike) {
+                    mapCodeBlock(value, type, inputTypeDefinitions)
+                } else {
+                    defaultCodeBlock(value, type, inputTypeDefinitions)
+                }
         }
 
     private fun defaultCodeBlock(
@@ -259,8 +264,8 @@ class InputTypeGenerator internal constructor(
             is BooleanValue -> CodeBlock.of("\$L", value.isValue)
             is IntValue -> CodeBlock.of("\$L", value.value)
             is StringValue -> {
-                // Only generate string literal default values for string types to prevent invalid Java initialization
-                if (type is ClassName && type == ClassName.get(String::class.java)) {
+                // Only generate string literal default values for String and Object types to prevent invalid Java initialization
+                if (type is ClassName && (type == ClassName.get(String::class.java) || type == ClassName.OBJECT)) {
                     CodeBlock.of("\$S", value.value)
                 } else {
                     null
@@ -277,7 +282,7 @@ class InputTypeGenerator internal constructor(
                         "\$T.asList(\$L)",
                         Arrays::class.java,
                         CodeBlock.join(
-                            value.values.map { generateCode(it, type.className, inputTypeDefinitions) },
+                            value.values.map { generateCode(it, type.listElementType, inputTypeDefinitions) },
                             ", ",
                         ),
                     )
@@ -285,11 +290,11 @@ class InputTypeGenerator internal constructor(
 
             is ObjectValue -> {
                 val inputObjectDefinition =
-                    inputTypeDefinitions.first {
+                    inputTypeDefinitions.firstOrNull {
                         val expectedCanonicalClassName =
                             config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
                         expectedCanonicalClassName == type.className.canonicalName()
-                    }
+                    } ?: error("$type cannot be created from $value, expected an input type or a Map")
                 if (value.objectFields.isEmpty()) {
                     CodeBlock.of("new \$T()", type)
                 } else {
@@ -324,6 +329,31 @@ class InputTypeGenerator internal constructor(
             is NullValue -> CodeBlock.of("null")
             else -> CodeBlock.of("\$L", value)
         }
+
+    private fun mapCodeBlock(
+        value: ObjectValue,
+        type: JavaTypeName,
+        inputTypeDefinitions: List<InputObjectTypeDefinition>,
+    ): CodeBlock {
+        if (value.objectFields.isEmpty()) {
+            return CodeBlock.of("\$T.emptyMap()", Collections::class.java)
+        }
+        val typeArguments = (type as? ParameterizedTypeName)?.typeArguments()
+        val keyType = typeArguments?.getOrNull(0) ?: ClassName.get(String::class.java)
+        val valueType = typeArguments?.getOrNull(1) ?: ClassName.OBJECT
+        return CodeBlock.of(
+            "new \$T<\$T, \$T>(){{\$L}}",
+            LinkedHashMap::class.java,
+            keyType,
+            valueType,
+            CodeBlock.join(
+                value.objectFields.map {
+                    CodeBlock.of("put(\$S, \$L);", it.name, generateCode(it.value, valueType, inputTypeDefinitions))
+                },
+                "",
+            ),
+        )
+    }
 
     private fun bigDecimalCodeBlock(
         value: Value<out Value<*>>,
@@ -374,6 +404,17 @@ class InputTypeGenerator internal constructor(
         check(value is IntValue) { "$type cannot be created from $value, expected Int value" }
         return CodeBlock.of("\$LL", value.value)
     }
+
+    private val JavaTypeName.isMapLike: Boolean
+        get() = this == ClassName.OBJECT || (if (this is ParameterizedTypeName) rawType() else this) == ClassName.get(Map::class.java)
+
+    private val JavaTypeName.listElementType: JavaTypeName
+        get() =
+            if (this is ParameterizedTypeName && rawType() == ClassName.get(List::class.java)) {
+                typeArguments().first()
+            } else {
+                className
+            }
 
     private val JavaTypeName.className: ClassName
         get() =

@@ -6775,6 +6775,143 @@ It takes a title and such.
         }.hasMessage("java.math.BigDecimal cannot be created from BooleanValue{value=true}, expected String, Int or Float value")
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = [true, false])
+    fun `The default empty object value for a scalar mapped to Map should result in an empty map`(trackInputFieldSet: Boolean) {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: JSON = {}
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    typeMapping = mapOf("JSON" to "java.util.Map<String, Object>"),
+                    trackInputFieldSet = trackInputFieldSet,
+                ),
+            ).generate()
+        val dataTypes = codeGenResult.javaDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val fields = dataTypes[0].typeSpec().fieldSpecs()
+        assertThat(fields).hasSize(1)
+
+        val metadataField = fields[0]
+        assertThat(metadataField.name()).isEqualTo("metadata")
+        if (trackInputFieldSet) {
+            assertThat(metadataField.initializer().toString()).isEqualTo("Optional.of(java.util.Collections.emptyMap())")
+        } else {
+            assertThat(metadataField.initializer().toString()).isEqualTo("java.util.Collections.emptyMap()")
+        }
+
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
+    fun `The default object value for a scalar mapped to Map should result in a populated map`() {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: JSON = {title: "Alien", year: 1979, rating: null, tags: ["sci-fi"], director: {name: "Ridley Scott"}}
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    typeMapping = mapOf("JSON" to "java.util.Map<String, Object>"),
+                ),
+            ).generate()
+        val dataTypes = codeGenResult.javaDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val fields = dataTypes[0].typeSpec().fieldSpecs()
+        assertThat(fields).hasSize(1)
+
+        val metadataField = fields[0]
+        assertThat(metadataField.name()).isEqualTo("metadata")
+        assertThat(metadataField.initializer().toString()).isEqualTo(
+            "new java.util.LinkedHashMap<java.lang.String, java.lang.Object>()" +
+                """{{put("title", "Alien");put("year", 1979);put("rating", null);put("tags", java.util.Arrays.asList("sci-fi"));""" +
+                """put("director", new java.util.LinkedHashMap<java.lang.String, java.lang.Object>(){{put("name", "Ridley Scott");}});}}""",
+        )
+
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
+    fun `The default list value should support objects for a scalar mapped to Map`() {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: [JSON] = [{}, {title: "Alien"}]
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    typeMapping = mapOf("JSON" to "java.util.Map<String, Object>"),
+                ),
+            ).generate()
+        val dataTypes = codeGenResult.javaDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val fields = dataTypes[0].typeSpec().fieldSpecs()
+        assertThat(fields).hasSize(1)
+
+        val metadataField = fields[0]
+        assertThat(metadataField.name()).isEqualTo("metadata")
+        assertThat(metadataField.initializer().toString()).isEqualTo(
+            "java.util.Arrays.asList(java.util.Collections.emptyMap(), " +
+                """new java.util.LinkedHashMap<java.lang.String, java.lang.Object>(){{put("title", "Alien");}})""",
+        )
+
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
+    fun `Codegen should fail with nice message given object default value for a scalar not mapped to Map`() {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: JSON = {}
+            }
+            """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    typeMapping = mapOf("JSON" to "com.fasterxml.jackson.databind.JsonNode"),
+                ),
+            ).generate()
+        }.hasMessage(
+            "com.fasterxml.jackson.databind.JsonNode cannot be created from ObjectValue{objectFields=[]}, " +
+                "expected an input type or a Map",
+        )
+    }
+
     @Test
     fun `Codegen should generate class implementing interface provided in extended type`() {
         val schema =
