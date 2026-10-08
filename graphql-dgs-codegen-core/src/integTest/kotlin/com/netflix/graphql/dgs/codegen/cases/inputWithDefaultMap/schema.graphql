@@ -1,0 +1,11 @@
+scalar JSON
+
+type Query {
+  movies(filter: MovieFilter): String
+}
+
+input MovieFilter {
+  metadata: JSON! = {}
+  details: JSON = {title: "Alien", year: 1979, tags: ["sci-fi"], director: {name: "Ridley Scott"}}
+  variants: [JSON] = [{}, {title: "Aliens"}]
+}

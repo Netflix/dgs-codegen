@@ -5068,6 +5068,179 @@ It takes a title and such.
     }
 
     @Test
+    fun `The default empty object value for a scalar mapped to Map should result in an empty map`() {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: JSON = {}
+            }
+            """.trimIndent()
+
+        val generatedResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    typeMapping = mapOf("JSON" to "Map<String, Any?>"),
+                ),
+            ).generate()
+        val dataTypes = generatedResult.kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val metadataParam = ctorSpec.parameters[0]
+        assertThat(metadataParam.name).isEqualTo("metadata")
+        assertThat(metadataParam.type.toString()).isEqualTo("kotlin.collections.Map<kotlin.String, kotlin.Any?>?")
+        assertThat(metadataParam.defaultValue.toString()).isEqualTo("emptyMap()")
+
+        assertCompilesKotlin(generatedResult)
+    }
+
+    @Test
+    fun `The default object value for a scalar mapped to Map should result in a populated map`() {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: JSON = {title: "Alien", year: 1979, rating: null, tags: ["sci-fi"], director: {name: "Ridley Scott"}}
+            }
+            """.trimIndent()
+
+        val generatedResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    typeMapping = mapOf("JSON" to "Map<String, Any?>"),
+                ),
+            ).generate()
+        val dataTypes = generatedResult.kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val metadataParam = ctorSpec.parameters[0]
+        assertThat(metadataParam.name).isEqualTo("metadata")
+        assertThat(metadataParam.defaultValue.toString()).isEqualTo(
+            """mapOf("title" to "Alien", "year" to 1_979, "rating" to null, "tags" to listOf("sci-fi"), """ +
+                """"director" to mapOf("name" to "Ridley Scott"))""",
+        )
+
+        assertCompilesKotlin(generatedResult)
+    }
+
+    @Test
+    fun `The default object value for a scalar mapped to MutableMap should result in a mutable map`() {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: JSON = {title: "Alien"}
+                tags: JSON = {}
+            }
+            """.trimIndent()
+
+        val generatedResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    typeMapping = mapOf("JSON" to "MutableMap<String, Any?>"),
+                ),
+            ).generate()
+        val dataTypes = generatedResult.kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(2)
+        assertThat(ctorSpec.parameters[0].defaultValue.toString()).isEqualTo("""mutableMapOf("title" to "Alien")""")
+        assertThat(ctorSpec.parameters[1].defaultValue.toString()).isEqualTo("mutableMapOf()")
+
+        assertCompilesKotlin(generatedResult)
+    }
+
+    @Test
+    fun `The default list value should support objects for a scalar mapped to Map`() {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: [JSON] = [{}, {title: "Alien"}]
+            }
+            """.trimIndent()
+
+        val generatedResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    typeMapping = mapOf("JSON" to "Map<String, Any?>"),
+                ),
+            ).generate()
+        val dataTypes = generatedResult.kotlinDataTypes
+
+        assertThat(dataTypes).hasSize(1)
+
+        val type = dataTypes[0].members[0] as TypeSpec
+        val ctorSpec = type.primaryConstructor
+        assertThat(ctorSpec).isNotNull
+        assertThat(ctorSpec!!.parameters).hasSize(1)
+
+        val metadataParam = ctorSpec.parameters[0]
+        assertThat(metadataParam.name).isEqualTo("metadata")
+        assertThat(metadataParam.defaultValue.toString()).isEqualTo("""listOf(emptyMap(), mapOf("title" to "Alien"))""")
+
+        assertCompilesKotlin(generatedResult)
+    }
+
+    @Test
+    fun `Codegen should fail with nice message given object default value for a scalar not mapped to Map`() {
+        val schema =
+            """
+            scalar JSON
+
+            input Movie {
+                metadata: JSON = {}
+            }
+            """.trimIndent()
+
+        assertThatThrownBy {
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    typeMapping = mapOf("JSON" to "com.fasterxml.jackson.databind.JsonNode"),
+                ),
+            ).generate()
+        }.hasMessage(
+            "com.fasterxml.jackson.databind.JsonNode? cannot be created from ObjectValue{objectFields=[]}, " +
+                "expected an input type or a Map",
+        )
+    }
+
+    @Test
     fun `Codegen should generate class implementing interface provided in extended type`() {
         val schema =
             """
