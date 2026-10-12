@@ -179,7 +179,7 @@ class ClientApiGenerator internal constructor(
                 .superclass(ClassName.get(GraphQLQuery::class.java))
 
         if (it.description != null) {
-            javaType.addJavadoc("\$L", it.description.content)
+            javaType.addJavadoc("\$L", it.description.content.escapeJavaDocComparisons())
         }
 
         val deprecatedClassDirective = getDeprecateDirective(it)
@@ -438,7 +438,7 @@ class ClientApiGenerator internal constructor(
         val javaDoc = CodeBlock.builder()
 
         if (inputValue.description != null) {
-            javaDoc.add("\$L", inputValue.description.content)
+            javaDoc.add("\$L", inputValue.description.content.escapeJavaDocComparisons())
         }
         if (deprecationReason != null) {
             if (!javaDoc.isEmpty) {

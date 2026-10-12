@@ -459,7 +459,7 @@ abstract class BaseDataTypeGenerator internal constructor(
         }
 
         if (description != null) {
-            javaType.addJavadoc("\$L", description.content)
+            javaType.addJavadoc("\$L", description.content.escapeJavaDocComparisons())
         }
 
         if (directives.isNotEmpty()) {
@@ -721,7 +721,7 @@ abstract class BaseDataTypeGenerator internal constructor(
         }
 
         if (fieldDefinition.description != null) {
-            fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content)
+            fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
         }
 
         if (fieldDefinition.directives.isNotEmpty()) {
@@ -777,7 +777,7 @@ abstract class BaseDataTypeGenerator internal constructor(
         }
 
         if (fieldDefinition.description != null) {
-            getterMethodBuilder.addJavadoc("\$L", fieldDefinition.description.content)
+            getterMethodBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
         }
 
         val setterName =
@@ -932,7 +932,7 @@ abstract class BaseDataTypeGenerator internal constructor(
                 .returns(builderClassName)
 
         if (fieldDefinition.description != null) {
-            methodBuilder.addJavadoc("\$L", fieldDefinition.description.content)
+            methodBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
         }
 
         if (fieldDefinition.trackFieldSet) {

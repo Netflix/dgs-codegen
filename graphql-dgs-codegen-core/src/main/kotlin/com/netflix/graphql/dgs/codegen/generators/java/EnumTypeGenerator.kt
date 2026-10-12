@@ -56,7 +56,7 @@ class EnumTypeGenerator(
                 .addOptionalGeneratedAnnotation(config)
 
         if (definition.description != null) {
-            javaType.addJavadoc("\$L", definition.description.content)
+            javaType.addJavadoc("\$L", definition.description.content.escapeJavaDocComparisons())
         }
 
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
@@ -64,7 +64,7 @@ class EnumTypeGenerator(
         mergedEnumDefinitions.forEach {
             val typeSpec = TypeSpec.anonymousClassBuilder("")
             if (it.description != null && it.description.content.isNotBlank()) {
-                typeSpec.addJavadoc("\$L", it.description.content)
+                typeSpec.addJavadoc("\$L", it.description.content.escapeJavaDocComparisons())
             }
             if (it.directives.isNotEmpty()) {
                 val (annotations, comments) = applyDirectivesJava(it.directives, config)
