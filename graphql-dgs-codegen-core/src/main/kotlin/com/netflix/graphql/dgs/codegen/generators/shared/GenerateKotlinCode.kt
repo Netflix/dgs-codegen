@@ -35,6 +35,7 @@ fun generateKotlinCode(
         ?: checkAndGetLongCodeBlock(value, type)
         ?: checkAndGetBigDecimalCodeBlock(value, type)
         ?: checkAndGetCurrencyCodeBlock(value, type)
+        ?: checkAndGetMapCodeBlock(value, type, inputTypeDefinitions, config, typeUtils)
         ?: when (value) {
             is BooleanValue -> CodeBlock.of("%L", value.isValue)
             is IntValue -> CodeBlock.of("%L", value.value)
@@ -50,7 +51,7 @@ fun generateKotlinCode(
                         value.values.joinToString { v ->
                             generateKotlinCode(
                                 v,
-                                type,
+                                type.listElementType,
                                 inputTypeDefinitions,
                                 config,
                                 typeUtils,
@@ -61,11 +62,11 @@ fun generateKotlinCode(
 
             is ObjectValue -> {
                 val inputObjectDefinition =
-                    inputTypeDefinitions.first {
+                    inputTypeDefinitions.firstOrNull {
                         val expectedCanonicalClassName =
                             config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
                         expectedCanonicalClassName == type.className.canonicalName
-                    }
+                    } ?: error("$type cannot be created from $value, expected an input type or a Map")
 
                 CodeBlock.of(
                     type.className.canonicalName + "(%L)",
@@ -142,6 +143,54 @@ private fun checkAndGetCurrencyCodeBlock(
     } else {
         null
     }
+
+private fun checkAndGetMapCodeBlock(
+    value: Value<Value<*>>,
+    type: TypeName,
+    inputTypeDefinitions: Collection<InputObjectTypeDefinition>,
+    config: CodeGenConfig,
+    typeUtils: KotlinTypeUtils,
+): CodeBlock? {
+    if (value !is ObjectValue || !type.isMapLike) {
+        return null
+    }
+    val isMutable = type.rawClassName?.canonicalName == MUTABLE_MAP.canonicalName
+    if (value.objectFields.isEmpty()) {
+        return CodeBlock.of(if (isMutable) "mutableMapOf()" else "emptyMap()")
+    }
+    val valueType = (type as? ParameterizedTypeName)?.typeArguments?.getOrNull(1) ?: ANY.copy(nullable = true)
+    return CodeBlock.of(
+        if (isMutable) "mutableMapOf(%L)" else "mapOf(%L)",
+        value.objectFields
+            .map {
+                CodeBlock.of(
+                    "%S to %L",
+                    it.name,
+                    generateKotlinCode(
+                        it.value,
+                        valueType,
+                        inputTypeDefinitions,
+                        config,
+                        typeUtils,
+                    ),
+                )
+            }.joinToCode(),
+    )
+}
+
+private val TypeName.rawClassName: ClassName?
+    get() =
+        when (this) {
+            is ClassName -> this
+            is ParameterizedTypeName -> rawType
+            else -> null
+        }
+
+private val TypeName.isMapLike: Boolean
+    get() = rawClassName?.canonicalName in setOf(MAP.canonicalName, MUTABLE_MAP.canonicalName, ANY.canonicalName)
+
+private val TypeName.listElementType: TypeName
+    get() = if (this is ParameterizedTypeName && rawType.canonicalName == LIST.canonicalName) typeArguments[0] else this
 
 private val TypeName.className: ClassName
     get() =

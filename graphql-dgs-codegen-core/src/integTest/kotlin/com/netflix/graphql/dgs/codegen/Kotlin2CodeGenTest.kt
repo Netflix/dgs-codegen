@@ -75,6 +75,10 @@ class Kotlin2CodeGenTest {
                                 mapOf(
                                     "Currency" to "java.util.Currency",
                                 )
+                            "inputWithDefaultMap" ->
+                                mapOf(
+                                    "JSON" to "kotlin.collections.Map<kotlin.String, kotlin.Any?>",
+                                )
                             else -> emptyMap()
                         },
                 ),
