@@ -304,3 +304,9 @@ private fun typeClassBestGuess(name: String): TypeName =
         "TreeMap" -> ClassName.get("java.util", "TreeMap")
         else -> ClassName.bestGuess(name)
     }
+
+/** Escape stray comparison delimiters while preserving complete HTML and inline Javadoc tags. */
+internal fun String.escapeJavaDocComparisons(): String =
+    replace(Regex("\\{@(?:code|literal)\\s[^}]*}|</?[A-Za-z][^<>]*>|<")) {
+        if (it.value == "<") "&lt;" else it.value
+    }
