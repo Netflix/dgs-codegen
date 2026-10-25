@@ -2123,6 +2123,29 @@ class CodeGenTest {
         assertCompilesJava(codeGenResult)
     }
 
+    @Test
+    fun `Input field with scalar type and object literal default value does not fail in Java`() {
+        val schema =
+            """
+            scalar JSON
+            type Query {
+                search(filter: FilterInput): String
+            }
+            input FilterInput {
+                metadata: JSON = {}
+            }
+            """.trimIndent()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    typeMapping = mapOf("JSON" to "java.util.Map<String, Object>"),
+                ),
+            ).generate()
+        assertCompilesJava(codeGenResult)
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = [true, false])
     fun generateInputWithDefaultValueForEnum(trackInputFieldSet: Boolean) {
