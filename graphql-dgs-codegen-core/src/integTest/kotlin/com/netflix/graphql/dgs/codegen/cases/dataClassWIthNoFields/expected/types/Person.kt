@@ -5,11 +5,14 @@ import com.fasterxml.jackson.`annotation`.JsonTypeInfo
 import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWIthNoFields.expected.Generated
+import kotlin.String
 
 @Generated
 @JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
 @JsonDeserialize(builder = Person.Builder::class)
 public class Person() {
+  override fun toString(): String = "Person()"
+
   @Generated
   public companion object
 

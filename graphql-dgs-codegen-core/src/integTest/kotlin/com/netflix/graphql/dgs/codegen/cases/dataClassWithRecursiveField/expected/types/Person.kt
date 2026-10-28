@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithRecursiveField.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
@@ -36,6 +39,26 @@ public class Person(
   @get:JvmName("getFriends")
   public val friends: List<Person?>?
     get() = __friends.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__firstname === firstnameDefault) firstnameDefault else firstname,
+      if (__lastname === lastnameDefault) lastnameDefault else lastname,
+      if (__friends === friendsDefault) friendsDefault else friends,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Person &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__firstname === firstnameDefault) null else "firstname=" + firstname,
+      if (__lastname === lastnameDefault) null else "lastname=" + lastname,
+      if (__friends === friendsDefault) null else "friends=" + friends,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Person(", postfix =
+      ")")
 
   @Generated
   public companion object {

@@ -7,9 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.extendedDataClassWithInterface.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -33,6 +36,24 @@ public class Example(
   @get:JvmName("getAge")
   override val age: Int?
     get() = __age.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__name === nameDefault) nameDefault else name,
+      if (__age === ageDefault) ageDefault else age,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Example &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__name === nameDefault) null else "name=" + name,
+      if (__age === ageDefault) null else "age=" + age,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Example(", postfix =
+      ")")
 
   @Generated
   public companion object {
