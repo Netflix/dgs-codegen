@@ -1,0 +1,20 @@
+package com.netflix.graphql.dgs.codegen.java.testcases.constants.constantsWithExtendedInterface.expected.types;
+
+import com.netflix.graphql.dgs.codegen.java.testcases.constants.constantsWithExtendedInterface.expected.Generated;
+import java.lang.Integer;
+import java.lang.String;
+
+@Generated
+public interface Person {
+  String getFirstname();
+
+  void setFirstname(String firstname);
+
+  String getLastname();
+
+  void setLastname(String lastname);
+
+  Integer getAge();
+
+  void setAge(Integer age);
+}

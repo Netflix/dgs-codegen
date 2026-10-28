@@ -1,0 +1,9 @@
+type Query {
+  people: [Person]
+}
+
+type Person {
+  firstname: String
+  lastname: String
+  friends: [Person]
+}

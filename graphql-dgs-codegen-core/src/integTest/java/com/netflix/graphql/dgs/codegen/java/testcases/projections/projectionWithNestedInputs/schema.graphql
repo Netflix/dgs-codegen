@@ -1,0 +1,16 @@
+# note that it's important for this test that all of the argument names are the same
+
+type Query {
+  q1(arg1: String, arg2: I2): String
+  q2(arg1: I1, arg2: String): String
+}
+
+input I1 {
+  arg1: I1
+  arg2: I2
+}
+
+input I2 {
+  arg1: String
+  arg2: String
+}

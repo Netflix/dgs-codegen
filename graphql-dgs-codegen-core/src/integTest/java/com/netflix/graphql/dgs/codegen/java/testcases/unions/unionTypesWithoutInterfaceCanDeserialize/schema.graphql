@@ -1,0 +1,21 @@
+type Query {
+  search(text: String!): SearchResultPage
+}
+
+type Human {
+  id: ID!
+  name: String!
+  totalCredits: Int
+}
+
+type Droid {
+  id: ID!
+  name: String!
+  primaryFunction: String
+}
+
+union SearchResult = Human | Droid
+
+type SearchResultPage {
+  items: [SearchResult]
+}

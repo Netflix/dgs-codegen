@@ -1,0 +1,19 @@
+package com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBigDecimal.expected.datafetchers;
+
+import com.netflix.graphql.dgs.DgsComponent;
+import com.netflix.graphql.dgs.DgsData;
+import com.netflix.graphql.dgs.codegen.java.testcases.inputs.inputWithDefaultBigDecimal.expected.Generated;
+import graphql.schema.DataFetchingEnvironment;
+import java.lang.String;
+
+@Generated
+@DgsComponent
+public class OrdersDatafetcher {
+  @DgsData(
+      parentType = "Query",
+      field = "orders"
+  )
+  public String getOrders(DataFetchingEnvironment dataFetchingEnvironment) {
+    return "";
+  }
+}
