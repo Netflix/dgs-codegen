@@ -33,9 +33,8 @@ internal class CodegenTestClassLoader(
         val packageNameAsUnixPath = name.replace(".", "/")
         val normalizedName = "/CLASS_OUTPUT/$packageNameAsUnixPath.class"
 
-        // Guard with a reentrant monitor so that defineClass() triggering a nested loadClass()
-        // on the same thread (e.g. for a superclass) doesn't deadlock or throw.
-        synchronized(seenClasses) {
+        // Share the JVM's reentrant loading monitor to avoid lock inversion during delegation.
+        synchronized(getClassLoadingLock(name)) {
             seenClasses[normalizedName]?.let { return it }
 
             val fileObject =
