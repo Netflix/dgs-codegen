@@ -70,7 +70,7 @@ class InterfaceGenerator internal constructor(
         }
 
         if (definition.description != null) {
-            javaType.addJavadoc("\$L", definition.description.content)
+            javaType.addJavadoc("\$L", definition.description.content.escapeJavaDocComparisons())
         }
 
         definition.implements
@@ -169,7 +169,7 @@ class InterfaceGenerator internal constructor(
                 ).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                 .returns(returnType)
         if (fieldDefinition.description != null) {
-            getterBuilder.addJavadoc("\$L", fieldDefinition.description.content)
+            getterBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
         }
 
         // Add @Nullable annotation for nullable return types when JSpecify is enabled
@@ -198,7 +198,7 @@ class InterfaceGenerator internal constructor(
                     .addParameter(parameterBuilder.build())
 
             if (fieldDefinition.description != null) {
-                setterBuilder.addJavadoc("\$L", fieldDefinition.description.content)
+                setterBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
             }
             javaType.addMethod(setterBuilder.build())
         }
