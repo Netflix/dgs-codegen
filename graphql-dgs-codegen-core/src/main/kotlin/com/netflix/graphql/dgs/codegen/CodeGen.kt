@@ -45,6 +45,7 @@ import graphql.schema.idl.ScalarInfo
 import graphql.schema.idl.TypeUtil
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
+import java.io.Closeable
 import java.io.File
 import java.io.Reader
 import java.lang.annotation.RetentionPolicy
@@ -59,7 +60,7 @@ import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
 private fun String.hasGraphQLSchemaExtension(): Boolean = endsWith(".graphqls") || endsWith(".graphql") || endsWith(".gqls")
 
-private fun Reader.closeAfterFailure(failure: Throwable) {
+private fun Closeable.closeAfterFailure(failure: Throwable) {
     try {
         close()
     } catch (closeFailure: Throwable) {
@@ -71,14 +72,14 @@ private fun interface SchemaSource {
     fun addTo(readerBuilder: MultiSourceReader.Builder): Reader?
 }
 
-private class FileSchemaSource(
-    private val file: File,
-    private val openReader: (File) -> Reader,
+private class ReaderSchemaSource(
+    private val sourceName: String,
+    private val openReader: () -> Reader,
 ) : SchemaSource {
     override fun addTo(readerBuilder: MultiSourceReader.Builder): Reader {
-        val reader = openReader(file)
+        val reader = openReader()
         try {
-            readerBuilder.reader(reader, file.name)
+            readerBuilder.reader(reader, sourceName)
             return reader
         } catch (failure: Throwable) {
             reader.closeAfterFailure(failure)
@@ -100,8 +101,29 @@ private class InMemorySchemaSource(
 private data class DependencySchemaSource(
     val file: File,
     val entryIndex: Int,
-    val schema: String,
+    val source: SchemaSource,
 )
+
+private class SchemaSources : Closeable {
+    val sources = mutableListOf<SchemaSource>()
+    val jars = mutableListOf<JarFile>()
+
+    override fun close() {
+        var failure: Throwable? = null
+        for (jar in jars.asReversed()) {
+            try {
+                jar.close()
+            } catch (closeFailure: Throwable) {
+                if (failure == null) {
+                    failure = closeFailure
+                } else {
+                    failure.addSuppressed(closeFailure)
+                }
+            }
+        }
+        failure?.let { throw it }
+    }
+}
 
 class CodeGen private constructor(
     private val config: CodeGenConfig,
@@ -219,10 +241,8 @@ class CodeGen private constructor(
             }
         val parser = Parser()
 
-        val schemaSources = discoverSchemaSources()
-
-        val document =
-            buildSchemaReader(schemaSources).use { reader ->
+        return discoverSchemaSources().use { schemaSources ->
+            buildSchemaReader(schemaSources.sources).use { reader ->
                 try {
                     val parserEnv =
                         ParserEnvironment
@@ -238,18 +258,27 @@ class CodeGen private constructor(
                         // return an empty document
                         return Document.newDocument().build()
                     } else {
-                        throw CodeGenSchemaParsingException(buildSchemaReader(schemaSources), exception)
+                        throw CodeGenSchemaParsingException(buildSchemaReader(schemaSources.sources), exception)
                     }
                 }
             }
-
-        return document
+        }
     }
 
-    private fun discoverSchemaSources(): List<SchemaSource> {
+    private fun discoverSchemaSources(): SchemaSources {
         validateNoOverlappingPaths(config.schemaFiles)
 
-        val schemaSources = mutableListOf<SchemaSource>()
+        val schemaSources = SchemaSources()
+        try {
+            discoverSchemaSources(schemaSources)
+            return schemaSources
+        } catch (failure: Throwable) {
+            schemaSources.closeAfterFailure(failure)
+            throw failure
+        }
+    }
+
+    private fun discoverSchemaSources(schemaSources: SchemaSources) {
         val schemaFiles =
             config.schemaFiles
                 .asSequence()
@@ -259,43 +288,42 @@ class CodeGen private constructor(
                 .sorted()
                 .toList()
         for (schemaFile in schemaFiles) {
-            schemaSources += InMemorySchemaSource("\n", "codegen")
-            schemaSources += FileSchemaSource(schemaFile, schemaFileReader)
+            schemaSources.sources += InMemorySchemaSource("\n", "codegen")
+            schemaSources.sources += ReaderSchemaSource(schemaFile.name) { schemaFileReader(schemaFile) }
         }
         for (schema in config.schemas) {
-            schemaSources += InMemorySchemaSource(schema, null)
+            schemaSources.sources += InMemorySchemaSource(schema, null)
         }
 
         val dependencySchemaSources = mutableListOf<DependencySchemaSource>()
         config.schemaJarFilesFromDependencies.forEach { file ->
-            dependencyJarFile(file).use { jarFile ->
-                val typeMappingsFile = jarFile.getJarEntry("META-INF/dgs.codegen.typemappings")
-                if (typeMappingsFile != null) {
-                    jarFile.getInputStream(typeMappingsFile).use { typeMappingInput ->
-                        val props = Properties()
-                        props.load(typeMappingInput)
+            val jarFile = dependencyJarFile(file).also { schemaSources.jars += it }
+            val typeMappingsFile = jarFile.getJarEntry("META-INF/dgs.codegen.typemappings")
+            if (typeMappingsFile != null) {
+                jarFile.getInputStream(typeMappingsFile).use { typeMappingInput ->
+                    val props = Properties()
+                    props.load(typeMappingInput)
 
-                        // Earlier dependencies take precedence over later ones, matching the
-                        // previous merge order. User mappings are applied in generate().
-                        val mappings = props.stringPropertyNames().associateWith(props::getProperty)
-                        dependencyTypeMappings.putAll(mappings + dependencyTypeMappings)
-                    }
+                    // Earlier dependencies take precedence over later ones, matching the
+                    // previous merge order. User mappings are applied in generate().
+                    val mappings = props.stringPropertyNames().associateWith(props::getProperty)
+                    dependencyTypeMappings.putAll(mappings + dependencyTypeMappings)
                 }
+            }
 
-                jarFile.entries().asSequence().forEachIndexed { index, entry ->
-                    if (!entry.isDirectory && entry.name.hasGraphQLSchemaExtension()) {
-                        logger.info("Generating schema from {}: {}", file.name, entry.name)
-                        val schema = jarFile.getInputStream(entry).bufferedReader().use { it.readText() }
-                        dependencySchemaSources += DependencySchemaSource(file, index, schema)
-                    }
+            jarFile.entries().asSequence().forEachIndexed { index, entry ->
+                if (!entry.isDirectory && entry.name.hasGraphQLSchemaExtension()) {
+                    logger.info("Generating schema from {}: {}", file.name, entry.name)
+                    // Keep the jar open through parsing and diagnostics so its entries can be streamed without retaining schema strings.
+                    val source = ReaderSchemaSource("codegen") { jarFile.getInputStream(entry).reader() }
+                    dependencySchemaSources += DependencySchemaSource(file, index, source)
                 }
             }
         }
 
         dependencySchemaSources
             .sortedWith(compareBy<DependencySchemaSource> { it.file }.thenBy { it.entryIndex })
-            .mapTo(schemaSources) { InMemorySchemaSource(it.schema, "codegen") }
-        return schemaSources
+            .mapTo(schemaSources.sources) { it.source }
     }
 
     private fun buildSchemaReader(schemaSources: List<SchemaSource>): MultiSourceReader {
