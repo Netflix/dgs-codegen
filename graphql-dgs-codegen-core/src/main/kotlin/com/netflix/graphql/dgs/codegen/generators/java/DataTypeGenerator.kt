@@ -285,12 +285,25 @@ class InputTypeGenerator internal constructor(
 
             is ObjectValue -> {
                 val inputObjectDefinition =
-                    inputTypeDefinitions.first {
+                    inputTypeDefinitions.firstOrNull {
                         val expectedCanonicalClassName =
                             config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
                         expectedCanonicalClassName == type.className.canonicalName()
                     }
-                if (value.objectFields.isEmpty()) {
+                if (inputObjectDefinition == null) {
+                    val canonical = type.className.canonicalName()
+                    if (canonical == "java.util.Map" || canonical == "java.util.HashMap") {
+                        if (value.objectFields.isEmpty()) {
+                            CodeBlock.of("\$T.emptyMap()", Collections::class.java)
+                        } else {
+                            null
+                        }
+                    } else if (value.objectFields.isEmpty()) {
+                        CodeBlock.of("new \$T()", type)
+                    } else {
+                        null
+                    }
+                } else if (value.objectFields.isEmpty()) {
                     CodeBlock.of("new \$T()", type)
                 } else {
                     CodeBlock.of(
@@ -379,7 +392,12 @@ class InputTypeGenerator internal constructor(
         get() =
             when (this) {
                 is ClassName -> this
-                is ParameterizedTypeName -> typeArguments().first().className
+                is ParameterizedTypeName ->
+                    if (rawType().canonicalName() == "java.util.List") {
+                        typeArguments().first().className
+                    } else {
+                        rawType()
+                    }
                 else -> throw UnsupportedOperationException("Unknown type: ${this.javaClass}")
             }
 }

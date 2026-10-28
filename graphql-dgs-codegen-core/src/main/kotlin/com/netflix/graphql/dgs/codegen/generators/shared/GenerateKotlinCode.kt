@@ -61,11 +61,39 @@ fun generateKotlinCode(
 
             is ObjectValue -> {
                 val inputObjectDefinition =
-                    inputTypeDefinitions.first {
+                    inputTypeDefinitions.firstOrNull {
                         val expectedCanonicalClassName =
                             config.typeMapping[it.name] ?: "${config.packageNameTypes}.${it.name}"
                         expectedCanonicalClassName == type.className.canonicalName
                     }
+
+                if (inputObjectDefinition == null) {
+                    val canonical = type.className.canonicalName
+                    if (canonical == "kotlin.collections.Map" || canonical == "java.util.Map") {
+                        if (value.objectFields.isEmpty()) {
+                            CodeBlock.of("emptyMap()")
+                        } else {
+                            CodeBlock.of(
+                                "mapOf(%L)",
+                                value.objectFields.joinToString { objectProperty ->
+                                    "\"${objectProperty.name}\" to ${
+                                        generateKotlinCode(
+                                            objectProperty.value,
+                                            type,
+                                            inputTypeDefinitions,
+                                            config,
+                                            typeUtils,
+                                        )
+                                    }"
+                                },
+                            )
+                        }
+                    } else if (value.objectFields.isEmpty()) {
+                        CodeBlock.of("%T()", type)
+                    } else {
+                        CodeBlock.of("null")
+                    }
+                } else {
 
                 CodeBlock.of(
                     type.className.canonicalName + "(%L)",
@@ -85,6 +113,7 @@ fun generateKotlinCode(
                         }"
                     },
                 )
+                }
             }
 
             is NullValue -> CodeBlock.of("null")
@@ -147,6 +176,11 @@ private val TypeName.className: ClassName
     get() =
         when (this) {
             is ClassName -> this
-            is ParameterizedTypeName -> typeArguments[0].className
+            is ParameterizedTypeName ->
+                if (rawType.canonicalName == "kotlin.collections.List" || rawType.canonicalName == "java.util.List") {
+                    typeArguments[0].className
+                } else {
+                    rawType
+                }
             else -> TODO()
         }

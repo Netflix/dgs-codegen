@@ -113,7 +113,7 @@ fun classpath(): String =
         .split(System.getProperty("path.separator"))
         .filter {
             File(it).exists() && File(it).canRead()
-        }.joinToString(":")
+        }.joinToString(File.pathSeparator)
 
 fun codegenTestClassLoader(
     compilation: Compilation,
@@ -202,3 +202,4 @@ fun KAnnotationSpec.canonicalName() = (typeName as KClassName).canonicalName
 const val BASE_PACKAGE_NAME = "com.netflix.graphql.dgs.codegen.tests.generated"
 const val TYPES_PACKAGE_NAME = "$BASE_PACKAGE_NAME.types"
 const val DATA_FETCHER_PACKAGE_NAME = "$BASE_PACKAGE_NAME.datafetchers"
+
