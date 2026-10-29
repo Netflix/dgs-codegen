@@ -25,6 +25,7 @@ import com.netflix.graphql.dgs.codegen.Language
 import org.gradle.api.DefaultTask
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.Directory
+import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.plugins.JavaPlugin
@@ -58,17 +59,123 @@ open class GenerateJavaTask
                 generatedSourcesRoot.set(value)
             }
 
+        private val outputDirOverride: DirectoryProperty = objectFactory.directoryProperty()
+
+        private val exampleOutputDirOverride: DirectoryProperty = objectFactory.directoryProperty()
+
+        private val docsOutputDirOverride: DirectoryProperty = objectFactory.directoryProperty()
+
+        /**
+         * Directory the generated sources are written to.
+         *
+         * Defaults to `<generatedSourcesDir>/generated/sources/dgs-codegen`. Use [setOutputDir] to
+         * write the sources to an exact directory instead.
+         */
         @get:OutputDirectory
         val generatedSourcesDirectory: Provider<Directory> =
-            project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen") })
+            outputDirOverride.orElse(
+                project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen") }),
+            )
 
+        /**
+         * Directory the generated example data fetchers are written to.
+         *
+         * Defaults to `<generatedSourcesDir>/generated/sources/dgs-codegen-generated-examples`. Use
+         * [setExampleOutputDir] to write the examples to an exact directory instead.
+         */
         @get:OutputDirectory
         val generatedExamplesDirectory: Provider<Directory> =
-            project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen-generated-examples") })
+            exampleOutputDirOverride.orElse(
+                project.layout.dir(
+                    generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen-generated-examples") },
+                ),
+            )
 
+        /**
+         * Directory the generated documentation is written to.
+         *
+         * Defaults to `<generatedSourcesDir>/generated/docs/dgs-codegen`. Use [setDocsOutputDir] to
+         * write the documentation to an exact directory instead.
+         */
         @get:Internal
         val generatedDocsDirectory: Provider<Directory> =
-            project.layout.dir(generatedSourcesRoot.map { File(it, "generated/docs/dgs-codegen") })
+            docsOutputDirOverride.orElse(
+                project.layout.dir(generatedSourcesRoot.map { File(it, "generated/docs/dgs-codegen") }),
+            )
+
+        /**
+         * Sets the exact directory generated sources are written to, overriding the location derived
+         * from [generatedSourcesDir]. Relative paths are resolved against the project directory.
+         */
+        fun setOutputDir(outputDir: String) {
+            setOutputDir(project.file(outputDir))
+        }
+
+        /**
+         * Sets the exact directory generated sources are written to, overriding the location derived
+         * from [generatedSourcesDir].
+         */
+        fun setOutputDir(outputDir: File) {
+            outputDirOverride.set(outputDir)
+        }
+
+        /**
+         * Sets the exact directory generated sources are written to, overriding the location derived
+         * from [generatedSourcesDir].
+         */
+        fun setOutputDir(outputDir: Provider<Directory>) {
+            outputDirOverride.set(outputDir)
+        }
+
+        /**
+         * Sets the exact directory generated example data fetchers are written to, overriding the
+         * location derived from [generatedSourcesDir]. Relative paths are resolved against the
+         * project directory.
+         */
+        fun setExampleOutputDir(exampleOutputDir: String) {
+            setExampleOutputDir(project.file(exampleOutputDir))
+        }
+
+        /**
+         * Sets the exact directory generated example data fetchers are written to, overriding the
+         * location derived from [generatedSourcesDir].
+         */
+        fun setExampleOutputDir(exampleOutputDir: File) {
+            exampleOutputDirOverride.set(exampleOutputDir)
+        }
+
+        /**
+         * Sets the exact directory generated example data fetchers are written to, overriding the
+         * location derived from [generatedSourcesDir].
+         */
+        fun setExampleOutputDir(exampleOutputDir: Provider<Directory>) {
+            exampleOutputDirOverride.set(exampleOutputDir)
+        }
+
+        /**
+         * Sets the exact directory generated documentation is written to, overriding the location
+         * derived from [generatedSourcesDir]. Relative paths are resolved against the project
+         * directory.
+         */
+        fun setDocsOutputDir(docsOutputDir: String) {
+            setDocsOutputDir(project.file(docsOutputDir))
+        }
+
+        /**
+         * Sets the exact directory generated documentation is written to, overriding the location
+         * derived from [generatedSourcesDir].
+         */
+        fun setDocsOutputDir(docsOutputDir: File) {
+            docsOutputDirOverride.set(docsOutputDir)
+        }
+
+        /**
+         * Sets the exact directory generated documentation is written to, overriding the location
+         * derived from [generatedSourcesDir].
+         */
+        fun setDocsOutputDir(docsOutputDir: Provider<Directory>) {
+            docsOutputDirOverride.set(docsOutputDir)
+        }
 
         private val absentDocsDirectory: Provider<Directory> = project.objects.directoryProperty()
 
@@ -201,6 +308,9 @@ open class GenerateJavaTask
 
         @Internal
         fun getExampleOutputDir(): File = generatedExamplesDirectory.get().asFile
+
+        @Internal
+        fun getDocsOutputDir(): File = generatedDocsDirectory.get().asFile
 
         @Input
         var includeQueries = mutableListOf<String>()

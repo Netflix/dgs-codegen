@@ -85,6 +85,7 @@ class CodegenGradlePluginTest {
     @CsvSource(
         "build.gradle,build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types",
         "build_with_default_dir.gradle,build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types",
+        "build_with_output_dir.gradle,build/custom-generated/com/netflix/testproject/graphql/types",
     )
     fun sourcesGenerated(
         buildFile: String,
@@ -102,6 +103,48 @@ class CodegenGradlePluginTest {
 
         assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
         assertThat(File(projectDir, "$outputPath/Result.java")).isFile()
+    }
+
+    @Test
+    fun outputDirsOverrideGeneratedSourcesDir() {
+        // build_with_output_dir.gradle sets generatedSourcesDir as well, so this verifies that the
+        // explicitly configured output directories win over the derived default locations.
+        val result =
+            newGradleRunner()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "-PtestBuildFile=build_with_output_dir.gradle",
+                    "build",
+                ).build()
+
+        assertThat(result.task(":build")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+
+        val generatedTypesPath = "com/netflix/testproject/graphql/types"
+        assertThat(File(projectDir, "build/custom-generated/$generatedTypesPath/Result.java")).isFile()
+        assertThat(File(projectDir, "build/custom-generated/$generatedTypesPath/Filter.java")).isFile()
+        assertThat(File(projectDir, "build/graphql/generated/sources/dgs-codegen/$generatedTypesPath")).doesNotExist()
+        assertThat(File(projectDir, DEFAULT_OUTPUT_PATH + "/Result.java")).doesNotExist()
+
+        assertThat(
+            File(
+                projectDir,
+                "build/custom-generated-examples/com/netflix/testproject/graphql/datafetchers/ResultDatafetcher.java",
+            ),
+        ).isFile()
+        assertThat(File(projectDir, "build/graphql/generated/sources/dgs-codegen-generated-examples")).doesNotExist()
+
+        assertThat(File(projectDir, "build/custom-docs/Query.result.md")).isFile()
+        assertThat(File(projectDir, "build/graphql/generated/docs/dgs-codegen")).doesNotExist()
+    }
+
+    @Test
+    fun outputDirsRemainAvailableAsFilesForBinaryCompatibility() {
+        // Preserve the JVM getter descriptors used by downstream plugins and build scripts.
+        assertThat(GenerateJavaTask::class.java.getMethod("getOutputDir").returnType).isEqualTo(File::class.java)
+        assertThat(GenerateJavaTask::class.java.getMethod("getExampleOutputDir").returnType).isEqualTo(File::class.java)
+        assertThat(GenerateJavaTask::class.java.getMethod("getDocsOutputDir").returnType).isEqualTo(File::class.java)
     }
 
     @ParameterizedTest
@@ -275,6 +318,34 @@ class CodegenGradlePluginTest {
     )
     fun generateJavaIsConfigurationCacheCompatible(buildFile: String) {
         assertConfigurationCacheRoundTrip(buildFile)
+    }
+
+    @Test
+    fun outputDirsAreConfigurationCacheCompatible() {
+        fun run() =
+            newGradleRunner()
+                .withProjectDir(projectDir)
+                .withPluginClasspath()
+                .withArguments(
+                    "--stacktrace",
+                    "--configuration-cache",
+                    "--configuration-cache-problems=fail",
+                    "-PtestBuildFile=build_with_output_dir.gradle",
+                    "clean",
+                    "generateJava",
+                ).build()
+
+        File(projectDir, ".gradle/configuration-cache").deleteRecursively()
+
+        val first = run()
+        assertThat(first.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        assertThat(first.output).contains("Configuration cache entry stored.")
+        assertThat(File(projectDir, "build/custom-generated/com/netflix/testproject/graphql/types/Result.java")).exists()
+
+        val second = run()
+        assertThat(second.output).contains("Reusing configuration cache.")
+        assertThat(second.task(":generateJava")).extracting { it?.outcome }.isEqualTo(SUCCESS)
+        assertThat(File(projectDir, "build/custom-generated/com/netflix/testproject/graphql/types/Result.java")).exists()
     }
 
     private fun assertConfigurationCacheRoundTrip(buildFile: String) {
