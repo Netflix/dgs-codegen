@@ -19,7 +19,7 @@
 plugins {
     id 'org.jetbrains.kotlin.jvm' version "2.0.21" apply false
     id 'com.netflix.nebula.netflixoss' version '13.0.0'
-    id "org.jmailen.kotlinter" version "5.0.1"
+    id "org.jmailen.kotlinter" version "5.7.0"
 }
 
 description = 'Netflix GraphQL DGS Code Generation'
