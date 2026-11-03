@@ -21,52 +21,18 @@ import re
 import subprocess
 import shutil
 import sys
-import yaml
-import git
 
 from common import Out
 from common import BColors
 from common import State
 
 base_path = os.path.dirname(os.path.realpath(__file__))
-config_file = os.path.abspath(f"{base_path}/config.yml")
 
 examples_path = os.path.abspath(f"{base_path}/../build/examples")
 settings_gradle_kts_template = os.path.abspath(f"{base_path}/settings.gradle.kts")
 
 gradle_wd = os.path.abspath(f"{base_path}/..")
 gradlew = os.path.abspath(f"{base_path}/../gradlew")
-
-
-def load_config():
-    with open(config_file, "r") as yml_file:
-        config = yaml.load(yml_file, Loader=yaml.SafeLoader)
-    Out.debug(f"Configuration loaded from [{config_file}]:\n{config}\n", State.verbose)
-    return config
-
-
-def clone_repos(config, target):
-    if not target:
-        Out.error("Unable to determine the target path for the cloned repos, make sure the config defines a target value.")
-        exit(-2)
-    if not os.path.exists(target):
-        Out.info(f"Dir [{target}] is missing, creating... ")
-        os.mkdir(target)
-
-    cloned_repos = []
-
-    git_uris = config["repositories"]
-    if not git_uris:
-        Out.error("The repositories to clone are missing, make sure the config file defines a repos section.")
-        exit(-2)
-    for g_uri in git_uris:
-        try:
-            cloned_repo = git.Git(target).clone(g_uri)
-            if cloned_repo:
-                cloned_repos.append(cloned_repo)
-                Out.info(f"Repository [{g_uri}] cloned to [{target}].")
-        except git.exc.GitCommandError as git_error:
-            Out.warn(f"Unable to clone [{g_uri}].", git_error)
 
 
 def infer_version():

@@ -30,7 +30,7 @@ import java.math.BigDecimal
 import java.math.BigInteger
 
 class DocGenerator internal constructor(
-    private val config: CodeGenConfig,
+    config: CodeGenConfig,
     private val schemaIndex: SchemaIndex,
 ) {
     constructor(config: CodeGenConfig, document: Document) : this(config, SchemaIndex(document))

@@ -16,6 +16,7 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.netflix.graphql.dgs.codegen.generators.shared.JAVA_TYPE_DIRECTIVE_NAME
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.collectAllFieldDefinitions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findEnumExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
@@ -26,6 +27,8 @@ import com.netflix.graphql.dgs.codegen.generators.shared.findSchemaTypeMapping
 import graphql.language.Document
 import graphql.language.InterfaceTypeDefinition
 import graphql.language.ObjectTypeDefinition
+import graphql.language.ScalarTypeDefinition
+import graphql.language.StringValue
 import graphql.language.TypeDefinition
 import graphql.language.TypeName
 import graphql.parser.Parser
@@ -241,7 +244,7 @@ class SchemaIndexTest {
                 )
             }
 
-            assertThat(findSchemaTypeMapping(schemaIndex, name)).isEqualTo(findSchemaTypeMapping(schemaDocument, name))
+            assertThat(findSchemaTypeMapping(schemaIndex, name)).isEqualTo(scanSchemaTypeMapping(schemaDocument, name))
             assertThat(
                 findTypeExtensions(name, schemaIndex),
             ).containsExactlyElementsOf(findTypeExtensions(name, schemaDocument.definitions))
@@ -263,6 +266,31 @@ class SchemaIndexTest {
             assertThat(collectAllFieldDefinitions(type, schemaIndex))
                 .containsExactlyElementsOf(collectAllFieldDefinitions(type, schemaDocument.definitions))
         }
+    }
+
+    private fun scanSchemaTypeMapping(
+        document: Document,
+        typeName: String,
+    ): String? {
+        for (definition in document.definitions) {
+            val scalarTypeDefinition =
+                definition as? ScalarTypeDefinition
+                    ?: continue
+            if (scalarTypeDefinition.name != typeName) {
+                continue
+            }
+            if (!scalarTypeDefinition.hasDirective(JAVA_TYPE_DIRECTIVE_NAME)) {
+                continue
+            }
+            val directive =
+                scalarTypeDefinition.getDirectives(JAVA_TYPE_DIRECTIVE_NAME).singleOrNull()
+                    ?: throw IllegalArgumentException("multiple @$JAVA_TYPE_DIRECTIVE_NAME directives are defined")
+            val nameArgument =
+                directive.getArgument("name")
+                    ?: throw IllegalArgumentException("@$JAVA_TYPE_DIRECTIVE_NAME directive must contain 'name' argument")
+            return (nameArgument.value as StringValue).value
+        }
+        return null
     }
 
     private fun repositoryRoot(): Path =

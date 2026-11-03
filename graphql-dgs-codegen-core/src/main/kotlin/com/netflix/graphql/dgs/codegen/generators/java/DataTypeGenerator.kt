@@ -408,7 +408,6 @@ internal data class Field(
     val nullable: Boolean,
     val initialValue: CodeBlock? = null,
     val overrideGetter: Boolean = false,
-    val interfaceType: JavaTypeName? = null,
     val description: Description? = null,
     val directives: List<Directive> = listOf(),
     val trackFieldSet: Boolean = false,
