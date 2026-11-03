@@ -18,6 +18,7 @@
 
 package com.netflix.graphql.dgs.codegen.generators.java
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.netflix.graphql.dgs.codegen.CodeGen
@@ -63,6 +64,21 @@ fun jsonTypeInfoAnnotation(): AnnotationSpec =
         .addMember("include", "\$T.\$L", JsonTypeInfo.As::class.java, JsonTypeInfo.As.PROPERTY.name)
         .addMember("property", "\$S", TypeNameMetaFieldDef.name)
         .build()
+
+/**
+ * Generate a [JsonProperty] annotation for the supplied
+ * field name.
+ *
+ * Example generated annotation:
+ * ```
+ * @JsonProperty("fieldName")
+ * ```
+ */
+fun jsonPropertyAnnotation(name: String): AnnotationSpec {
+    return AnnotationSpec.builder(JsonProperty::class.java)
+        .addMember("value", "\$S", name)
+        .build()
+}
 
 /**
  * Generate a [JsonTypeInfo] annotation, to explicitly disable
