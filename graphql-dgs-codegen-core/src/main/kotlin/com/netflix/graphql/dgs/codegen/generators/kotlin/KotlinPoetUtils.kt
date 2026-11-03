@@ -303,12 +303,8 @@ internal fun parseMappedKotlinType(mappedType: String): TypeName =
 fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()
 
-    if (!isGenericParam) {
-        ktTypeClassBestGuess(normalizedClassName)
-    }
-
     return when {
-        normalizedClassName == "*" -> STAR
+        normalizedClassName == "*" && isGenericParam -> STAR
         normalizedClassName.endsWith("?") -> ktTypeClassBestGuess(normalizedClassName.dropLast(1)).copy(nullable = true)
         else -> ktTypeClassBestGuess(normalizedClassName)
     }

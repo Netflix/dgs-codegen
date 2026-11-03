@@ -40,7 +40,6 @@ dependencies {
 
     testImplementation 'com.google.guava:guava:33.4.+'
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
-    testImplementation 'org.jetbrains.kotlin:kotlin-compiler'
 
     integTestImplementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
     integTestImplementation 'tools.jackson.core:jackson-databind:3.2.0' // explicit version to keep tests stable

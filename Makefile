@@ -25,10 +25,6 @@ test-examples: ## Modify the examples to use the latest Codegen SNAPSHOT, publis
 	scripts/test-examples.py -v --path=build/examples
 
 
-install-py-libs: ## Installs the Python Modules required by the scripts.
-	 pip3 install -r scripts/requirements.txt
-
-
 all: format test-examples ## Cleans, checks/tests, publishes the plugin locally and runs the examples.
 
 

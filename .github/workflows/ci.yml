@@ -20,11 +20,6 @@ jobs:
         with:
           python-version: '3.13'
 
-      - name: Install Python modules
-        run: |
-          python -m pip install --upgrade pip
-          if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi
-
       - uses: actions/cache@v6
         id: gradle-wrapper-cache
         with:
