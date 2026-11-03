@@ -15,10 +15,16 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.netflix.graphql.dgs.codegen.generators.kotlin.parseMappedKotlinType
+import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.LIST
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
+import com.squareup.kotlinpoet.STAR
+import com.squareup.kotlinpoet.STRING
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatThrownBy
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
@@ -119,6 +125,17 @@ class KotlinTypeNameTest {
         assertThat(item.parameters.single { it.name == "state" }.type)
             .isEqualTo(ClassName(TYPES_PACKAGE_NAME, "${name}State").copy(nullable = true))
         assertCompilesKotlin(result)
+    }
+
+    @Test
+    fun `star is accepted only as a generic argument`() {
+        assertThat(parseMappedKotlinType("List<*>")).isEqualTo(LIST.parameterizedBy(STAR))
+        assertThat(parseMappedKotlinType("List<String?>")).isEqualTo(LIST.parameterizedBy(STRING.copy(nullable = true)))
+        assertThat("*".toKtTypeName(isGenericParam = true)).isEqualTo(STAR)
+        assertThat("String?".toKtTypeName().isNullable).isTrue()
+        assertThat("String".toKtTypeName()).isEqualTo(STRING)
+        assertThatThrownBy { "*".toKtTypeName() }.isInstanceOf(IllegalArgumentException::class.java)
+        assertThatThrownBy { parseMappedKotlinType("*") }.isInstanceOf(IllegalArgumentException::class.java)
     }
 
     @ParameterizedTest

@@ -35,6 +35,7 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.LambdaTypeName
+import com.squareup.kotlinpoet.NameAllocator
 import com.squareup.kotlinpoet.ParameterSpec
 import com.squareup.kotlinpoet.PropertySpec
 import com.squareup.kotlinpoet.TypeSpec
@@ -48,6 +49,9 @@ import graphql.language.NonNullType
 import graphql.language.ObjectTypeDefinition
 import graphql.language.Type
 import graphql.language.UnionTypeDefinition
+
+private const val DEFAULT_ALIAS_PARAMETER_NAME = "_alias"
+private const val DEFAULT_PROJECTION_PARAMETER_NAME = "_projection"
 
 fun generateKotlin2ClientTypes(
     config: CodeGenConfig,
@@ -91,6 +95,7 @@ internal fun generateKotlin2ClientTypes(
                         .map { field ->
 
                             val kotlinName = sanitizeKotlinIdentifier(field.name)
+                            val inputParameters = inputParameters(config, typeLookup, typeName, field.inputValueDefinitions)
 
                             val isScalar = typeLookup.isScalar(field.type)
                             val hasArgs = field.inputValueDefinitions.isNotEmpty()
@@ -115,52 +120,64 @@ internal fun generateKotlin2ClientTypes(
                                 isScalar && hasArgs -> {
                                     FunSpec
                                         .builder(kotlinName)
-                                        .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
+                                        .addParameters(inputParameters)
                                         .returns(typeName)
                                         .addCode(
-                                            field.inputValueDefinitions.let { iv ->
-                                                val builder = CodeBlock.builder().add("field(%S", field.name)
-                                                iv.forEach { d ->
-                                                    val argName = sanitizeKotlinIdentifier(d.name)
-                                                    builder.add(", %S to %N", d.name, argName)
-                                                }
-                                                builder.add(")\nreturn this").build()
-                                            },
+                                            CodeBlock
+                                                .builder()
+                                                .add("field(%S", field.name)
+                                                .addFieldArguments(field.inputValueDefinitions)
+                                                .add(")\nreturn this")
+                                                .build(),
                                         ).build()
                                 }
 
-                                // otherwise it's a projection with optional args
-                                // !isScalar && hasArgs
+                                // Complex fields need a selection set even without schema arguments.
                                 else -> {
                                     val projectionTypeName = projectionTypeName(field.type)
-                                    val (projectionType, projection) = projectionType(config.packageNameClient, projectionTypeName)
+                                    val nameAllocator =
+                                        NameAllocator().apply {
+                                            inputParameters.forEach { newName(it.name) }
+                                        }
+                                    val aliasParameter =
+                                        ParameterSpec
+                                            .builder(
+                                                nameAllocator.newName(DEFAULT_ALIAS_PARAMETER_NAME),
+                                                String::class.asTypeName().copy(nullable = true),
+                                            ).defaultValue("null")
+                                            .build()
+                                    val serializerReference =
+                                        if (inputParameters.any { it.name == ivsParameter.name }) {
+                                            CodeBlock.of("this.%N", ivsParameter)
+                                        } else {
+                                            CodeBlock.of("%N", ivsParameter)
+                                        }
+                                    val (projectionType, projection) =
+                                        projectionType(
+                                            config.packageNameClient,
+                                            projectionTypeName,
+                                            nameAllocator.newName(DEFAULT_PROJECTION_PARAMETER_NAME),
+                                        )
 
                                     FunSpec
                                         .builder(kotlinName)
-                                        .addInputArgs(config, typeLookup, typeName, field.inputValueDefinitions)
-                                        .addParameter(
-                                            ParameterSpec
-                                                .builder(
-                                                    "_alias",
-                                                    String::class.asTypeName().copy(nullable = true),
-                                                ).defaultValue("null")
-                                                .build(),
-                                        ).addParameter(projection)
+                                        .addParameters(inputParameters)
+                                        .addParameter(aliasParameter)
+                                        .addParameter(projection)
                                         .returns(typeName)
                                         .addCode(
-                                            field.inputValueDefinitions.let { iv ->
-                                                val builder =
-                                                    CodeBlock.builder().add(
-                                                        "field(_alias, %S, %T(inputValueSerializer), _projection",
-                                                        field.name,
-                                                        projectionType,
-                                                    )
-                                                iv.forEach { d ->
-                                                    val argName = sanitizeKotlinIdentifier(d.name)
-                                                    builder.add(", %S to %N", d.name, argName)
-                                                }
-                                                builder.add(")\nreturn this").build()
-                                            },
+                                            CodeBlock
+                                                .builder()
+                                                .add(
+                                                    "field(%N, %S, %T(%L), %N",
+                                                    aliasParameter,
+                                                    field.name,
+                                                    projectionType,
+                                                    serializerReference,
+                                                    projection,
+                                                ).addFieldArguments(field.inputValueDefinitions)
+                                                .add(")\nreturn this")
+                                                .build(),
                                         ).build()
                                 }
                             }
@@ -179,7 +196,7 @@ internal fun generateKotlin2ClientTypes(
                         .addOptionalGeneratedAnnotation(config)
                         .primaryConstructor(FunSpec.constructorBuilder().addParameter(ivsParameter).build())
                         .superclass(GraphQLProjection::class)
-                        .addSuperclassConstructorParameter("inputValueSerializer")
+                        .addSuperclassConstructorParameter("%N", ivsParameter)
                         // we can't ask for `__typename` on a `Subscription` object
                         .apply {
                             if (typeDefinition.name == "Subscription") {
@@ -218,7 +235,7 @@ internal fun generateKotlin2ClientTypes(
                         .addOptionalGeneratedAnnotation(config)
                         .primaryConstructor(FunSpec.constructorBuilder().addParameter(ivsParameter).build())
                         .superclass(GraphQLProjection::class)
-                        .addSuperclassConstructorParameter("inputValueSerializer")
+                        .addSuperclassConstructorParameter("%N", ivsParameter)
                         .addFunctions(
                             implementations.map { subclass ->
                                 onSubclassProjection(config.packageNameClient, typeName, (subclass as NamedNode<*>).name)
@@ -247,11 +264,13 @@ internal fun generateKotlin2ClientTypes(
                         .addParameter(projection)
                         .returns(String::class)
                         .addStatement(
-                            """return %T.asQuery(%T.%L, %T(inputValueSerializer), _projection)""",
+                            "return %T.asQuery(%T.%L, %T(%N), %N)",
                             GraphQLProjection::class.asTypeName(),
                             op::class.asTypeName(),
                             op.name,
                             projectionType,
+                            ivsParameter,
+                            projection,
                         ).build()
                 },
             ).build()
@@ -270,10 +289,10 @@ private fun projectionTypeName(type: Type<*>): String =
         else -> throw UnsupportedOperationException(type::class.qualifiedName)
     }
 
-// create the `_projection = FooProjection.() -> FooProjection` parameter
 private fun projectionType(
     packageName: String,
     type: String,
+    name: String = DEFAULT_PROJECTION_PARAMETER_NAME,
 ): Pair<ClassName, ParameterSpec> {
     val projectionType =
         ClassName(
@@ -283,7 +302,7 @@ private fun projectionType(
 
     val parameter =
         ParameterSpec(
-            name = "_projection",
+            name = name,
             type =
                 LambdaTypeName.get(
                     receiver = projectionType,
@@ -294,26 +313,30 @@ private fun projectionType(
     return projectionType to parameter
 }
 
-private fun FunSpec.Builder.addInputArgs(
+private fun inputParameters(
     config: CodeGenConfig,
     typeLookup: Kotlin2TypeLookup,
     typeName: ClassName,
     inputValueDefinitions: List<InputValueDefinition>,
-): FunSpec.Builder =
-    this
-        .addParameters(
-            inputValueDefinitions.map {
-                val returnType = typeLookup.findReturnType(config.packageNameTypes, it.type)
-                val kotlinName = sanitizeKotlinIdentifier(it.name)
-                ParameterSpec
-                    .builder(kotlinName, returnType)
-                    .apply {
-                        if (returnType.isNullable) {
-                            defaultValue("default<%T, %T>(%S)", typeName, returnType, it.name)
-                        }
-                    }.build()
-            },
-        )
+): List<ParameterSpec> =
+    inputValueDefinitions.map {
+        val returnType = typeLookup.findReturnType(config.packageNameTypes, it.type)
+        val kotlinName = sanitizeKotlinIdentifier(it.name)
+        ParameterSpec
+            .builder(kotlinName, returnType)
+            .apply {
+                if (returnType.isNullable) {
+                    defaultValue("default<%T, %T>(%S)", typeName, returnType, it.name)
+                }
+            }.build()
+    }
+
+private fun CodeBlock.Builder.addFieldArguments(inputValueDefinitions: List<InputValueDefinition>): CodeBlock.Builder =
+    apply {
+        inputValueDefinitions.forEach {
+            add(", %S to %N", it.name, sanitizeKotlinIdentifier(it.name))
+        }
+    }
 
 private fun onSubclassProjection(
     packageName: String,
@@ -326,7 +349,7 @@ private fun onSubclassProjection(
         .builder("on$subclassName")
         .addParameter(projection)
         .returns(typeName)
-        .addStatement("""fragment(%S, %T(), _projection)""", subclassName, projectionType)
+        .addStatement("fragment(%S, %T(), %N)", subclassName, projectionType, projection)
         .addStatement("return this")
         .build()
 }
