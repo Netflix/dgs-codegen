@@ -18,12 +18,22 @@
 
 package com.netflix.graphql.dgs.codegen
 
+import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.TypeSpec
 import com.squareup.kotlinpoet.asClassName
+import graphql.language.Field
+import graphql.language.NullValue
+import graphql.language.OperationDefinition
+import graphql.language.StringValue
+import graphql.parser.Parser
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.Arguments
+import org.junit.jupiter.params.provider.MethodSource
 import java.io.Serializable
+import java.net.URLClassLoader
 
 class Kotlin2CodeGenTest {
     @Test
@@ -149,16 +159,20 @@ class Kotlin2CodeGenTest {
         assertCompilesKotlin(result)
     }
 
-    @Test
-    fun `field argument named _alias or _projection does not conflict with projection parameters`() {
+    @ParameterizedTest
+    @MethodSource("projectionParameterNames")
+    fun `projection parameters do not shadow schema arguments`(
+        operationType: String,
+        argumentNames: List<String>,
+        aliasParameterName: String,
+        projectionParameterName: String,
+    ) {
+        val arguments = argumentNames.joinToString(", ") { "$it: String" }
+        val field = if (arguments.isEmpty()) "nodeSetCreate" else "nodeSetCreate($arguments)"
         val schema =
             """
-            type Query {
-                nodeSetCreate(
-                    _alias: String
-                    _projection: String
-                    summary: String
-                ): NodeResult
+            type $operationType {
+                $field: NodeResult
             }
 
             type NodeResult {
@@ -166,42 +180,145 @@ class Kotlin2CodeGenTest {
             }
             """.trimIndent()
 
-        val result =
-            CodeGen(
-                CodeGenConfig(
-                    schemas = setOf(schema),
-                    packageName = BASE_PACKAGE_NAME,
-                    language = Language.KOTLIN,
-                    generateClientApi = true,
-                    generateKotlinNullableClasses = true,
-                    generateKotlinClosureProjections = true,
-                ),
-            ).generate()
+        val result = generateClient(schema)
 
-        val queryProjection = result.kotlinClientTypes.find { it.name == "QueryProjection" }
-        assertThat(queryProjection).isNotNull
-        val source = queryProjection.toString()
-        assertThat(source).contains("_alias: String? = default<QueryProjection, String?>(\"_alias\")")
-        assertThat(source).contains("_projection: String? = default<QueryProjection, String?>(\"_projection\")")
-        assertThat(source).contains("_alias_: String? = null")
-        assertThat(source).contains("_projection_: NodeResultProjection.() -> NodeResultProjection")
-        assertThat(source).contains(
-            "field(_alias_, \"nodeSetCreate\", NodeResultProjection(inputValueSerializer), _projection_, \"_alias\" to _alias, \"_projection\" to _projection, \"summary\" to summary)",
+        val operationProjection =
+            result.kotlinClientTypes
+                .single { it.name == "${operationType}Projection" }
+                .members
+                .single() as TypeSpec
+        val method = operationProjection.funSpecs.single { it.name == "nodeSetCreate" }
+        assertThat(method.parameters.map { it.name }).containsExactlyElementsOf(
+            argumentNames.map(::sanitizeKotlinIdentifier) + listOf(aliasParameterName, projectionParameterName),
         )
 
+        val suppliedArgs = argumentNames.map { "`${sanitizeKotlinIdentifier(it)}` = \"$it value\"" }
+        val nullArgs = argumentNames.map { "`${sanitizeKotlinIdentifier(it)}` = null" }
+        val aliasArg = "$aliasParameterName = \"myAlias\""
+        val projectionArg = "$projectionParameterName = { id }"
+        val suppliedCall = (suppliedArgs + aliasArg + projectionArg).joinToString(", ")
+        val nullCall = (nullArgs + "$aliasParameterName = \"nullAlias\"").joinToString(", ")
         val testFile =
             """
-            package com.netflix.graphql.dgs.codegen.tests.generated
+            package $BASE_PACKAGE_NAME
 
-            fun runQuery(): String {
-                return DgsClient.buildQuery {
-                    nodeSetCreate(_alias = "argAliasVal", _projection = "argProjVal", summary = "testSummary", _alias_ = "myAlias") {
-                        id
+            fun runQuery(mode: Int): String {
+                return DgsClient.build$operationType {
+                    when (mode) {
+                        0 -> nodeSetCreate($suppliedCall)
+                        1 -> nodeSetCreate { id }
+                        else -> nodeSetCreate($nullCall) { id }
                     }
                 }
             }
             """.trimIndent()
 
-        assertCompilesKotlin(result, mapOf("TestQuery.kt" to testFile))
+        val buildDir = assertCompilesKotlin(result, mapOf("TestQuery.kt" to testFile))
+        URLClassLoader(arrayOf(buildDir.toUri().toURL()), javaClass.classLoader).use { loader ->
+            val runQuery = loader.loadClass("$BASE_PACKAGE_NAME.TestQueryKt").getMethod("runQuery", Int::class.javaPrimitiveType)
+            val fields =
+                (0..2).map { mode ->
+                    val query = runQuery.invoke(null, mode) as String
+                    Parser()
+                        .parseDocument(query)
+                        .getDefinitionsOfType(OperationDefinition::class.java)
+                        .single()
+                        .selectionSet.selections
+                        .filterIsInstance<Field>()
+                        .single { it.name == "nodeSetCreate" }
+                }
+            assertThat(fields[0].alias).isEqualTo("myAlias")
+            assertThat(fields[0].arguments.associate { it.name to (it.value as StringValue).value })
+                .containsExactlyInAnyOrderEntriesOf(argumentNames.associateWith { "$it value" })
+            assertThat(
+                fields[0]
+                    .selectionSet.selections
+                    .filterIsInstance<Field>()
+                    .map { it.name },
+            ).containsExactly("__typename", "id")
+            assertThat(fields[1].alias).isNull()
+            assertThat(fields[1].arguments).isEmpty()
+            assertThat(fields[2].alias).isEqualTo("nullAlias")
+            assertThat(fields[2].arguments.map { it.name }).containsExactlyElementsOf(argumentNames)
+            assertThat(fields[2].arguments).allMatch { it.value is NullValue }
+        }
+    }
+
+    @Test
+    fun `schema arguments do not shadow serializer or helper references`() {
+        val schema =
+            """
+            type Query {
+                node(inputValueSerializer: String): Node
+            }
+            type Node {
+                leaf(inputValueSerializer: String, field: String, default: String, omitted: String): String
+            }
+            """.trimIndent()
+        val result = generateClient(schema)
+
+        val testFile =
+            """
+            package $BASE_PACKAGE_NAME
+
+            import com.netflix.graphql.dgs.client.codegen.InputValueSerializer
+            import com.netflix.graphql.dgs.client.codegen.InputValueSerializerInterface
+
+            fun runQuery(): String {
+                val delegate = InputValueSerializer()
+                val serializer = object : InputValueSerializerInterface by delegate {
+                    override fun toValue(input: Any?) =
+                        delegate.toValue(if (input is String) "serialized:" + input else input)
+                }
+                return DgsClient.buildQuery(inputValueSerializer = serializer) {
+                    node(inputValueSerializer = "root") {
+                        leaf(inputValueSerializer = "child", field = "fieldValue", default = "defaultValue")
+                    }
+                }
+            }
+            """.trimIndent()
+
+        val buildDir = assertCompilesKotlin(result, mapOf("TestQuery.kt" to testFile))
+        URLClassLoader(arrayOf(buildDir.toUri().toURL()), javaClass.classLoader).use { loader ->
+            val query = loader.loadClass("$BASE_PACKAGE_NAME.TestQueryKt").getMethod("runQuery").invoke(null) as String
+            assertThat(query).contains("node(inputValueSerializer: \"serialized:root\")")
+            assertThat(query)
+                .contains(
+                    "leaf(inputValueSerializer: \"serialized:child\",",
+                    "field: \"serialized:fieldValue\"",
+                    "default: \"serialized:defaultValue\"",
+                ).doesNotContain("omitted:")
+        }
+    }
+
+    private fun generateClient(schema: String): CodeGenResult =
+        CodeGen(
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = BASE_PACKAGE_NAME,
+                language = Language.KOTLIN,
+                generateClientApi = true,
+                generateKotlinNullableClasses = true,
+                generateKotlinClosureProjections = true,
+            ),
+        ).generate()
+
+    companion object {
+        @JvmStatic
+        fun projectionParameterNames(): List<Arguments> =
+            listOf(
+                Arguments.of("Query", emptyList<String>(), "_alias", "_projection"),
+                Arguments.of("Mutation", listOf("_alias"), "_alias_", "_projection"),
+                Arguments.of("Subscription", listOf("_projection"), "_alias", "_projection_"),
+                Arguments.of("Mutation", listOf("_alias", "_projection", "summary"), "_alias_", "_projection_"),
+                Arguments.of(
+                    "Query",
+                    listOf("_alias", "_alias_", "_alias__", "_projection", "_projection_", "_projection__"),
+                    "_alias___",
+                    "_projection___",
+                ),
+                Arguments.of("Query", listOf("_alias_", "_projection_"), "_alias", "_projection"),
+                Arguments.of("Query", listOf("_", "when", "field", "default"), "_alias", "_projection"),
+            )
     }
 }
