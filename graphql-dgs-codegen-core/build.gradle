@@ -50,11 +50,7 @@ application {
     mainClass.set('com.netflix.graphql.dgs.codegen.CodeGenCliKt')
 }
 
-tasks.named("lintKotlinIntegTest") {
-    exclude("**/cases/**/*.kt")
-}
-
-tasks.named("formatKotlinIntegTest") {
+tasks.matching { it.name in ["lintKotlinIntegTest", "formatKotlinIntegTest"] }.configureEach {
     exclude("**/cases/**/*.kt")
 }
 
