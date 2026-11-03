@@ -30,7 +30,9 @@ import com.netflix.graphql.dgs.codegen.generators.shared.JAKARTA_GENERATED_ANNOT
 import com.netflix.graphql.dgs.codegen.generators.shared.PackageParserUtil
 import com.netflix.graphql.dgs.codegen.generators.shared.ParserConstants
 import com.netflix.graphql.dgs.codegen.generators.shared.generatedDate
+import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.kotlinpoet.*
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import graphql.introspection.Introspection
 import graphql.language.ArrayValue
 import graphql.language.BooleanValue
@@ -282,6 +284,21 @@ fun jsonIgnorePropertiesAnnotation(name: String): AnnotationSpec =
         .build()
 
 fun Description.sanitizeKdoc(): String = this.content.lineSequence().joinToString("\n")
+
+internal fun parseMappedKotlinType(mappedType: String): TypeName =
+    parseMappedType(
+        mappedType = mappedType,
+        toTypeName = String::toKtTypeName,
+        parameterize = { (it.first as ClassName).parameterizedBy(it.second) },
+        onCloseBracketCallBack = { current, typeString ->
+            if (typeString.trim() == "?") {
+                val last = current.second.removeLast()
+                current.second.add(last.copy(nullable = true))
+            } else {
+                current.second.add(typeString.toKtTypeName(true))
+            }
+        },
+    )
 
 fun String.toKtTypeName(isGenericParam: Boolean = false): TypeName {
     val normalizedClassName = this.trim()

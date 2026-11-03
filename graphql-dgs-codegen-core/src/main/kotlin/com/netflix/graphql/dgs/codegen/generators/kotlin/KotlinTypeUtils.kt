@@ -21,7 +21,6 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.shared.findSchemaTypeMapping
-import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.kotlinpoet.*
 import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import graphql.language.*
@@ -113,43 +112,15 @@ class KotlinTypeUtils internal constructor(
     ): KtTypeName {
         // check config
         if (interfaceName in config.typeMapping) {
-            val mappedType = config.typeMapping.getValue(interfaceName)
-
-            return parseMappedType(
-                mappedType = mappedType,
-                toTypeName = String::toKtTypeName,
-                parameterize = { (it.first as ClassName).parameterizedBy(it.second) },
-                onCloseBracketCallBack = { current, typeString ->
-                    if (typeString.trim() == "?") {
-                        val last = current.second.removeLast()
-                        current.second.add(last.copy(nullable = true))
-                    } else {
-                        current.second.add(typeString.toKtTypeName(true))
-                    }
-                },
-            )
+            return parseMappedKotlinType(config.typeMapping.getValue(interfaceName))
         }
 
-        return "$packageName.$interfaceName".toKtTypeName()
+        return ClassName(packageName, interfaceName)
     }
 
     private fun TypeName.toKtTypeName(): KtTypeName {
         if (name in config.typeMapping) {
-            val mappedType = config.typeMapping.getValue(name)
-
-            return parseMappedType(
-                mappedType = mappedType,
-                toTypeName = String::toKtTypeName,
-                parameterize = { (it.first as ClassName).parameterizedBy(it.second) },
-                onCloseBracketCallBack = { current, typeString ->
-                    if (typeString.trim() == "?") {
-                        val last = current.second.removeLast()
-                        current.second.add(last.copy(nullable = true))
-                    } else {
-                        current.second.add(typeString.toKtTypeName(true))
-                    }
-                },
-            )
+            return parseMappedKotlinType(config.typeMapping.getValue(name))
         }
 
         val schemaType = findSchemaTypeMapping(schemaIndex, name)
@@ -172,7 +143,7 @@ class KotlinTypeUtils internal constructor(
             "BooleanValue" -> BOOLEAN
             "ID" -> STRING
             "IDValue" -> STRING
-            else -> "${config.packageNameTypes}.$name".toKtTypeName()
+            else -> ClassName(config.packageNameTypes, name)
         }
     }
 

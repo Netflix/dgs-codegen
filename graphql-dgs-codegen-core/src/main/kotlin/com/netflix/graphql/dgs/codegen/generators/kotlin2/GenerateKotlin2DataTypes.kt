@@ -33,7 +33,6 @@ import com.netflix.graphql.dgs.codegen.generators.kotlin.jvmNameAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.netflix.graphql.dgs.codegen.generators.kotlin.suppressInapplicableJvmNameAnnotation
-import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
 import com.netflix.graphql.dgs.codegen.generators.shared.excludeSchemaTypeExtension
@@ -137,7 +136,8 @@ internal fun generateKotlin2DataTypes(
                     ).build()
 
             // create a builder for this class; default to lambda that throws if accessed
-            val builderClassName = ClassName(config.packageNameTypes, typeDefinition.name, "Builder")
+            val className = ClassName(config.packageNameTypes, typeDefinition.name)
+            val builderClassName = className.nestedClass("Builder")
             val builder =
                 TypeSpec
                     .classBuilder("Builder")
@@ -174,13 +174,13 @@ internal fun generateKotlin2DataTypes(
                     .addFunction(
                         FunSpec
                             .builder("build")
-                            .returns(typeDefinition.name.toKtTypeName())
+                            .returns(className)
                             .addCode(
                                 fields.let { fs ->
                                     val builder =
                                         CodeBlock.builder().add(
                                             "return %T(\n",
-                                            ClassName(config.packageNameTypes, typeDefinition.name),
+                                            className,
                                         )
                                     fs.forEach { f -> builder.add("  %N = %N,\n", f.kotlinName, f.kotlinName) }
                                     builder.add(")").build()

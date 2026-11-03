@@ -20,10 +20,10 @@ package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.SchemaIndex
+import com.netflix.graphql.dgs.codegen.generators.kotlin.parseMappedKotlinType
 import com.netflix.graphql.dgs.codegen.generators.kotlin.toKtTypeName
 import com.netflix.graphql.dgs.codegen.generators.shared.JAVA_TYPE_DIRECTIVE_NAME
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findTypeExtensions
-import com.netflix.graphql.dgs.codegen.generators.shared.parseMappedType
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.DOUBLE
@@ -128,19 +128,7 @@ class Kotlin2TypeLookup internal constructor(
         config
             .typeMapping
             .mapValues { (_, type) ->
-                parseMappedType(
-                    mappedType = type,
-                    toTypeName = String::toKtTypeName,
-                    parameterize = { (it.first as ClassName).parameterizedBy(it.second) },
-                    onCloseBracketCallBack = { current, typeString ->
-                        if (typeString.trim() == "?") {
-                            val last = current.second.removeLast()
-                            current.second.add(last.copy(nullable = true))
-                        } else {
-                            current.second.add(typeString.toKtTypeName(true))
-                        }
-                    },
-                )
+                parseMappedKotlinType(type)
             }
 
     /**
@@ -281,7 +269,7 @@ class Kotlin2TypeLookup internal constructor(
             return mappedType
         }
 
-        return "$packageName.$interfaceName".toKtTypeName()
+        return ClassName(packageName, interfaceName)
     }
 
     private fun findKtTypeName(
@@ -306,6 +294,6 @@ class Kotlin2TypeLookup internal constructor(
             return builtinType
         }
 
-        return "$packageName.${typeName.name}".toKtTypeName()
+        return ClassName(packageName, typeName.name)
     }
 }
