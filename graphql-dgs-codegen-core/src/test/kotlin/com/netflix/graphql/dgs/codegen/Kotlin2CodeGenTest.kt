@@ -148,4 +148,60 @@ class Kotlin2CodeGenTest {
 
         assertCompilesKotlin(result)
     }
+
+    @Test
+    fun `field argument named _alias or _projection does not conflict with projection parameters`() {
+        val schema =
+            """
+            type Query {
+                nodeSetCreate(
+                    _alias: String
+                    _projection: String
+                    summary: String
+                ): NodeResult
+            }
+
+            type NodeResult {
+                id: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    generateClientApi = true,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                ),
+            ).generate()
+
+        val queryProjection = result.kotlinClientTypes.find { it.name == "QueryProjection" }
+        assertThat(queryProjection).isNotNull
+        val source = queryProjection.toString()
+        assertThat(source).contains("_alias: String? = default<QueryProjection, String?>(\"_alias\")")
+        assertThat(source).contains("_projection: String? = default<QueryProjection, String?>(\"_projection\")")
+        assertThat(source).contains("_alias_: String? = null")
+        assertThat(source).contains("_projection_: NodeResultProjection.() -> NodeResultProjection")
+        assertThat(source).contains(
+            "field(_alias_, \"nodeSetCreate\", NodeResultProjection(inputValueSerializer), _projection_, \"_alias\" to _alias, \"_projection\" to _projection, \"summary\" to summary)",
+        )
+
+        val testFile =
+            """
+            package com.netflix.graphql.dgs.codegen.tests.generated
+
+            fun runQuery(): String {
+                return DgsClient.buildQuery {
+                    nodeSetCreate(_alias = "argAliasVal", _projection = "argProjVal", summary = "testSummary", _alias_ = "myAlias") {
+                        id
+                    }
+                }
+            }
+            """.trimIndent()
+
+        assertCompilesKotlin(result, mapOf("TestQuery.kt" to testFile))
+    }
 }

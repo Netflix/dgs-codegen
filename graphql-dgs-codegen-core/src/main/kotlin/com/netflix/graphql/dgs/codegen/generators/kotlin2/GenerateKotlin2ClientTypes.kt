@@ -133,7 +133,20 @@ internal fun generateKotlin2ClientTypes(
                                 // !isScalar && hasArgs
                                 else -> {
                                     val projectionTypeName = projectionTypeName(field.type)
-                                    val (projectionType, projection) = projectionType(config.packageNameClient, projectionTypeName)
+                                    val existingArgNames = field.inputValueDefinitions.map { sanitizeKotlinIdentifier(it.name) }.toSet()
+
+                                    var aliasParamName = "_alias"
+                                    while (existingArgNames.contains(aliasParamName)) {
+                                        aliasParamName += "_"
+                                    }
+
+                                    var projectionParamName = "_projection"
+                                    while (existingArgNames.contains(projectionParamName) || projectionParamName == aliasParamName) {
+                                        projectionParamName += "_"
+                                    }
+
+                                    val (projectionType, projection) =
+                                        projectionType(config.packageNameClient, projectionTypeName, projectionParamName)
 
                                     FunSpec
                                         .builder(kotlinName)
@@ -141,7 +154,7 @@ internal fun generateKotlin2ClientTypes(
                                         .addParameter(
                                             ParameterSpec
                                                 .builder(
-                                                    "_alias",
+                                                    aliasParamName,
                                                     String::class.asTypeName().copy(nullable = true),
                                                 ).defaultValue("null")
                                                 .build(),
@@ -151,9 +164,11 @@ internal fun generateKotlin2ClientTypes(
                                             field.inputValueDefinitions.let { iv ->
                                                 val builder =
                                                     CodeBlock.builder().add(
-                                                        "field(_alias, %S, %T(inputValueSerializer), _projection",
+                                                        "field(%N, %S, %T(inputValueSerializer), %N",
+                                                        aliasParamName,
                                                         field.name,
                                                         projectionType,
+                                                        projectionParamName,
                                                     )
                                                 iv.forEach { d ->
                                                     val argName = sanitizeKotlinIdentifier(d.name)
@@ -274,6 +289,7 @@ private fun projectionTypeName(type: Type<*>): String =
 private fun projectionType(
     packageName: String,
     type: String,
+    name: String = "_projection",
 ): Pair<ClassName, ParameterSpec> {
     val projectionType =
         ClassName(
@@ -283,7 +299,7 @@ private fun projectionType(
 
     val parameter =
         ParameterSpec(
-            name = "_projection",
+            name = name,
             type =
                 LambdaTypeName.get(
                     receiver = projectionType,
