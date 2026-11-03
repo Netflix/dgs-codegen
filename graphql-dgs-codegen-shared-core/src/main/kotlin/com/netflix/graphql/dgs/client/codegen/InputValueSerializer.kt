@@ -73,7 +73,8 @@ open class InputValueSerializer(
             return optionalValue.get()
         }
 
-        val classes = (sequenceOf(input::class) + input::class.allSuperclasses.asSequence()) - Any::class
+        // Use the vararg overload for consumers running Kotlin versions before 2.2.
+        val classes = (sequenceOf(*arrayOf(input::class)) + input::class.allSuperclasses.asSequence()) - Any::class
         val propertyValues = getPropertyValues(classes, input)
 
         val objectFields =

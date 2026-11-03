@@ -234,8 +234,14 @@ private fun generateCode(
     prefix: String = "",
 ): CodeBlock =
     when (value) {
-        is BooleanValue -> CodeBlock.of("\$L", value.isValue)
-        is IntValue -> CodeBlock.of("\$L", value.value)
+        is BooleanValue -> {
+            CodeBlock.of("\$L", value.isValue)
+        }
+
+        is IntValue -> {
+            CodeBlock.of("\$L", value.value)
+        }
+
         is StringValue -> {
             // If string value ends with .class and classImports mapping is provided, treat as Java Class
             val string = value.value
@@ -252,15 +258,21 @@ private fun generateCode(
                 CodeBlock.of("\$S", string)
             }
         }
-        is FloatValue -> CodeBlock.of("\$L", value.value)
+
+        is FloatValue -> {
+            CodeBlock.of("\$L", value.value)
+        }
+
         // In an enum value the prefix (key in the parameters map for the enum) is used to get the package name from the config
         // Limitation: Since it uses the enum key to lookup the package from the configs. 2 enums using different packages cannot have the same keys.
-        is EnumValue ->
+        is EnumValue -> {
             CodeBlock.of(
                 "\$T",
                 ClassName.get(PackageParserUtil.getEnumPackage(config, annotationName, prefix), value.name),
             )
-        is ArrayValue ->
+        }
+
+        is ArrayValue -> {
             if (value.values.isEmpty()) {
                 CodeBlock.of("{}")
             } else {
@@ -276,7 +288,11 @@ private fun generateCode(
                     },
                 )
             }
-        else -> CodeBlock.of("\$L", value)
+        }
+
+        else -> {
+            CodeBlock.of("\$L", value)
+        }
     }
 
 private fun typeClassBestGuess(name: String): TypeName =

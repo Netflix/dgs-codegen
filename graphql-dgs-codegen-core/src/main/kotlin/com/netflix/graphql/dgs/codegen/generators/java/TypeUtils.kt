@@ -211,16 +211,46 @@ class TypeUtils internal constructor(
         }
 
         return when (name) {
-            "String" -> ClassName.get(String::class.java)
-            "StringValue" -> ClassName.get(String::class.java)
-            "Int" -> JavaTypeName.INT
-            "IntValue" -> JavaTypeName.INT
-            "Float" -> JavaTypeName.DOUBLE
-            "FloatValue" -> JavaTypeName.DOUBLE
-            "Boolean" -> JavaTypeName.BOOLEAN
-            "BooleanValue" -> JavaTypeName.BOOLEAN
-            "ID" -> ClassName.get(String::class.java)
-            "IDValue" -> ClassName.get(String::class.java)
+            "String" -> {
+                ClassName.get(String::class.java)
+            }
+
+            "StringValue" -> {
+                ClassName.get(String::class.java)
+            }
+
+            "Int" -> {
+                JavaTypeName.INT
+            }
+
+            "IntValue" -> {
+                JavaTypeName.INT
+            }
+
+            "Float" -> {
+                JavaTypeName.DOUBLE
+            }
+
+            "FloatValue" -> {
+                JavaTypeName.DOUBLE
+            }
+
+            "Boolean" -> {
+                JavaTypeName.BOOLEAN
+            }
+
+            "BooleanValue" -> {
+                JavaTypeName.BOOLEAN
+            }
+
+            "ID" -> {
+                ClassName.get(String::class.java)
+            }
+
+            "IDValue" -> {
+                ClassName.get(String::class.java)
+            }
+
             else -> {
                 var simpleName = name
                 if (useInterfaceType &&

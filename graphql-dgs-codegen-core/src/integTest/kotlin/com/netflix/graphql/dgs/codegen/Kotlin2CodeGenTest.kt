@@ -48,7 +48,7 @@ class Kotlin2CodeGenTest {
                     generateKotlinClosureProjections = true,
                     typeMapping =
                         when (testName) {
-                            "dataClassWithMappedTypes" ->
+                            "dataClassWithMappedTypes" -> {
                                 mapOf(
                                     "Long" to "kotlin.Long",
                                     "DateTime" to "java.time.OffsetDateTime",
@@ -56,19 +56,29 @@ class Kotlin2CodeGenTest {
                                     "EntityConnection" to
                                         "graphql.relay.SimpleListConnection<com.netflix.graphql.dgs.codegen.cases.dataClassWithMappedTypes.expected.types.EntityEdge>",
                                 )
-                            "dataClassWithMappedInterfaces" ->
+                            }
+
+                            "dataClassWithMappedInterfaces" -> {
                                 mapOf(
                                     "Node" to "com.netflix.graphql.dgs.codegen.fixtures.Node",
                                 )
-                            "inputWithDefaultBigDecimal" ->
+                            }
+
+                            "inputWithDefaultBigDecimal" -> {
                                 mapOf(
                                     "Decimal" to "java.math.BigDecimal",
                                 )
-                            "inputWithDefaultCurrency" ->
+                            }
+
+                            "inputWithDefaultCurrency" -> {
                                 mapOf(
                                     "Currency" to "java.util.Currency",
                                 )
-                            else -> emptyMap()
+                            }
+
+                            else -> {
+                                emptyMap()
+                            }
                         },
                 ),
             ).generate()

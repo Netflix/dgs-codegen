@@ -41,7 +41,7 @@ class JavaCodeGenTest {
                     generateClientApi = true,
                     typeMapping =
                         when (testCase) {
-                            "dataclasses/dataClassWithMappedTypes" ->
+                            "dataclasses/dataClassWithMappedTypes" -> {
                                 mapOf(
                                     "Long" to "java.lang.Long",
                                     "DateTime" to "java.time.OffsetDateTime",
@@ -49,19 +49,29 @@ class JavaCodeGenTest {
                                     "EntityConnection" to
                                         "graphql.relay.SimpleListConnection<com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithMappedTypes.expected.types.EntityEdge>",
                                 )
-                            "dataclasses/dataClassWithMappedInterfaces" ->
+                            }
+
+                            "dataclasses/dataClassWithMappedInterfaces" -> {
                                 mapOf(
                                     "Node" to "com.netflix.graphql.dgs.codegen.java.fixtures.Node",
                                 )
-                            "inputs/inputWithDefaultBigDecimal" ->
+                            }
+
+                            "inputs/inputWithDefaultBigDecimal" -> {
                                 mapOf(
                                     "Decimal" to "java.math.BigDecimal",
                                 )
-                            "inputs/inputWithDefaultCurrency" ->
+                            }
+
+                            "inputs/inputWithDefaultCurrency" -> {
                                 mapOf(
                                     "Currency" to "java.util.Currency",
                                 )
-                            else -> emptyMap()
+                            }
+
+                            else -> {
+                                emptyMap()
+                            }
                         },
                 ),
             ).generate()

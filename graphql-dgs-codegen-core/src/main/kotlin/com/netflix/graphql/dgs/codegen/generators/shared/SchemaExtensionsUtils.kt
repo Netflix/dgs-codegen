@@ -114,6 +114,7 @@ object SchemaExtensionsUtils {
                         .flatMap { it.fieldDefinitions }
                 (type.fieldDefinitions + extensionFields + duplicateTypeFields).distinctBy { it.name }
             }
+
             is InterfaceTypeDefinition -> {
                 val extensionFields = findInterfaceExtensions(type.name, definitions).flatMap { it.fieldDefinitions }
                 val duplicateTypeFields =
@@ -123,7 +124,10 @@ object SchemaExtensionsUtils {
                         .flatMap { it.fieldDefinitions }
                 (type.fieldDefinitions + extensionFields + duplicateTypeFields).distinctBy { it.name }
             }
-            else -> type.fieldDefinitions()
+
+            else -> {
+                type.fieldDefinitions()
+            }
         }
 
     internal fun collectAllFieldDefinitions(
@@ -141,6 +145,7 @@ object SchemaExtensionsUtils {
                         .flatMap { it.fieldDefinitions }
                 (type.fieldDefinitions + extensionFields + duplicateTypeFields).distinctBy { it.name }
             }
+
             is InterfaceTypeDefinition -> {
                 val extensionFields = schemaIndex.interfaceExtensions(type.name).flatMap { it.fieldDefinitions }
                 val duplicateTypeFields =
@@ -151,7 +156,10 @@ object SchemaExtensionsUtils {
                         .flatMap { it.fieldDefinitions }
                 (type.fieldDefinitions + extensionFields + duplicateTypeFields).distinctBy { it.name }
             }
-            else -> type.fieldDefinitions()
+
+            else -> {
+                type.fieldDefinitions()
+            }
         }
 }
 

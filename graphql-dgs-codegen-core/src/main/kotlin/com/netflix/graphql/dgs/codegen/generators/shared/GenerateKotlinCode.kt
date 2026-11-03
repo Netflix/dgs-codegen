@@ -36,12 +36,27 @@ fun generateKotlinCode(
         ?: checkAndGetBigDecimalCodeBlock(value, type)
         ?: checkAndGetCurrencyCodeBlock(value, type)
         ?: when (value) {
-            is BooleanValue -> CodeBlock.of("%L", value.isValue)
-            is IntValue -> CodeBlock.of("%L", value.value)
-            is StringValue -> CodeBlock.of("%S", value.value)
-            is FloatValue -> CodeBlock.of("%L", value.value.toString())
-            is EnumValue -> CodeBlock.of("%M", MemberName(type.className, value.name))
-            is ArrayValue ->
+            is BooleanValue -> {
+                CodeBlock.of("%L", value.isValue)
+            }
+
+            is IntValue -> {
+                CodeBlock.of("%L", value.value)
+            }
+
+            is StringValue -> {
+                CodeBlock.of("%S", value.value)
+            }
+
+            is FloatValue -> {
+                CodeBlock.of("%L", value.value.toString())
+            }
+
+            is EnumValue -> {
+                CodeBlock.of("%M", MemberName(type.className, value.name))
+            }
+
+            is ArrayValue -> {
                 if (value.values.isEmpty()) {
                     CodeBlock.of("emptyList()")
                 } else {
@@ -58,6 +73,7 @@ fun generateKotlinCode(
                         },
                     )
                 }
+            }
 
             is ObjectValue -> {
                 val inputObjectDefinition =
@@ -87,8 +103,13 @@ fun generateKotlinCode(
                 )
             }
 
-            is NullValue -> CodeBlock.of("null")
-            else -> CodeBlock.of("%L", value)
+            is NullValue -> {
+                CodeBlock.of("null")
+            }
+
+            else -> {
+                CodeBlock.of("%L", value)
+            }
         }
 
 private fun checkAndGetLocaleCodeBlock(
