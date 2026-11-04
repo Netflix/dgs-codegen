@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWith
 import graphql.language.VariableDefinition;
 import java.lang.Override;
 import java.lang.String;
+import java.lang.SuppressWarnings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 @Generated
 public class Q2GraphQLQuery extends GraphQLQuery {
+  @SuppressWarnings("this-escape")
   public Q2GraphQLQuery(I1 arg1, String arg2, String queryName, Set<String> fieldsSet) {
     super("query", queryName);
     if (arg1 != null || fieldsSet.contains("arg1")) {
@@ -24,6 +26,7 @@ public class Q2GraphQLQuery extends GraphQLQuery {
     }
   }
 
+  @SuppressWarnings("this-escape")
   public Q2GraphQLQuery(I1 arg1, String arg2, String queryName, Set<String> fieldsSet,
       Map<String, String> variableReferences, List<VariableDefinition> variableDefinitions) {
     super("query", queryName);

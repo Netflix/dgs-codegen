@@ -5,6 +5,7 @@ import com.netflix.graphql.dgs.codegen.java.testcases.unions.unionTypesWithoutIn
 import graphql.language.VariableDefinition;
 import java.lang.Override;
 import java.lang.String;
+import java.lang.SuppressWarnings;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +15,7 @@ import java.util.Set;
 
 @Generated
 public class SearchGraphQLQuery extends GraphQLQuery {
+  @SuppressWarnings("this-escape")
   public SearchGraphQLQuery(String text, String queryName, Set<String> fieldsSet) {
     super("query", queryName);
     if (text != null || fieldsSet.contains("text")) {
@@ -21,6 +23,7 @@ public class SearchGraphQLQuery extends GraphQLQuery {
     }
   }
 
+  @SuppressWarnings("this-escape")
   public SearchGraphQLQuery(String text, String queryName, Set<String> fieldsSet,
       Map<String, String> variableReferences, List<VariableDefinition> variableDefinitions) {
     super("query", queryName);
