@@ -69,6 +69,16 @@ allprojects {
             languageVersion.set(JavaLanguageVersion.of(17))
         }
     }
+
+    // Optionally run the tests on a newer JDK while still compiling for 17, e.g. `-PtestJavaVersion=21`.
+    // Generated Java is compiled with -Xlint:all in the tests, so this also covers newer lints such as this-escape.
+    if (project.hasProperty("testJavaVersion")) {
+        tasks.withType(Test).configureEach {
+            javaLauncher = javaToolchains.launcherFor {
+                languageVersion = JavaLanguageVersion.of(project.property("testJavaVersion") as String)
+            }
+        }
+    }
 }
 
 subprojects {

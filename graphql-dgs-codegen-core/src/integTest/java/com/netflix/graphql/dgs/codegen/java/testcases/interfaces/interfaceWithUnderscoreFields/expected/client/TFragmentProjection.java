@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode;
 import com.netflix.graphql.dgs.codegen.java.testcases.interfaces.interfaceWithUnderscoreFields.expected.Generated;
 import java.lang.Override;
 import java.lang.String;
+import java.lang.SuppressWarnings;
 
 @Generated
 public class TFragmentProjection<PARENT extends BaseSubProjectionNode<?, ?>, ROOT extends BaseSubProjectionNode<?, ?>> extends BaseSubProjectionNode<PARENT, ROOT> {
@@ -11,6 +12,7 @@ public class TFragmentProjection<PARENT extends BaseSubProjectionNode<?, ?>, ROO
     getFields().put("__typename", null);
   }
 
+  @SuppressWarnings("this-escape")
   public TFragmentProjection(PARENT parent, ROOT root) {
     super(parent, root, java.util.Optional.of("T"));
   }
