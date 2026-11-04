@@ -27,6 +27,7 @@ import graphql.language.Node
 import graphql.language.NodeTraverser
 import graphql.language.NodeVisitorStub
 import graphql.language.ObjectTypeDefinition
+import graphql.language.OperationDefinition.Operation
 import graphql.language.TypeName
 import graphql.language.UnionTypeDefinition
 import graphql.util.TraversalControl
@@ -43,23 +44,22 @@ class RequiredTypeCollector internal constructor(
     init {
         val fieldDefinitions = mutableListOf<FieldDefinition>()
         for (definition in schemaIndex.definitions.asSequence().filterIsInstance<ObjectTypeDefinition>()) {
-            when (definition.name) {
-                "Query" -> {
-                    definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeQueries }
-                }
-
-                "Mutation" -> {
-                    definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeMutations }
-                }
-
-                "Subscription" -> {
-                    definition.fieldDefinitions.filterTo(fieldDefinitions) { it.name in config.includeSubscriptions }
-                }
-
-                else -> {
-                    if (config.generateClientApi) {
-                        fieldDefinitions.addAll(definition.fieldDefinitions)
+            val operations = schemaIndex.operationTypes[definition.name].orEmpty()
+            val needsNestedProjection =
+                config.generateKotlinClosureProjections && definition.name in schemaIndex.nestedOperationTypes
+            if (config.generateClientApi && (operations.isEmpty() || needsNestedProjection)) {
+                fieldDefinitions.addAll(definition.fieldDefinitions)
+            }
+            for (operation in operations) {
+                val included =
+                    when (operation) {
+                        Operation.QUERY -> config.includeQueries
+                        Operation.MUTATION -> config.includeMutations
+                        Operation.SUBSCRIPTION -> config.includeSubscriptions
                     }
+                // Empty include sets select all fields for clients, but no fields for type-only generation.
+                definition.fieldDefinitions.filterTo(fieldDefinitions) {
+                    (config.generateClientApi && included.isEmpty()) || it.name in included
                 }
             }
         }

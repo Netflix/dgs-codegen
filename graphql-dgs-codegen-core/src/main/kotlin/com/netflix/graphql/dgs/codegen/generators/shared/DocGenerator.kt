@@ -45,7 +45,7 @@ class DocGenerator internal constructor(
 
         val docFiles: MutableList<DocFileSpec> = mutableListOf()
 
-        if (definition.name == "Query") {
+        if (OperationDefinition.Operation.QUERY in schemaIndex.operationTypes[definition.name].orEmpty()) {
             definition.fieldDefinitions.forEach {
                 val markdownText = getFieldDefinitionMarkdown(it, definition)
                 docFiles += DocFileSpec.get("${definition.name}.${it.name}", markdownText)

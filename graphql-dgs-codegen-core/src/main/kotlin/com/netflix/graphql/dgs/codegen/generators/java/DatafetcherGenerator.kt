@@ -45,10 +45,13 @@ class DatafetcherGenerator internal constructor(
         query.fieldDefinitions
             .asSequence()
             .map { field ->
-                createDatafetcher(field)
+                createDatafetcher(field, query.name)
             }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
 
-    private fun createDatafetcher(field: FieldDefinition): CodeGenResult {
+    private fun createDatafetcher(
+        field: FieldDefinition,
+        queryTypeName: String,
+    ): CodeGenResult {
         val fieldName = field.name.capitalized()
         val clazzName = fieldName + "Datafetcher"
 
@@ -73,7 +76,7 @@ class DatafetcherGenerator internal constructor(
                     AnnotationSpec
                         .builder(
                             DgsData::class.java,
-                        ).addMember("parentType", "\$S", "Query")
+                        ).addMember("parentType", "\$S", queryTypeName)
                         .addMember("field", "\$S", field.name)
                         .build(),
                 ).addParameter(ParameterSpec.builder(DataFetchingEnvironment::class.java, "dataFetchingEnvironment").build())

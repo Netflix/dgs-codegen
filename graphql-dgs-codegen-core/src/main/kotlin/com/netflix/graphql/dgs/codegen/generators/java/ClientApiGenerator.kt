@@ -111,13 +111,22 @@ class ClientApiGenerator internal constructor(
         claimedNames.clear()
         val legacyNames = mutableSetOf<String>()
         return rootFields(definition)
-            .map {
-                val javaFile = createQueryClass(it, definition.name, methodNames)
+            .map { field ->
+                val operations = schemaIndex.operationTypes[definition.name]
+                val javaFiles =
+                    if (operations == null) {
+                        listOf(createQueryClass(field, definition.name, methodNames))
+                    } else {
+                        operations
+                            .filter { operation ->
+                                field in listOf(field).filterIncludedInConfig(operation, config)
+                            }.map { operation -> createQueryClass(field, operation.name, methodNames) }
+                    }
 
                 val rootProjection =
-                    it.type.findTypeDefinition(schemaIndex, true)?.let { typeDefinition ->
-                        val className = rootProjectionNames.getValue(definition.name to it.name)
-                        val legacyName = "${it.name.capitalized()}ProjectionRoot"
+                    field.type.findTypeDefinition(schemaIndex, true)?.let { typeDefinition ->
+                        val className = rootProjectionNames.getValue(definition.name to field.name)
+                        val legacyName = "${field.name.capitalized()}ProjectionRoot"
                         if (legacyNames.add(legacyName)) {
                             createRootProjection(typeDefinition, className)
                         } else {
@@ -126,7 +135,7 @@ class ClientApiGenerator internal constructor(
                         }
                     }
                         ?: CodeGenResult.EMPTY
-                CodeGenResult(javaQueryTypes = listOf(javaFile)).merge(rootProjection)
+                CodeGenResult(javaQueryTypes = javaFiles).merge(rootProjection)
             }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
     }
 
@@ -544,7 +553,12 @@ class ClientApiGenerator internal constructor(
                 if (firstInDefinition.add(field.definition to field.legacyName) && legacyWinners[field.legacyName] == field.type) {
                     field.legacyName
                 } else {
-                    val prefix = "${field.fieldName.capitalized()}GraphQL${field.operation.capitalized()}"
+                    val operation =
+                        schemaIndex.operationTypes[field.operation]
+                            ?.firstOrNull()
+                            ?.name
+                            ?.lowercase(Locale.ROOT) ?: field.operation
+                    val prefix = "${field.fieldName.capitalized()}GraphQL${operation.capitalized()}"
                     var candidate = "${prefix}ProjectionRoot"
                     var suffix = 2
                     while (!reservedNames.add(candidate.lowercase(Locale.ROOT))) {
@@ -558,7 +572,7 @@ class ClientApiGenerator internal constructor(
 
     private fun rootFields(definition: ObjectTypeDefinition): List<FieldDefinition> =
         definition.fieldDefinitions
-            .filterIncludedInConfig(definition.name, config)
+            .filterIncludedInConfig(definition.name, config, schemaIndex)
             .filterSkipped()
 
     private fun claimSource(

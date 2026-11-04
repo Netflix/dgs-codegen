@@ -65,14 +65,10 @@ class Kotlin2TypeLookup internal constructor(
     private val document = schemaIndex.document
 
     /**
-     * GQL defined operations
+     * First operation for each root type, in query, mutation, subscription order.
+     * This compatibility view cannot represent every role of a shared root.
      */
-    val operations: Map<String, OperationDefinition.Operation> =
-        mapOf(
-            "Query" to OperationDefinition.Operation.QUERY,
-            "Mutation" to OperationDefinition.Operation.MUTATION,
-            "Subscription" to OperationDefinition.Operation.SUBSCRIPTION,
-        )
+    val operations: Map<String, OperationDefinition.Operation> = schemaIndex.operationTypes.mapValues { it.value.first() }
 
     /**
      * A set of object type names defined in the document
