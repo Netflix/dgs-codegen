@@ -85,6 +85,7 @@ class CodegenGradlePluginTest {
     @CsvSource(
         "build.gradle,build/graphql/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types",
         "build_with_default_dir.gradle,build/generated/sources/dgs-codegen/com/netflix/testproject/graphql/types",
+        "build_with_output_dir.gradle,custom-build/custom-generated/com/netflix/testproject/graphql/types",
     )
     fun sourcesGenerated(
         buildFile: String,

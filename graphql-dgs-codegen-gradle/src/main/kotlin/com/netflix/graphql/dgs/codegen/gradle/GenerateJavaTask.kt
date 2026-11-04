@@ -58,13 +58,21 @@ open class GenerateJavaTask
                 generatedSourcesRoot.set(value)
             }
 
-        @get:OutputDirectory
-        val generatedSourcesDirectory: Provider<Directory> =
-            project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen") })
+        private val sourcesOutputDirectory =
+            objectFactory.directoryProperty().convention(
+                project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen") }),
+            )
+
+        private val examplesOutputDirectory =
+            objectFactory.directoryProperty().convention(
+                project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen-generated-examples") }),
+            )
 
         @get:OutputDirectory
-        val generatedExamplesDirectory: Provider<Directory> =
-            project.layout.dir(generatedSourcesRoot.map { File(it, "generated/sources/dgs-codegen-generated-examples") })
+        val generatedSourcesDirectory: Provider<Directory> = sourcesOutputDirectory
+
+        @get:OutputDirectory
+        val generatedExamplesDirectory: Provider<Directory> = examplesOutputDirectory
 
         @get:Internal
         val generatedDocsDirectory: Provider<Directory> =
@@ -199,8 +207,24 @@ open class GenerateJavaTask
         @Internal
         fun getOutputDir(): File = generatedSourcesDirectory.get().asFile
 
+        fun setOutputDir(directory: File) {
+            sourcesOutputDirectory.set(directory)
+        }
+
+        fun setOutputDir(directory: Provider<out Directory>) {
+            sourcesOutputDirectory.set(directory)
+        }
+
         @Internal
         fun getExampleOutputDir(): File = generatedExamplesDirectory.get().asFile
+
+        fun setExampleOutputDir(directory: File) {
+            examplesOutputDirectory.set(directory)
+        }
+
+        fun setExampleOutputDir(directory: Provider<out Directory>) {
+            examplesOutputDirectory.set(directory)
+        }
 
         @Input
         var includeQueries = mutableListOf<String>()
