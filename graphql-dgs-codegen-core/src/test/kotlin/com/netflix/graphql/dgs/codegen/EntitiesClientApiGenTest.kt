@@ -24,6 +24,63 @@ import org.junit.jupiter.api.Test
 
 class EntitiesClientApiGenTest {
     @Test
+    fun `Entity extensions across schemas generate one fragment method per type`() {
+        val coreSchema =
+            """
+            type Query
+
+            interface AnimalInterface @key(fields: "someId") {
+                someId: ID
+                license: String
+                nickname: String
+            }
+
+            type Animal implements AnimalInterface @key(fields: "someId") {
+                someId: ID
+                license: String
+                nickname: String
+            }
+
+            type AnimalWithDetails implements AnimalInterface @key(fields: "someId") {
+                someId: ID
+                license: String
+                nickname: String
+            }
+            """.trimIndent()
+        val subgraphSchema =
+            """
+            extend type Query {
+                getAnimalData(someId: String): AnimalWithDetails
+            }
+
+            extend type AnimalWithDetails @key(fields: "someId") {
+                speciesName: String
+                color: String
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(coreSchema, subgraphSchema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                    language = Language.JAVA,
+                ),
+            ).generate()
+
+        result.assertCompile()
+        val entitiesRoot = result.clientProjections.single { it.typeSpec().name() == "EntitiesProjectionRoot" }
+        assertThat(entitiesRoot.typeSpec().methodSpecs())
+            .extracting("name")
+            .containsExactlyInAnyOrder("<init>", "onAnimal", "onAnimalWithDetails")
+        val animalProjection = result.clientProjections.single { it.typeSpec().name() == "EntitiesAnimalWithDetailsKeyProjection" }
+        assertThat(animalProjection.typeSpec().methodSpecs())
+            .extracting("name")
+            .contains("someId", "license", "nickname", "speciesName", "color")
+    }
+
+    @Test
     fun `We can have federated entities`() {
         val schema =
             """

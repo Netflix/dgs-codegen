@@ -147,7 +147,7 @@ class ClientApiGenerator internal constructor(
         }
 
         // generate for federation types, if present
-        val federatedTypes = definitions.filter { it.hasDirective("key") }
+        val federatedTypes = definitions.filter { it.hasDirective("key") }.distinctBy { it.name }
         if (federatedTypes.isNotEmpty()) {
             // create entities root projection
             return createEntitiesRootProjection(federatedTypes)
