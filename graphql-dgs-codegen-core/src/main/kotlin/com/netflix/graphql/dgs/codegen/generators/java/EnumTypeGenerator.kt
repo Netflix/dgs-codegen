@@ -69,7 +69,7 @@ class EnumTypeGenerator(
             if (it.directives.isNotEmpty()) {
                 val (annotations, comments) = applyDirectivesJava(it.directives, config)
                 if (!comments.isNullOrBlank()) {
-                    typeSpec.addJavadoc("\$L", comments)
+                    typeSpec.addJavadoc("\$L", comments.escapeJavaDocComparisons())
                 }
                 for (entry in annotations) {
                     when (SiteTarget.valueOf(entry.key)) {

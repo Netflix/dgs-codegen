@@ -187,7 +187,7 @@ class ClientApiGenerator internal constructor(
             javaType.addAnnotation(Deprecated::class.java)
             val deprecationReason = getDeprecatedReason(deprecatedClassDirective)
             if (deprecationReason != null) {
-                javaType.addJavadoc("@deprecated \$L", deprecationReason)
+                javaType.addJavadoc("@deprecated \$L", deprecationReason.escapeJavaDocComparisons())
             }
         }
 
@@ -444,7 +444,7 @@ class ClientApiGenerator internal constructor(
             if (!javaDoc.isEmpty) {
                 javaDoc.add("\n\n")
             }
-            javaDoc.add("@deprecated \$L", deprecationReason)
+            javaDoc.add("@deprecated \$L", deprecationReason.escapeJavaDocComparisons())
         }
 
         if (!javaDoc.isEmpty) {

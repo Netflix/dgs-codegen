@@ -468,7 +468,7 @@ abstract class BaseDataTypeGenerator internal constructor(
                 javaType.addAnnotations(annotations[SiteTarget.DEFAULT.name])
             }
             if (!comments.isNullOrBlank()) {
-                javaType.addJavadoc("\$L", comments)
+                javaType.addJavadoc("\$L", comments.escapeJavaDocComparisons())
             }
         }
 
@@ -727,7 +727,7 @@ abstract class BaseDataTypeGenerator internal constructor(
         if (fieldDefinition.directives.isNotEmpty()) {
             val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
             if (!comments.isNullOrBlank()) {
-                fieldBuilder.addJavadoc("\$L", comments)
+                fieldBuilder.addJavadoc("\$L", comments.escapeJavaDocComparisons())
             }
             for ((key, value) in annotations) {
                 when (SiteTarget.valueOf(key)) {
