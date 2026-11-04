@@ -188,32 +188,16 @@ class ConstantsGenerator internal constructor(
             javaType.addType(it.build())
         }
 
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Query" }) {
-            javaType.addField(
-                FieldSpec
-                    .builder(ClassName.get(String::class.java), "QUERY_TYPE")
-                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                    .initializer(""""Query"""")
-                    .build(),
-            )
-        }
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Mutation" }) {
-            javaType.addField(
-                FieldSpec
-                    .builder(ClassName.get(String::class.java), "MUTATION_TYPE")
-                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                    .initializer(""""Mutation"""")
-                    .build(),
-            )
-        }
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Subscription" }) {
-            javaType.addField(
-                FieldSpec
-                    .builder(ClassName.get(String::class.java), "SUBSCRIPTION_TYPE")
-                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
-                    .initializer(""""Subscription"""")
-                    .build(),
-            )
+        for ((operation, typeName) in schemaIndex.operationRoots) {
+            if (schemaIndex.hasObjectType(typeName)) {
+                javaType.addField(
+                    FieldSpec
+                        .builder(ClassName.get(String::class.java), "${operation.name}_TYPE")
+                        .addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+                        .initializer("\$S", typeName)
+                        .build(),
+                )
+            }
         }
 
         val javaFile = JavaFile.builder(config.packageName, javaType.build()).build()

@@ -428,8 +428,8 @@ class CodeGen private constructor(
             val operations =
                 definitions
                     .filterIsInstance<ObjectTypeDefinition>()
-                    .filter { it.name == "Query" || it.name == "Mutation" || it.name == "Subscription" }
-                    .sortedBy { it.name.length }
+                    .filter { it.name in schemaIndex.operationTypes }
+                    .sortedBy { schemaIndex.operationTypes.getValue(it.name).minOf { operation -> operation.ordinal } }
             val rootProjectionNames =
                 clientApiGenerator.rootProjectionNames(operations, federatedDefinitions(definitions))
             operations
@@ -473,7 +473,7 @@ class CodeGen private constructor(
         definitions
             .asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
-            .filter { it.name == "Query" }
+            .filter { OperationDefinition.Operation.QUERY in schemaIndex.operationTypes[it.name].orEmpty() }
             .map { DatafetcherGenerator(config, schemaIndex).generate(it) }
             .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
 
@@ -501,8 +501,9 @@ class CodeGen private constructor(
             .asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
-            .filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
+            .filter {
+                !isConventionalRootDataType(it.name) && it.name != "RelayPageInfo"
+            }.filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
             .map {
                 DataTypeGenerator(config, schemaIndex).generate(it, findTypeExtensions(it.name, schemaIndex))
             }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
@@ -631,12 +632,20 @@ class CodeGen private constructor(
             .asSequence()
             .filterIsInstance<ObjectTypeDefinition>()
             .excludeSchemaTypeExtension()
-            .filter { it.name != "Query" && it.name != "Mutation" && it.name != "RelayPageInfo" }
-            .filter { shouldGenerateType(it.name) }
+            .filter {
+                !isConventionalRootDataType(it.name) && it.name != "RelayPageInfo"
+            }.filter { shouldGenerateType(it.name) }
             .map {
                 val extensions = findTypeExtensions(it.name, schemaIndex)
                 KotlinDataTypeGenerator(config, schemaIndex).generate(it, extensions)
             }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+
+    private fun isConventionalRootDataType(name: String): Boolean =
+        // Retain data classes historically generated for renamed roots.
+        name in setOf("Query", "Mutation") &&
+            schemaIndex.operationTypes[name].orEmpty().any {
+                it == OperationDefinition.Operation.QUERY || it == OperationDefinition.Operation.MUTATION
+            }
 
     private fun generateKotlinInterfaceTypes(definitions: Collection<Definition<*>>): CodeGenResult {
         if (!config.generateDataTypes && !config.generateInterfaces) {
@@ -889,39 +898,52 @@ fun Sequence<FieldDefinition>.filterSkipped(): Sequence<FieldDefinition> =
         it.directives.none { d -> d.name == "skipcodegen" }
     }
 
+@Deprecated("Use the overload accepting a Document to honor declared operation roots.")
 fun List<FieldDefinition>.filterIncludedInConfig(
     definitionName: String,
     config: CodeGenConfig,
 ): List<FieldDefinition> =
-    when (definitionName) {
-        "Query" -> {
-            if (config.includeQueries.isEmpty()) {
-                this
-            } else {
-                this.filter { it.name in config.includeQueries }
-            }
-        }
+    filterIncludedInConfig(
+        when (definitionName) {
+            "Query" -> OperationDefinition.Operation.QUERY
+            "Mutation" -> OperationDefinition.Operation.MUTATION
+            "Subscription" -> OperationDefinition.Operation.SUBSCRIPTION
+            else -> null
+        },
+        config,
+    )
 
-        "Mutation" -> {
-            if (config.includeMutations.isEmpty()) {
-                this
-            } else {
-                this.filter { it.name in config.includeMutations }
-            }
-        }
+/** Filters fields using the operation roots declared in [document], including schema extensions. */
+fun List<FieldDefinition>.filterIncludedInConfig(
+    definitionName: String,
+    config: CodeGenConfig,
+    document: Document,
+): List<FieldDefinition> = filterIncludedInConfig(definitionName, config, SchemaIndex(document))
 
-        "Subscription" -> {
-            if (config.includeSubscriptions.isEmpty()) {
-                this
-            } else {
-                this.filter { it.name in config.includeSubscriptions }
-            }
-        }
+internal fun List<FieldDefinition>.filterIncludedInConfig(
+    definitionName: String,
+    config: CodeGenConfig,
+    schemaIndex: SchemaIndex,
+): List<FieldDefinition> {
+    val operations = schemaIndex.operationTypes[definitionName] ?: return this
+    // Shared projections need every field selected by any of their operation roles.
+    val included = operations.flatMap { filterIncludedInConfig(it, config) }.toSet()
+    return filter { it in included }
+}
 
-        else -> {
-            this
+internal fun List<FieldDefinition>.filterIncludedInConfig(
+    operation: OperationDefinition.Operation?,
+    config: CodeGenConfig,
+): List<FieldDefinition> {
+    val included =
+        when (operation) {
+            OperationDefinition.Operation.QUERY -> config.includeQueries
+            OperationDefinition.Operation.MUTATION -> config.includeMutations
+            OperationDefinition.Operation.SUBSCRIPTION -> config.includeSubscriptions
+            null -> return this
         }
-    }
+    return if (included.isEmpty()) this else filter { it.name in included }
+}
 
 fun <T : DirectivesContainer<*>> DirectivesContainer<T>.shouldSkip(config: CodeGenConfig): Boolean =
     directives.any { it.name == "skipcodegen" } || config.typeMapping.containsKey((this as NamedNode<*>).name)

@@ -27,17 +27,59 @@ import graphql.language.InterfaceTypeExtensionDefinition
 import graphql.language.NamedNode
 import graphql.language.ObjectTypeDefinition
 import graphql.language.ObjectTypeExtensionDefinition
+import graphql.language.OperationDefinition.Operation
 import graphql.language.ScalarTypeDefinition
+import graphql.language.SchemaDefinition
+import graphql.language.SchemaExtensionDefinition
 import graphql.language.StringValue
 import graphql.language.TypeDefinition
 import graphql.language.UnionTypeDefinition
 import graphql.language.UnionTypeExtensionDefinition
+import java.util.Locale
 
 /** Immutable, document-order-preserving indexes over a parsed schema. */
 internal class SchemaIndex(
     internal val document: Document,
 ) {
     internal val definitions: List<Definition<*>> = document.definitions
+
+    internal val operationRoots: Map<Operation, String> =
+        run {
+            val schemas = definitions.filterIsInstance<SchemaDefinition>()
+            val roots = linkedMapOf<Operation, String>()
+            // Mutation and subscription defaults require an implicit schema definition.
+            if (schemas.none { it !is SchemaExtensionDefinition }) {
+                roots[Operation.QUERY] = "Query"
+                roots[Operation.MUTATION] = "Mutation"
+                roots[Operation.SUBSCRIPTION] = "Subscription"
+            }
+            for (schema in schemas) {
+                for (operation in schema.operationTypeDefinitions) {
+                    roots[Operation.valueOf(operation.name.uppercase(Locale.ROOT))] = operation.typeName.name
+                }
+            }
+            roots.putIfAbsent(Operation.QUERY, "Query")
+            roots.toSortedMap(compareBy { it.ordinal })
+        }
+
+    // A single object type can serve more than one operation.
+    internal val operationTypes: Map<String, Set<Operation>> =
+        operationRoots.entries.groupBy({ it.value }, { it.key }).mapValues { it.value.toSet() }
+
+    /** Operation roots also selected through fields, unions or interface fragments. */
+    internal val nestedOperationTypes: Set<String> by lazy {
+        buildSet {
+            for (definition in definitions.filterIsInstance<TypeDefinition<*>>()) {
+                definition.fieldDefinitions().mapNotNullTo(this) { it.type.findTypeDefinition(this@SchemaIndex)?.name }
+                if (definition is UnionTypeDefinition) {
+                    definition.memberTypes.filterIsInstance<NamedNode<*>>().mapTo(this) { it.name }
+                }
+                if (definition is ObjectTypeDefinition && definition.implements.isNotEmpty()) {
+                    add(definition.name)
+                }
+            }
+        }.intersect(operationTypes.keys)
+    }
 
     private val definitionsByName: Map<String, List<TypeDefinition<*>>> =
         definitions.filterIsInstance<TypeDefinition<*>>().groupBy { it.name }

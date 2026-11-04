@@ -152,36 +152,22 @@ class KotlinConstantsGenerator internal constructor(
             baseConstantsType.addType(it.value.build())
         }
 
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Query" }) {
-            baseConstantsType.addProperty(
-                PropertySpec
-                    .builder("QUERY_TYPE", String::class)
-                    .addModifiers(KModifier.CONST)
-                    .initializer(""""Query"""")
-                    .build(),
-            )
-        }
-
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Mutation" }) {
-            baseConstantsType.addProperty(
-                PropertySpec
-                    .builder("Mutation_TYPE", String::class)
-                    .addModifiers(KModifier.CONST)
-                    .initializer(""""Mutation"""")
-                    .build(),
-            )
-        }
-
-        if (document.definitions.any { it is ObjectTypeDefinition && it.name == "Subscription" }) {
-            baseConstantsType.addProperty(
-                PropertySpec
-                    .builder(
-                        "Subscription_TYPE",
-                        String::class,
-                    ).addModifiers(KModifier.CONST)
-                    .initializer(""""Subscription"""")
-                    .build(),
-            )
+        for ((operation, typeName) in schemaIndex.operationRoots) {
+            if (schemaIndex.hasObjectType(typeName)) {
+                val constantName =
+                    when (operation) {
+                        OperationDefinition.Operation.QUERY -> "QUERY_TYPE"
+                        OperationDefinition.Operation.MUTATION -> "Mutation_TYPE"
+                        OperationDefinition.Operation.SUBSCRIPTION -> "Subscription_TYPE"
+                    }
+                baseConstantsType.addProperty(
+                    PropertySpec
+                        .builder(constantName, String::class)
+                        .addModifiers(KModifier.CONST)
+                        .initializer("%S", typeName)
+                        .build(),
+                )
+            }
         }
 
         val fileSpec = FileSpec.builder(config.packageName, "DgsConstants").addType(baseConstantsType.build()).build()
