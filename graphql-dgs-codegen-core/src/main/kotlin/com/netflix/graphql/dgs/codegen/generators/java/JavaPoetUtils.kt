@@ -320,3 +320,123 @@ private fun typeClassBestGuess(name: String): TypeName =
         "TreeMap" -> ClassName.get("java.util", "TreeMap")
         else -> ClassName.bestGuess(name)
     }
+
+/** Preserve Javadoc markup while escaping prose that would break doclint or end the Java comment. */
+internal fun String.escapeJavaDocComparisons(): String =
+    buildString {
+        var offset = 0
+        while (offset < this@escapeJavaDocComparisons.length) {
+            val end = this@escapeJavaDocComparisons.javaDocMarkupEnd(offset)
+            if (end > offset) {
+                append(this@escapeJavaDocComparisons.substring(offset, end).escapeInlineJavaDocSourceEscapes())
+                offset = end
+            } else {
+                val character = this@escapeJavaDocComparisons[offset++]
+                when {
+                    character == '<' -> append("&lt;")
+                    character == '&' && bareJavaDocAmpersand.matchesAt(this@escapeJavaDocComparisons, offset - 1) -> append("&amp;")
+                    else -> append(character)
+                }
+            }
+        }
+    }.replace("*/", "*&#47;").replace(javaDocUnicodeEscape) { "${it.groupValues[1]}&#92;" }
+
+private val bareJavaDocAmpersand = Regex("&(?!([a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#[xX][0-9a-fA-F]+);)")
+
+// Java decodes Unicode escapes before recognizing comments; only odd runs of backslashes before u are eligible.
+private val javaDocUnicodeEscape = Regex("""(?<!\\)((?:\\\\)*)\\(?=u)""")
+
+private fun String.escapeInlineJavaDocSourceEscapes(): String {
+    val code = startsWith("{@code")
+    if (!code && !startsWith("{@literal")) return this
+    if (!contains("*/") && !javaDocUnicodeEscape.containsMatchIn(this)) return this
+
+    // Entities inside inline literals render verbatim, so use equivalent HTML when Java source needs escaping.
+    val content =
+        substring(if (code) 6 else 9, lastIndex)
+            .removePrefix(" ")
+            .replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+            .replace("{", "&#123;")
+            .replace("@", "&#64;")
+    return if (code) "<code>$content</code>" else content
+}
+
+private fun String.javaDocMarkupEnd(start: Int): Int {
+    if ((startsWith("{@code", start) && getOrNull(start + 6)?.isWhitespace() == true) ||
+        (startsWith("{@literal", start) && getOrNull(start + 9)?.isWhitespace() == true)
+    ) {
+        var depth = 1
+        for (offset in start + 1 until length) {
+            when (this[offset]) {
+                '{' -> depth++
+                '}' -> if (--depth == 0) return offset + 1
+            }
+        }
+        return -1
+    }
+    if (startsWith("<!--", start)) {
+        val end = indexOf("-->", start + 4)
+        return if (end == -1) -1 else end + 3
+    }
+    return if (this[start] == '<') htmlTagEnd(start) else -1
+}
+
+private fun String.htmlTagEnd(start: Int): Int {
+    var offset = start + 1
+    val closing = getOrNull(offset) == '/'
+    if (closing) offset++
+    val nameStart = offset
+    while (getOrNull(offset)?.let { it in 'a'..'z' || it in 'A'..'Z' || it in '0'..'9' } == true) offset++
+    if (substring(nameStart, offset).lowercase() !in javaDocHtmlTags) return -1
+
+    if (closing) {
+        while (getOrNull(offset)?.isWhitespace() == true) offset++
+        return if (getOrNull(offset) == '>') offset + 1 else -1
+    }
+
+    while (offset < length) {
+        val beforeWhitespace = offset
+        while (getOrNull(offset)?.isWhitespace() == true) offset++
+        if (getOrNull(offset) == '>') return offset + 1
+        if (startsWith("/>", offset)) return offset + 2
+        if (offset == beforeWhitespace) return -1
+
+        val attributeStart = offset
+        while (getOrNull(offset)?.let { it.isLetterOrDigit() || it in "_:-." } == true) offset++
+        if (offset == attributeStart) return -1
+        val attributeEnd = offset
+        while (getOrNull(offset)?.isWhitespace() == true) offset++
+        if (getOrNull(offset) != '=') {
+            offset = attributeEnd
+            continue
+        }
+
+        offset++
+        while (getOrNull(offset)?.isWhitespace() == true) offset++
+        val quote = getOrNull(offset) ?: return -1
+        if (quote == '\'' || quote == '"') {
+            val end = indexOf(quote, offset + 1)
+            if (end == -1) return -1
+            offset = end + 1
+        } else {
+            val valueStart = offset
+            while (offset < length && !this[offset].isWhitespace() && this[offset] != '>') {
+                if (this[offset] in "<\"'`=") return -1
+                offset++
+            }
+            if (offset == valueStart) return -1
+        }
+    }
+    return -1
+}
+
+// Java 17 doclint names keep generic type arguments such as <String> from being mistaken for HTML.
+private val javaDocHtmlTags =
+    (
+        "a abbr acronym address article aside b bdi big blockquote body br caption center cite code col colgroup " +
+            "dd del dfn div dl dt em font footer figure figcaption frame frameset h1 h2 h3 h4 h5 h6 head header hr html " +
+            "i iframe img ins kbd li link main mark menu meta nav noframes noscript ol p pre q s samp script section " +
+            "small span strong sub sup table tbody td template tfoot th thead time title tr tt u ul var wbr"
+    ).split(' ').toSet()
