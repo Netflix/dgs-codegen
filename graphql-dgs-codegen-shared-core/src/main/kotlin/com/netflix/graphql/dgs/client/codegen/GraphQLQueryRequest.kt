@@ -19,6 +19,7 @@ package com.netflix.graphql.dgs.client.codegen
 import graphql.GraphQLContext
 import graphql.language.Argument
 import graphql.language.AstPrinter
+import graphql.language.Directive
 import graphql.language.Field
 import graphql.language.OperationDefinition
 import graphql.language.SelectionSet
@@ -33,6 +34,7 @@ class GraphQLQueryRequest
         options: GraphQLQueryRequestOptions? = null,
     ) {
         private var selectionSet: SelectionSet? = null
+        private val operationFieldDirectives = options?.operationFieldDirectives?.toList() ?: emptyList()
         constructor(
             query: GraphQLQuery,
             projection: BaseProjectionNode,
@@ -58,6 +60,12 @@ class GraphQLQueryRequest
             val scalars: Map<Class<*>, Coercing<*, *>> = emptyMap(),
             val graphQLContext: GraphQLContext = GraphQLContext.getDefault(),
         ) {
+            /**
+             * Directives on the top-level selection field, restricted to directives declared `on FIELD` in the schema.
+             * Each request copies this list at construction so later changes do not affect that request.
+             */
+            var operationFieldDirectives: List<Directive> = emptyList()
+
             // When enabled, input values that are derived from properties
             // whose values are null will be serialized in the query request
             var allowNullablePropertyInputValues = false
@@ -67,7 +75,10 @@ class GraphQLQueryRequest
             if (options?.allowNullablePropertyInputValues == true) {
                 NullableInputValueSerializer(options.scalars)
             } else {
-                InputValueSerializer(options?.scalars ?: emptyMap(), options?.graphQLContext ?: GraphQLContext.getDefault())
+                InputValueSerializer(
+                    options?.scalars ?: emptyMap(),
+                    options?.graphQLContext ?: GraphQLContext.getDefault(),
+                )
             }
 
         val projectionSerializer = ProjectionSerializer(inputValueSerializer, query)
@@ -80,7 +91,9 @@ class GraphQLQueryRequest
             val operationDef = OperationDefinition.newOperationDefinition()
 
             query.name?.let { operationDef.name(it) }
-            query.getOperationType()?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
+            query
+                .getOperationType()
+                ?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
 
             val selection = Field.newField(query.getOperationName())
             if (query.input.isNotEmpty()) {
@@ -94,6 +107,8 @@ class GraphQLQueryRequest
                     },
                 )
             }
+
+            selection.directives(operationFieldDirectives)
 
             if (projection != null) {
                 val selectionSetFromProjection =

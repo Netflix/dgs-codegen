@@ -56,6 +56,31 @@ For backward compatibility, its path remains `<generatedSourcesDir>/generated/do
 If an existing build uses a custom `generatedSourcesDir` and generates documentation, keep that setting to preserve the documentation path when migrating source outputs.
 When documentation generation is disabled, this directory is not created.
 
+## Client field directives
+
+Pass GraphQL AST directives through `GraphQLQueryRequestOptions.operationFieldDirectives`.
+For an existing generated `query` and projection `root`, attach an `@idempotent` directive as follows:
+
+```java
+import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest;
+import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest.GraphQLQueryRequestOptions;
+import graphql.language.Argument;
+import graphql.language.Directive;
+import graphql.language.StringValue;
+import java.util.List;
+
+var idempotent = new Directive(
+    "idempotent", List.of(new Argument("key", StringValue.of("abc-123"))));
+var options = new GraphQLQueryRequestOptions();
+options.setOperationFieldDirectives(List.of(idempotent));
+var request = new GraphQLQueryRequest(query, root, options);
+String graphql = request.serialize();
+```
+
+The directive appears on the top-level selection field for the query, mutation or subscription and must be declared `on FIELD` in the schema.
+Each request copies the directive list at construction, so later changes to the options or the original list do not affect that request.
+Use AST values such as `StringValue`, `IntValue` and `BooleanValue` to preserve argument types.
+
 # Contributing, asking questions and reporting issues.
 
 Please read our [contributor guide](CONTRIBUTING.md)!

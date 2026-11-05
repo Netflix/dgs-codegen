@@ -22,12 +22,23 @@ import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest.GraphQLQueryRe
 import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjectionRoot
 import graphql.GraphQLContext
 import graphql.execution.CoercedVariables
+import graphql.language.Argument
+import graphql.language.BooleanValue
+import graphql.language.Directive
+import graphql.language.IntValue
 import graphql.language.OperationDefinition
 import graphql.language.StringValue
+import graphql.language.TypeName
 import graphql.language.Value
+import graphql.language.VariableDefinition
+import graphql.language.VariableReference
 import graphql.parser.InvalidSyntaxException
 import graphql.parser.Parser
 import graphql.schema.Coercing
+import graphql.schema.idl.RuntimeWiring
+import graphql.schema.idl.SchemaGenerator
+import graphql.schema.idl.SchemaParser
+import graphql.validation.Validator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
@@ -531,6 +542,164 @@ class GraphQLQueryRequestTest {
             |    name
             |    movieId
             |  }
+            |}
+            """.trimMargin(),
+        )
+    }
+
+    @Test
+    fun snapshotsFieldDirectivesForEachRequest() {
+        val directives = mutableListOf(Directive("idempotent", listOf(Argument("key", StringValue.of("abc-123")))))
+        val options = GraphQLQueryRequestOptions().apply { operationFieldDirectives = directives }
+        val first = GraphQLQueryRequest(TestGraphQLMutation(), options = options)
+
+        directives.clear()
+        val second = GraphQLQueryRequest(TestGraphQLMutation(), options = options)
+        options.operationFieldDirectives = listOf(Directive("traced"))
+        val third = GraphQLQueryRequest(TestGraphQLMutation(), options = options)
+        options.operationFieldDirectives = emptyList()
+
+        assertThat(first.serializeCompact()).isEqualTo("""mutation{testMutation @idempotent(key:"abc-123")}""")
+        assertThat(second.serializeCompact()).isEqualTo("mutation{testMutation}")
+        assertThat(third.serializeCompact()).isEqualTo("mutation{testMutation @traced}")
+    }
+
+    @Test
+    fun validatesFieldDirectivesWithVariablesAcrossOperationTypesAndPrinters() {
+        val schema =
+            SchemaGenerator().makeExecutableSchema(
+                SchemaParser().parse(
+                    """
+                    directive @idempotent(key: ID!) on FIELD
+                    type Query { test: String }
+                    type Mutation { test: String }
+                    type Subscription { test: String }
+                    """.trimIndent(),
+                ),
+                RuntimeWiring.newRuntimeWiring().build(),
+            )
+        val directive = Directive("idempotent", listOf(Argument("key", VariableReference.of("key"))))
+        for (operation in listOf("query", "mutation", "subscription")) {
+            val query =
+                object : GraphQLQuery(operation) {
+                    override fun getOperationName(): String = "test"
+                }
+            query.variableDefinitions.add(
+                VariableDefinition.newVariableDefinition("key", graphql.language.NonNullType(TypeName("ID"))).build(),
+            )
+            val request =
+                GraphQLQueryRequest(
+                    query,
+                    options = GraphQLQueryRequestOptions().apply { operationFieldDirectives = listOf(directive) },
+                )
+            for (serialized in listOf(request.serialize(), request.serializeCompact())) {
+                val document = Parser().parseDocument(serialized)
+                assertThat(Validator().validateDocument(schema, document, Locale.ROOT)).isEmpty()
+                val definition = document.definitions.single() as OperationDefinition
+                val field = definition.selectionSet.selections.single() as graphql.language.Field
+                assertThat(field.directives.map { it.name }).containsExactly("idempotent")
+                assertThat(definition.directives).isEmpty()
+            }
+        }
+    }
+
+    @Test
+    fun testSerializeOperationFieldDirectiveWithStringArgument() {
+        val query =
+            TestGraphQLMutation().apply {
+                input["movie"] = Movie(1234, "testMovie")
+            }
+        val idempotent =
+            Directive
+                .newDirective()
+                .name("idempotent")
+                .arguments(listOf(Argument("key", StringValue.of("abc-123"))))
+                .build()
+        val request =
+            GraphQLQueryRequest(
+                query,
+                MovieProjection().name().movieId(),
+                GraphQLQueryRequestOptions().apply { operationFieldDirectives = listOf(idempotent) },
+            )
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """mutation {
+            |  testMutation(movie: {movieId : 1234, name : "testMovie"}) @idempotent(key: "abc-123") {
+            |    name
+            |    movieId
+            |  }
+            |}
+            """.trimMargin(),
+        )
+    }
+
+    @Test
+    fun testSerializeMultipleOperationFieldDirectives() {
+        val query = TestGraphQLMutation()
+        val directives =
+            listOf(
+                Directive
+                    .newDirective()
+                    .name("idempotent")
+                    .arguments(listOf(Argument("key", StringValue.of("abc-123"))))
+                    .build(),
+                Directive.newDirective().name("traced").build(),
+            )
+        val request =
+            GraphQLQueryRequest(
+                query,
+                null,
+                GraphQLQueryRequestOptions().apply { operationFieldDirectives = directives },
+            )
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """mutation {
+            |  testMutation @idempotent(key: "abc-123") @traced
+            |}
+            """.trimMargin(),
+        )
+    }
+
+    @Test
+    fun testSerializeOperationFieldDirectiveWithNonStringArguments() {
+        val query = TestGraphQLMutation()
+        val directive =
+            Directive
+                .newDirective()
+                .name("retry")
+                .arguments(
+                    listOf(
+                        Argument("attempts", IntValue.of(3)),
+                        Argument("backoff", BooleanValue.newBooleanValue(true).build()),
+                    ),
+                ).build()
+        val request =
+            GraphQLQueryRequest(
+                query,
+                null,
+                GraphQLQueryRequestOptions().apply { operationFieldDirectives = listOf(directive) },
+            )
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """mutation {
+            |  testMutation @retry(attempts: 3, backoff: true)
+            |}
+            """.trimMargin(),
+        )
+    }
+
+    @Test
+    fun testSerializeNoOperationFieldDirectivesByDefault() {
+        val query = TestGraphQLMutation()
+        val request = GraphQLQueryRequest(query)
+        val result = request.serialize()
+        assertValidQuery(result)
+        assertThat(result).isEqualTo(
+            """mutation {
+            |  testMutation
             |}
             """.trimMargin(),
         )
