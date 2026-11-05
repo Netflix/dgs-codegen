@@ -7,6 +7,10 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeclaredScalars.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
+import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
 
@@ -28,6 +32,26 @@ public class Query(
   @get:JvmName("getEntityConnection")
   public val entityConnection: EntityConnection?
     get() = __entityConnection.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__entity === entityDefault) entityDefault else entity,
+      if (__entityConnection === entityConnectionDefault) entityConnectionDefault else
+      entityConnection,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Query &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__entity === entityDefault) null else "entity=" + entity,
+      if (__entityConnection === entityConnectionDefault) null else "entityConnection=" +
+      entityConnection,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Query(", postfix =
+      ")")
 
   @Generated
   public companion object {
