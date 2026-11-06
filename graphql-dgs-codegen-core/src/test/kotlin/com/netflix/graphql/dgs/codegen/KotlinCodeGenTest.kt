@@ -76,6 +76,30 @@ class KotlinCodeGenTest {
     }
 
     @Test
+    fun `Input field with scalar type and object literal default value does not fail in Kotlin`() {
+        val schema =
+            """
+            scalar JSON
+            type Query {
+                search(filter: FilterInput): String
+            }
+            input FilterInput {
+                metadata: JSON = {}
+            }
+            """.trimIndent()
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    typeMapping = mapOf("JSON" to "Map<String, Any>"),
+                ),
+            ).generate()
+        assertCompilesKotlin(codeGenResult)
+    }
+
+    @Test
     fun generateDataClassesOutsideMetaInf() {
         val schema =
             """
@@ -5366,3 +5390,4 @@ It takes a title and such.
         }
         """.trimIndent()
 }
+
