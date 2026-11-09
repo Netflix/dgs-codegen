@@ -42,7 +42,7 @@ dependencies {
     testImplementation 'com.google.testing.compile:compile-testing:0.+'
 
     integTestImplementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
-    integTestImplementation 'tools.jackson.core:jackson-databind:3.2.0' // explicit version to keep tests stable
+    integTestImplementation 'tools.jackson.core:jackson-databind:3.2.4' // explicit version to keep tests stable
 }
 
 application {
