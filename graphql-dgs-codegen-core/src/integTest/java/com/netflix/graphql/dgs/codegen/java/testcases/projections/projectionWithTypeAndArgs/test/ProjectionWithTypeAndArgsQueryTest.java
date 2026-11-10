@@ -22,9 +22,17 @@ import com.netflix.graphql.dgs.client.codegen.GraphQLMultiQueryRequest;
 import com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest;
 import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithTypeAndArgs.expected.client.PersonGraphQLQuery;
 import com.netflix.graphql.dgs.codegen.java.testcases.projections.projectionWithTypeAndArgs.expected.client.PersonProjectionRoot;
+import graphql.parser.Parser;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.SchemaParser;
+import graphql.validation.Validator;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -73,6 +81,95 @@ class ProjectionWithTypeAndArgsQueryTest {
                             firstname
                           }
                         }""");
+    }
+
+    @Test
+    void testMultipleQueriesWithVariableReferences() {
+        var query1 = PersonGraphQLQuery.newRequest()
+                .queryName("Combined")
+                .a1("literal")
+                .a2Reference("firstName")
+                .build();
+        query1.setQueryAlias("first");
+
+        var query2 = PersonGraphQLQuery.newRequest()
+                .a2Reference("secondName")
+                .build();
+        query2.setQueryAlias("second");
+
+        var projection = new PersonProjectionRoot<>().firstname();
+        var request = new GraphQLMultiQueryRequest(List.of(
+                new GraphQLQueryRequest(query1, projection),
+                new GraphQLQueryRequest(query2, projection)
+        ));
+
+        assertThat(request.serialize()).isEqualTo("""
+                query Combined($firstName: String!, $secondName: String!) {
+                  first: person(a1: "literal", a2: $firstName) {
+                    firstname
+                  }
+                  second: person(a2: $secondName) {
+                    firstname
+                  }
+                }""");
+    }
+
+    @Test
+    void testMultipleQueriesWithSharedVariableReferencesValidate() {
+        var query1 = PersonGraphQLQuery.newRequest()
+                .a1Reference("shared")
+                .a2("literal")
+                .build();
+        query1.setQueryAlias("first");
+
+        var query2 = PersonGraphQLQuery.newRequest()
+                .a1Reference("shared")
+                .a2("literal")
+                .build();
+        query2.setQueryAlias("second");
+
+        var projection = new PersonProjectionRoot<>().firstname();
+        var request = new GraphQLMultiQueryRequest(List.of(
+                new GraphQLQueryRequest(query1, projection),
+                new GraphQLQueryRequest(query2, projection)
+        ));
+        var schema = new SchemaGenerator().makeExecutableSchema(
+                new SchemaParser().parse("""
+                        type Query { person(a1: String, a2: String!): Person }
+                        type Person { firstname: String }
+                        """),
+                RuntimeWiring.newRuntimeWiring().build()
+        );
+
+        assertThat(new Validator().validateDocument(schema, new Parser().parseDocument(request.serialize()), Locale.ROOT))
+                .isEmpty();
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void testSharedVariableWithNullableAndNonNullArguments(boolean reverseOrder) {
+        var nullable = PersonGraphQLQuery.newRequest().a1Reference("shared").a2("literal").build();
+        nullable.setQueryAlias("nullable");
+        var nonNull = PersonGraphQLQuery.newRequest().a2Reference("shared").build();
+        nonNull.setQueryAlias("nonNull");
+        var projection = new PersonProjectionRoot<>().firstname();
+        var nullableRequest = new GraphQLQueryRequest(nullable, projection);
+        var nonNullRequest = new GraphQLQueryRequest(nonNull, projection);
+        var requests = reverseOrder
+                ? List.of(nonNullRequest, nullableRequest)
+                : List.of(nullableRequest, nonNullRequest);
+        var serialized = new GraphQLMultiQueryRequest(requests).serialize();
+        var schema = new SchemaGenerator().makeExecutableSchema(
+                new SchemaParser().parse("""
+                        type Query { person(a1: String, a2: String!): Person }
+                        type Person { firstname: String }
+                        """),
+                RuntimeWiring.newRuntimeWiring().build()
+        );
+
+        assertThat(new Validator().validateDocument(schema, new Parser().parseDocument(serialized), Locale.ROOT))
+                .isEmpty();
+        assertThat(serialized).contains("query ($shared: String!)");
     }
 
     @Test

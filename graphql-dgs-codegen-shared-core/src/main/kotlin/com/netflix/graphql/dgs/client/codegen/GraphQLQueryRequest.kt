@@ -21,8 +21,13 @@ import graphql.language.Argument
 import graphql.language.AstPrinter
 import graphql.language.Directive
 import graphql.language.Field
+import graphql.language.ListType
+import graphql.language.NonNullType
 import graphql.language.OperationDefinition
 import graphql.language.SelectionSet
+import graphql.language.Type
+import graphql.language.TypeName
+import graphql.language.VariableDefinition
 import graphql.language.VariableReference
 import graphql.schema.Coercing
 
@@ -89,12 +94,28 @@ class GraphQLQueryRequest
 
         private fun serialize(compact: Boolean): String {
             val operationDef = OperationDefinition.newOperationDefinition()
+            val variableDefinitions = query.variableDefinitions.toMutableList()
 
             query.name?.let { operationDef.name(it) }
             query
                 .getOperationType()
                 ?.let { operationDef.operation(OperationDefinition.Operation.valueOf(it.uppercase())) }
 
+            val selection = toField(variableDefinitions)
+            if (variableDefinitions.isNotEmpty()) {
+                operationDef.variableDefinitions(mergeVariableDefinitions(variableDefinitions))
+            }
+
+            operationDef.selectionSet(SelectionSet.newSelectionSet().selection(selection).build())
+
+            return if (compact) {
+                AstPrinter.printAstCompact(operationDef.build())
+            } else {
+                AstPrinter.printAst(operationDef.build())
+            }
+        }
+
+        internal fun toField(variableDefinitions: MutableList<VariableDefinition>): Field {
             val selection = Field.newField(query.getOperationName())
             if (query.input.isNotEmpty()) {
                 selection.arguments(
@@ -113,29 +134,62 @@ class GraphQLQueryRequest
             if (projection != null) {
                 val selectionSetFromProjection =
                     if (projection is BaseSubProjectionNode<*, *> && projection.root() != null) {
-                        projectionSerializer.toSelectionSet(projection.root() as BaseProjectionNode)
+                        projectionSerializer.toSelectionSet(projection.root() as BaseProjectionNode, variableDefinitions)
                     } else {
-                        projectionSerializer.toSelectionSet(projection)
+                        projectionSerializer.toSelectionSet(projection, variableDefinitions)
                     }
                 if (selectionSetFromProjection.selections.isNotEmpty()) {
                     selection.selectionSet(selectionSetFromProjection)
                 }
             }
 
-            if (query.variableDefinitions.isNotEmpty()) {
-                operationDef.variableDefinitions(query.variableDefinitions)
-            }
-
             if (selectionSet != null) {
                 selection.selectionSet(selectionSet)
             }
 
-            operationDef.selectionSet(SelectionSet.newSelectionSet().selection(selection.build()).build())
-
-            return if (compact) {
-                AstPrinter.printAstCompact(operationDef.build())
-            } else {
-                AstPrinter.printAst(operationDef.build())
-            }
+            return selection.build()
         }
     }
+
+@JvmSynthetic
+internal fun mergeVariableDefinitions(definitions: List<VariableDefinition>): List<VariableDefinition> =
+    definitions
+        .groupBy { definition ->
+            Triple(
+                definition.name,
+                definition.defaultValue?.let { AstPrinter.printAstCompact(it) },
+                definition.directives.map { AstPrinter.printAstCompact(it) },
+            )
+        }.values
+        .flatMap { group ->
+            var type: Type<*> = group.first().type
+            for (definition in group.drop(1)) {
+                // Conflicting types or list shapes must remain visible to server validation.
+                type = mergeVariableTypes(type, definition.type) ?: return@flatMap group.distinctBy { AstPrinter.printAstCompact(it) }
+            }
+            listOf(group.first().transform { it.type(type) })
+        }
+
+private fun mergeVariableTypes(
+    first: Type<*>,
+    second: Type<*>,
+): Type<*>? {
+    val firstType = if (first is NonNullType) first.type else first
+    val secondType = if (second is NonNullType) second.type else second
+    val merged =
+        when {
+            firstType is TypeName && secondType is TypeName && firstType.name == secondType.name -> {
+                firstType
+            }
+
+            firstType is ListType && secondType is ListType -> {
+                ListType(mergeVariableTypes(firstType.type, secondType.type) ?: return null)
+            }
+
+            else -> {
+                return null
+            }
+        }
+    // A non-null variable can also satisfy a nullable argument, including within lists.
+    return if (first is NonNullType || second is NonNullType) NonNullType(merged) else merged
+}
