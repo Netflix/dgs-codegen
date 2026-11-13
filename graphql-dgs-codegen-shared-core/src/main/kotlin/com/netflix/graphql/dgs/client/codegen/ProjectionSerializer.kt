@@ -29,7 +29,12 @@ class ProjectionSerializer(
     private val inputValueSerializer: InputValueSerializerInterface,
     private val query: GraphQLQuery,
 ) {
-    fun toSelectionSet(projection: BaseProjectionNode): SelectionSet {
+    fun toSelectionSet(projection: BaseProjectionNode): SelectionSet = toSelectionSet(projection, query.variableDefinitions)
+
+    internal fun toSelectionSet(
+        projection: BaseProjectionNode,
+        variableDefinitions: MutableList<VariableDefinition>,
+    ): SelectionSet {
         val selectionSet = SelectionSet.newSelectionSet()
 
         for ((fieldName, value) in projection.fields) {
@@ -40,7 +45,7 @@ class ProjectionSerializer(
                     .arguments(
                         projection.inputArguments[fieldName].orEmpty().map { (argName, values, isReference, type) ->
                             if (isReference) {
-                                query.variableDefinitions.add(VariableDefinition(values as String, type))
+                                variableDefinitions.add(VariableDefinition(values as String, type))
                                 Argument(argName, VariableReference(values))
                             } else {
                                 Argument(argName, inputValueSerializer.toValue(values))
@@ -48,7 +53,7 @@ class ProjectionSerializer(
                         },
                     )
             if (value is BaseProjectionNode) {
-                val fieldSelectionSet = toSelectionSet(value)
+                val fieldSelectionSet = toSelectionSet(value, variableDefinitions)
                 if (fieldSelectionSet.selections.isNotEmpty()) {
                     fieldSelection.selectionSet(fieldSelectionSet)
                 }
@@ -82,7 +87,7 @@ class ProjectionSerializer(
                 InlineFragment
                     .newInlineFragment()
                     .typeCondition(typeCondition)
-                    .selectionSet(toSelectionSet(fragment))
+                    .selectionSet(toSelectionSet(fragment, variableDefinitions))
                     .build(),
             )
         }

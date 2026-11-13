@@ -23,6 +23,7 @@ import com.netflix.graphql.dgs.client.codegen.exampleprojection.EntitiesProjecti
 import graphql.GraphQLContext
 import graphql.execution.CoercedVariables
 import graphql.language.Argument
+import graphql.language.AstPrinter
 import graphql.language.BooleanValue
 import graphql.language.Directive
 import graphql.language.IntValue
@@ -41,12 +42,88 @@ import graphql.schema.idl.SchemaParser
 import graphql.validation.Validator
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.*
 
 class GraphQLQueryRequestTest {
+    @ParameterizedTest
+    @CsvSource(
+        "String!, String!, String!",
+        "String, String!, String!",
+        "String!, String, String!",
+        "[String], [String!]!, [String!]!",
+        "[String!], [String]!, [String!]!",
+    )
+    fun testSharedRootAndProjectionVariableUsesStrictestNullability(
+        rootType: String,
+        projectionType: String,
+        expectedType: String,
+    ) {
+        val query =
+            TestGraphQLQuery().apply {
+                input["actors"] = ""
+                variableReferences["actors"] = "shared"
+                variableDefinitions.add(VariableDefinition("shared", Parser.parseType(rootType)))
+            }
+        val projection =
+            MovieProjection().name().apply {
+                inputArguments["name"] =
+                    listOf(BaseProjectionNode.InputArgument("locale", "shared", true, Parser.parseType(projectionType)))
+            }
+        val request = GraphQLQueryRequest(query, projection)
+        val schema =
+            SchemaGenerator().makeExecutableSchema(
+                SchemaParser().parse("type Query { test(actors: $rootType): Movie } type Movie { name(locale: $projectionType): String }"),
+                RuntimeWiring.newRuntimeWiring().build(),
+            )
+
+        repeat(2) {
+            for (serialized in listOf(request.serialize(), request.serializeCompact())) {
+                val document = Parser().parseDocument(serialized)
+                assertThat(Validator().validateDocument(schema, document, Locale.ROOT)).isEmpty()
+                val definition = document.definitions.single() as OperationDefinition
+                assertThat(definition.variableDefinitions.map { AstPrinter.printAstCompact(it) }).containsExactly("\$shared:$expectedType")
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource("String, ID", "String, [String]", "[String], [[String]]")
+    fun testConflictingRootAndProjectionVariableTypesRemainInvalid(
+        rootType: String,
+        projectionType: String,
+    ) {
+        val query =
+            TestGraphQLQuery().apply {
+                input["actors"] = ""
+                variableReferences["actors"] = "shared"
+                variableDefinitions.add(VariableDefinition("shared", Parser.parseType(rootType)))
+            }
+        val projection =
+            MovieProjection().name().apply {
+                inputArguments["name"] =
+                    listOf(BaseProjectionNode.InputArgument("locale", "shared", true, Parser.parseType(projectionType)))
+            }
+        val request = GraphQLQueryRequest(query, projection)
+        val schema =
+            SchemaGenerator().makeExecutableSchema(
+                SchemaParser().parse("type Query { test(actors: $rootType): Movie } type Movie { name(locale: $projectionType): String }"),
+                RuntimeWiring.newRuntimeWiring().build(),
+            )
+
+        for (serialized in listOf(request.serialize(), request.serializeCompact())) {
+            val document = Parser().parseDocument(serialized)
+            assertThat(Validator().validateDocument(schema, document, Locale.ROOT)).isNotEmpty()
+            val definition = document.definitions.single() as OperationDefinition
+            assertThat(definition.variableDefinitions.map { AstPrinter.printAstCompact(it) })
+                .containsExactly("\$shared:$rootType", "\$shared:$projectionType")
+        }
+    }
+
     @Test
     fun testSerializeCompactListOfStringsAsInput() {
         val query =

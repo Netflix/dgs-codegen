@@ -1,5 +1,13 @@
 # Unreleased
 
+## Multi-query variable references
+
+`GraphQLMultiQueryRequest` now preserves variable references and declarations, including projection variables, fixing #860 and #669.
+Shared variables with compatible types use the strictest nullability.
+Single requests apply the same variable merging in regular and compact output.
+Reusing a variable name with incompatible types or conflicting defaults now produces a server validation error instead of silently dropping root variable values.
+Multi-query requests now preserve each request's operation field directives and explicit selection set.
+
 ## Operation roots (breaking change)
 
 Operation discovery now follows explicit `schema` declarations and `extend schema` declarations.

@@ -32,48 +32,23 @@ class GraphQLMultiQueryRequest(
 
         val queryType = requests[0].query.getOperationType().toString()
         val variableDefinitions = mutableListOf<VariableDefinition>()
-        val selectionList: MutableList<Field.Builder> = mutableListOf()
+        val selectionList = mutableListOf<Field>()
 
         for (request in this.requests) {
             val query = request.query
+            variableDefinitions.addAll(query.variableDefinitions)
             // Graphql only supports multiple mutations or multiple queries. Not a combination of the two.
             // Graphql does not support multiple subscriptions in one request http://spec.graphql.org/June2018/#sec-Single-root-field
             if (!query.getOperationType().equals(queryType) || queryType == OperationDefinition.Operation.SUBSCRIPTION.name) {
                 throw AssertionError("Request has to have exclusively queries or mutations in a multi operation request")
             }
 
-            if (request.query.variableDefinitions.isNotEmpty()) {
-                variableDefinitions.addAll(request.query.variableDefinitions)
-            }
-
-            val selection = Field.newField(request.query.getOperationName())
-            if (query.input.isNotEmpty()) {
-                selection.arguments(
-                    query.input.map { (name, value) ->
-                        Argument(name, request.inputValueSerializer.toValue(value))
-                    },
-                )
-            }
-
-            if (request.projection != null) {
-                val selectionSet =
-                    if (request.projection is BaseSubProjectionNode<*, *> && request.projection.root() != null) {
-                        request.projectionSerializer.toSelectionSet(request.projection.root() as BaseProjectionNode)
-                    } else {
-                        request.projectionSerializer.toSelectionSet(request.projection)
-                    }
-                if (selectionSet.selections.isNotEmpty()) {
-                    selection.selectionSet(selectionSet)
-                }
-            }
-            if (query.queryAlias.isNotEmpty()) {
-                selection.alias(query.queryAlias)
-            }
-
-            selectionList.add(selection)
+            val selection = request.toField(variableDefinitions)
+            selectionList.add(if (query.queryAlias.isNotEmpty()) selection.transform { it.alias(query.queryAlias) } else selection)
         }
 
-        operationDef.selectionSet(SelectionSet.newSelectionSet(selectionList.map(Field.Builder::build).toList()).build())
+        operationDef.variableDefinitions(mergeVariableDefinitions(variableDefinitions))
+        operationDef.selectionSet(SelectionSet.newSelectionSet(selectionList).build())
 
         return AstPrinter.printAst(operationDef.build())
     }
