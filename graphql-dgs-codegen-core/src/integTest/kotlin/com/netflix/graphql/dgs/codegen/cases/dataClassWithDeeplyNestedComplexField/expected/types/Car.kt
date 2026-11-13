@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -35,6 +39,25 @@ public class Car(
   @get:JvmName("getEngine")
   public val engine: Engine?
     get() = __engine.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__make === makeDefault) makeDefault else make,
+      if (__model === modelDefault) modelDefault else model,
+      if (__engine === engineDefault) engineDefault else engine,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Car && `__$fieldValues`()
+      == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__make === makeDefault) null else "make=" + make,
+      if (__model === modelDefault) null else "model=" + model,
+      if (__engine === engineDefault) null else "engine=" + engine,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Car(", postfix = ")")
 
   @Generated
   public companion object {
