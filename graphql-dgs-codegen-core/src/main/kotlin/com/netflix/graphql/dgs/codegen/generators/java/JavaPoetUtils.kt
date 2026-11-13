@@ -321,25 +321,41 @@ private fun typeClassBestGuess(name: String): TypeName =
         else -> ClassName.bestGuess(name)
     }
 
+/** Reuse descriptions across emission sites without retaining schemas beyond their generator. */
+internal class JavaDocEscaper {
+    private val escapedDescriptions = mutableMapOf<String, String>()
+
+    fun escape(description: String): String = escapedDescriptions.getOrPut(description) { description.escapeJavaDocComparisons() }
+}
+
 /** Preserve Javadoc markup while escaping prose that would break doclint or end the Java comment. */
-internal fun String.escapeJavaDocComparisons(): String =
-    buildString {
-        var offset = 0
-        while (offset < this@escapeJavaDocComparisons.length) {
-            val end = this@escapeJavaDocComparisons.javaDocMarkupEnd(offset)
-            if (end > offset) {
-                append(this@escapeJavaDocComparisons.substring(offset, end).escapeInlineJavaDocSourceEscapes())
-                offset = end
-            } else {
-                val character = this@escapeJavaDocComparisons[offset++]
-                when {
-                    character == '<' -> append("&lt;")
-                    character == '&' && bareJavaDocAmpersand.matchesAt(this@escapeJavaDocComparisons, offset - 1) -> append("&amp;")
-                    else -> append(character)
+internal fun String.escapeJavaDocComparisons(): String {
+    if (none { it == '<' || it == '&' || it == '\\' } && !contains("*/")) return this
+
+    val escaped =
+        buildString(length) {
+            var offset = 0
+            while (offset < this@escapeJavaDocComparisons.length) {
+                val end =
+                    when (this@escapeJavaDocComparisons[offset]) {
+                        '<', '{' -> this@escapeJavaDocComparisons.javaDocMarkupEnd(offset)
+                        else -> -1
+                    }
+                if (end > offset) {
+                    append(this@escapeJavaDocComparisons.substring(offset, end).escapeInlineJavaDocSourceEscapes())
+                    offset = end
+                } else {
+                    val character = this@escapeJavaDocComparisons[offset++]
+                    when {
+                        character == '<' -> append("&lt;")
+                        character == '&' && bareJavaDocAmpersand.matchesAt(this@escapeJavaDocComparisons, offset - 1) -> append("&amp;")
+                        else -> append(character)
+                    }
                 }
             }
-        }
-    }.replace("*/", "*&#47;").replace(javaDocUnicodeEscape) { "${it.groupValues[1]}&#92;" }
+        }.replace("*/", "*&#47;")
+    return if ('\\' in escaped) escaped.replace(javaDocUnicodeEscape) { "${it.groupValues[1]}&#92;" } else escaped
+}
 
 private val bareJavaDocAmpersand = Regex("&(?!([a-zA-Z][a-zA-Z0-9]*|#[0-9]+|#[xX][0-9a-fA-F]+);)")
 
@@ -349,7 +365,7 @@ private val javaDocUnicodeEscape = Regex("""(?<!\\)((?:\\\\)*)\\(?=u)""")
 private fun String.escapeInlineJavaDocSourceEscapes(): String {
     val code = startsWith("{@code")
     if (!code && !startsWith("{@literal")) return this
-    if (!contains("*/") && !javaDocUnicodeEscape.containsMatchIn(this)) return this
+    if (!contains("*/") && ('\\' !in this || !javaDocUnicodeEscape.containsMatchIn(this))) return this
 
     // Entities inside inline literals render verbatim, so use equivalent HTML when Java source needs escaping.
     val content =

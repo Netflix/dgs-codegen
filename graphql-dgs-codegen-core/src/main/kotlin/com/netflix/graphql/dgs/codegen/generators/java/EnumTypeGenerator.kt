@@ -34,6 +34,7 @@ class EnumTypeGenerator(
     private val config: CodeGenConfig,
 ) {
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
+    private val javaDocEscaper = JavaDocEscaper()
 
     companion object {
         private val logger: Logger = LoggerFactory.getLogger(EnumTypeGenerator::class.java)
@@ -56,7 +57,7 @@ class EnumTypeGenerator(
                 .addOptionalGeneratedAnnotation(config)
 
         if (definition.description != null) {
-            javaType.addJavadoc("\$L", definition.description.content.escapeJavaDocComparisons())
+            javaType.addJavadoc("\$L", javaDocEscaper.escape(definition.description.content))
         }
 
         val mergedEnumDefinitions = definition.enumValueDefinitions + extensions.flatMap { it.enumValueDefinitions }
@@ -64,12 +65,12 @@ class EnumTypeGenerator(
         mergedEnumDefinitions.forEach {
             val typeSpec = TypeSpec.anonymousClassBuilder("")
             if (it.description != null && it.description.content.isNotBlank()) {
-                typeSpec.addJavadoc("\$L", it.description.content.escapeJavaDocComparisons())
+                typeSpec.addJavadoc("\$L", javaDocEscaper.escape(it.description.content))
             }
             if (it.directives.isNotEmpty()) {
                 val (annotations, comments) = applyDirectivesJava(it.directives, config)
                 if (!comments.isNullOrBlank()) {
-                    typeSpec.addJavadoc("\$L", comments.escapeJavaDocComparisons())
+                    typeSpec.addJavadoc("\$L", javaDocEscaper.escape(comments))
                 }
                 for (entry in annotations) {
                     when (SiteTarget.valueOf(entry.key)) {

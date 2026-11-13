@@ -427,6 +427,7 @@ abstract class BaseDataTypeGenerator internal constructor(
     internal val document = schemaIndex.document
     internal val typeUtils = TypeUtils(packageName, config, schemaIndex)
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
+    private val javaDocEscaper = JavaDocEscaper()
 
     internal fun generate(
         name: String,
@@ -459,7 +460,7 @@ abstract class BaseDataTypeGenerator internal constructor(
         }
 
         if (description != null) {
-            javaType.addJavadoc("\$L", description.content.escapeJavaDocComparisons())
+            javaType.addJavadoc("\$L", javaDocEscaper.escape(description.content))
         }
 
         if (directives.isNotEmpty()) {
@@ -468,7 +469,7 @@ abstract class BaseDataTypeGenerator internal constructor(
                 javaType.addAnnotations(annotations[SiteTarget.DEFAULT.name])
             }
             if (!comments.isNullOrBlank()) {
-                javaType.addJavadoc("\$L", comments.escapeJavaDocComparisons())
+                javaType.addJavadoc("\$L", javaDocEscaper.escape(comments))
             }
         }
 
@@ -721,13 +722,13 @@ abstract class BaseDataTypeGenerator internal constructor(
         }
 
         if (fieldDefinition.description != null) {
-            fieldBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
+            fieldBuilder.addJavadoc("\$L", javaDocEscaper.escape(fieldDefinition.description.content))
         }
 
         if (fieldDefinition.directives.isNotEmpty()) {
             val (annotations, comments) = applyDirectivesJava(fieldDefinition.directives, config)
             if (!comments.isNullOrBlank()) {
-                fieldBuilder.addJavadoc("\$L", comments.escapeJavaDocComparisons())
+                fieldBuilder.addJavadoc("\$L", javaDocEscaper.escape(comments))
             }
             for ((key, value) in annotations) {
                 when (SiteTarget.valueOf(key)) {
@@ -777,7 +778,7 @@ abstract class BaseDataTypeGenerator internal constructor(
         }
 
         if (fieldDefinition.description != null) {
-            getterMethodBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
+            getterMethodBuilder.addJavadoc("\$L", javaDocEscaper.escape(fieldDefinition.description.content))
         }
 
         val setterName =
@@ -932,7 +933,7 @@ abstract class BaseDataTypeGenerator internal constructor(
                 .returns(builderClassName)
 
         if (fieldDefinition.description != null) {
-            methodBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
+            methodBuilder.addJavadoc("\$L", javaDocEscaper.escape(fieldDefinition.description.content))
         }
 
         if (fieldDefinition.trackFieldSet) {
