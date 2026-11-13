@@ -187,6 +187,9 @@ class JavaDocRegressionTest {
         @JvmStatic
         fun descriptionExamples(): List<Arguments> =
             listOf(
+                "Plain text with ${'$'}value and a/b" to "Plain text with ${'$'}value and a/b",
+                "Use **bold** or *emphasis*" to "Use **bold** or *emphasis*",
+                "{@code plain text} {@literal {value}}" to "{@code plain text} {@literal {value}}",
                 "created_at:<now - created_at:<=2024" to "created_at:&lt;now - created_at:&lt;=2024",
                 "created_at:<now and created_at:>2024" to "created_at:&lt;now and created_at:>2024",
                 "x <y then z > 3" to "x &lt;y then z > 3",

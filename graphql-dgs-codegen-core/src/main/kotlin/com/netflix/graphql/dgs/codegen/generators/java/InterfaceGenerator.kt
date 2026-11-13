@@ -46,6 +46,7 @@ class InterfaceGenerator internal constructor(
 
     private val document = schemaIndex.document
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
+    private val javaDocEscaper = JavaDocEscaper()
     private val packageName = config.packageNameTypes
     private val typeUtils = TypeUtils(packageName, config, schemaIndex)
     private val useInterfaceType = config.generateInterfaces
@@ -70,7 +71,7 @@ class InterfaceGenerator internal constructor(
         }
 
         if (definition.description != null) {
-            javaType.addJavadoc("\$L", definition.description.content.escapeJavaDocComparisons())
+            javaType.addJavadoc("\$L", javaDocEscaper.escape(definition.description.content))
         }
 
         definition.implements
@@ -175,7 +176,7 @@ class InterfaceGenerator internal constructor(
                 ).addModifiers(Modifier.ABSTRACT, Modifier.PUBLIC)
                 .returns(returnType)
         if (fieldDefinition.description != null) {
-            getterBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
+            getterBuilder.addJavadoc("\$L", javaDocEscaper.escape(fieldDefinition.description.content))
         }
 
         // Add @Nullable annotation for nullable return types when JSpecify is enabled
@@ -209,7 +210,7 @@ class InterfaceGenerator internal constructor(
                     .addParameter(parameterBuilder.build())
 
             if (fieldDefinition.description != null) {
-                setterBuilder.addJavadoc("\$L", fieldDefinition.description.content.escapeJavaDocComparisons())
+                setterBuilder.addJavadoc("\$L", javaDocEscaper.escape(fieldDefinition.description.content))
             }
             javaType.addMethod(setterBuilder.build())
         }

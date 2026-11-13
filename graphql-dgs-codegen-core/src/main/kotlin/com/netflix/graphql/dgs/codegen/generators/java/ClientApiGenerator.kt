@@ -86,6 +86,7 @@ class ClientApiGenerator internal constructor(
     private val rootType = TypeVariableName.get("ROOT")
     private val typeUtils = TypeUtils(getDatatypesPackageName(), config, schemaIndex)
     private val javaReservedKeywordSanitizer = JavaReservedKeywordSanitizer()
+    private val javaDocEscaper = JavaDocEscaper()
 
     private fun projectionType(
         name: String,
@@ -188,7 +189,7 @@ class ClientApiGenerator internal constructor(
                 .superclass(ClassName.get(GraphQLQuery::class.java))
 
         if (it.description != null) {
-            javaType.addJavadoc("\$L", it.description.content.escapeJavaDocComparisons())
+            javaType.addJavadoc("\$L", javaDocEscaper.escape(it.description.content))
         }
 
         val deprecatedClassDirective = getDeprecateDirective(it)
@@ -196,7 +197,7 @@ class ClientApiGenerator internal constructor(
             javaType.addAnnotation(Deprecated::class.java)
             val deprecationReason = getDeprecatedReason(deprecatedClassDirective)
             if (deprecationReason != null) {
-                javaType.addJavadoc("@deprecated \$L", deprecationReason.escapeJavaDocComparisons())
+                javaType.addJavadoc("@deprecated \$L", javaDocEscaper.escape(deprecationReason))
             }
         }
 
@@ -447,13 +448,13 @@ class ClientApiGenerator internal constructor(
         val javaDoc = CodeBlock.builder()
 
         if (inputValue.description != null) {
-            javaDoc.add("\$L", inputValue.description.content.escapeJavaDocComparisons())
+            javaDoc.add("\$L", javaDocEscaper.escape(inputValue.description.content))
         }
         if (deprecationReason != null) {
             if (!javaDoc.isEmpty) {
                 javaDoc.add("\n\n")
             }
-            javaDoc.add("@deprecated \$L", deprecationReason.escapeJavaDocComparisons())
+            javaDoc.add("@deprecated \$L", javaDocEscaper.escape(deprecationReason))
         }
 
         if (!javaDoc.isEmpty) {
