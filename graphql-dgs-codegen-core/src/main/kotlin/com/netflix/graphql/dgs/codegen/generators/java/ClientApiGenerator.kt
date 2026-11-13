@@ -347,6 +347,8 @@ class ClientApiGenerator internal constructor(
         }
 
         if (it.inputValueDefinitions.isNotEmpty()) {
+            constructorBuilder.addAnnotation(suppressThisEscapeWarning)
+            legacyConstructorBuilder.addAnnotation(suppressThisEscapeWarning)
             constructorBuilder.addCode(
                 """
                 |
@@ -789,7 +791,7 @@ class ClientApiGenerator internal constructor(
                             .returns(returnType)
                             .addCode(
                                 """
-                        | Entities${objTypeDef.name.capitalized()}KeyProjection<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>> fragment = new Entities${objTypeDef.name.capitalized()}KeyProjection(this, this);
+                        | Entities${objTypeDef.name.capitalized()}KeyProjection<$clazzName<PARENT, ROOT>, $clazzName<PARENT, ROOT>> fragment = new Entities${objTypeDef.name.capitalized()}KeyProjection<>(this, this);
                         | getFragments().add(fragment);
                         | return fragment;
                                 """.trimMargin(),
@@ -868,15 +870,16 @@ class ClientApiGenerator internal constructor(
         root: TypeSpec,
         prefix: String,
     ): CodeGenResult {
+        // We don't need the typename added for fragments in the entities' projection.
+        // This affects deserialization when use directly with generated classes
+        val addTypename = prefix != "Entities${type.name.capitalized()}Key"
         val subProjection =
-            createSubProjectionType(type, root, prefix, ProjectionKind.FRAGMENT)
+            createSubProjectionType(type, root, prefix, ProjectionKind.FRAGMENT, suppressThisEscape = addTypename)
                 ?: return CodeGenResult.EMPTY
         val codeGenResult = subProjection.second
         val javaType = subProjection.first ?: return codeGenResult
 
-        // We don't need the typename added for fragments in the entities' projection.
-        // This affects deserialization when use directly with generated classes
-        if (prefix != "Entities${type.name.capitalized()}Key") {
+        if (addTypename) {
             javaType.addInitializerBlock(
                 CodeBlock
                     .builder()
@@ -932,6 +935,7 @@ class ClientApiGenerator internal constructor(
         root: TypeSpec,
         prefix: String,
         kind: ProjectionKind,
+        suppressThisEscape: Boolean = false,
     ): Pair<TypeSpec.Builder?, CodeGenResult>? {
         val clazzName = "${prefix}Projection"
         val isNew = claimSource(clazzName, ProjectionSource(kind, type.name, clazzName)) ?: return null
@@ -942,6 +946,7 @@ class ClientApiGenerator internal constructor(
                 .addMethod(
                     MethodSpec
                         .constructorBuilder()
+                        .apply { if (suppressThisEscape) addAnnotation(suppressThisEscapeWarning) }
                         .addModifiers(Modifier.PUBLIC)
                         .addParameter(ParameterSpec.builder(ClassName.get("", "PARENT"), "parent").build())
                         .addParameter(ParameterSpec.builder(ClassName.get("", "ROOT"), "root").build())

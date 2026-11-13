@@ -4,6 +4,7 @@ import com.netflix.graphql.dgs.client.codegen.BaseSubProjectionNode;
 import com.netflix.graphql.dgs.codegen.java.testcases.dataclasses.dataClassWithNonNullableAndInterface.expected.Generated;
 import java.lang.Override;
 import java.lang.String;
+import java.lang.SuppressWarnings;
 
 @Generated
 public class EmployeeFragmentProjection<PARENT extends BaseSubProjectionNode<?, ?>, ROOT extends BaseSubProjectionNode<?, ?>> extends BaseSubProjectionNode<PARENT, ROOT> {
@@ -11,6 +12,7 @@ public class EmployeeFragmentProjection<PARENT extends BaseSubProjectionNode<?, 
     getFields().put("__typename", null);
   }
 
+  @SuppressWarnings("this-escape")
   public EmployeeFragmentProjection(PARENT parent, ROOT root) {
     super(parent, root, java.util.Optional.of("Employee"));
   }
