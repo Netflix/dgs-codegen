@@ -239,7 +239,14 @@ class ClientApiGenerator internal constructor(
                                 """.trimMargin()
                             },
                         ).build(),
-                ).addField(
+                )
+
+        // Only emit fieldsSet / variable tracking when the operation has arguments.
+        // Otherwise the Builder never reads them and IDEs warn about unused fields
+        // (see https://github.com/Netflix/dgs-codegen/issues/299).
+        if (it.inputValueDefinitions.isNotEmpty()) {
+            builderClass
+                .addField(
                     FieldSpec
                         .builder(
                             setOfStringType,
@@ -266,6 +273,7 @@ class ClientApiGenerator internal constructor(
                         ).initializer("new \$T<>()", ClassName.get(ArrayList::class.java))
                         .build(),
                 )
+        }
 
         val constructorBuilder =
             MethodSpec
