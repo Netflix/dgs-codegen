@@ -1,0 +1,115 @@
+name: Performance
+
+on:
+  pull_request:
+    branches: [master]
+  schedule:
+    - cron: '23 7 * * 1'
+  workflow_dispatch:
+    inputs:
+      candidate_sha:
+        description: Candidate commit to benchmark
+        required: false
+        type: string
+      base_ref:
+        description: Merge-base reference
+        required: false
+        default: origin/master
+        type: string
+      include_release:
+        description: Compare published release artifacts
+        required: false
+        default: true
+        type: boolean
+      accept_output_change:
+        description: Accept intentional output changes while retaining their manifests
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: codegen-performance-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  compare:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      BENCH_CANDIDATE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || inputs.candidate_sha || github.sha }}
+      BENCH_BASE_REF: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || inputs.base_ref || 'origin/master' }}
+      BENCH_PROFILE: ${{ github.event_name == 'pull_request' && 'quick' || 'full' }}
+      BENCH_INCLUDE_RELEASE: ${{ github.event_name == 'pull_request' && 'false' || (github.event_name == 'workflow_dispatch' && inputs.include_release == false && 'false') || 'true' }}
+      BENCH_ACCEPT_OUTPUT_CHANGE: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && inputs.accept_output_change) }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'pull_request' && format('refs/pull/{0}/head', github.event.pull_request.number) || inputs.candidate_sha || github.sha }}
+          fetch-depth: 0
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: 17
+          cache: gradle
+
+      - name: Select previous successful weekly baseline
+        if: github.event_name == 'schedule'
+        id: weekly-base
+        uses: actions/github-script@v8
+        with:
+          result-encoding: string
+          script: |
+            const { data } = await github.rest.actions.listWorkflowRuns({
+              ...context.repo,
+              workflow_id: 'performance.yml',
+              branch: context.payload.repository.default_branch,
+              event: 'schedule',
+              status: 'success',
+              per_page: 1
+            });
+            return data.workflow_runs[0]?.head_sha || 'v8.8.0';
+
+      - name: Test benchmark result checks
+        run: ruby benchmarks/test_runner.rb
+
+      - name: Compare performance
+        env:
+          BENCH_BASE_SHA: ${{ steps.weekly-base.outputs.result }}
+        run: |
+          baseline=(--base-ref "$BENCH_BASE_REF")
+          if [ -n "$BENCH_BASE_SHA" ]; then
+            baseline=(--base-sha "$BENCH_BASE_SHA")
+          fi
+          output_policy=()
+          if [ "$BENCH_ACCEPT_OUTPUT_CHANGE" = true ]; then
+            output_policy=(--accept-output-change)
+          fi
+          ruby benchmarks/run.rb \
+            --candidate-sha "$BENCH_CANDIDATE_SHA" \
+            "${baseline[@]}" \
+            "${output_policy[@]}" \
+            --profile "$BENCH_PROFILE" \
+            --include-release "$BENCH_INCLUDE_RELEASE" \
+            --output-dir build/performance/results
+
+      - name: Add report to workflow summary
+        if: always()
+        run: |
+          if [ -f build/performance/results/report.md ]; then
+            cat build/performance/results/report.md >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Upload benchmark evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dgs-codegen-performance-${{ github.run_id }}
+          path: build/performance/results
+          if-no-files-found: warn
+          retention-days: 14
