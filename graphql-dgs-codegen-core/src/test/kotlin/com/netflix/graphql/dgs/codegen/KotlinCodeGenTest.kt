@@ -5223,6 +5223,34 @@ It takes a title and such.
     }
 
     @Test
+    fun `Codegen should coerce integer default values for float fields`() {
+        val schema =
+            """
+            input ExampleInput {
+                ratio: Float = 1
+                minRatio: Float! = 0
+                ratios: [Float] = [1, 2.5]
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                ),
+            ).generate()
+        assertCompilesKotlin(codeGenResult)
+        val dataTypes = codeGenResult.kotlinDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+        val parameters = dataTypes[0].typeSpecs[0].primaryConstructor!!.parameters
+        assertThat(parameters[0].defaultValue.toString()).isEqualTo("1.0")
+        assertThat(parameters[1].defaultValue.toString()).isEqualTo("0.0")
+        assertThat(parameters[2].defaultValue.toString()).isEqualTo("listOf(1.0, 2.5)")
+    }
+
+    @Test
     fun `Codegen should correctly handle default float values`() {
         val schema =
             """

@@ -247,7 +247,20 @@ class InputTypeGenerator internal constructor(
             LOCALE -> localeCodeBlock(value, type)
             JAVA_URI -> uriCodeBlock(value, type)
             ClassName.LONG.box() -> longCodeBlock(value, type)
+            JavaTypeName.DOUBLE, JavaTypeName.DOUBLE.box() -> doubleCodeBlock(value, type, inputTypeDefinitions)
             else -> defaultCodeBlock(value, type, inputTypeDefinitions)
+        }
+
+    // GraphQL coerces Int literals to Float, but Java does not convert an int literal to Double
+    private fun doubleCodeBlock(
+        value: Value<out Value<*>>,
+        type: JavaTypeName,
+        inputTypeDefinitions: List<InputObjectTypeDefinition>,
+    ): CodeBlock? =
+        if (value is IntValue) {
+            CodeBlock.of("\$L.0", value.value)
+        } else {
+            defaultCodeBlock(value, type, inputTypeDefinitions)
         }
 
     private fun defaultCodeBlock(
