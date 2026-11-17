@@ -20,6 +20,7 @@ package com.netflix.graphql.dgs.codegen.generators.java
 
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
+import com.netflix.graphql.dgs.codegen.CodeGenResultAccumulator
 import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.fieldDefinitions
 import com.netflix.graphql.dgs.codegen.generators.EntitiesRepresentationTypeGeneratorUtils
@@ -64,7 +65,7 @@ class EntitiesRepresentationTypeGenerator internal constructor(
         if (generatedRepresentations.containsKey(representationName)) {
             return CodeGenResult.EMPTY
         }
-        var fieldsCodeGenAccumulator = CodeGenResult.EMPTY
+        val fieldsCodeGenAccumulator = CodeGenResultAccumulator()
         // generate representations of entity types that have @key, including the __typename field, and the  key fields
         val typeName = Field("__typename", ClassName.get(String::class.java), false, CodeBlock.of("\$S", definitionName))
         val fieldDefinitions =
@@ -94,7 +95,7 @@ class EntitiesRepresentationTypeGenerator internal constructor(
                                     generatedRepresentations,
                                     keyFields[it.name] as Map<String, Any>,
                                 )
-                            fieldsCodeGenAccumulator = fieldsCodeGenAccumulator.merge(fieldTypeRepresentation)
+                            fieldsCodeGenAccumulator.add(fieldTypeRepresentation)
                             generatedRepresentations[fieldTypeRepresentationName] = fieldRepresentationType
                         }
                         Field(it.name, ClassName.get("", fieldRepresentationType), it.type !is NonNullType)
@@ -113,7 +114,7 @@ class EntitiesRepresentationTypeGenerator internal constructor(
             )
         generatedRepresentations[representationName] = typeUtils.qualifyName(representationName)
         // Merge all results.
-        return parentRepresentationCodeGen.merge(fieldsCodeGenAccumulator)
+        return parentRepresentationCodeGen.merge(fieldsCodeGenAccumulator.build())
     }
 
     companion object {
