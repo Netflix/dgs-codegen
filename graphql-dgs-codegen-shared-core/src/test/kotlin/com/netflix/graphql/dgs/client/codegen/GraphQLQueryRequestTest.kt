@@ -50,6 +50,66 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 
 class GraphQLQueryRequestTest {
+    @Test
+    fun `single variable declaration retains defaults and directives across serializations`() {
+        val variableDefinition =
+            VariableDefinition
+                .newVariableDefinition("single", TypeName("String"))
+                .defaultValue(StringValue("value"))
+                .directive(Directive("custom", listOf(Argument("enabled", BooleanValue.newBooleanValue(true).build()))))
+                .build()
+        val query =
+            object : GraphQLQuery() {
+                override fun getOperationName(): String = "test"
+            }.apply {
+                input["value"] = ""
+                variableReferences["value"] = "single"
+                variableDefinitions.add(variableDefinition)
+            }
+        val request = GraphQLQueryRequest(query)
+        val schema =
+            SchemaGenerator().makeExecutableSchema(
+                SchemaParser().parse(
+                    """
+                    directive @custom(enabled: Boolean!) on VARIABLE_DEFINITION
+                    type Query { test(value: String): String }
+                    """.trimIndent(),
+                ),
+                RuntimeWiring.newRuntimeWiring().build(),
+            )
+        val firstSerialization = request.serialize()
+
+        for (serialized in listOf(firstSerialization, request.serializeCompact())) {
+            val document = Parser().parseDocument(serialized)
+            val operation = document.definitions.single() as OperationDefinition
+            val definition = operation.variableDefinitions.single()
+
+            assertThat(Validator().validateDocument(schema, document, Locale.ROOT)).isEmpty()
+            assertThat(definition.name).isEqualTo("single")
+            assertThat((definition.type as TypeName).name).isEqualTo("String")
+            assertThat((definition.defaultValue as StringValue).value).isEqualTo("value")
+            assertThat(definition.directives.map { it.name }).containsExactly("custom")
+            val directiveArgument =
+                definition
+                    .directives
+                    .single()
+                    .arguments
+                    .single()
+            assertThat(directiveArgument.name).isEqualTo("enabled")
+            val printedDefinition = AstPrinter.printAstCompact(definition)
+            assertThat(printedDefinition).contains("\$single:String", "=\"value\"", "@custom(enabled:true)")
+        }
+        assertThat(request.serialize()).isEqualTo(firstSerialization)
+
+        query.variableDefinitions.clear()
+        query.variableReferences["value"] = "fresh"
+        query.variableDefinitions.add(VariableDefinition("fresh", TypeName("String")))
+
+        val updatedSerialization = request.serialize()
+        assertThat(updatedSerialization).contains("\$fresh: String").doesNotContain("\$single")
+        assertThat(firstSerialization).contains("\$single: String = \"value\"")
+    }
+
     @ParameterizedTest
     @CsvSource(
         "String!, String!, String!",
