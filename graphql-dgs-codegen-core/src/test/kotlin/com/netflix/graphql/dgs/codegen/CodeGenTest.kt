@@ -1710,7 +1710,8 @@ class CodeGenTest {
                         .type()
                         .toString(),
                 ).isEqualTo(expected)
-                assertCompilesJava(codeGenResult)
+                // Some cases map to raw JDK types (e.g. `java.util.Map`) on purpose.
+                assertCompilesJava(codeGenResult, lintOptions = "-Xlint:all,-rawtypes")
             }
         }
 

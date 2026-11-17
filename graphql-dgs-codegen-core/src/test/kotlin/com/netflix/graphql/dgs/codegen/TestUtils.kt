@@ -44,7 +44,15 @@ import com.squareup.kotlinpoet.AnnotationSpec as KAnnotationSpec
 import com.squareup.kotlinpoet.ClassName as KClassName
 import com.squareup.kotlinpoet.TypeSpec as KTypeSpec
 
-fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
+/**
+ * Compiles the generated Java with every javac lint enabled and fails on any warning, so the output stays clean for
+ * projects that build with `-Xlint:all -Werror`. Run the tests on JDK 21+ (`-PtestJavaVersion=21`) to also cover
+ * lints that only exist in newer compilers, such as `this-escape`.
+ */
+fun assertCompilesJava(
+    codeGenResult: CodeGenResult,
+    lintOptions: String = "-Xlint:all",
+): Compilation {
     val files =
         buildList {
             addAll(codeGenResult.clientProjections)
@@ -53,13 +61,16 @@ fun assertCompilesJava(codeGenResult: CodeGenResult): Compilation {
             addAll(codeGenResult.javaDataTypes)
             addAll(codeGenResult.javaInterfaces)
         }
-    return assertCompilesJava(files)
+    return assertCompilesJava(files, lintOptions)
 }
 
-fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
+fun assertCompilesJava(
+    javaFiles: Collection<JavaFile>,
+    lintOptions: String = "-Xlint:all",
+): Compilation {
     val result =
         javac()
-            .withOptions("-parameters")
+            .withOptions("-parameters", lintOptions)
             .compile(javaFiles.map(JavaFile::toJavaFileObject))
     CompilationSubject.assertThat(result).succeededWithoutWarnings()
     return result

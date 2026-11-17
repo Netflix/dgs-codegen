@@ -164,6 +164,20 @@ private fun generatedAnnotation(
     return builder.build()
 }
 
+/**
+ * `@SuppressWarnings("this-escape")` for generated constructors that populate state owned by the client base classes,
+ * e.g. `getInput().put(...)` in a `GraphQLQuery` constructor or `getFields().put(...)` in a projection initializer.
+ *
+ * javac 21+ reports these calls under `-Xlint:this-escape` (and so fails builds using `-Xlint:all -Werror`) because
+ * the generated classes are public and non-final. The escape is benign: the accessors are final and only touch maps
+ * that the superclass constructor already created. Older javac versions ignore the unknown key.
+ */
+internal val suppressThisEscapeWarning: AnnotationSpec =
+    AnnotationSpec
+        .builder(SuppressWarnings::class.java)
+        .addMember("value", "${'$'}S", "this-escape")
+        .build()
+
 fun TypeSpec.Builder.addOptionalGeneratedAnnotation(config: CodeGenConfig): TypeSpec.Builder =
     apply {
         if (config.addGeneratedAnnotation) {
