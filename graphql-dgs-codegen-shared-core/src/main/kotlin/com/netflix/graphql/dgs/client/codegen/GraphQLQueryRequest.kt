@@ -152,8 +152,10 @@ class GraphQLQueryRequest
     }
 
 @JvmSynthetic
-internal fun mergeVariableDefinitions(definitions: List<VariableDefinition>): List<VariableDefinition> =
-    definitions
+internal fun mergeVariableDefinitions(definitions: List<VariableDefinition>): List<VariableDefinition> {
+    if (definitions.size < 2) return definitions.toList()
+
+    return definitions
         .groupBy { definition ->
             Triple(
                 definition.name,
@@ -169,6 +171,7 @@ internal fun mergeVariableDefinitions(definitions: List<VariableDefinition>): Li
             }
             listOf(group.first().transform { it.type(type) })
         }
+}
 
 private fun mergeVariableTypes(
     first: Type<*>,
