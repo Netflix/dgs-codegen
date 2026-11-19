@@ -378,18 +378,20 @@ class CodeGen private constructor(
         val generatedAnnotation = generateJavaGeneratedAnnotation(config)
         val docFiles = generateDocFiles(definitions)
 
-        return dataTypesResult
-            .merge(dataFetchersResult)
-            .merge(inputTypesResult)
-            .merge(unionsResult)
-            .merge(enumsResult)
-            .merge(interfacesResult)
-            .merge(client)
-            .merge(entitiesClient)
-            .merge(entitiesRepresentationsTypes)
-            .merge(constantsClass)
-            .merge(generatedAnnotation)
-            .merge(docFiles)
+        return mergeCodeGenResults(
+            dataTypesResult,
+            dataFetchersResult,
+            inputTypesResult,
+            unionsResult,
+            enumsResult,
+            interfacesResult,
+            client,
+            entitiesClient,
+            entitiesRepresentationsTypes,
+            constantsClass,
+            generatedAnnotation,
+            docFiles,
+        )
     }
 
     private fun generateJavaEnums(definitions: Collection<Definition<*>>): CodeGenResult =
@@ -399,7 +401,7 @@ class CodeGen private constructor(
             .excludeSchemaTypeExtension()
             .filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
             .map { EnumTypeGenerator(config).generate(it, findEnumExtensions(it.name, schemaIndex)) }
-            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            .mergeCodeGenResults()
 
     private fun generateJavaUnions(definitions: Collection<Definition<*>>): CodeGenResult =
         definitions
@@ -408,7 +410,7 @@ class CodeGen private constructor(
             .excludeSchemaTypeExtension()
             .filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
             .map { UnionTypeGenerator(config, schemaIndex).generate(it, findUnionExtensions(it.name, schemaIndex)) }
-            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            .mergeCodeGenResults()
 
     private fun generateJavaInterfaces(definitions: Collection<Definition<*>>): CodeGenResult =
         definitions
@@ -419,7 +421,7 @@ class CodeGen private constructor(
             .map {
                 val extensions = findInterfaceExtensions(it.name, schemaIndex)
                 InterfaceGenerator(config, schemaIndex).generate(it, extensions)
-            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            }.mergeCodeGenResults()
 
     private fun generateJavaClientApi(definitions: Collection<Definition<*>>): CodeGenResult {
         val methodNames = mutableSetOf<String>()
@@ -432,12 +434,13 @@ class CodeGen private constructor(
                     .sortedBy { schemaIndex.operationTypes.getValue(it.name).minOf { operation -> operation.ordinal } }
             val rootProjectionNames =
                 clientApiGenerator.rootProjectionNames(operations, federatedDefinitions(definitions))
-            operations
-                .asSequence()
-                .map {
-                    clientApiGenerator.generate(it, methodNames, rootProjectionNames)
-                }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
-                .merge(clientApiGenerator.generateDeferredRoots())
+            CodeGenResultAccumulator()
+                .also { accumulator ->
+                    operations.forEach { operation ->
+                        accumulator.add(clientApiGenerator.generate(operation, methodNames, rootProjectionNames))
+                    }
+                    accumulator.add(clientApiGenerator.generateDeferredRoots())
+                }.build()
         } else {
             CodeGenResult.EMPTY
         }
@@ -464,7 +467,7 @@ class CodeGen private constructor(
                 .filter { it.hasDirective("key") }
                 .map { d ->
                     EntitiesRepresentationTypeGenerator(config, schemaIndex).generate(d, generatedRepresentations)
-                }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+                }.mergeCodeGenResults()
         } else {
             CodeGenResult.EMPTY
         }
@@ -475,7 +478,7 @@ class CodeGen private constructor(
             .filterIsInstance<ObjectTypeDefinition>()
             .filter { OperationDefinition.Operation.QUERY in schemaIndex.operationTypes[it.name].orEmpty() }
             .map { DatafetcherGenerator(config, schemaIndex).generate(it) }
-            .fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            .mergeCodeGenResults()
 
     private fun generateJavaGeneratedAnnotation(config: CodeGenConfig): CodeGenResult =
         if (config.addGeneratedAnnotation && config.generatedAnnotationType == null) {
@@ -506,7 +509,7 @@ class CodeGen private constructor(
             }.filter { shouldGenerateType(it.name, whenGeneratingInterfaces = true) }
             .map {
                 DataTypeGenerator(config, schemaIndex).generate(it, findTypeExtensions(it.name, schemaIndex))
-            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            }.mergeCodeGenResults()
 
     private fun generateJavaInputType(definitions: Collection<Definition<*>>): CodeGenResult {
         val inputTypeDefinitions =
@@ -524,7 +527,7 @@ class CodeGen private constructor(
                     config,
                     schemaIndex,
                 ).generate(d, findInputExtensions(d.name, schemaIndex), inputTypeDefinitions)
-            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            }.mergeCodeGenResults()
     }
 
     private fun generateKotlin(): CodeGenResult {
@@ -552,7 +555,7 @@ class CodeGen private constructor(
                         .map {
                             val extensions = findUnionExtensions(it.name, schemaIndex)
                             KotlinUnionTypeGenerator(config, schemaIndex).generate(it, extensions)
-                        }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+                        }.mergeCodeGenResults()
 
                 val enumsResult =
                     definitions
@@ -563,16 +566,11 @@ class CodeGen private constructor(
                         .map {
                             val extensions = findEnumExtensions(it.name, schemaIndex)
                             KotlinEnumTypeGenerator(config).generate(it, extensions)
-                        }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+                        }.mergeCodeGenResults()
 
                 val constantsClass = KotlinConstantsGenerator(config, schemaIndex).generate()
 
-                datatypesResult
-                    .merge(inputTypes)
-                    .merge(interfacesResult)
-                    .merge(unionResult)
-                    .merge(enumsResult)
-                    .merge(constantsClass)
+                mergeCodeGenResults(datatypesResult, inputTypes, interfacesResult, unionResult, enumsResult, constantsClass)
             }
 
         val clientTypes =
@@ -585,14 +583,12 @@ class CodeGen private constructor(
                 val entitiesClient = generateJavaClientEntitiesApi(definitions)
                 val entitiesRepresentationsTypes = generateJavaClientEntitiesRepresentations(definitions)
 
-                client.merge(entitiesClient).merge(entitiesRepresentationsTypes)
+                mergeCodeGenResults(client, entitiesClient, entitiesRepresentationsTypes)
             }
 
         val generatedAnnotation = generateKotlinGeneratedAnnotation(config)
 
-        return dataTypes
-            .merge(clientTypes)
-            .merge(generatedAnnotation)
+        return mergeCodeGenResults(dataTypes, clientTypes, generatedAnnotation)
     }
 
     private fun generateKotlinGeneratedAnnotation(config: CodeGenConfig): CodeGenResult =
@@ -624,7 +620,7 @@ class CodeGen private constructor(
             .filter { shouldGenerateType(it.name) }
             .map {
                 KotlinInputTypeGenerator(config, schemaIndex).generate(it, findInputExtensions(it.name, schemaIndex), inputTypeDefinitions)
-            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            }.mergeCodeGenResults()
     }
 
     private fun generateKotlinDataTypes(definitions: Collection<Definition<*>>): CodeGenResult =
@@ -638,7 +634,7 @@ class CodeGen private constructor(
             .map {
                 val extensions = findTypeExtensions(it.name, schemaIndex)
                 KotlinDataTypeGenerator(config, schemaIndex).generate(it, extensions)
-            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            }.mergeCodeGenResults()
 
     private fun isConventionalRootDataType(name: String): Boolean =
         // Retain data classes historically generated for renamed roots.
@@ -659,7 +655,7 @@ class CodeGen private constructor(
             .map {
                 val extensions = findInterfaceExtensions(it.name, schemaIndex)
                 KotlinInterfaceTypeGenerator(config, schemaIndex).generate(it, extensions)
-            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            }.mergeCodeGenResults()
     }
 
     private fun generateDocFiles(definitions: Collection<Definition<*>>): CodeGenResult {
@@ -671,7 +667,7 @@ class CodeGen private constructor(
             .asSequence()
             .map {
                 DocGenerator(config, schemaIndex).generate(it)
-            }.fold(CodeGenResult.EMPTY) { result, next -> result.merge(next) }
+            }.mergeCodeGenResults()
     }
 }
 
@@ -866,18 +862,8 @@ data class CodeGenResult(
      * Same-named projections that differ are kept; `CodeGen` writes the last one, as 8.7.0 did.
      */
     private fun List<JavaFile>.distinctProjections(): List<JavaFile> {
-        val byName = HashMap<Pair<String, String>, MutableList<JavaFile>>()
-        val rendered = IdentityHashMap<JavaFile, String>()
-        val source = { file: JavaFile -> rendered.getOrPut(file) { file.typeSpec().toString() } }
-        return filter { file ->
-            val sameName = byName.getOrPut(file.packageName() to file.typeSpec().name()) { mutableListOf() }
-            if (sameName.any { it === file || source(it) == source(file) }) {
-                false
-            } else {
-                sameName.add(file)
-                true
-            }
-        }
+        val deduplicator = ClientProjectionDeduplicator()
+        return filter(deduplicator::add)
     }
 
     private fun <T> List<T>.concat(other: List<T>): List<T> {
