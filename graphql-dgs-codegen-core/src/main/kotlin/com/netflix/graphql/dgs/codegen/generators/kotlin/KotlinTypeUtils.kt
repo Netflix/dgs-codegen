@@ -39,7 +39,6 @@ class KotlinTypeUtils internal constructor(
 ) {
     constructor(packageName: String, config: CodeGenConfig, document: Document) : this(packageName, config, SchemaIndex(document))
 
-    private val document = schemaIndex.document
     private val commonScalars =
         mapOf(
             "LocalTime" to LocalTime::class.asTypeName(),
@@ -147,7 +146,5 @@ class KotlinTypeUtils internal constructor(
         }
     }
 
-    private fun isFieldTypeDefinedInDocument(name: String): Boolean =
-        document.definitions.filterIsInstance<ObjectTypeDefinition>().any { e -> e.name == name } ||
-            document.definitions.filterIsInstance<EnumTypeDefinition>().any { e -> e.name == name }
+    private fun isFieldTypeDefinedInDocument(name: String): Boolean = schemaIndex.hasObjectType(name) || schemaIndex.hasEnumType(name)
 }
