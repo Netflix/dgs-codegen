@@ -113,7 +113,7 @@ fun classpath(): String =
         .split(System.getProperty("path.separator"))
         .filter {
             File(it).exists() && File(it).canRead()
-        }.joinToString(":")
+        }.joinToString(File.pathSeparator)
 
 fun codegenTestClassLoader(
     compilation: Compilation,
