@@ -10,9 +10,9 @@ import kotlin.collections.List
 
 @Generated
 public data class I2(
-  @JsonProperty("arg1")
+  @field:JsonProperty("arg1")
   public val arg1: String? = default<I2, String?>("arg1", null),
-  @JsonProperty("arg2")
+  @field:JsonProperty("arg2")
   public val arg2: String? = default<I2, String?>("arg2", null),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("arg1" to arg1, "arg2" to arg2)

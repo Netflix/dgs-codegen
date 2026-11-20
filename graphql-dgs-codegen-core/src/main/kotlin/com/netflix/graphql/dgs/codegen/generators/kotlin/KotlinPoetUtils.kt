@@ -233,16 +233,21 @@ private fun generatedAnnotation(
 
 /**
  * Generate a [JsonProperty] annotation for the supplied
- * field name.
+ * field name. Constructor properties use an explicit FIELD target; builder
+ * methods omit the use-site target.
  *
  * Example generated annotation:
  * ```
  * @JsonProperty("fieldName")
  * ```
  */
-fun jsonPropertyAnnotation(name: String): AnnotationSpec =
+fun jsonPropertyAnnotation(
+    name: String,
+    useSiteTarget: AnnotationSpec.UseSiteTarget? = null,
+): AnnotationSpec =
     AnnotationSpec
         .builder(JsonProperty::class)
+        .useSiteTarget(useSiteTarget)
         .addMember("%S", name)
         .build()
 

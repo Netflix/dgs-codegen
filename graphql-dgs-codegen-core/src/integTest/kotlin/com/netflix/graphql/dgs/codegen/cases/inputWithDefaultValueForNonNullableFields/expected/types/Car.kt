@@ -10,7 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class Car(
-  @JsonProperty("brand")
+  @field:JsonProperty("brand")
   public val brand: String = default<Car, String>("brand", "BMW"),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("brand" to brand)

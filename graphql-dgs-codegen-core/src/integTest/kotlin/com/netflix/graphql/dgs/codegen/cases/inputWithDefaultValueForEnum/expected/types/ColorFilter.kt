@@ -10,7 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class ColorFilter(
-  @JsonProperty("color")
+  @field:JsonProperty("color")
   public val color:
       Color? = default<ColorFilter, Color?>("color", com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForEnum.expected.types.Color.red),
 ) : GraphQLInput() {
