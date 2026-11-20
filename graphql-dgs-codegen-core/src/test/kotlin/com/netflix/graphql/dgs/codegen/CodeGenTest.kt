@@ -7095,6 +7095,35 @@ It takes a title and such.
     }
 
     @Test
+    fun `Codegen should coerce integer default values for float fields`() {
+        val schema =
+            """
+            input ExampleInput {
+                ratio: Float = 1
+                minRatio: Float! = 0
+                ratios: [Float] = [1, 2.5]
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                ),
+            ).generate()
+        assertCompilesJava(codeGenResult)
+        val dataTypes = codeGenResult.javaDataTypes
+        assertThat(dataTypes.size).isEqualTo(1)
+        val fieldSpecs = dataTypes[0].typeSpec().fieldSpecs()
+        assertThat(fieldSpecs[0].type().toString()).isEqualTo("java.lang.Double")
+        assertThat(fieldSpecs[0].initializer().toString()).isEqualTo("1.0")
+        assertThat(fieldSpecs[1].type().toString()).isEqualTo("double")
+        assertThat(fieldSpecs[1].initializer().toString()).isEqualTo("0.0")
+        assertThat(fieldSpecs[2].initializer().toString()).isEqualTo("java.util.Arrays.asList(1.0, 2.5)")
+    }
+
+    @Test
     fun `Generated queries should contain variable reference methods`() {
         val schema =
             """

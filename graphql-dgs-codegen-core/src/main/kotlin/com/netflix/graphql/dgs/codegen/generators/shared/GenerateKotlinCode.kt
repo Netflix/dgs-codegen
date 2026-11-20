@@ -33,6 +33,7 @@ fun generateKotlinCode(
 ): CodeBlock =
     checkAndGetLocaleCodeBlock(value, type)
         ?: checkAndGetLongCodeBlock(value, type)
+        ?: checkAndGetDoubleCodeBlock(value, type)
         ?: checkAndGetBigDecimalCodeBlock(value, type)
         ?: checkAndGetCurrencyCodeBlock(value, type)
         ?: when (value) {
@@ -132,6 +133,17 @@ private fun checkAndGetLongCodeBlock(
     if (type.className.canonicalName == "kotlin.Long") {
         check(value is IntValue) { "$type cannot be created from $value, expected Int value" }
         CodeBlock.of("%LL", value.value)
+    } else {
+        null
+    }
+
+// GraphQL coerces Int literals to Float, but Kotlin does not convert an Int literal to Double
+private fun checkAndGetDoubleCodeBlock(
+    value: Value<Value<*>>,
+    type: TypeName,
+): CodeBlock? =
+    if (value is IntValue && type.className.canonicalName == "kotlin.Double") {
+        CodeBlock.of("%L.0", value.value)
     } else {
         null
     }
