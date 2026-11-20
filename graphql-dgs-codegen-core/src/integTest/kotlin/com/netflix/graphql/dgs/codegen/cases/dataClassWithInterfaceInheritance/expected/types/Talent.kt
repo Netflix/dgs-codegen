@@ -7,8 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithInterfaceInheritance.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.Suppress
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -46,6 +50,28 @@ public class Talent(
   @get:JvmName("getImdbProfile")
   public val imdbProfile: String?
     get() = __imdbProfile.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__firstname === firstnameDefault) firstnameDefault else firstname,
+      if (__lastname === lastnameDefault) lastnameDefault else lastname,
+      if (__company === companyDefault) companyDefault else company,
+      if (__imdbProfile === imdbProfileDefault) imdbProfileDefault else imdbProfile,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Talent &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__firstname === firstnameDefault) null else "firstname=" + firstname,
+      if (__lastname === lastnameDefault) null else "lastname=" + lastname,
+      if (__company === companyDefault) null else "company=" + company,
+      if (__imdbProfile === imdbProfileDefault) null else "imdbProfile=" + imdbProfile,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Talent(", postfix =
+      ")")
 
   @Generated
   public companion object {

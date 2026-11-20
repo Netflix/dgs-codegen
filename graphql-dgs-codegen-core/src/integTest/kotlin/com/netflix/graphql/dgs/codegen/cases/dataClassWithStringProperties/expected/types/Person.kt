@@ -7,7 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithStringProperties.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -28,6 +32,24 @@ public class Person(
   @get:JvmName("getLastname")
   public val lastname: String?
     get() = __lastname.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__firstname === firstnameDefault) firstnameDefault else firstname,
+      if (__lastname === lastnameDefault) lastnameDefault else lastname,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Person &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__firstname === firstnameDefault) null else "firstname=" + firstname,
+      if (__lastname === lastnameDefault) null else "lastname=" + lastname,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Person(", postfix =
+      ")")
 
   @Generated
   public companion object {

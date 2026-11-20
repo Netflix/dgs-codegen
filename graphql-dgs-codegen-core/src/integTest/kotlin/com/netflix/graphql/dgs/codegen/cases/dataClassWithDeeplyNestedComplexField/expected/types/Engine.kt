@@ -7,9 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithDeeplyNestedComplexField.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -44,6 +47,28 @@ public class Engine(
   @get:JvmName("getPerformance")
   public val performance: Performance?
     get() = __performance.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__type === typeDefault) typeDefault else type,
+      if (__bhp === bhpDefault) bhpDefault else bhp,
+      if (__size === sizeDefault) sizeDefault else size,
+      if (__performance === performanceDefault) performanceDefault else performance,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Engine &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__type === typeDefault) null else "type=" + type,
+      if (__bhp === bhpDefault) null else "bhp=" + bhp,
+      if (__size === sizeDefault) null else "size=" + size,
+      if (__performance === performanceDefault) null else "performance=" + performance,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Engine(", postfix =
+      ")")
 
   @Generated
   public companion object {
