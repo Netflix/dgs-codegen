@@ -41,7 +41,11 @@ fun generateKotlinCode(
             }
 
             is IntValue -> {
-                CodeBlock.of("%L", value.value)
+                if (type.className.canonicalName == "kotlin.Double") {
+                    CodeBlock.of("%L.0", value.value)
+                } else {
+                    CodeBlock.of("%L", value.value)
+                }
             }
 
             is StringValue -> {

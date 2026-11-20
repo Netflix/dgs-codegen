@@ -261,7 +261,11 @@ class InputTypeGenerator internal constructor(
             }
 
             is IntValue -> {
-                CodeBlock.of("\$L", value.value)
+                if (type == JavaTypeName.DOUBLE || type == JavaTypeName.DOUBLE.box()) {
+                    CodeBlock.of("\$L.0", value.value)
+                } else {
+                    CodeBlock.of("\$L", value.value)
+                }
             }
 
             is StringValue -> {
