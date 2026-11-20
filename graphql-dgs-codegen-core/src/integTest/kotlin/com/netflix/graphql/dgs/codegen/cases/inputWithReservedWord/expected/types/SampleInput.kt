@@ -10,7 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class SampleInput(
-  @JsonProperty("return")
+  @field:JsonProperty("return")
   public val `return`: String,
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("return" to `return`)

@@ -10,7 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class MovieFilter(
-  @JsonProperty("genre")
+  @field:JsonProperty("genre")
   public val genre: String? = default<MovieFilter, String?>("genre", null),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("genre" to genre)

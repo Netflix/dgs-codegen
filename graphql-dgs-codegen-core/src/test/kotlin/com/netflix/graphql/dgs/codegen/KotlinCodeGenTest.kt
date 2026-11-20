@@ -714,11 +714,11 @@ class KotlinCodeGenTest {
                 |@Generated
                 |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
                 |public data class Employee(
-                |  @JsonProperty("firstname")
+                |  @field:JsonProperty("firstname")
                 |  override val firstname: String? = null,
-                |  @JsonProperty("lastname")
+                |  @field:JsonProperty("lastname")
                 |  override val lastname: String? = null,
-                |  @JsonProperty("company")
+                |  @field:JsonProperty("company")
                 |  public val company: String? = null,
                 |) : Person {
                 |  @Generated
@@ -3840,13 +3840,13 @@ class KotlinCodeGenTest {
             |@Generated
             |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
             |public data class Talent(
-            |  @JsonProperty("firstname")
+            |  @field:JsonProperty("firstname")
             |  override val firstname: String? = null,
-            |  @JsonProperty("lastname")
+            |  @field:JsonProperty("lastname")
             |  override val lastname: String? = null,
-            |  @JsonProperty("company")
+            |  @field:JsonProperty("company")
             |  override val company: String? = null,
-            |  @JsonProperty("imdbProfile")
+            |  @field:JsonProperty("imdbProfile")
             |  public val imdbProfile: String? = null,
             |) : Employee {
             |  @Generated

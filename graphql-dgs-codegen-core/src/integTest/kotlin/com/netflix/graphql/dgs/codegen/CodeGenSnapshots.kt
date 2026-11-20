@@ -64,7 +64,7 @@ internal fun assertGeneratedSourcesMatchSnapshot(
             path.parent.createDirectories()
             path.writeText(content)
         } else {
-            assertThat(content).`as`("Generated source %s", path).isEqualTo(path.readText())
+            assertThat(content).`as`("Generated source %s", path).isEqualToNormalizingNewlines(path.readText())
         }
     }
 }

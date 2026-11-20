@@ -35,7 +35,7 @@ class Kotlin2CodeGenTest {
     @ParameterizedTest
     @MethodSource("listTestsToRun")
     fun testCodeGen(testName: String) {
-        val schema = casesRoot.resolve("$testName/schema.graphql").readText()
+        val schema = casesRoot.resolve("$testName/schema.graphql").readText().replace("\r\n", "\n")
 
         val codeGenResult =
             CodeGen(

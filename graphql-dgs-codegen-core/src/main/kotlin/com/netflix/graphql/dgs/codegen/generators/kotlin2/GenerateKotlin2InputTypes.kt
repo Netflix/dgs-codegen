@@ -18,13 +18,13 @@
 
 package com.netflix.graphql.dgs.codegen.generators.kotlin2
 
-import com.fasterxml.jackson.annotation.JsonProperty
 import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.GraphQLInput
 import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.kotlin.KotlinTypeUtils
 import com.netflix.graphql.dgs.codegen.generators.kotlin.ReservedKeywordFilter
 import com.netflix.graphql.dgs.codegen.generators.kotlin.addOptionalGeneratedAnnotation
+import com.netflix.graphql.dgs.codegen.generators.kotlin.jsonPropertyAnnotation
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKdoc
 import com.netflix.graphql.dgs.codegen.generators.kotlin.sanitizeKotlinIdentifier
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.findInputExtensions
@@ -104,7 +104,7 @@ internal fun generateKotlin2InputTypes(
                                         .builder(
                                             name = kotlinName,
                                             type = type,
-                                        ).addAnnotation(AnnotationSpec.builder(JsonProperty::class).addMember("%S", field.name).build())
+                                        ).addAnnotation(jsonPropertyAnnotation(field.name, AnnotationSpec.UseSiteTarget.FIELD))
                                         .apply {
                                             if (field.defaultValue != null || type.isNullable) {
                                                 val value =
