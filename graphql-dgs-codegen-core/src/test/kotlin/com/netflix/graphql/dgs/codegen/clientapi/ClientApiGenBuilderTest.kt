@@ -152,6 +152,77 @@ class ClientApiGenBuilderTest {
         assertThat(result2QueryObject.name).isEqualTo("test")
     }
 
+    @Test
+    fun `Builder for a query with no arguments does not declare unused fieldsSet`() {
+        // Repro for https://github.com/Netflix/dgs-codegen/issues/299:
+        // argument-free operations were still emitting fieldsSet / variable
+        // tracking fields that build() never reads, which triggers IDE unused-field warnings.
+        val schema =
+            """
+            enum PokemonType {
+               FIRE
+               WATER
+               ELECTRIC
+               GRASS
+            }
+
+            type Query {
+               getAllPokemonTypes: [PokemonType!]!
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        val queryType =
+            codeGenResult.javaQueryTypes
+                .single { it.typeSpec().name() == "GetAllPokemonTypesGraphQLQuery" }
+                .typeSpec()
+        val builderType = queryType.typeSpecs().single { it.name() == "Builder" }
+
+        assertThat(builderType.fieldSpecs().map { it.name() })
+            .doesNotContain("fieldsSet", "variableReferences", "variableDefinitions")
+            .contains("queryName")
+
+        assertCompilesJava(codeGenResult)
+    }
+
+    @Test
+    fun `Builder for a query with arguments still declares fieldsSet`() {
+        val schema =
+            """
+            type Query {
+                filter(nameFilter: String): [String]
+            }
+            """.trimIndent()
+
+        val codeGenResult =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    generateClientApi = true,
+                ),
+            ).generate()
+
+        val queryType =
+            codeGenResult.javaQueryTypes
+                .single { it.typeSpec().name() == "FilterGraphQLQuery" }
+                .typeSpec()
+        val builderType = queryType.typeSpecs().single { it.name() == "Builder" }
+
+        assertThat(builderType.fieldSpecs().map { it.name() })
+            .contains("fieldsSet", "variableReferences", "variableDefinitions", "queryName", "nameFilter")
+
+        assertCompilesJava(codeGenResult)
+    }
+
     @Nested
     inner class Deprecation {
         @Test
