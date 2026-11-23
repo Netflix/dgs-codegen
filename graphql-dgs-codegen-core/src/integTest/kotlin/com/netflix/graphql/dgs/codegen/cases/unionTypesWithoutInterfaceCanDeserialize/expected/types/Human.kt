@@ -7,8 +7,11 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.unionTypesWithoutInterfaceCanDeserialize.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
 import kotlin.Int
 import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -36,6 +39,26 @@ public class Human(
   @get:JvmName("getTotalCredits")
   public val totalCredits: Int?
     get() = __totalCredits.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__id === idDefault) idDefault else id,
+      if (__name === nameDefault) nameDefault else name,
+      if (__totalCredits === totalCreditsDefault) totalCreditsDefault else totalCredits,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Human &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__id === idDefault) null else "id=" + id,
+      if (__name === nameDefault) null else "name=" + name,
+      if (__totalCredits === totalCreditsDefault) null else "totalCredits=" + totalCredits,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Human(", postfix =
+      ")")
 
   @Generated
   public companion object {

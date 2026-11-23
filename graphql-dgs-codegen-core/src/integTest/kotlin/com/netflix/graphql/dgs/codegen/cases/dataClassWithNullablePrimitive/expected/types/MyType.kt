@@ -7,9 +7,12 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.dataClassWithNullablePrimitive.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
 import kotlin.Boolean
 import kotlin.Double
 import kotlin.Int
+import kotlin.String
+import kotlin.collections.List
 import kotlin.jvm.JvmName
 
 @Generated
@@ -37,6 +40,26 @@ public class MyType(
   @get:JvmName("getFloaty")
   public val floaty: Double?
     get() = __floaty.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__count === countDefault) countDefault else count,
+      if (__truth === truthDefault) truthDefault else truth,
+      if (__floaty === floatyDefault) floatyDefault else floaty,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is MyType &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__count === countDefault) null else "count=" + count,
+      if (__truth === truthDefault) null else "truth=" + truth,
+      if (__floaty === floatyDefault) null else "floaty=" + floaty,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "MyType(", postfix =
+      ")")
 
   @Generated
   public companion object {

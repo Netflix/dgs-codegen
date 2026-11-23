@@ -7,6 +7,9 @@ import com.fasterxml.jackson.databind.`annotation`.JsonDeserialize
 import com.fasterxml.jackson.databind.`annotation`.JsonPOJOBuilder
 import com.netflix.graphql.dgs.codegen.cases.projectionWithPrimitives.expected.Generated
 import java.lang.IllegalStateException
+import kotlin.Any
+import kotlin.Boolean
+import kotlin.Int
 import kotlin.String
 import kotlin.collections.List
 import kotlin.jvm.JvmName
@@ -29,6 +32,24 @@ public class Query(
   @get:JvmName("getStrings")
   public val strings: List<String?>?
     get() = __strings.invoke()
+
+  private fun `__$fieldValues`(): List<Any?> = listOf(
+      if (__string === stringDefault) stringDefault else string,
+      if (__strings === stringsDefault) stringsDefault else strings,
+  )
+
+  override fun equals(other: Any?): Boolean = this === other || (other is Query &&
+      `__$fieldValues`() == other.`__$fieldValues`())
+
+  override fun hashCode(): Int = `__$fieldValues`().hashCode()
+
+  private fun `__$fieldStrings`(): List<String> = listOfNotNull(
+      if (__string === stringDefault) null else "string=" + string,
+      if (__strings === stringsDefault) null else "strings=" + strings,
+  )
+
+  override fun toString(): String = `__$fieldStrings`().joinToString(prefix = "Query(", postfix =
+      ")")
 
   @Generated
   public companion object {
