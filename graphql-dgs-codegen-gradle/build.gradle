@@ -33,7 +33,7 @@ tasks.withType(KotlinCompilationTask).configureEach {
 
 dependencies {
     api project(':graphql-dgs-codegen-core')
-    compileOnly 'com.netflix.nebula:gradle-dependency-lock-plugin:17.5.0'
+    compileOnly 'com.netflix.nebula:gradle-dependency-lock-plugin:17.5.1'
     compileOnly 'org.jetbrains.kotlin:kotlin-gradle-plugin'
 
     testApi gradleTestKit()
