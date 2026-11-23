@@ -28,6 +28,7 @@ import com.netflix.graphql.dgs.codegen.filterSkipped
 import com.netflix.graphql.dgs.codegen.findTypeDefinition
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
 import com.netflix.graphql.dgs.codegen.generators.shared.SchemaExtensionsUtils.collectAllFieldDefinitions
+import com.netflix.graphql.dgs.codegen.mergeCodeGenResults
 import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.CodeBlock
 import com.palantir.javapoet.FieldSpec
@@ -137,7 +138,7 @@ class ClientApiGenerator internal constructor(
                     }
                         ?: CodeGenResult.EMPTY
                 CodeGenResult(javaQueryTypes = javaFiles).merge(rootProjection)
-            }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+            }.mergeCodeGenResults()
     }
 
     internal fun generateDeferredRoots(): CodeGenResult {
@@ -146,7 +147,7 @@ class ClientApiGenerator internal constructor(
         val result =
             deferredRoots
                 .map { (type, name) -> createRootProjection(type, name) }
-                .fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+                .mergeCodeGenResults()
         deferredRoots.clear()
         return result
     }
@@ -606,14 +607,14 @@ class ClientApiGenerator internal constructor(
                             field.type.findTypeDefinition(schemaIndex, true)
                         }
                     child?.let { createSubProjection(it, root, it.name.capitalized()) }
-                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+                }.mergeCodeGenResults()
         val concrete =
             if (type is InterfaceTypeDefinition) {
                 schemaIndex
                     .implementations(type.name)
                     .distinctBy { it.name }
                     .map { createFragment(it, root, "${it.name.capitalized()}Fragment") }
-                    .fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+                    .mergeCodeGenResults()
             } else {
                 CodeGenResult.EMPTY
             }
@@ -622,7 +623,7 @@ class ClientApiGenerator internal constructor(
                 type.memberTypes
                     .mapNotNull { it.findTypeDefinition(schemaIndex, true) }
                     .map { createFragment(it as ObjectTypeDefinition, root, "${it.name.capitalized()}Fragment") }
-                    .fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+                    .mergeCodeGenResults()
             } else {
                 CodeGenResult.EMPTY
             }
@@ -801,7 +802,7 @@ class ClientApiGenerator internal constructor(
                         javaType.build(),
                         "Entities${objTypeDef.name.capitalized()}Key",
                     )
-                }.fold(CodeGenResult.EMPTY) { total, current -> total.merge(current) }
+                }.mergeCodeGenResults()
 
         val javaFile = JavaFile.builder(getPackageName(), javaType.build()).build()
         return CodeGenResult(clientProjections = listOf(javaFile)).merge(codeGenResult)

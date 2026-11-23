@@ -24,6 +24,7 @@ import com.netflix.graphql.dgs.codegen.CodeGenConfig
 import com.netflix.graphql.dgs.codegen.CodeGenResult
 import com.netflix.graphql.dgs.codegen.SchemaIndex
 import com.netflix.graphql.dgs.codegen.generators.shared.CodeGeneratorUtils.capitalized
+import com.netflix.graphql.dgs.codegen.mergeCodeGenResults
 import com.palantir.javapoet.AnnotationSpec
 import com.palantir.javapoet.JavaFile
 import com.palantir.javapoet.MethodSpec
@@ -46,7 +47,7 @@ class DatafetcherGenerator internal constructor(
             .asSequence()
             .map { field ->
                 createDatafetcher(field, query.name)
-            }.fold(CodeGenResult()) { t: CodeGenResult, u: CodeGenResult -> t.merge(u) }
+            }.mergeCodeGenResults(initial = CodeGenResult())
 
     private fun createDatafetcher(
         field: FieldDefinition,
