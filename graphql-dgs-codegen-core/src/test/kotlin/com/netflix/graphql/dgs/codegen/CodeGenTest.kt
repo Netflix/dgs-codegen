@@ -7564,6 +7564,42 @@ It takes a title and such.
 
         assertCompilesJava(result)
     }
+
+    @Test
+    fun `Generate Java data types with prefix and suffix`() {
+        val schema =
+            """
+            type Query {
+                person: Person
+            }
+            
+            type Person {
+                name: String
+                age: Int
+            }
+            """.trimIndent()
+
+        val config =
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = "com.netflix.test",
+                language = Language.JAVA,
+                typePrefix = "My",
+                typeSuffix = "Type",
+            )
+
+        val codeGen = CodeGen(config)
+        val result = codeGen.generate()
+
+        val dataTypes = result.javaDataTypes
+        assertThat(dataTypes).hasSize(1)
+
+        val personFile = dataTypes.find { it.typeSpec().name() == "MyPersonType" }
+        assertThat(personFile).isNotNull
+        assertThat(personFile!!.toString()).contains("public class MyPersonType")
+
+        assertCompilesJava(result)
+    }
 }
 
 private class ReaderTracker {

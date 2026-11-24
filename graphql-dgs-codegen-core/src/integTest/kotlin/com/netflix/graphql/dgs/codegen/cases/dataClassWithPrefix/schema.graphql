@@ -1,0 +1,20 @@
+type Query {
+  search(movieFilter: MovieFilter!): Movie
+}
+
+"""
+Movies are fun to watch.
+They also work well as examples in GraphQL.
+"""
+type Movie {
+  title: String
+}
+
+"""
+Example filter for Movies.
+
+It takes a title and such.
+"""
+input MovieFilter {
+  titleFilter: String
+}

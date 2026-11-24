@@ -321,4 +321,46 @@ class Kotlin2CodeGenTest {
                 Arguments.of("Query", listOf("_", "when", "field", "default"), "_alias", "_projection"),
             )
     }
+
+    @Test
+    fun `Generate data types with prefix and suffix`() {
+        val schema =
+            """
+            type Query {
+                person: Person
+            }
+            
+            type Person {
+                firstname: String
+                lastname: String
+            }
+            """.trimIndent()
+
+        val config =
+            CodeGenConfig(
+                schemas = setOf(schema),
+                packageName = BASE_PACKAGE_NAME,
+                language = Language.KOTLIN,
+                typePrefix = "My",
+                typeSuffix = "Type",
+                generateKotlinNullableClasses = true,
+            )
+
+        val codeGen = CodeGen(config)
+        val generatedResult = codeGen.generate()
+
+        val dataTypes = generatedResult.kotlinDataTypes
+        assertThat(dataTypes.size).isEqualTo(2)
+
+        val personType = dataTypes.find { it.name == "MyPersonType" }
+        assertThat(personType).isNotNull
+        assertThat(personType!!.name).isEqualTo("MyPersonType")
+        assertThat(personType.packageName).isEqualTo(TYPES_PACKAGE_NAME)
+        val type = personType.members[0] as TypeSpec
+
+        assertThat(type.propertySpecs.size).isEqualTo(4)
+        assertThat(type.propertySpecs).extracting("name").contains("firstname", "lastname")
+
+        assertCompilesKotlin(generatedResult)
+    }
 }

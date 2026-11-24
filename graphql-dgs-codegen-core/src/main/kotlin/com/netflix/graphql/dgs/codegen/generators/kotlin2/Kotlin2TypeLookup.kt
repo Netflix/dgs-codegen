@@ -70,6 +70,9 @@ class Kotlin2TypeLookup internal constructor(
      */
     val operations: Map<String, OperationDefinition.Operation> = schemaIndex.operationTypes.mapValues { it.value.first() }
 
+    private val typePrefix = config.typePrefix
+    private val typeSuffix = config.typeSuffix
+
     /**
      * A set of object type names defined in the document
      */
@@ -290,6 +293,7 @@ class Kotlin2TypeLookup internal constructor(
             return builtinType
         }
 
-        return ClassName(packageName, typeName.name)
+        val affixedName = typePrefix + typeName.name + typeSuffix
+        return ClassName(packageName, affixedName)
     }
 }
