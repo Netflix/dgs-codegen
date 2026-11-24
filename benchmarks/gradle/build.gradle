@@ -1,0 +1,60 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        if (System.getProperty('bench.variant', 'release') == 'release') {
+            classpath "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-gradle:${System.getProperty('bench.releaseVersion', '8.8.0')}"
+        } else {
+            classpath fileTree(dir: System.getProperty('bench.libDir'), include: '*.jar')
+            classpath files(System.getProperty('bench.pluginJar'))
+        }
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'com.netflix.dgs.codegen'
+
+println("BENCH_ORIGIN\tgradle-plugin\t${com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask.protectionDomain.codeSource.location.toURI().path.tokenize('/').last()}")
+println("BENCH_ORIGIN\tcore\t${com.netflix.graphql.dgs.codegen.CodeGen.protectionDomain.codeSource.location.toURI().path.tokenize('/').last()}")
+println("BENCH_ORIGIN\tclient\t${com.netflix.graphql.dgs.client.codegen.GraphQLQueryRequest.protectionDomain.codeSource.location.toURI().path.tokenize('/').last()}")
+
+generateJava {
+    schemaPaths = [file('inputs/schema.graphqls').absolutePath]
+    packageName = 'com.example.synthetic'
+    generateClientv2 = true
+    generateDocs = true
+    skipEntityQueries = true
+    shortProjectionNames = true
+    fileWriteParallelism = Integer.getInteger('bench.writers', 4)
+}
+
+def taskStartedAt = 0L
+tasks.named('generateJava') {
+    doFirst {
+        taskStartedAt = System.nanoTime()
+    }
+    doLast {
+        double elapsedMillis = (System.nanoTime() - taskStartedAt) / 1_000_000.0
+        println("BENCH_TASK\tgenerateJava\t${state.failure == null ? 'SUCCESS' : 'FAILED'}\t${String.format(Locale.ROOT, '%.6f', elapsedMillis)}")
+    }
+}
+
+tasks.register('saveResolvedClasspath') {
+    doLast {
+        File destination = file(System.getProperty('bench.resolvedDir'))
+        destination.mkdirs()
+        def artifacts = buildscript.configurations.classpath.resolvedConfiguration.resolvedArtifacts
+        artifacts.each { artifact ->
+            copy {
+                from artifact.file
+                into destination
+            }
+        }
+        File metadata = file(System.getProperty('bench.resolvedMetadata'))
+        metadata.parentFile.mkdirs()
+        metadata.text = artifacts.collect { artifact ->
+            "${artifact.moduleVersion.id}\t${artifact.file.name}"
+        }.sort().join('\n') + '\n'
+    }
+}
