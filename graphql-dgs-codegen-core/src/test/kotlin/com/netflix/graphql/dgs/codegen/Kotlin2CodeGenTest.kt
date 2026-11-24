@@ -71,6 +71,31 @@ class Kotlin2CodeGenTest {
     }
 
     @Test
+    fun `coerces integer default values for float input fields`() {
+        val schema =
+            """
+            input ExampleInput {
+                ratio: Float = 1
+                minRatio: Float! = 0
+                ratios: [Float] = [1, 2.5]
+            }
+            """.trimIndent()
+
+        val result =
+            CodeGen(
+                CodeGenConfig(
+                    schemas = setOf(schema),
+                    packageName = BASE_PACKAGE_NAME,
+                    language = Language.KOTLIN,
+                    generateKotlinNullableClasses = true,
+                    generateKotlinClosureProjections = true,
+                ),
+            ).generate()
+
+        assertCompilesKotlin(result)
+    }
+
+    @Test
     fun `adds @Deprecated annotation from schema directives when setting enabled`() {
         val schema =
             """
