@@ -714,11 +714,14 @@ class KotlinCodeGenTest {
                 |@Generated
                 |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
                 |public data class Employee(
-                |  @JsonProperty("firstname")
+                |  @param:JsonProperty("firstname")
+                |  @field:JsonProperty("firstname")
                 |  override val firstname: String? = null,
-                |  @JsonProperty("lastname")
+                |  @param:JsonProperty("lastname")
+                |  @field:JsonProperty("lastname")
                 |  override val lastname: String? = null,
-                |  @JsonProperty("company")
+                |  @param:JsonProperty("company")
+                |  @field:JsonProperty("company")
                 |  public val company: String? = null,
                 |) : Person {
                 |  @Generated
@@ -2589,21 +2592,21 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
-        assertThat(parameterSpec.annotations[1].members).hasSize(2)
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
+        assertThat(parameterSpec.annotations[2].members).hasSize(2)
         assertThat(
-            parameterSpec.annotations[1].members[0],
+            parameterSpec.annotations[2].members[0],
         ).extracting(
             "formatParts",
             "args",
         ).asInstanceOf(InstanceOfAssertFactories.LIST)
             .contains(listOf("message = ", "%S"), listOf("This field is no longer available"))
         assertThat(
-            parameterSpec.annotations[1].members[1],
+            parameterSpec.annotations[2].members[1],
         ).extracting("formatParts", "args").asString().contains("replaceWith = ", "%M", "(", "%S", ")", "kotlin.ReplaceWith", "firstName")
     }
 
@@ -2649,11 +2652,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("ValidName")
     }
 
     @Test
@@ -2698,11 +2701,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("ValidName")
     }
 
     @Test
@@ -2747,11 +2750,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("ValidName")
     }
 
     @Test
@@ -2818,11 +2821,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -2868,11 +2871,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -2910,9 +2913,10 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(parameterSpec.annotations.map { (it.typeName as ClassName).canonicalName })
             .containsExactlyInAnyOrder(
+                "com.fasterxml.jackson.annotation.JsonProperty",
                 "com.fasterxml.jackson.annotation.JsonProperty",
                 "com.test.anotherValidator.ValidName",
             )
@@ -2955,9 +2959,10 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(parameterSpec.annotations.map { (it.typeName as ClassName).canonicalName })
             .containsExactlyInAnyOrder(
+                "com.fasterxml.jackson.annotation.JsonProperty",
                 "com.fasterxml.jackson.annotation.JsonProperty",
                 "com.test.anotherValidator.ValidName",
             )
@@ -3008,11 +3013,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -3066,9 +3071,10 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(parameterSpec.annotations.map { (it.typeName as ClassName).canonicalName })
             .containsExactlyInAnyOrder(
+                "com.fasterxml.jackson.annotation.JsonProperty",
                 "com.fasterxml.jackson.annotation.JsonProperty",
                 "com.test.anotherValidator.ValidName",
             )
@@ -3076,6 +3082,7 @@ class KotlinCodeGenTest {
         val parameterSpec2 = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[1]
         assertThat(parameterSpec2.annotations.map { (it.typeName as ClassName).canonicalName })
             .containsExactlyInAnyOrder(
+                "com.fasterxml.jackson.annotation.JsonProperty",
                 "com.fasterxml.jackson.annotation.JsonProperty",
                 "com.test.validator.dob.ValidDateOfBirth",
             )
@@ -3127,11 +3134,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -3172,11 +3179,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -3219,18 +3226,18 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
 
         val parameterSpec2 = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[1]
-        val annotationSpec2 = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[1].annotations[1]
+        val annotationSpec2 = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[1].annotations[2]
         assertThat(
             (parameterSpec2.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec2.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.personType.enums.ValidType")
+        assertThat((parameterSpec2.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.personType.enums.ValidType")
         assertThat(
             annotationSpec2.members[0],
         ).extracting("args").asString().contains("com.personType.enums.PRIMARY", "com.personType.enums.SECONDARY")
@@ -3274,11 +3281,11 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
     }
 
     @Test
@@ -3319,12 +3326,12 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(3)
+        assertThat(parameterSpec.annotations).hasSize(4)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
-        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.nullValidator.NullValue")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[3].typeName as ClassName).canonicalName).isEqualTo("com.test.nullValidator.NullValue")
     }
 
     @Test
@@ -3365,13 +3372,13 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(3)
+        assertThat(parameterSpec.annotations).hasSize(4)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
-        assertThat((parameterSpec.annotations[1].useSiteTarget as AnnotationSpec.UseSiteTarget).name).isEqualTo("FIELD")
-        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.nullValidator.NullValue")
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("com.test.anotherValidator.ValidName")
+        assertThat((parameterSpec.annotations[2].useSiteTarget as AnnotationSpec.UseSiteTarget).name).isEqualTo("FIELD")
+        assertThat((parameterSpec.annotations[3].typeName as ClassName).canonicalName).isEqualTo("com.test.nullValidator.NullValue")
     }
 
     @Test
@@ -3479,14 +3486,14 @@ class KotlinCodeGenTest {
 
         val parameterSpec = (((dataTypes[0].members)[0] as TypeSpec).primaryConstructor as FunSpec).parameters[0]
         assertThat(parameterSpec.name).isEqualTo("name")
-        assertThat(parameterSpec.annotations).hasSize(2)
+        assertThat(parameterSpec.annotations).hasSize(3)
         assertThat(
             (parameterSpec.annotations[0].typeName as ClassName).canonicalName,
         ).isEqualTo("com.fasterxml.jackson.annotation.JsonProperty")
-        assertThat((parameterSpec.annotations[1].typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
-        assertThat(parameterSpec.annotations[1].members).hasSize(1)
+        assertThat((parameterSpec.annotations[2].typeName as ClassName).canonicalName).isEqualTo("kotlin.Deprecated")
+        assertThat(parameterSpec.annotations[2].members).hasSize(1)
         assertThat(
-            parameterSpec.annotations[1].members[0],
+            parameterSpec.annotations[2].members[0],
         ).extracting("formatParts", "args")
             .asInstanceOf(InstanceOfAssertFactories.LIST)
             .contains(listOf("message = ", "%S"), listOf("Deprecated in the GraphQL schema."))
@@ -3840,13 +3847,17 @@ class KotlinCodeGenTest {
             |@Generated
             |@JsonTypeInfo(use = JsonTypeInfo.Id.NONE)
             |public data class Talent(
-            |  @JsonProperty("firstname")
+            |  @param:JsonProperty("firstname")
+            |  @field:JsonProperty("firstname")
             |  override val firstname: String? = null,
-            |  @JsonProperty("lastname")
+            |  @param:JsonProperty("lastname")
+            |  @field:JsonProperty("lastname")
             |  override val lastname: String? = null,
-            |  @JsonProperty("company")
+            |  @param:JsonProperty("company")
+            |  @field:JsonProperty("company")
             |  override val company: String? = null,
-            |  @JsonProperty("imdbProfile")
+            |  @param:JsonProperty("imdbProfile")
+            |  @field:JsonProperty("imdbProfile")
             |  public val imdbProfile: String? = null,
             |) : Employee {
             |  @Generated

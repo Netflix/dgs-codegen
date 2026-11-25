@@ -68,11 +68,13 @@ fun assertCompilesJava(javaFiles: Collection<JavaFile>): Compilation {
 fun assertCompilesKotlin(
     codeGenResult: CodeGenResult,
     tests: Map<String, String> = emptyMap(),
-) = assertCompilesKotlin(codeGenResult.kotlinSources(), tests)
+    warningsAsErrors: Boolean = false,
+) = assertCompilesKotlin(codeGenResult.kotlinSources(), tests, warningsAsErrors)
 
 fun assertCompilesKotlin(
     files: Collection<FileSpec>,
     tests: Map<String, String> = emptyMap(),
+    warningsAsErrors: Boolean = false,
 ): Path {
     val srcDir = Files.createTempDirectory("src")
     val buildDir = Files.createTempDirectory("build")
@@ -93,6 +95,7 @@ fun assertCompilesKotlin(
                 ),
                 Services.EMPTY,
                 K2JVMCompilerArguments().apply {
+                    allWarningsAsErrors = warningsAsErrors
                     freeArgs = listOf(srcDir.toAbsolutePath().toString())
                     destination = buildDir.toAbsolutePath().toString()
                     classpath = classpath()
@@ -113,7 +116,7 @@ fun classpath(): String =
         .split(System.getProperty("path.separator"))
         .filter {
             File(it).exists() && File(it).canRead()
-        }.joinToString(":")
+        }.joinToString(File.pathSeparator)
 
 fun codegenTestClassLoader(
     compilation: Compilation,

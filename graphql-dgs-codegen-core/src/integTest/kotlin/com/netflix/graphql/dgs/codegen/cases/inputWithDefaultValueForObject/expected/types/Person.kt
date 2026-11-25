@@ -11,11 +11,14 @@ import kotlin.collections.List
 
 @Generated
 public data class Person(
-  @JsonProperty("name")
+  @param:JsonProperty("name")
+  @field:JsonProperty("name")
   public val name: String? = default<Person, String?>("name", "John"),
-  @JsonProperty("age")
+  @param:JsonProperty("age")
+  @field:JsonProperty("age")
   public val age: Int? = default<Person, Int?>("age", 23),
-  @JsonProperty("car")
+  @param:JsonProperty("car")
+  @field:JsonProperty("car")
   public val car:
       Car? = default<Person, Car?>("car", com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.types.Car(brand = "Ford")),
 ) : GraphQLInput() {

@@ -26,6 +26,7 @@ import com.netflix.graphql.dgs.codegen.generators.java.InputTypeGenerator
 import com.netflix.graphql.dgs.codegen.generators.shared.applyDirectivesKotlin
 import com.netflix.graphql.dgs.codegen.generators.shared.generateKotlinCode
 import com.netflix.graphql.dgs.codegen.shouldSkip
+import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.BOOLEAN
 import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
@@ -223,7 +224,8 @@ abstract class AbstractKotlinDataTypeGenerator internal constructor(
             val parameterSpec =
                 ParameterSpec
                     .builder(field.kotlinName, returnType)
-                    .addAnnotation(jsonPropertyAnnotation(field.graphQLName))
+                    .addAnnotation(jsonPropertyAnnotation(field.graphQLName, AnnotationSpec.UseSiteTarget.PARAM))
+                    .addAnnotation(jsonPropertyAnnotation(field.graphQLName, AnnotationSpec.UseSiteTarget.FIELD))
 
             if (field.directives.isNotEmpty()) {
                 parameterSpec.addAnnotations(applyDirectivesKotlin(field.directives, config))

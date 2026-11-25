@@ -11,7 +11,8 @@ import kotlin.collections.List
 
 @Generated
 public data class OrderFilter(
-  @JsonProperty("value")
+  @param:JsonProperty("value")
+  @field:JsonProperty("value")
   public val `value`:
       Currency = default<OrderFilter, Currency>("value", java.util.Currency.getInstance("USD")),
 ) : GraphQLInput() {

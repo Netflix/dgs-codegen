@@ -11,11 +11,14 @@ import kotlin.collections.List
 
 @Generated
 public data class OrderFilter(
-  @JsonProperty("min")
+  @param:JsonProperty("min")
+  @field:JsonProperty("min")
   public val min: BigDecimal = default<OrderFilter, BigDecimal>("min", java.math.BigDecimal("1.1")),
-  @JsonProperty("avg")
+  @param:JsonProperty("avg")
+  @field:JsonProperty("avg")
   public val avg: BigDecimal = default<OrderFilter, BigDecimal>("avg", java.math.BigDecimal(1.12)),
-  @JsonProperty("max")
+  @param:JsonProperty("max")
+  @field:JsonProperty("max")
   public val max:
       BigDecimal = default<OrderFilter, BigDecimal>("max", java.math.BigDecimal(3.14E+19)),
 ) : GraphQLInput() {

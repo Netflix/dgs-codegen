@@ -11,9 +11,11 @@ import kotlin.collections.List
 
 @Generated
 public data class PersonFilter(
-  @JsonProperty("email")
+  @param:JsonProperty("email")
+  @field:JsonProperty("email")
   public val email: String? = default<PersonFilter, String?>("email", null),
-  @JsonProperty("birthYear")
+  @param:JsonProperty("birthYear")
+  @field:JsonProperty("birthYear")
   public val birthYear: Int? = default<PersonFilter, Int?>("birthYear", null),
 ) : GraphQLInput() {
   override fun fields(): List<Pair<String, Any?>> = listOf("email" to email, "birthYear" to birthYear)
