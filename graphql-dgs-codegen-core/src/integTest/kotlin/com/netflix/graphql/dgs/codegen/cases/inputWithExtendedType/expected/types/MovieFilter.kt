@@ -11,8 +11,10 @@ import kotlin.collections.List
 
 @Generated
 public data class MovieFilter(
+  @param:JsonProperty("genre")
   @field:JsonProperty("genre")
   public val genre: String? = default<MovieFilter, String?>("genre", null),
+  @param:JsonProperty("releaseYear")
   @field:JsonProperty("releaseYear")
   public val releaseYear: Int? = default<MovieFilter, Int?>("releaseYear", null),
 ) : GraphQLInput() {

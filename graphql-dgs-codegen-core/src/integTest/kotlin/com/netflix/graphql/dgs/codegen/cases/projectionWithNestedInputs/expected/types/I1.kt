@@ -10,8 +10,10 @@ import kotlin.collections.List
 
 @Generated
 public data class I1(
+  @param:JsonProperty("arg1")
   @field:JsonProperty("arg1")
   public val arg1: I1? = default<I1, I1?>("arg1", null),
+  @param:JsonProperty("arg2")
   @field:JsonProperty("arg2")
   public val arg2: I2? = default<I1, I2?>("arg2", null),
 ) : GraphQLInput() {

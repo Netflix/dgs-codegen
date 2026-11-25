@@ -10,6 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class Car(
+  @param:JsonProperty("brand")
   @field:JsonProperty("brand")
   public val brand: String = default<Car, String>("brand", "BMW"),
 ) : GraphQLInput() {

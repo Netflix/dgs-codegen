@@ -10,6 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class MovieFilter(
+  @param:JsonProperty("titleFilter")
   @field:JsonProperty("titleFilter")
   public val titleFilter: String? = default<MovieFilter, String?>("titleFilter", null),
 ) : GraphQLInput() {

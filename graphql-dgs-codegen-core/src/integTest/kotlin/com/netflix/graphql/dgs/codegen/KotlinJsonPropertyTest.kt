@@ -16,6 +16,7 @@
 package com.netflix.graphql.dgs.codegen
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest
@@ -52,14 +53,28 @@ class KotlinJsonPropertyTest {
             ).generate()
 
         val inputSource = result.kotlinSources().single { it.name == "ExampleInput" }.toString()
-        assertThat(inputSource).contains("@field:JsonProperty(\"_\")", "@field:JsonProperty(\"isActive\")")
-        assertThat(inputSource).doesNotContain("@param:JsonProperty")
+        assertThat(inputSource).contains(
+            "@param:JsonProperty(\"_\")",
+            "@field:JsonProperty(\"_\")",
+            "@param:JsonProperty(\"isActive\")",
+            "@field:JsonProperty(\"isActive\")",
+        )
         val buildDir = assertCompilesKotlin(result, warningsAsErrors = true)
         URLClassLoader(arrayOf(buildDir.toUri().toURL()), javaClass.classLoader).use { loader ->
             val mapper = jacksonObjectMapper()
             val inputClass = loader.loadClass("com.netflix.test.jsontargets.types.ExampleInput")
             assertThat(inputClass.declaredFields.mapNotNull { it.getAnnotation(JsonProperty::class.java)?.value })
                 .containsExactly("_", "isActive", "optional", "count")
+            // Plain Jackson (no Kotlin module) must still bind required constructor arguments.
+            val plainMapper = ObjectMapper()
+            val plainInput = plainMapper.readValue("""{"_":"value","isActive":true,"optional":null,"count":7}""", inputClass)
+            assertThat(plainMapper.valueToTree<com.fasterxml.jackson.databind.JsonNode>(plainInput).path("_").asText())
+                .isEqualTo("value")
+            if (!nullableClasses) {
+                val outputClass = loader.loadClass("com.netflix.test.jsontargets.types.Example")
+                val plainOutput = plainMapper.readValue("""{"_":"result","isActive":false,"optional":"present"}""", outputClass)
+                assertThat(outputClass.getMethod("getUnderscoreField_").invoke(plainOutput)).isEqualTo("result")
+            }
             val input = mapper.readValue("""{"_":"value","isActive":true,"optional":null}""", inputClass)
             val json = mapper.valueToTree<com.fasterxml.jackson.databind.JsonNode>(input)
             assertThat(json.path("_").asText()).isEqualTo("value")

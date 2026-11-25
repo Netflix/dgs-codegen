@@ -224,6 +224,7 @@ abstract class AbstractKotlinDataTypeGenerator internal constructor(
             val parameterSpec =
                 ParameterSpec
                     .builder(field.kotlinName, returnType)
+                    .addAnnotation(jsonPropertyAnnotation(field.graphQLName, AnnotationSpec.UseSiteTarget.PARAM))
                     .addAnnotation(jsonPropertyAnnotation(field.graphQLName, AnnotationSpec.UseSiteTarget.FIELD))
 
             if (field.directives.isNotEmpty()) {

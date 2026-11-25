@@ -10,6 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class SampleInput(
+  @param:JsonProperty("return")
   @field:JsonProperty("return")
   public val `return`: String,
 ) : GraphQLInput() {

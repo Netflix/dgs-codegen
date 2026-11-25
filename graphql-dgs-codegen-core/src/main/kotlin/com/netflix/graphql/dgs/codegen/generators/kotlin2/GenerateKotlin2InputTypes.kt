@@ -104,7 +104,8 @@ internal fun generateKotlin2InputTypes(
                                         .builder(
                                             name = kotlinName,
                                             type = type,
-                                        ).addAnnotation(jsonPropertyAnnotation(field.name, AnnotationSpec.UseSiteTarget.FIELD))
+                                        ).addAnnotation(jsonPropertyAnnotation(field.name, AnnotationSpec.UseSiteTarget.PARAM))
+                                        .addAnnotation(jsonPropertyAnnotation(field.name, AnnotationSpec.UseSiteTarget.FIELD))
                                         .apply {
                                             if (field.defaultValue != null || type.isNullable) {
                                                 val value =

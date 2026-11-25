@@ -10,6 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class PersonFilter(
+  @param:JsonProperty("email")
   @field:JsonProperty("email")
   public val email: String? = default<PersonFilter, String?>("email", null),
 ) : GraphQLInput() {

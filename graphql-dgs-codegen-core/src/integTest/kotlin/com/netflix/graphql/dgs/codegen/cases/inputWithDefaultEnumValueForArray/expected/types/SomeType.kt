@@ -10,6 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class SomeType(
+  @param:JsonProperty("colors")
   @field:JsonProperty("colors")
   public val colors:
       List<Color?>? = default<SomeType, List<Color?>?>("colors", listOf(com.netflix.graphql.dgs.codegen.cases.inputWithDefaultEnumValueForArray.expected.types.Color.red)),

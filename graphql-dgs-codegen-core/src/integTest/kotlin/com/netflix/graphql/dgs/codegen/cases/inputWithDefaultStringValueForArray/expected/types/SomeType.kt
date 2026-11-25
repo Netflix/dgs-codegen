@@ -10,6 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class SomeType(
+  @param:JsonProperty("names")
   @field:JsonProperty("names")
   public val names: List<String?>? = default<SomeType, List<String?>?>("names", listOf("A", "B")),
 ) : GraphQLInput() {

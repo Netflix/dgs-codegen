@@ -10,6 +10,7 @@ import kotlin.collections.List
 
 @Generated
 public data class MovieFilter(
+  @param:JsonProperty("director")
   @field:JsonProperty("director")
   public val director:
       Person? = default<MovieFilter, Person?>("director", com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.types.Person(name = "Damian", car = com.netflix.graphql.dgs.codegen.cases.inputWithDefaultValueForObject.expected.types.Car(brand = "Tesla"))),
